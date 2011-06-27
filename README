@@ -1,0 +1,46 @@
+Amiga Disk Utilities
+--------------------
+
+A collection of utilities for ripping, dumping, analysing, and modifying Amiga
+disk images. All code is public domain (see the COPYING file).
+
+All code except amiga-native/ targets Linux, but should be very POSIX portable.
+amiga-native/ targets classic Amiga m68k, tested with SAS/C 6.50.
+
+adfbb/
+    Read/modify/write ADF boot blocks. Mainly I use for stuffing bootblock
+    sectors and recomputing the checksum.
+
+adfread/
+    Read file contents of an ADF and optionally dump into local host filesystem
+
+adfwrite/
+    Stuff data into selected sectors of an ADF image
+
+amiga-native/diskread
+    Dumps a disk to a (large, 20MB!) file. Really you need an
+    Amiga equipped with PCMCIA-CF for this to be useful.
+
+m68k/
+  m68k/
+    M68k disassembler/emulator library.
+  amiga/
+    Amiga emulator (very limited, sufficient to run track loaders and
+    protection routines).
+  disassemble
+    Example utility for disassembling raw binary files
+  copylock
+    Run a given RNC Copylock routine in emulated environment, copying
+    decrypted code to a shadow buffer for subsequent disassembly and dump
+
+mfmparse/
+  kf2rawdat
+    Convert a Kryoflux raw STREAM file to my own fomat (as dumped by Amiga
+    tool diskread, above).
+  mfmparse2adf
+    Converts my raw dump format into an ADF. Of course this assumes that the
+    disk image is in ordinary AmigaDOS format.
+  mfmparse
+    ** WORK IN PROGRESS **
+    Analyse my raw dumps for known custom disk formats and convert to a more
+    useful and efficient final format.

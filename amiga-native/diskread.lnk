@@ -1,0 +1,4 @@
+FROM LIB:c.o "diskread.o"+"trackread.o"
+TO "diskread"
+LIB LIB:sc.lib LIB:amiga.lib
+

@@ -1,0 +1,16 @@
+all: diskread
+
+diskread: diskread.o trackread.o
+	sc link diskread.o trackread.o
+
+diskread.o: diskread.c
+trackread.o: trackread.a
+
+.c.o:
+	sc $<
+
+.a.o:
+	asm $<
+
+clean:
+	delete diskread \#?.o \#?.lnk \#?.info
