@@ -36,7 +36,7 @@ static uint8_t nxtbyte, idx_assert;
 /* PAL Amiga CIA frequency 0.709379 MHz */
 #define CIA_FREQ 709379u
 
-#define SCK_NS_PER_TICK (1000000000u/SCK_FREQ)
+#define SCK_PS_PER_TICK (1000000000u/(SCK_FREQ/1000))
 #define CIA_NS_PER_TICK (1000000000u/CIA_FREQ)
 
 static void read_exact(int fd, void *buf, size_t count)
@@ -103,7 +103,7 @@ static void next_val(uint32_t val)
 {
     int i;
 
-    val *= SCK_NS_PER_TICK;
+    val = (val * SCK_PS_PER_TICK) / 1000;
 
     for ( i = 0; val >= (base + (base>>1)); i++ )
     {
