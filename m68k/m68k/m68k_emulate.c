@@ -1092,7 +1092,7 @@ int m68k_emulate(struct m68k_emulate_ctxt *c)
         else if ( (op & 0xf138u) == 0x0108u )
         {
             /* movep */
-            uint32_t v, b, *reg = &sh_reg(c, d[(op>>9)&7]);
+            uint32_t v=0, b, *reg = &sh_reg(c, d[(op>>9)&7]);
             int i;
             c->op_sz = op & (1u<<6) ? OPSZ_L : OPSZ_W;
             dump(c, "movep.%c\t", op_sz_ch[c->op_sz]);

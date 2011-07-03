@@ -1,12 +1,13 @@
-ROOT := .
+ROOT := ..
+include $(ROOT)/Rules.mk
+
+CFLAGS += -I.
 
 LDFLAGS := -Lamiga -Lm68k
 
-.PHONY: all m68k/m68k.a amiga/amiga.a
+.PHONY: m68k/m68k.a amiga/amiga.a
 
 all: disassemble copylock
-
-include $(ROOT)/Rules.mk
 
 copylock: m68k/m68k.a amiga/amiga.a copylock.o
 	$(CC) $(LDFLAGS) $@.o -lamiga -lm68k -o $@
@@ -19,6 +20,11 @@ m68k/m68k.a:
 
 amiga/amiga.a:
 	$(MAKE) -C amiga all
+
+install: all
+	$(INSTALL_DIR) $(BINDIR)
+	$(INSTALL_PROG) copylock $(BINDIR)
+	$(INSTALL_PROG) disassemble $(BINDIR)
 
 clean:
 	$(RM) disassemble copylock *.o *~ $(DEPS)

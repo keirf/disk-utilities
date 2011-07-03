@@ -1,0 +1,45 @@
+/******************************************************************************
+ * stream/caps_disabled.c
+ * 
+ * Stub CAPS/IPF handler used when library support is disabled at compile time.
+ * 
+ * Written in 2011 by Keir Fraser
+ */
+
+#include <libdisk/util.h>
+#include "private.h"
+
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
+#include <unistd.h>
+#include <caps/capsimage.h>
+#include <dlfcn.h>
+
+#define w(f, a...) fprintf(stderr, "*** " f, ## a)
+
+static struct stream *caps_open(const char *name)
+{
+    int fd;
+    char sig[4];
+    struct caps_stream *cpss;
+
+    /* Simple signature check */
+    if ( (fd = open(name, O_RDONLY)) == -1 )
+        return NULL;
+    read_exact(fd, sig, 4);
+    close(fd);
+    if ( strncmp(sig, "CAPS", 4) )
+        return NULL;
+
+    w("CAPS/IPF image is detected, but support is not enabled.\n");
+    w("Support must be enabled at compile time (e.g., 'caps=y make')\n");
+    w("Download the library at http://www.softpres.org/download\n");
+    w("Respect the SPS Freeware License Agreement!\n");
+
+    return NULL;
+}
+
+struct stream_type caps = {
+    .open = caps_open,
+};

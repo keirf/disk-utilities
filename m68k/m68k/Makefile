@@ -1,7 +1,5 @@
-ROOT := ..
+ROOT := ../..
 include $(ROOT)/Rules.mk
-
-.PHONY: all
 
 all: libm68k.a
 

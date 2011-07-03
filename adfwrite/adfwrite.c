@@ -142,7 +142,7 @@ int main(int argc, char **argv)
 
     sz = lseek(fd, 0, SEEK_END);
     if ( sz != (160*11*512) )
-        errx(1, "Bad ADF image size (%u bytes)", sz);
+        errx(1, "Bad ADF image size (%u bytes)", (unsigned int)sz);
 
     dat = decode_dat(argv[2], &datsz);
     if ( datsz > ((lsec - fsec + 1) * 512) )

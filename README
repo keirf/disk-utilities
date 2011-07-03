@@ -7,6 +7,21 @@ disk images. All code is public domain (see the COPYING file).
 All code except amiga-native/ targets Linux, but should be very POSIX portable.
 amiga-native/ targets classic Amiga m68k, tested with SAS/C 6.50.
 
+Building:
+---------
+    # make
+
+Installing:
+-----------
+    # make install
+
+Brief Descriptions:
+-------------------
+libdisk/
+    A library for converting and manipulating disk images. It can create
+    disk images in an open format from Kryoflux STREAM and SPS/IPF images
+    (among others), and then allow these to be accessed and modified.
+
 adfbb/
     Read/modify/write ADF boot blocks. Mainly I use for stuffing bootblock
     sectors and recomputing the checksum.
@@ -34,13 +49,8 @@ m68k/
     decrypted code to a shadow buffer for subsequent disassembly and dump
 
 mfmparse/
-  kf2rawdat
-    Convert a Kryoflux raw STREAM file to my own fomat (as dumped by Amiga
-    tool diskread, above).
-  mfmparse2adf
-    Converts my raw dump format into an ADF. Of course this assumes that the
-    disk image is in ordinary AmigaDOS format.
-  mfmparse
-    ** WORK IN PROGRESS **
-    Analyse my raw dumps for known custom disk formats and convert to a more
-    useful and efficient final format.
+    Disk file conversion tool.
+    Converts From: Kryoflux STREAM, SPS/IPF, ADF, .DSK,
+                   output from Amiga diskread tool.
+    Converts To: ADF, .DSK
+    Auto-detects and rips disk custom formats into an open container format.

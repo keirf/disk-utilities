@@ -20,6 +20,7 @@
 #include <arpa/inet.h>
 #include <time.h>
 #include <utime.h>
+#include <ctype.h>
 
 /* Physical characteristics of an AmigaDOS DS/DD floppy disk. */
 #define BYTES_PER_BLOCK   512
@@ -178,22 +179,6 @@ static void checksum_block(void *dat)
 
     if ( sum != 0 )
         errx(1, "Bad block checksum %08x", sum);
-}
-
-static void dump_block(void *dat)
-{
-    unsigned char *blk = dat;
-    unsigned int i, j;
-
-    for ( i = 0; i < (BYTES_PER_BLOCK/16); i++ )
-    {
-        for ( j = 0; j < 16; j++ )
-            printf("%02x ", blk[j]);
-        for ( j = 0; j < 16; j++ )
-            printf("%c", isprint(blk[j]) ? blk[j] : '.');
-        printf("\n");
-        blk += 16;
-    }
 }
 
 static const char *format_bcpl_string(uint8_t *bcpl_str)
