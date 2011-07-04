@@ -64,6 +64,7 @@ extern struct track_handler copylock_handler;
 extern struct track_handler lemmings_handler;
 extern struct track_handler pdos_handler;
 extern struct track_handler jaguar_xj220_handler;
+extern struct track_handler lotus_3_handler;
 
 extern const struct track_handler *handlers[];
 

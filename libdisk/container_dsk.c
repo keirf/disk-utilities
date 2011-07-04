@@ -72,6 +72,7 @@ const static struct track_handler *write_handlers[] = {
     &lemmings_handler,
     &pdos_handler,
     &jaguar_xj220_handler,
+    &lotus_3_handler,
     NULL
 };
 
