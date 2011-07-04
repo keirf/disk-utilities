@@ -57,6 +57,8 @@ struct disk *disk_create(const char *name)
     }
 
     d = memalloc(sizeof(*d));
+    memset(d, 0, sizeof(*d));
+
     d->fd = fd;
     d->read_only = 0;
     d->container = c;
@@ -86,6 +88,8 @@ struct disk *disk_open(const char *name, int read_only, int quiet)
     }
 
     d = memalloc(sizeof(*d));
+    memset(d, 0, sizeof(*d));
+
     d->fd = fd;
     d->read_only = read_only;
     d->container = c;
@@ -105,11 +109,20 @@ struct disk *disk_open(const char *name, int read_only, int quiet)
 
 void disk_close(struct disk *d)
 {
+    struct disk_list_tag *dltag;
     struct disk_info *di = d->di;
     unsigned int i;
 
     if ( !d->read_only )
         d->container->close(d);
+
+    dltag = d->tags;
+    while ( dltag != NULL )
+    {
+        struct disk_list_tag *nxt = dltag->next;
+        memfree(dltag);
+        dltag = nxt;
+    }
 
     for ( i = 0; i < di->nr_tracks; i++ )
         memfree(di->track[i].dat);
@@ -153,6 +166,51 @@ void track_write_mfm(
     struct stream *s = stream_soft_open(mfm, speed, bitlen);
     track_write_mfm_from_stream(d, tracknr, s);
     stream_close(s);
+}
+
+struct disk_tag *disk_get_tag_by_id(struct disk *d, uint16_t id)
+{
+    struct disk_list_tag *dltag;
+    for ( dltag = d->tags; dltag != NULL; dltag = dltag->next )
+        if ( dltag->tag.id == id )
+            return &dltag->tag;
+    return NULL;
+}
+
+struct disk_tag *disk_get_tag_by_idx(struct disk *d, unsigned int idx)
+{
+    struct disk_list_tag *dltag;
+    unsigned int i;
+    for ( dltag = d->tags, i = 0;
+          (dltag != NULL) && (i < idx);
+          dltag = dltag->next, i++ )
+        continue;
+    return dltag ? &dltag->tag : NULL;
+}
+
+void disk_set_tag(struct disk *d, uint16_t id, uint16_t len, void *dat)
+{
+    struct disk_list_tag *dltag, **pprev;
+
+    dltag = memalloc(sizeof(*dltag) + len);
+    dltag->tag.id = id;
+    dltag->tag.len = len;
+    memcpy(&dltag->tag + 1, dat, len);
+
+    for ( pprev = &d->tags; *pprev != NULL; pprev = &(*pprev)->next )
+    {
+        struct disk_list_tag *cur = *pprev;
+        if ( cur->tag.id < id )
+            continue;
+        dltag->next = cur;
+        *pprev = dltag;
+        if ( cur->tag.id == id )
+        {
+            dltag->next = cur->next;
+            memfree(cur);
+        }
+        break;
+    }
 }
 
 

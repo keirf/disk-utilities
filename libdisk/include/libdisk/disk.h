@@ -55,6 +55,19 @@ struct track_info {
     uint32_t total_bits;
 };
 
+struct disk_tag {
+    uint16_t id;
+    uint16_t len;
+};
+
+#define DSKTAG_rnc_pdos_key 1
+struct rnc_pdos_key {
+    struct disk_tag tag;
+    uint32_t key;
+};
+
+#define DSKTAG_end 0xffffu
+
 struct disk_info {
     uint16_t nr_tracks;
     uint16_t flags;
@@ -72,6 +85,10 @@ void disk_close(struct disk *);
 
 /* Valid until the disk is closed (disk_close()). */
 struct disk_info *disk_get_info(struct disk *);
+
+struct disk_tag *disk_get_tag_by_id(struct disk *d, uint16_t id);
+struct disk_tag *disk_get_tag_by_idx(struct disk *d, unsigned int idx);
+void disk_set_tag(struct disk *d, uint16_t id, uint16_t len, void *dat);
 
 void track_read_mfm(struct disk *d, unsigned int tracknr,
                     uint8_t **mfm, uint16_t **speed, uint32_t *bitlen);

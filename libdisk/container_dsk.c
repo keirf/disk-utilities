@@ -8,7 +8,7 @@
  * On-disk Format:
  *  <struct disk_header>
  *  <struct track_header> * #tracks (each entry is disk_header.bytes_per_thdr)
- *  [<info tag>] [...]
+ *  [<struct tag_header> tag data...]+
  *  <track data...>
  * All fields are big endian (network ordering).
  */
@@ -60,6 +60,11 @@ struct track_header {
     uint32_t total_bits;
 };
 
+struct tag_header {
+    uint16_t id;
+    uint16_t len;
+};
+
 const static struct track_handler *write_handlers[] = {
     &unformatted_handler,
     &amigados_handler,
@@ -68,6 +73,18 @@ const static struct track_handler *write_handlers[] = {
     &pdos_handler,
     NULL
 };
+
+static void tag_swizzle(struct disk_tag *dtag)
+{
+    switch ( dtag->id )
+    {
+    case DSKTAG_rnc_pdos_key: {
+        struct rnc_pdos_key *t = (struct rnc_pdos_key *)dtag;
+        t->key = ntohl(t->key);
+        break;
+    }
+    }
+}
 
 static void dsk_init(struct disk *d)
 {
@@ -87,12 +104,19 @@ static void dsk_init(struct disk *d)
         init_track_info_from_handler_info(ti, handlers[TRKTYP_unformatted]);
         ti->total_bits = TRK_WEAK;
     }
+
+    d->tags = memalloc(sizeof(*d->tags));
+    memset(d->tags, 0, sizeof(*d->tags));
+    d->tags->tag.id = DSKTAG_end;
 }
 
 static int dsk_open(struct disk *d, bool_t quiet)
 {
     struct disk_header dh;
     struct track_header th;
+    struct tag_header tagh;
+    struct disk_list_tag *dltag, **pprevtag;
+    struct disk_tag *dtag;
     struct disk_info *di;
     struct track_info *ti;
     const struct track_handler *thnd;
@@ -131,6 +155,19 @@ static int dsk_open(struct disk *d, bool_t quiet)
         lseek(d->fd, off, SEEK_SET);
     }
 
+    pprevtag = &d->tags;
+    do {
+        read_exact(d->fd, &tagh, sizeof(tagh));
+        dltag = memalloc(sizeof(*dltag) + ntohs(tagh.len));
+        dtag = &dltag->tag;
+        dtag->id = ntohs(tagh.id);
+        dtag->len = ntohs(tagh.len);
+        read_exact(d->fd, dtag+1, dtag->len);
+        tag_swizzle(dtag);
+        *pprevtag = dltag;
+        pprevtag = &dltag->next;
+    } while ( dtag->id != DSKTAG_end );
+
     d->di = di;
     return 1;
 }
@@ -141,6 +178,8 @@ static void dsk_close(struct disk *d)
     struct track_header th;
     struct disk_info *di = d->di;
     struct track_info *ti;
+    struct disk_list_tag *dltag;
+    struct disk_tag *dtag;
     unsigned int i, datoff;
 
     lseek(d->fd, 0, SEEK_SET);
@@ -154,6 +193,9 @@ static void dsk_close(struct disk *d)
     write_exact(d->fd, &dh, sizeof(dh));
 
     datoff = sizeof(dh) + di->nr_tracks * sizeof(th);
+    for ( dltag = d->tags; dltag != NULL; dltag = dltag->next )
+        datoff += sizeof(struct tag_header) + dltag->tag.len;
+
     for ( i = 0; i < di->nr_tracks; i++ )
     {
         ti = &di->track[i];
@@ -166,6 +208,18 @@ static void dsk_close(struct disk *d)
         th.total_bits = htonl(ti->total_bits);
         write_exact(d->fd, &th, sizeof(th));
         datoff += ti->len;
+    }
+
+    for ( dltag = d->tags; dltag != NULL; dltag = dltag->next )
+    {
+        struct tag_header tagh;
+        dtag = &dltag->tag;
+        tagh.id = htons(dtag->id);
+        tagh.len = htons(dtag->len);
+        tag_swizzle(dtag);
+        write_exact(d->fd, &tagh, sizeof(tagh));
+        write_exact(d->fd, dtag+1, dtag->len);
+        tag_swizzle(dtag);
     }
 
     for ( i = 0; i < di->nr_tracks; i++ )

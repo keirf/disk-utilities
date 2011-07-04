@@ -9,6 +9,11 @@
 /* Determined empirically -- larger than expected for 2us bitcell @ 300rpm */
 #define DEFAULT_BITS_PER_TRACK       100150
 
+struct disk_list_tag {
+    struct disk_list_tag *next;
+    struct disk_tag tag;
+};
+
 struct container;
 
 struct disk {
@@ -17,6 +22,7 @@ struct disk {
     struct container *container;
     enum track_type prev_type;
     struct disk_info *di;
+    struct disk_list_tag *tags;
 };
 
 struct track_buffer {
