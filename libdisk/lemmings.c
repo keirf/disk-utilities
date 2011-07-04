@@ -101,7 +101,6 @@ static void lemmings_read_mfm(
     struct disk_info *di = d->di;
     struct track_info *ti = &di->track[tracknr];
     uint16_t *dat = (uint16_t *)ti->dat;
-    uint16_t *mfm = memalloc(6 + 6*513*2*2);
     unsigned int i, j;
 
     tbuf->start = ti->data_bitoff;
