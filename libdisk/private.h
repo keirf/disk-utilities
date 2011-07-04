@@ -6,6 +6,19 @@
 
 #define DEFAULT_SPEED 1000u
 
+/* Determined empirically -- larger than expected for 2us bitcell @ 300rpm */
+#define DEFAULT_BITS_PER_TRACK       100150
+
+struct container;
+
+struct disk {
+    int fd;
+    bool_t read_only;
+    struct container *container;
+    enum track_type prev_type;
+    struct disk_info *di;
+};
+
 struct track_buffer {
     uint8_t *mfm;
     uint16_t *speed;
@@ -30,13 +43,34 @@ void tbuf_bytes(struct track_buffer *, uint16_t speed,
 struct track_handler {
     const char *name;
     enum track_type type;
+    unsigned int bytes_per_sector;
+    unsigned int nr_sectors;
     void *(*write_mfm)(
-        unsigned int tracknr, struct track_header *, struct stream *);
+        unsigned int tracknr, struct track_info *, struct stream *);
     void (*read_mfm)(
-        unsigned int tracknr, struct track_buffer *tbuf,
-        struct track_header *th, void *data);
+        unsigned int tracknr, struct track_buffer *, struct track_info *);
 };
 
-void write_valid_sector_map(struct track_header *, uint32_t);
+extern struct track_handler unformatted_handler;
+extern struct track_handler amigados_handler;
+extern struct track_handler amigados_labelled_handler;
+extern struct track_handler copylock_handler;
+extern struct track_handler lemmings_handler;
+extern struct track_handler pdos_handler;
+
+extern const struct track_handler *handlers[];
+
+void init_track_info_from_handler_info(
+    struct track_info *ti, const struct track_handler *thnd);
+
+struct container {
+    void (*init)(struct disk *);
+    int (*open)(struct disk *, bool_t quiet);
+    void (*close)(struct disk *);
+    void (*write_mfm)(struct disk *, unsigned int tracknr, struct stream *);
+};
+
+extern struct container container_adf;
+extern struct container container_dsk;
 
 #endif /* __DISK_PRIVATE_H__ */

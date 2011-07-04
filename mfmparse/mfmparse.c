@@ -28,8 +28,8 @@ int main(int argc, char **argv)
     unsigned int i;
     struct stream *s;
     struct disk *d;
-    struct disk_header *dh;
-    struct track_header *th;
+    struct disk_info *di;
+    struct track_info *ti;
     unsigned int prev_type = ~0u, st = 0;
 
     if ( argc != 3 )
@@ -41,48 +41,47 @@ int main(int argc, char **argv)
     if ( (d = disk_create(argv[2])) == NULL )
         errx(1, "Unable to create new disk file: %s", argv[2]);
 
-    dh = disk_get_header(d);
+    di = disk_get_info(d);
 
     for ( i = 0; i < 160; i++ )
         track_write_mfm_from_stream(d, i, s);
 
     for ( i = 1; i < 160; i++ )
     {
-        uint32_t valid_sectors;
         unsigned int j;
-        th = &dh->track[i];
-        valid_sectors = track_valid_sector_map(th);
-        for ( j = 0; j < th->nr_sectors; j++ )
-            if ( !(valid_sectors & (1u << j)) )
+        ti = &di->track[i];
+        for ( j = 0; j < ti->nr_sectors; j++ )
+            if ( !(ti->valid_sectors & (1u << j)) )
                 break;
-        if ( j == th->nr_sectors )
+        if ( j == ti->nr_sectors )
             continue;
         printf("T%u: sectors ", i);
-        for ( j = 0; j < th->nr_sectors; j++ )
-            if ( !(valid_sectors & (1u << j)) )
+        for ( j = 0; j < ti->nr_sectors; j++ )
+            if ( !(ti->valid_sectors & (1u << j)) )
                 printf("%u,", j);
         printf(" missing\n");
     }
 
 #if 1
-    prev_type = dh->track[0].type;
+    prev_type = di->track[0].type;
     for ( i = 1; i <= 160; i++ )
     {
-        if ( (dh->track[i].type == prev_type) && (i != 160) )
+        ti = &di->track[i];
+        if ( (ti->type == prev_type) && (i != 160) )
             continue;
         if ( st == i-1 )
             printf("T");
         else
             printf("T%u-", st);
-        printf("%u: %s\n", i-1, track_type_name(d, i-1));            
+        printf("%u: %s\n", i-1, di->track[i-1].typename);
         st = i;
-        prev_type = dh->track[i].type;
+        prev_type = di->track[i].type;
     }
     
 #if 0
     for ( i = 0; i < 160; i++ )
-        printf("%u: %u %u\n", i, dh->track[i].data_bitoff, 
-               dh->track[i].total_bits);
+        printf("%u: %u %u\n", i, di->track[i].data_bitoff, 
+               di->track[i].total_bits);
 #endif
 #endif
 

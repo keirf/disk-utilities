@@ -36,7 +36,7 @@ extern uint16_t copylock_decode_word(uint32_t);
 extern uint32_t mfm_decode_amigados(void *dat, unsigned int longs);
 
 static void *pdos_write_mfm(
-    unsigned int tracknr, struct track_header *th, struct stream *s)
+    unsigned int tracknr, struct track_info *ti, struct stream *s)
 {
     char *block = memalloc(512 * 12);
     unsigned int i, j, valid_blocks = 0;
@@ -50,7 +50,7 @@ static void *pdos_write_mfm(
 
         if ( (uint16_t)s->word != 0x1448 )
             continue;
-        th->data_bitoff = s->index_offset - 15;
+        ti->data_bitoff = s->index_offset - 15;
 
         for ( i = 0; i < 12; i++ )
         {
@@ -106,26 +106,21 @@ done:
         return NULL;
     }
 
-    th->total_bits = 105500;
-    th->bytes_per_sector = 512;
-    th->nr_sectors = 12;
-    th->len = th->nr_sectors * th->bytes_per_sector;
-    write_valid_sector_map(th, valid_blocks);
+    ti->total_bits = 105500;
+    ti->valid_sectors = valid_blocks;
 
     return block;
 }
 
 static void pdos_read_mfm(
-    unsigned int tracknr, struct track_buffer *tbuf,
-    struct track_header *th, void *data)
+    unsigned int tracknr, struct track_buffer *tbuf, struct track_info *ti)
 {
-    uint32_t valid_sectors = track_valid_sector_map(th);
-    uint16_t *dat = data;
+    uint16_t *dat = (uint16_t *)ti->dat;
     uint16_t *mfm = memalloc(6 + 6*513*2*2);
     unsigned int i, j;
 
-    tbuf->start = th->data_bitoff;
-    tbuf->len = th->total_bits;
+    tbuf->start = ti->data_bitoff;
+    tbuf->len = ti->total_bits;
     tbuf_init(tbuf);
 
     tbuf_bits(tbuf, DEFAULT_SPEED, TBUFDAT_raw, 16, 0x4489);
@@ -136,7 +131,7 @@ static void pdos_read_mfm(
         uint16_t csum = 0;
         for ( j = 0; j < 512; j++ )
             csum += ntohs(dat[j]);
-        if ( !(valid_sectors & (1u << i)) )
+        if ( !(ti->valid_sectors & (1u << i)) )
             csum = ~csum; /* bad checksum for an invalid sector */
         tbuf_bits(tbuf, DEFAULT_SPEED, TBUFDAT_even, 16, csum);
         tbuf_bits(tbuf, DEFAULT_SPEED, TBUFDAT_odd, 16, csum);
@@ -154,6 +149,8 @@ static void pdos_read_mfm(
 struct track_handler pdos_handler = {
     .name = "RNC PDOS",
     .type = TRKTYP_rnc_pdos,
+    .bytes_per_sector = 512,
+    .nr_sectors = 12,
     .write_mfm = pdos_write_mfm,
     .read_mfm = pdos_read_mfm
 };

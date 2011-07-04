@@ -13,7 +13,7 @@
 #define SECTOR_BAD_THRESH (SCAN_SECTOR_BITS/10)
 
 static void *unformatted_write_mfm(
-    unsigned int tracknr, struct track_header *th, struct stream *s)
+    unsigned int tracknr, struct track_info *ti, struct stream *s)
 {
     unsigned int bad = 0, nr_zero = 0, i = 0;
 
@@ -40,14 +40,13 @@ static void *unformatted_write_mfm(
         }
     }
 
-    th->total_bits = TRK_WEAK;
+    ti->total_bits = TRK_WEAK;
 
     return memalloc(1); /* dummy */
 }
 
 static void unformatted_read_mfm(
-    unsigned int tracknr, struct track_buffer *tbuf,
-    struct track_header *th, void *data)
+    unsigned int tracknr, struct track_buffer *tbuf, struct track_info *ti)
 {
     unsigned int i;
     int speed_delta = 200;

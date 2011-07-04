@@ -27,7 +27,7 @@
 #include <arpa/inet.h>
 
 static void *lemmings_write_mfm(
-    unsigned int tracknr, struct track_header *th, struct stream *s)
+    unsigned int tracknr, struct track_info *ti, struct stream *s)
 {
     char *block;
     unsigned int i, j, k, valid_blocks = 0, bad;
@@ -78,7 +78,7 @@ static void *lemmings_write_mfm(
         }
 
         if ( nr_valid )
-            th->data_bitoff = idx_off;
+            ti->data_bitoff = idx_off;
     }
 
 done:
@@ -88,25 +88,20 @@ done:
         return NULL;
     }
 
-    th->bytes_per_sector = 1024;
-    th->nr_sectors = 6;
-    th->len = th->nr_sectors * th->bytes_per_sector;
-    write_valid_sector_map(th, valid_blocks);
+    ti->valid_sectors = valid_blocks;
 
     return block;
 }
 
 static void lemmings_read_mfm(
-    unsigned int tracknr, struct track_buffer *tbuf,
-    struct track_header *th, void *data)
+    unsigned int tracknr, struct track_buffer *tbuf, struct track_info *ti)
 {
-    uint32_t valid_sectors = track_valid_sector_map(th);
-    uint16_t *dat = data;
+    uint16_t *dat = (uint16_t *)ti->dat;
     uint16_t *mfm = memalloc(6 + 6*513*2*2);
     unsigned int i, j;
 
-    tbuf->start = th->data_bitoff;
-    tbuf->len = th->total_bits;
+    tbuf->start = ti->data_bitoff;
+    tbuf->len = ti->total_bits;
     tbuf_init(tbuf);
 
     tbuf_bits(tbuf, DEFAULT_SPEED, TBUFDAT_raw, 16, 0x4489);
@@ -117,7 +112,7 @@ static void lemmings_read_mfm(
         uint16_t csum = 0;
         for ( j = 0; j < 512; j++ )
             csum += ntohs(dat[j]);
-        if ( !(valid_sectors & (1u << i)) )
+        if ( !(ti->valid_sectors & (1u << i)) )
             csum = ~csum; /* bad checksum for an invalid sector */
         tbuf_bits(tbuf, DEFAULT_SPEED, TBUFDAT_even, 16, csum);
         tbuf_bits(tbuf, DEFAULT_SPEED, TBUFDAT_odd, 16, csum);
@@ -135,6 +130,8 @@ static void lemmings_read_mfm(
 struct track_handler lemmings_handler = {
     .name = "Lemmings",
     .type = TRKTYP_lemmings,
+    .bytes_per_sector = 1024,
+    .nr_sectors = 6,
     .write_mfm = lemmings_write_mfm,
     .read_mfm = lemmings_read_mfm
 };

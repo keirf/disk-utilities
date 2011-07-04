@@ -1,0 +1,234 @@
+/******************************************************************************
+ * libdisk/container_dsk.c
+ * 
+ * Read/write DSK images.
+ * 
+ * Written in 2011 by Keir Fraser
+ * 
+ * On-disk Format:
+ *  <struct disk_header>
+ *  <struct track_header> * #tracks (each entry is disk_header.bytes_per_thdr)
+ *  [<info tag>] [...]
+ *  <track data...>
+ * All fields are big endian (network ordering).
+ */
+
+#include <libdisk/util.h>
+#include "private.h"
+
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
+#include <unistd.h>
+#include <arpa/inet.h>
+
+struct disk_header {
+    char signature[4];
+    uint16_t version;
+    uint16_t nr_tracks;
+    uint16_t bytes_per_thdr;
+    uint16_t flags;
+};
+
+struct track_header {
+    /* Enumeration */
+    uint16_t type;
+
+    uint16_t flags;
+
+    /* Bitmap of valid sectors. */
+    uint32_t valid_sectors;
+
+    /* Offset and length of type-specific track data in container file. */
+    uint32_t off;
+    uint32_t len;
+
+    /*
+     * Offset from track index of raw data returned by type handler.
+     * Specifically, N means that the there are N full bitcells between the
+     * index pulse and the first data bitcell. Hence 0 means that the index
+     * pulse occurs during the cell immediately preceding the first data cell.
+     */
+    uint32_t data_bitoff;
+
+    /*
+     * Total bit length of track (modulo jitter at the write splice / gap).
+     * If TRK_WEAK then handler can be called repeatedly for successive
+     * revolutions of the disk -- data and length may change due to 'flakey
+     * bits' which confuse the disk controller.
+     */
+    uint32_t total_bits;
+};
+
+const static struct track_handler *write_handlers[] = {
+    &unformatted_handler,
+    &amigados_handler,
+    &copylock_handler,
+    &lemmings_handler,
+    &pdos_handler,
+    NULL
+};
+
+static void dsk_init(struct disk *d)
+{
+    struct track_info *ti;
+    struct disk_info *di;
+    unsigned int i, nr_tracks = 160;
+
+    d->di = di = memalloc(sizeof(*di));
+    di->nr_tracks = nr_tracks;
+    di->flags = 0;
+    di->track = memalloc(nr_tracks * sizeof(*ti));
+
+    for ( i = 0; i < nr_tracks; i++ )
+    {
+        ti = &di->track[i];
+        memset(ti, 0, sizeof(*ti));
+        init_track_info_from_handler_info(ti, handlers[TRKTYP_unformatted]);
+        ti->total_bits = TRK_WEAK;
+    }
+}
+
+static int dsk_open(struct disk *d, bool_t quiet)
+{
+    struct disk_header dh;
+    struct track_header th;
+    struct disk_info *di;
+    struct track_info *ti;
+    const struct track_handler *thnd;
+    unsigned int i, bytes_per_th, read_bytes_per_th;
+    off_t off;
+
+    read_exact(d->fd, &dh, sizeof(dh));
+    if ( strncmp(dh.signature, "DSK\0", 4) ||
+         (ntohs(dh.version) != 0) )
+        return 0;
+
+    di = memalloc(sizeof(*di));
+    di->nr_tracks = ntohs(dh.nr_tracks);
+    di->flags = ntohs(dh.flags);
+    di->track = memalloc(di->nr_tracks * sizeof(*ti));
+    read_bytes_per_th = bytes_per_th = ntohs(dh.bytes_per_thdr);
+    if ( read_bytes_per_th > sizeof(*ti) )
+        read_bytes_per_th = sizeof(*ti);
+
+    for ( i = 0; i < di->nr_tracks; i++ )
+    {
+        memset(&th, 0, sizeof(th));
+        read_exact(d->fd, &th, read_bytes_per_th);
+        ti = &di->track[i];
+        thnd = handlers[ntohs(th.type)];
+        init_track_info_from_handler_info(ti, thnd);
+        ti->flags = ntohs(th.flags);
+        ti->valid_sectors = ntohl(th.valid_sectors);
+        ti->len = ntohl(th.len);
+        ti->data_bitoff = ntohl(th.data_bitoff);
+        ti->total_bits = ntohl(th.total_bits);
+        off = lseek(d->fd, bytes_per_th-read_bytes_per_th, SEEK_CUR);
+        lseek(d->fd, ntohl(th.off), SEEK_SET);
+        ti->dat = memalloc(ti->len);
+        read_exact(d->fd, ti->dat, ti->len);
+        lseek(d->fd, off, SEEK_SET);
+    }
+
+    d->di = di;
+    return 1;
+}
+
+static void dsk_close(struct disk *d)
+{
+    struct disk_header dh;
+    struct track_header th;
+    struct disk_info *di = d->di;
+    struct track_info *ti;
+    unsigned int i, datoff;
+
+    lseek(d->fd, 0, SEEK_SET);
+    ftruncate(d->fd, 0);
+
+    strncpy(dh.signature, "DSK\0", 4);
+    dh.version = 0;
+    dh.nr_tracks = htons(di->nr_tracks);
+    dh.bytes_per_thdr = htons(sizeof(th));
+    dh.flags = htons(di->flags);
+    write_exact(d->fd, &dh, sizeof(dh));
+
+    datoff = sizeof(dh) + di->nr_tracks * sizeof(th);
+    for ( i = 0; i < di->nr_tracks; i++ )
+    {
+        ti = &di->track[i];
+        th.type = htons(ti->type);
+        th.flags = htons(ti->flags);
+        th.valid_sectors = htonl(ti->valid_sectors);
+        th.off = htonl(datoff);
+        th.len = htonl(ti->len);
+        th.data_bitoff = htonl(ti->data_bitoff);
+        th.total_bits = htonl(ti->total_bits);
+        write_exact(d->fd, &th, sizeof(th));
+        datoff += ti->len;
+    }
+
+    for ( i = 0; i < di->nr_tracks; i++ )
+    {
+        ti = &di->track[i];
+        if ( ti->len != 0 )
+            write_exact(d->fd, ti->dat, ti->len);
+    }
+}
+
+static void dsk_write_mfm(
+    struct disk *d, unsigned int tracknr, struct stream *s)
+{
+    const struct track_handler *thnd;
+    struct disk_info *di = d->di;
+    struct track_info *ti = &di->track[tracknr];
+    void *dat = NULL;
+    int i;
+
+    memfree(ti->dat);
+
+    for ( i = -1; dat == NULL; i++ )
+    {
+        thnd = (i == -1) ? handlers[d->prev_type] : write_handlers[i];
+        if ( thnd == NULL )
+            break;
+        memset(ti, 0, sizeof(*ti));
+        init_track_info_from_handler_info(ti, thnd);
+        ti->total_bits = DEFAULT_BITS_PER_TRACK;
+        stream_reset(s, tracknr);
+        stream_next_index(s);
+        dat = thnd->write_mfm(tracknr, ti, s);
+    }
+
+    if ( dat == NULL )
+    {
+        memset(ti, 0, sizeof(*ti));
+        init_track_info_from_handler_info(ti, handlers[TRKTYP_unformatted]);
+        ti->total_bits = TRK_WEAK;
+    }
+    else
+    {
+        d->prev_type = ti->type;
+    }
+
+    if ( ti->total_bits == 0 )
+    {
+        stream_reset(s, tracknr);
+        stream_next_index(s);
+        stream_next_index(s);
+        ti->total_bits = s->track_bitlen ? : DEFAULT_BITS_PER_TRACK;
+    }
+
+    ti->data_bitoff = (int32_t)ti->data_bitoff % (int32_t)ti->total_bits;
+    if ( (int32_t)ti->data_bitoff < 0 )
+        ti->data_bitoff += ti->total_bits;
+
+    ti->dat = dat;
+}
+
+struct container container_dsk = {
+    .init = dsk_init,
+    .open = dsk_open,
+    .close = dsk_close,
+    .write_mfm = dsk_write_mfm
+};

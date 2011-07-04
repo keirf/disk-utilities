@@ -69,7 +69,7 @@ uint32_t mfm_decode_amigados(void *dat, unsigned int longs)
 }
 
 static void *ados_write_mfm(
-    unsigned int tracknr, struct track_header *th, struct stream *s)
+    unsigned int tracknr, struct track_info *ti, struct stream *s)
 {
     char *block, *p;
     unsigned int i, j, valid_blocks = 0, labelled_blocks = 0;
@@ -123,7 +123,7 @@ static void *ados_write_mfm(
 
         if ( (ados_hdr.sector == 0) ||
              !(valid_blocks & (1u << (ados_hdr.sector-1))) )
-            th->data_bitoff = idx_off;
+            ti->data_bitoff = idx_off;
 
         valid_blocks |= 1u << ados_hdr.sector;
     }
@@ -134,30 +134,21 @@ static void *ados_write_mfm(
         return NULL;
     }
 
-    if ( labelled_blocks == 0 )
-    {
+    if ( !labelled_blocks )
         for ( i = 0; i < ADOS_BLOCKS_PER_TRACK; i++ )
             memmove(block + i * ADOS_BYTES_PER_BLOCK,
                     block + i * (ADOS_BYTES_PER_BLOCK + 16) + 16,
                     ADOS_BYTES_PER_BLOCK);
-        th->type = TRKTYP_amigados;
-        th->bytes_per_sector = ADOS_BYTES_PER_BLOCK;
-    }
-    else
-    {
-        th->type = TRKTYP_amigados_labelled;
-        th->bytes_per_sector = ADOS_BYTES_PER_BLOCK + 16;
-    }
 
-    th->nr_sectors = ADOS_BLOCKS_PER_TRACK;
-    th->len = th->nr_sectors * th->bytes_per_sector;
+    ti->type = labelled_blocks ? TRKTYP_amigados_labelled : TRKTYP_amigados;
+    init_track_info_from_handler_info(ti, handlers[ti->type]);
 
-    write_valid_sector_map(th, valid_blocks);
+    ti->valid_sectors = valid_blocks;
 
     for ( i = 0; i < ADOS_BLOCKS_PER_TRACK; i++ )
         if ( valid_blocks & (1u << i) )
             break;
-    th->data_bitoff -= i * 544 + 31;
+    ti->data_bitoff -= i * 544 + 31;
 
     return block;
 }
@@ -172,17 +163,15 @@ static void write_csum(struct track_buffer *tbuf, uint32_t csum)
 }
 
 static void ados_read_mfm(
-    unsigned int tracknr, struct track_buffer *tbuf,
-    struct track_header *th, void *data)
+    unsigned int tracknr, struct track_buffer *tbuf, struct track_info *ti)
 {
     uint8_t lbl[16] = { 0 };
-    uint8_t *dat = data;
+    uint8_t *dat = ti->dat;
     unsigned int i, j;
     uint32_t csum, info = (0xffu << 24) | (tracknr << 16);
-    uint32_t valid_sectors = track_valid_sector_map(th);
 
-    tbuf->start = th->data_bitoff;
-    tbuf->len = th->total_bits;
+    tbuf->start = ti->data_bitoff;
+    tbuf->len = ti->total_bits;
     tbuf_init(tbuf);
 
     for ( i = 0; i < ADOS_BLOCKS_PER_TRACK; i++ )
@@ -195,7 +184,7 @@ static void ados_read_mfm(
         tbuf_bits(tbuf, DEFAULT_SPEED, TBUFDAT_even, 32, info);
         tbuf_bits(tbuf, DEFAULT_SPEED, TBUFDAT_odd, 32, info);
         /* lbl */
-        if ( th->type == TRKTYP_amigados_labelled )
+        if ( ti->type == TRKTYP_amigados_labelled )
         {
             memcpy(lbl, dat, 16);
             dat += 16;
@@ -211,7 +200,7 @@ static void ados_read_mfm(
         csum = 0;
         for ( j = 0; j < 128; j++ )
             csum ^= ntohl(((uint32_t *)dat)[j]);
-        if ( !(valid_sectors & (1u << i)) )
+        if ( !(ti->valid_sectors & (1u << i)) )
             csum ^= 1; /* bad checksum for an invalid sector */
         write_csum(tbuf, csum);
         /* data */
@@ -228,6 +217,8 @@ static void ados_read_mfm(
 struct track_handler amigados_handler = {
     .name = "AmigaDOS",
     .type = TRKTYP_amigados,
+    .bytes_per_sector = ADOS_BYTES_PER_BLOCK,
+    .nr_sectors = ADOS_BLOCKS_PER_TRACK,
     .write_mfm = ados_write_mfm,
     .read_mfm = ados_read_mfm
 };
@@ -235,6 +226,8 @@ struct track_handler amigados_handler = {
 struct track_handler amigados_labelled_handler = {
     .name = "AmigaDOS w/Labels",
     .type = TRKTYP_amigados_labelled,
+    .bytes_per_sector = ADOS_BYTES_PER_BLOCK + 16,
+    .nr_sectors = ADOS_BLOCKS_PER_TRACK,
     .write_mfm = ados_write_mfm,
     .read_mfm = ados_read_mfm
 };

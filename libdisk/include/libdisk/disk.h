@@ -22,17 +22,20 @@ enum track_type {
     TRKTYP_rnc_pdos
 };
 
-struct track_header {
+struct track_info {
     /* Enumeration */
     uint16_t type;
+    const char *typename;
+
+    uint16_t flags;
 
     /* Sector layout and vailidity. */
     uint16_t bytes_per_sector;
     uint8_t  nr_sectors;
-    uint8_t  valid_sector[3]; /* bitmap of valid sectors */
+    uint32_t valid_sectors; /* bitmap of valid sectors */
 
-    /* Offset and length of type-specific track data in container file. */
-    uint32_t off;
+    /* Pointer and length of type-specific track data. */
+    uint8_t *dat;
     uint32_t len;
 
     /*
@@ -52,11 +55,10 @@ struct track_header {
     uint32_t total_bits;
 };
 
-struct disk_header {
-    char signature[4];
-    uint16_t version;
+struct disk_info {
     uint16_t nr_tracks;
-    struct track_header track[1];
+    uint16_t flags;
+    struct track_info *track;
 };
 
 struct disk;
@@ -69,7 +71,7 @@ struct disk *disk_open(const char *name, int read_only, int quiet);
 void disk_close(struct disk *);
 
 /* Valid until the disk is closed (disk_close()). */
-struct disk_header *disk_get_header(struct disk *);
+struct disk_info *disk_get_info(struct disk *);
 
 void track_read_mfm(struct disk *d, unsigned int tracknr,
                     uint8_t **mfm, uint16_t **speed, uint32_t *bitlen);
@@ -78,14 +80,6 @@ void track_write_mfm_from_stream(
 void track_write_mfm(
     struct disk *, unsigned int tracknr,
     uint8_t *mfm, uint16_t *speed, uint32_t bitlen);
-
-void track_read_sector(struct disk *, void *dat);
-void track_write_sector(struct disk *, void *dat);
-
-const char *track_type_name(struct disk *d, unsigned int tracknr);
-
-/* Extract valid-sector bitmap from a track header into a uint32_t. */
-uint32_t track_valid_sector_map(struct track_header *th);
 
 #pragma GCC visibility pop
 

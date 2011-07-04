@@ -54,7 +54,7 @@ uint16_t copylock_decode_word(uint32_t x)
 }
 
 static void *copylock_write_mfm(
-    unsigned int tracknr, struct track_header *th, struct stream *s)
+    unsigned int tracknr, struct track_info *ti, struct stream *s)
 {
     int i, j, sync = 0;
     uint32_t x=0, latency[11];
@@ -69,7 +69,7 @@ static void *copylock_write_mfm(
             continue;
 
         if ( sync == 0 )
-            th->data_bitoff = s->index_offset - 15;
+            ti->data_bitoff = s->index_offset - 15;
 
         if ( stream_next_bits(s, 16) == -1 )
             goto fail;
@@ -133,23 +133,21 @@ fail:
         }
     }
 
-    th->bytes_per_sector = 512;
-    th->nr_sectors = ARRAY_SIZE(sync_list);
-    th->len = th->nr_sectors * th->bytes_per_sector/8;
+    ti->len = ti->nr_sectors * ti->bytes_per_sector/8;
+    ti->valid_sectors = (1u << ti->nr_sectors) - 1;
 
     return info;
 }
 
 static void copylock_read_mfm(
-    unsigned int tracknr, struct track_buffer *tbuf,
-    struct track_header *th, void *data)
+    unsigned int tracknr, struct track_buffer *tbuf, struct track_info *ti)
 {
     unsigned int i, j;
-    uint8_t *dat = data;
+    uint8_t *dat = ti->dat;
     uint16_t word = *dat++;
 
-    tbuf->start = th->data_bitoff;
-    tbuf->len = th->total_bits;
+    tbuf->start = ti->data_bitoff;
+    tbuf->len = ti->total_bits;
     tbuf_init(tbuf);
 
     for ( i = 0; i < ARRAY_SIZE(sync_list); i++ )
@@ -179,6 +177,8 @@ static void copylock_read_mfm(
 struct track_handler copylock_handler = {
     .name = "Copylock",
     .type = TRKTYP_copylock,
+    .bytes_per_sector = 512,
+    .nr_sectors = 11,
     .write_mfm = copylock_write_mfm,
     .read_mfm = copylock_read_mfm
 };
