@@ -194,7 +194,8 @@ struct disk_tag *disk_get_tag_by_idx(struct disk *d, unsigned int idx)
     return dltag ? &dltag->tag : NULL;
 }
 
-void disk_set_tag(struct disk *d, uint16_t id, uint16_t len, void *dat)
+struct disk_tag *disk_set_tag(
+    struct disk *d, uint16_t id, uint16_t len, void *dat)
 {
     struct disk_list_tag *dltag, **pprev;
 
@@ -217,6 +218,8 @@ void disk_set_tag(struct disk *d, uint16_t id, uint16_t len, void *dat)
         }
         break;
     }
+
+    return &dltag->tag;
 }
 
 

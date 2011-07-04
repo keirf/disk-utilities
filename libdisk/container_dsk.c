@@ -167,6 +167,7 @@ static int dsk_open(struct disk *d, bool_t quiet)
         *pprevtag = dltag;
         pprevtag = &dltag->next;
     } while ( dtag->id != DSKTAG_end );
+    *pprevtag = NULL;
 
     d->di = di;
     return 1;

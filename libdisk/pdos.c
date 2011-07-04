@@ -42,7 +42,8 @@ static void *pdos_write_mfm(
     struct track_info *ti = &di->track[tracknr];
     char *block = memalloc(512 * 12);
     unsigned int i, j, valid_blocks = 0;
-    uint32_t key;
+    struct rnc_pdos_key *keytag = (struct rnc_pdos_key *)
+        disk_get_tag_by_id(d, DSKTAG_rnc_pdos_key);
 
     while ( (stream_next_bit(s) != -1) &&
             (valid_blocks != ((1u<<6)-1)) )
@@ -70,20 +71,34 @@ static void *pdos_write_mfm(
             csum = mfm_decode_amigados(dat, 512/4);
             csum = (uint16_t)(csum | (csum >> 15));
 
-            /* Brute-force the key. */
-            key = ((hdr[0] ^ i) & 0x7f) << 24;
-            key |= (hdr[1] ^ tracknr) << 16;
-            key |= (hdr[2] ^ (uint8_t)(csum>>8)) << 8;
-            key |= hdr[3] ^ (uint8_t)csum;
+            if ( keytag == NULL )
+            {
+                /* Brute-force the key. */
+                uint32_t key = ((hdr[0] ^ i) & 0x7f) << 24;
+                key |= (hdr[1] ^ tracknr) << 16;
+                key |= (hdr[2] ^ (uint8_t)(csum>>8)) << 8;
+                key |= hdr[3] ^ (uint8_t)csum;
+                keytag = (struct rnc_pdos_key *)
+                    disk_set_tag(d, DSKTAG_rnc_pdos_key, 4, &key);
+            }
+            else
+            {
+                *(uint32_t *)hdr ^= ntohl(keytag->key) ^ 0x80;
+                if ( (hdr[0] != i) || (hdr[1] != tracknr) ||
+                      (hdr[2] != (uint8_t)(csum>>8)) ||
+                      (hdr[3] != (uint8_t)csum) )
+                break;
+            }
 
             /* Decrypt and stash the data block. */
-            k = key;
+            k = keytag->key;
             p = (uint32_t *)dat;
             q = (uint32_t *)&block[i*512];
             for ( j = 0; j < 512/4; j++ )
             {
-                k ^= ntohl(*p++);
-                *q++ = htonl(k);
+                uint32_t enc = ntohl(*p++);
+                *q++ = htonl(enc ^ k);
+                k = enc;
             }
 
             /* Skip the sector gap. */
@@ -119,32 +134,54 @@ static void pdos_read_mfm(
 {
     struct disk_info *di = d->di;
     struct track_info *ti = &di->track[tracknr];
-    uint16_t *dat = (uint16_t *)ti->dat;
-    uint16_t *mfm = memalloc(6 + 6*513*2*2);
+    uint32_t k, *dat = (uint32_t *)ti->dat;
     unsigned int i, j;
+    struct rnc_pdos_key *keytag = (struct rnc_pdos_key *)
+        disk_get_tag_by_id(d, DSKTAG_rnc_pdos_key);
 
     tbuf->start = ti->data_bitoff;
     tbuf->len = ti->total_bits;
     tbuf_init(tbuf);
 
-    tbuf_bits(tbuf, DEFAULT_SPEED, TBUFDAT_raw, 16, 0x4489);
-    tbuf_bits(tbuf, DEFAULT_SPEED, TBUFDAT_all, 16, 0xf000);
+    tbuf_bits(tbuf, DEFAULT_SPEED, TBUFDAT_raw, 16, 0x1448);
 
-    for ( i = 0; i < 6; i++ )
+    for ( i = 0; i < ti->nr_sectors; i++ )
     {
-        uint16_t csum = 0;
-        for ( j = 0; j < 512; j++ )
-            csum += ntohs(dat[j]);
-        if ( !(ti->valid_sectors & (1u << i)) )
-            csum = ~csum; /* bad checksum for an invalid sector */
-        tbuf_bits(tbuf, DEFAULT_SPEED, TBUFDAT_even, 16, csum);
-        tbuf_bits(tbuf, DEFAULT_SPEED, TBUFDAT_odd, 16, csum);
-        for ( j = 0; j < 512; j++ )
+        uint32_t csum = 0;
+        uint32_t hdr = (i << 24) | (tracknr << 16);
+        uint32_t enc[128];
+
+        /* sync */
+        tbuf_bits(tbuf, DEFAULT_SPEED, TBUFDAT_raw, 16, 0x4891);
+
+        /* encrypt data */
+        k = keytag->key;
+        for ( j = 0; j < 128; j++ )
         {
-            tbuf_bits(tbuf, DEFAULT_SPEED, TBUFDAT_even, 16, ntohs(*dat));
-            tbuf_bits(tbuf, DEFAULT_SPEED, TBUFDAT_odd, 16, ntohs(*dat));
-            dat++;
+            k ^= ntohl(*dat++);
+            enc[j] = htonl(k);
         }
+
+        /* header */
+        for ( j = 0; j < 128; j++ )
+            csum ^= ntohl(enc[j]);
+        if ( !(ti->valid_sectors & (1u << i)) )
+            csum ^= 1; /* bad checksum for an invalid sector */
+        csum ^= csum >> 1;
+        hdr |= (csum & 0x5555u) | ((csum >> 15) & 0xaaaau);
+        hdr ^= keytag->key ^ (1u<<31);
+        tbuf_bits(tbuf, DEFAULT_SPEED, TBUFDAT_even, 32, hdr);
+        tbuf_bits(tbuf, DEFAULT_SPEED, TBUFDAT_odd, 32, hdr);
+
+        /* data */
+        tbuf_bytes(tbuf, DEFAULT_SPEED, TBUFDAT_even, 512, enc);
+        tbuf_bytes(tbuf, DEFAULT_SPEED, TBUFDAT_odd, 512, enc);
+
+        /* gap */
+        tbuf_bits(tbuf, DEFAULT_SPEED, TBUFDAT_all, 8,
+                  i == (ti->nr_sectors - 1) ? 0 : 28);
+        for ( j = 0; j < 28; j++ )
+            tbuf_bits(tbuf, DEFAULT_SPEED, TBUFDAT_all, 8, 0);
     }
 
     tbuf_finalise(tbuf);
