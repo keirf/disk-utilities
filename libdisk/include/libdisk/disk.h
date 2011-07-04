@@ -20,7 +20,7 @@ enum track_type {
     TRKTYP_copylock,
     TRKTYP_lemmings,
     TRKTYP_rnc_pdos,
-    TRKTYP_jaguar_xj220,
+    TRKTYP_core_design,
     TRKTYP_gremlin,
 };
 

@@ -1,7 +1,10 @@
 /******************************************************************************
- * disk/jaguar_xj220.c
+ * disk/core_design.c
  * 
- * Custom format as used by Jaguar XJ220 by Core Design.
+ * Custom format as used by various releases by Core Design:
+ *   Jaguar XJ220
+ *   Premiere
+ *   Thunderhawk AH-73M
  * 
  * Written in 2011 by Keir Fraser
  * 
@@ -13,7 +16,7 @@
  * MFM encoding:
  *  Alternating even/odd longs
  * 
- * TRKTYP_jaguar_xj220 data layout:
+ * TRKTYP_core_design data layout:
  *  u8 sector_data[11][512]
  */
 
@@ -22,7 +25,7 @@
 
 #include <arpa/inet.h>
 
-static void *jaguar_write_mfm(
+static void *core_write_mfm(
     struct disk *d, unsigned int tracknr, struct stream *s)
 {
     struct disk_info *di = d->di;
@@ -70,7 +73,7 @@ done:
     return block;
 }
 
-static void jaguar_read_mfm(
+static void core_read_mfm(
     struct disk *d, unsigned int tracknr, struct track_buffer *tbuf)
 {
     struct disk_info *di = d->di;
@@ -98,11 +101,11 @@ static void jaguar_read_mfm(
     tbuf_finalise(tbuf);
 }
 
-struct track_handler jaguar_xj220_handler = {
-    .name = "Jaguar XJ220",
-    .type = TRKTYP_jaguar_xj220,
+struct track_handler core_design_handler = {
+    .name = "Core Design",
+    .type = TRKTYP_core_design,
     .bytes_per_sector = 512,
     .nr_sectors = 11,
-    .write_mfm = jaguar_write_mfm,
-    .read_mfm = jaguar_read_mfm
+    .write_mfm = core_write_mfm,
+    .read_mfm = core_read_mfm
 };
