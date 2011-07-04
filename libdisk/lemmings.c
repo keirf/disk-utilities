@@ -27,8 +27,10 @@
 #include <arpa/inet.h>
 
 static void *lemmings_write_mfm(
-    unsigned int tracknr, struct track_info *ti, struct stream *s)
+    struct disk *d, unsigned int tracknr, struct stream *s)
 {
+    struct disk_info *di = d->di;
+    struct track_info *ti = &di->track[tracknr];
     char *block;
     unsigned int i, j, k, valid_blocks = 0, bad;
 
@@ -94,8 +96,10 @@ done:
 }
 
 static void lemmings_read_mfm(
-    unsigned int tracknr, struct track_buffer *tbuf, struct track_info *ti)
+    struct disk *d, unsigned int tracknr, struct track_buffer *tbuf)
 {
+    struct disk_info *di = d->di;
+    struct track_info *ti = &di->track[tracknr];
     uint16_t *dat = (uint16_t *)ti->dat;
     uint16_t *mfm = memalloc(6 + 6*513*2*2);
     unsigned int i, j;

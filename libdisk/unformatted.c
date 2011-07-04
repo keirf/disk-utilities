@@ -13,8 +13,10 @@
 #define SECTOR_BAD_THRESH (SCAN_SECTOR_BITS/10)
 
 static void *unformatted_write_mfm(
-    unsigned int tracknr, struct track_info *ti, struct stream *s)
+    struct disk *d, unsigned int tracknr, struct stream *s)
 {
+    struct disk_info *di = d->di;
+    struct track_info *ti = &di->track[tracknr];
     unsigned int bad = 0, nr_zero = 0, i = 0;
 
     /*
@@ -46,8 +48,10 @@ static void *unformatted_write_mfm(
 }
 
 static void unformatted_read_mfm(
-    unsigned int tracknr, struct track_buffer *tbuf, struct track_info *ti)
+    struct disk *d, unsigned int tracknr, struct track_buffer *tbuf)
 {
+    struct disk_info *di = d->di;
+    struct track_info *ti = &di->track[tracknr];
     unsigned int i;
     int speed_delta = 200;
     uint8_t byte = 0;

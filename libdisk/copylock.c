@@ -54,8 +54,10 @@ uint16_t copylock_decode_word(uint32_t x)
 }
 
 static void *copylock_write_mfm(
-    unsigned int tracknr, struct track_info *ti, struct stream *s)
+    struct disk *d, unsigned int tracknr, struct stream *s)
 {
+    struct disk_info *di = d->di;
+    struct track_info *ti = &di->track[tracknr];
     int i, j, sync = 0;
     uint32_t x=0, latency[11];
     uint8_t *info, *p, key=0;
@@ -140,8 +142,10 @@ fail:
 }
 
 static void copylock_read_mfm(
-    unsigned int tracknr, struct track_buffer *tbuf, struct track_info *ti)
+    struct disk *d, unsigned int tracknr, struct track_buffer *tbuf)
 {
+    struct disk_info *di = d->di;
+    struct track_info *ti = &di->track[tracknr];
     unsigned int i, j;
     uint8_t *dat = ti->dat;
     uint16_t word = *dat++;

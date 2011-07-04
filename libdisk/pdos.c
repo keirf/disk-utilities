@@ -36,8 +36,10 @@ extern uint16_t copylock_decode_word(uint32_t);
 extern uint32_t mfm_decode_amigados(void *dat, unsigned int longs);
 
 static void *pdos_write_mfm(
-    unsigned int tracknr, struct track_info *ti, struct stream *s)
+    struct disk *d, unsigned int tracknr, struct stream *s)
 {
+    struct disk_info *di = d->di;
+    struct track_info *ti = &di->track[tracknr];
     char *block = memalloc(512 * 12);
     unsigned int i, j, valid_blocks = 0;
     uint32_t key;
@@ -113,8 +115,10 @@ done:
 }
 
 static void pdos_read_mfm(
-    unsigned int tracknr, struct track_buffer *tbuf, struct track_info *ti)
+    struct disk *d, unsigned int tracknr, struct track_buffer *tbuf)
 {
+    struct disk_info *di = d->di;
+    struct track_info *ti = &di->track[tracknr];
     uint16_t *dat = (uint16_t *)ti->dat;
     uint16_t *mfm = memalloc(6 + 6*513*2*2);
     unsigned int i, j;

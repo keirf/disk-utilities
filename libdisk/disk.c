@@ -146,7 +146,7 @@ void track_read_mfm(struct disk *d, unsigned int tracknr,
     struct track_buffer tbuf = { 0 };
 
     thnd = handlers[ti->type];
-    thnd->read_mfm(tracknr, &tbuf, ti);
+    thnd->read_mfm(d, tracknr, &tbuf);
 
     *mfm = tbuf.mfm;
     *speed = tbuf.speed;
@@ -156,6 +156,12 @@ void track_read_mfm(struct disk *d, unsigned int tracknr,
 void track_write_mfm_from_stream(
     struct disk *d, unsigned int tracknr, struct stream *s)
 {
+    struct disk_info *di = d->di;
+    struct track_info *ti = &di->track[tracknr];
+
+    memfree(ti->dat);
+    ti->dat = NULL;
+
     d->container->write_mfm(d, tracknr, s);
 }
 

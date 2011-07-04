@@ -52,9 +52,9 @@ struct track_handler {
     unsigned int bytes_per_sector;
     unsigned int nr_sectors;
     void *(*write_mfm)(
-        unsigned int tracknr, struct track_info *, struct stream *);
+        struct disk *, unsigned int tracknr, struct stream *);
     void (*read_mfm)(
-        unsigned int tracknr, struct track_buffer *, struct track_info *);
+        struct disk *, unsigned int tracknr, struct track_buffer *);
 };
 
 extern struct track_handler unformatted_handler;

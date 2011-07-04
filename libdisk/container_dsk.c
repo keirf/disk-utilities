@@ -236,12 +236,9 @@ static void dsk_write_mfm(
     const struct track_handler *thnd;
     struct disk_info *di = d->di;
     struct track_info *ti = &di->track[tracknr];
-    void *dat = NULL;
     int i;
 
-    memfree(ti->dat);
-
-    for ( i = -1; dat == NULL; i++ )
+    for ( i = -1; ti->dat == NULL; i++ )
     {
         thnd = (i == -1) ? handlers[d->prev_type] : write_handlers[i];
         if ( thnd == NULL )
@@ -251,10 +248,10 @@ static void dsk_write_mfm(
         ti->total_bits = DEFAULT_BITS_PER_TRACK;
         stream_reset(s, tracknr);
         stream_next_index(s);
-        dat = thnd->write_mfm(tracknr, ti, s);
+        ti->dat = thnd->write_mfm(d, tracknr, s);
     }
 
-    if ( dat == NULL )
+    if ( ti->dat == NULL )
     {
         memset(ti, 0, sizeof(*ti));
         init_track_info_from_handler_info(ti, handlers[TRKTYP_unformatted]);
@@ -276,8 +273,6 @@ static void dsk_write_mfm(
     ti->data_bitoff = (int32_t)ti->data_bitoff % (int32_t)ti->total_bits;
     if ( (int32_t)ti->data_bitoff < 0 )
         ti->data_bitoff += ti->total_bits;
-
-    ti->dat = dat;
 }
 
 struct container container_dsk = {

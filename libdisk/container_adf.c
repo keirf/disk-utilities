@@ -103,11 +103,9 @@ static void adf_write_mfm(
     struct track_info *ti = &di->track[tracknr];
     unsigned int i;
 
-    memfree(ti->dat);
-
     stream_reset(s, tracknr);
     stream_next_index(s);
-    ti->dat = thnd->write_mfm(tracknr, ti, s);    
+    ti->dat = thnd->write_mfm(d, tracknr, s);    
 
     if ( ti->dat == NULL )
     {
