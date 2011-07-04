@@ -22,6 +22,7 @@ const struct track_handler *handlers[] = {
     &copylock_handler,
     &lemmings_handler,
     &pdos_handler,
+    &jaguar_xj220_handler,
     NULL
 };
 

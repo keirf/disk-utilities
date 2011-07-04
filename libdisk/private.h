@@ -63,6 +63,7 @@ extern struct track_handler amigados_labelled_handler;
 extern struct track_handler copylock_handler;
 extern struct track_handler lemmings_handler;
 extern struct track_handler pdos_handler;
+extern struct track_handler jaguar_xj220_handler;
 
 extern const struct track_handler *handlers[];
 
@@ -78,5 +79,8 @@ struct container {
 
 extern struct container container_adf;
 extern struct container container_dsk;
+
+extern uint16_t copylock_decode_word(uint32_t);
+extern uint32_t mfm_decode_amigados(void *dat, unsigned int longs);
 
 #endif /* __DISK_PRIVATE_H__ */

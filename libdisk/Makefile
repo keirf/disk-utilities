@@ -2,7 +2,7 @@ ROOT := ..
 include $(ROOT)/Rules.mk
 
 OBJS := disk.o amigados.o copylock.o lemmings.o pdos.o unformatted.o util.o
-OBJS += container_adf.o container_dsk.o
+OBJS += container_adf.o container_dsk.o jaguar_xj220.o
 
 PICOBJS := $(patsubst %.o,%.opic,$(OBJS))
 

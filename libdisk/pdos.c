@@ -32,9 +32,6 @@
 
 #include <arpa/inet.h>
 
-extern uint16_t copylock_decode_word(uint32_t);
-extern uint32_t mfm_decode_amigados(void *dat, unsigned int longs);
-
 static void *pdos_write_mfm(
     struct disk *d, unsigned int tracknr, struct stream *s)
 {

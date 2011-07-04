@@ -71,6 +71,7 @@ const static struct track_handler *write_handlers[] = {
     &copylock_handler,
     &lemmings_handler,
     &pdos_handler,
+    &jaguar_xj220_handler,
     NULL
 };
 
