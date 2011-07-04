@@ -15,13 +15,22 @@
 #include <unistd.h>
 #include <arpa/inet.h>
 
+extern struct track_handler unformatted_handler;
+extern struct track_handler amigados_handler;
+extern struct track_handler amigados_labelled_handler;
+extern struct track_handler copylock_handler;
+extern struct track_handler lemmings_handler;
+extern struct track_handler rnc_pdos_handler;
+extern struct track_handler jaguar_xj220_handler;
+extern struct track_handler lotus_3_handler;
+
 const struct track_handler *handlers[] = {
     &unformatted_handler,
     &amigados_handler,
     &amigados_labelled_handler,
     &copylock_handler,
     &lemmings_handler,
-    &pdos_handler,
+    &rnc_pdos_handler,
     &jaguar_xj220_handler,
     &lotus_3_handler,
     NULL

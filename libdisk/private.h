@@ -57,15 +57,6 @@ struct track_handler {
         struct disk *, unsigned int tracknr, struct track_buffer *);
 };
 
-extern struct track_handler unformatted_handler;
-extern struct track_handler amigados_handler;
-extern struct track_handler amigados_labelled_handler;
-extern struct track_handler copylock_handler;
-extern struct track_handler lemmings_handler;
-extern struct track_handler pdos_handler;
-extern struct track_handler jaguar_xj220_handler;
-extern struct track_handler lotus_3_handler;
-
 extern const struct track_handler *handlers[];
 
 void init_track_info_from_handler_info(

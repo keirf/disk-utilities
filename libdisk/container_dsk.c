@@ -65,17 +65,6 @@ struct tag_header {
     uint16_t len;
 };
 
-const static struct track_handler *write_handlers[] = {
-    &unformatted_handler,
-    &amigados_handler,
-    &copylock_handler,
-    &lemmings_handler,
-    &pdos_handler,
-    &jaguar_xj220_handler,
-    &lotus_3_handler,
-    NULL
-};
-
 static void tag_swizzle(struct disk_tag *dtag)
 {
     switch ( dtag->id )
@@ -243,7 +232,13 @@ static void dsk_write_mfm(
 
     for ( i = -1; ti->dat == NULL; i++ )
     {
-        thnd = (i == -1) ? handlers[d->prev_type] : write_handlers[i];
+        /*
+         * Skip the one we optimistically tried first. Also skip
+         * AmigaDOS w/labels, as it shares the basic AmigaDOS handler.
+         */
+        if ( (i == d->prev_type) || (i == TRKTYP_amigados_labelled) )
+            continue;
+        thnd = (i == -1) ? handlers[d->prev_type] : handlers[i];
         if ( thnd == NULL )
             break;
         memset(ti, 0, sizeof(*ti));
