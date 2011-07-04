@@ -22,7 +22,7 @@ extern struct track_handler copylock_handler;
 extern struct track_handler lemmings_handler;
 extern struct track_handler rnc_pdos_handler;
 extern struct track_handler jaguar_xj220_handler;
-extern struct track_handler lotus_3_handler;
+extern struct track_handler gremlin_handler;
 
 const struct track_handler *handlers[] = {
     &unformatted_handler,
@@ -32,7 +32,7 @@ const struct track_handler *handlers[] = {
     &lemmings_handler,
     &rnc_pdos_handler,
     &jaguar_xj220_handler,
-    &lotus_3_handler,
+    &gremlin_handler,
     NULL
 };
 

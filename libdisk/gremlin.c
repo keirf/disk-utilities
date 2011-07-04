@@ -1,7 +1,9 @@
 /******************************************************************************
- * disk/lotus_3.c
+ * disk/gremlin.c
  * 
- * Custom format as used by Lotus III by Gremlin Graphics.
+ * Custom format as used by various Gremlin Graphics releases:
+ *   Lotus I, II, and III
+ *   Harlequin
  * 
  * Written in 2011 by Keir Fraser
  * 
@@ -16,7 +18,7 @@
  * MFM encoding:
  *  Alternating odd/even words
  * 
- * TRKTYP_lotus_3 data layout:
+ * TRKTYP_gremlin data layout:
  *  u8 sector_data[12][512]
  */
 
@@ -25,7 +27,7 @@
 
 #include <arpa/inet.h>
 
-static void *lotus_write_mfm(
+static void *gremlin_write_mfm(
     struct disk *d, unsigned int tracknr, struct stream *s)
 {
     struct disk_info *di = d->di;
@@ -85,7 +87,7 @@ done:
     return block;
 }
 
-static void lotus_read_mfm(
+static void gremlin_read_mfm(
     struct disk *d, unsigned int tracknr, struct track_buffer *tbuf)
 {
     struct disk_info *di = d->di;
@@ -118,11 +120,11 @@ static void lotus_read_mfm(
     tbuf_finalise(tbuf);
 }
 
-struct track_handler lotus_3_handler = {
-    .name = "Lotus III",
-    .type = TRKTYP_lotus_3,
+struct track_handler gremlin_handler = {
+    .name = "Gremlin Graphics",
+    .type = TRKTYP_gremlin,
     .bytes_per_sector = 512,
     .nr_sectors = 12,
-    .write_mfm = lotus_write_mfm,
-    .read_mfm = lotus_read_mfm
+    .write_mfm = gremlin_write_mfm,
+    .read_mfm = gremlin_read_mfm
 };
