@@ -16,7 +16,7 @@
 enum track_type {
     TRKTYP_unformatted,
     TRKTYP_amigados,
-    TRKTYP_amigados_labelled,
+    TRKTYP_amigados_extended,
     TRKTYP_copylock,
     TRKTYP_lemmings,
     TRKTYP_rnc_pdos,

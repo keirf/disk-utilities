@@ -31,11 +31,16 @@
  * TRKTYP_amigados data layout:
  *  u8 sector_data[11][512]
  * 
- * TRKTYP_amigados_labelled data layout:
+ * TRKTYP_amigados_extended data layout:
  *  struct sector {
+ *   u8 hdr[4];
  *   u8 label[16];
  *   u8 data[512];
  *  } sector[11];
+ * 
+ * The extended form is used by various games:
+ *   New Zealand Story: stashes a custom data checksum in the label area
+ *   Graftgold (Fire & Ice, Uridium 2, ...): store cyl# in place of track#
  */
 
 #include <libdisk/util.h>
@@ -74,9 +79,9 @@ static void *ados_write_mfm(
     struct disk_info *di = d->di;
     struct track_info *ti = &di->track[tracknr];
     char *block, *p;
-    unsigned int i, j, valid_blocks = 0, labelled_blocks = 0;
+    unsigned int i, j, valid_blocks = 0, extended_blocks = 0;
 
-    block = memalloc((ADOS_BYTES_PER_BLOCK + 16) * ADOS_BLOCKS_PER_TRACK);
+    block = memalloc((ADOS_BYTES_PER_BLOCK + 20) * ADOS_BLOCKS_PER_TRACK);
     for ( i = 0; i < ADOS_BYTES_PER_BLOCK * ADOS_BLOCKS_PER_TRACK / 4; i++ )
         memcpy((uint32_t *)block + i, "NDOS", 4);
 
@@ -109,19 +114,22 @@ static void *ados_write_mfm(
         if ( csum != 0 )
             continue;
 
-        if ( (ados_hdr.format != 0xffu) ||
-             (ados_hdr.track != tracknr) ||
-             (ados_hdr.sector >= ADOS_BLOCKS_PER_TRACK) ||
+        if ( (ados_hdr.sector >= ADOS_BLOCKS_PER_TRACK) ||
              (valid_blocks & (1u<<ados_hdr.sector)) )
             continue;
 
+        /* Detect non-standard header info. */
+        if ( (ados_hdr.format != 0xffu) ||
+             (ados_hdr.track != tracknr) )
+            extended_blocks |= 1u << ados_hdr.sector;
         for ( j = 0; j < 16; j++ )
             if ( ados_hdr.lbl[j] != 0 )
-                labelled_blocks |= 1u << ados_hdr.sector;
+                extended_blocks |= 1u << ados_hdr.sector;
 
-        p = block + ados_hdr.sector * (ADOS_BYTES_PER_BLOCK + 16);
-        memcpy(p, ados_hdr.lbl, 16);
-        memcpy(p+16, &raw_mfm_dat[2*28], ADOS_BYTES_PER_BLOCK);
+        p = block + ados_hdr.sector * (ADOS_BYTES_PER_BLOCK + 20);
+        memcpy(p, &ados_hdr, 4);
+        memcpy(p+4, ados_hdr.lbl, 16);
+        memcpy(p+20, &raw_mfm_dat[2*28], ADOS_BYTES_PER_BLOCK);
 
         if ( (ados_hdr.sector == 0) ||
              !(valid_blocks & (1u << (ados_hdr.sector-1))) )
@@ -136,13 +144,13 @@ static void *ados_write_mfm(
         return NULL;
     }
 
-    if ( !labelled_blocks )
+    if ( !extended_blocks )
         for ( i = 0; i < ADOS_BLOCKS_PER_TRACK; i++ )
             memmove(block + i * ADOS_BYTES_PER_BLOCK,
-                    block + i * (ADOS_BYTES_PER_BLOCK + 16) + 16,
+                    block + i * (ADOS_BYTES_PER_BLOCK + 20) + 20,
                     ADOS_BYTES_PER_BLOCK);
 
-    ti->type = labelled_blocks ? TRKTYP_amigados_labelled : TRKTYP_amigados;
+    ti->type = extended_blocks ? TRKTYP_amigados_extended : TRKTYP_amigados;
     init_track_info_from_handler_info(ti, handlers[ti->type]);
 
     ti->valid_sectors = valid_blocks;
@@ -169,10 +177,10 @@ static void ados_read_mfm(
 {
     struct disk_info *di = d->di;
     struct track_info *ti = &di->track[tracknr];
-    uint8_t lbl[16] = { 0 };
+    uint8_t hdr[4], lbl[16] = { 0 };
     uint8_t *dat = ti->dat;
     unsigned int i, j;
-    uint32_t csum, info = (0xffu << 24) | (tracknr << 16);
+    uint32_t csum, info;
 
     tbuf->start = ti->data_bitoff;
     tbuf->len = ti->total_bits;
@@ -183,15 +191,16 @@ static void ados_read_mfm(
         /* sync mark */
         tbuf_bits(tbuf, DEFAULT_SPEED, TBUFDAT_raw, 32, 0x44894489);
         /* info */
-        info &= ~0xffffu;
-        info |= (i << 8) | (11-i);
+        info = (ti->type == TRKTYP_amigados_extended)
+            ? ntohl(*(uint32_t *)dat)
+            : (0xffu << 24) | (tracknr << 16) | (i << 8) | (11-i);
         tbuf_bits(tbuf, DEFAULT_SPEED, TBUFDAT_even, 32, info);
         tbuf_bits(tbuf, DEFAULT_SPEED, TBUFDAT_odd, 32, info);
         /* lbl */
-        if ( ti->type == TRKTYP_amigados_labelled )
+        if ( ti->type == TRKTYP_amigados_extended )
         {
-            memcpy(lbl, dat, 16);
-            dat += 16;
+            memcpy(lbl, &dat[4], 16);
+            dat += 20;
         }
         tbuf_bytes(tbuf, DEFAULT_SPEED, TBUFDAT_even, 16, lbl);
         tbuf_bytes(tbuf, DEFAULT_SPEED, TBUFDAT_odd, 16, lbl);
@@ -227,10 +236,10 @@ struct track_handler amigados_handler = {
     .read_mfm = ados_read_mfm
 };
 
-struct track_handler amigados_labelled_handler = {
-    .name = "AmigaDOS w/Labels",
-    .type = TRKTYP_amigados_labelled,
-    .bytes_per_sector = ADOS_BYTES_PER_BLOCK + 16,
+struct track_handler amigados_extended_handler = {
+    .name = "AmigaDOS Extended",
+    .type = TRKTYP_amigados_extended,
+    .bytes_per_sector = ADOS_BYTES_PER_BLOCK + 20,
     .nr_sectors = ADOS_BLOCKS_PER_TRACK,
     .write_mfm = ados_write_mfm,
     .read_mfm = ados_read_mfm

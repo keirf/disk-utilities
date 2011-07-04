@@ -17,7 +17,7 @@
 
 extern struct track_handler unformatted_handler;
 extern struct track_handler amigados_handler;
-extern struct track_handler amigados_labelled_handler;
+extern struct track_handler amigados_extended_handler;
 extern struct track_handler copylock_handler;
 extern struct track_handler lemmings_handler;
 extern struct track_handler rnc_pdos_handler;
@@ -27,7 +27,7 @@ extern struct track_handler gremlin_handler;
 const struct track_handler *handlers[] = {
     &unformatted_handler,
     &amigados_handler,
-    &amigados_labelled_handler,
+    &amigados_extended_handler,
     &copylock_handler,
     &lemmings_handler,
     &rnc_pdos_handler,

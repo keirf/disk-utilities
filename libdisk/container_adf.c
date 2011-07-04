@@ -111,13 +111,15 @@ static void adf_write_mfm(
     {
         adf_init_track(ti);
     }
-    else if ( ti->type == TRKTYP_amigados_labelled )
+    else if ( ti->type == TRKTYP_amigados_extended )
     {
+        unsigned int ext_sz = ti->bytes_per_sector;
         init_track_info_from_handler_info(ti, thnd);
+        ext_sz -= ti->bytes_per_sector;
         for ( i = 0; i < ti->nr_sectors; i++ )
-            memmove(ti->dat + i * 512,
-                    ti->dat + i * (512 + 16) + 16,
-                    512);
+            memmove(ti->dat + i * ti->bytes_per_sector,
+                    ti->dat + i * (ti->bytes_per_sector + ext_sz) + ext_sz,
+                    ti->bytes_per_sector);
     }
 }
 

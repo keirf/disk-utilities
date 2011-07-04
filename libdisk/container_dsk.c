@@ -234,9 +234,9 @@ static void dsk_write_mfm(
     {
         /*
          * Skip the one we optimistically tried first. Also skip
-         * AmigaDOS w/labels, as it shares the basic AmigaDOS handler.
+         * AmigaDOS Extended, as it shares the basic AmigaDOS handler.
          */
-        if ( (i == d->prev_type) || (i == TRKTYP_amigados_labelled) )
+        if ( (i == d->prev_type) || (i == TRKTYP_amigados_extended) )
             continue;
         thnd = (i == -1) ? handlers[d->prev_type] : handlers[i];
         if ( thnd == NULL )
