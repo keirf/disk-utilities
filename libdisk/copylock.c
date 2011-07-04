@@ -133,7 +133,9 @@ fail:
         }
     }
 
-    th->len = ARRAY_SIZE(sync_list) * (512/8);
+    th->bytes_per_sector = 512;
+    th->nr_sectors = ARRAY_SIZE(sync_list);
+    th->len = th->nr_sectors * th->bytes_per_sector/8;
 
     return info;
 }
