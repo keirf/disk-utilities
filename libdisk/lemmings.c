@@ -31,12 +31,8 @@ static void *lemmings_write_mfm(
 {
     struct disk_info *di = d->di;
     struct track_info *ti = &di->track[tracknr];
-    char *block;
-    unsigned int i, j, k, valid_blocks = 0, bad;
-
-    block = memalloc(1024 * 6);
-    for ( i = 0; i < 6 * 1024 / 4; i++ )
-        memcpy((uint32_t *)block + i, "NLEM", 4);
+    char *block = memalloc(ti->len);
+    unsigned int j, k, valid_blocks = 0;
 
     while ( (stream_next_bit(s) != -1) &&
             (valid_blocks != ((1u<<6)-1)) )

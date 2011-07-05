@@ -30,14 +30,12 @@ static void *core_write_mfm(
 {
     struct disk_info *di = d->di;
     struct track_info *ti = &di->track[tracknr];
-    uint32_t *block = memalloc(ti->len);
-    unsigned int i, j, k, valid_blocks = 0, bad;
+    uint32_t *block = NULL;
+    unsigned int i;
 
-    while ( (stream_next_bit(s) != -1) &&
-            (valid_blocks != ((1u<<ti->nr_sectors)-1)) )
+    while ( (stream_next_bit(s) != -1) && !block )
     {
         uint32_t mfm[2], csum;
-        uint32_t nr_valid = 0;
 
         if ( (uint16_t)s->word != 0x8915 )
             continue;
@@ -49,7 +47,9 @@ static void *core_write_mfm(
         mfm_decode_amigados(mfm, 4/4);
         csum = ntohl(mfm[0]);
 
-        for ( i = 0; i < ti->nr_sectors*ti->bytes_per_sector/4; i++ )
+        block = memalloc(ti->len);
+
+        for ( i = 0; i < ti->len/4; i++ )
         {
             if ( stream_next_bytes(s, mfm, sizeof(mfm)) == -1 )
                 goto done;
@@ -57,18 +57,16 @@ static void *core_write_mfm(
             csum -= ntohl(block[i] = mfm[0]);
         }
 
-        if ( csum == 0 )
-            valid_blocks = (1u << ti->nr_sectors) - 1;
+        if ( csum )
+        {
+            memfree(block);
+            block = NULL;
+        }
     }
 
 done:
-    if ( valid_blocks == 0 )
-    {
-        free(block);
-        return NULL;
-    }
-
-    ti->valid_sectors = valid_blocks;
+    if ( block != NULL )
+        ti->valid_sectors = (1u << ti->nr_sectors) - 1;
 
     return block;
 }
@@ -87,12 +85,12 @@ static void core_read_mfm(
 
     tbuf_bits(tbuf, DEFAULT_SPEED, TBUFDAT_raw, 16, 0x8915);
 
-    for ( i = 0; i < ti->nr_sectors*ti->bytes_per_sector/4; i++ )
+    for ( i = 0; i < ti->len/4; i++ )
         csum += ntohl(dat[i]);
     tbuf_bits(tbuf, DEFAULT_SPEED, TBUFDAT_even, 32, csum);
     tbuf_bits(tbuf, DEFAULT_SPEED, TBUFDAT_odd, 32, csum);
 
-    for ( i = 0; i < ti->nr_sectors*ti->bytes_per_sector/4; i++ )
+    for ( i = 0; i < ti->len/4; i++ )
     {
         tbuf_bits(tbuf, DEFAULT_SPEED, TBUFDAT_even, 32, ntohl(dat[i]));
         tbuf_bits(tbuf, DEFAULT_SPEED, TBUFDAT_odd, 32, ntohl(dat[i]));
@@ -104,8 +102,8 @@ static void core_read_mfm(
 struct track_handler core_design_handler = {
     .name = "Core Design",
     .type = TRKTYP_core_design,
-    .bytes_per_sector = 512,
-    .nr_sectors = 11,
+    .bytes_per_sector = 11*512,
+    .nr_sectors = 1,
     .write_mfm = core_write_mfm,
     .read_mfm = core_read_mfm
 };

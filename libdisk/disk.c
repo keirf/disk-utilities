@@ -84,8 +84,6 @@ struct disk *disk_create(const char *name)
 
 struct disk *disk_open(const char *name, int read_only, int quiet)
 {
-    struct track_info *ti;
-    struct disk_info *di;
     struct disk *d;
     struct container *c;
     int fd, rc;
@@ -269,7 +267,7 @@ static void change_bit(uint8_t *map, unsigned int bit, bool_t on)
 
 void tbuf_finalise(struct track_buffer *tbuf)
 {
-    int32_t end, pos;
+    int32_t pos;
     uint8_t b = 0;
 
     tbuf_bits(tbuf, DEFAULT_SPEED, TBUFDAT_all, 32, 0);

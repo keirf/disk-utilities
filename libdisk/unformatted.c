@@ -50,8 +50,6 @@ static void *unformatted_write_mfm(
 static void unformatted_read_mfm(
     struct disk *d, unsigned int tracknr, struct track_buffer *tbuf)
 {
-    struct disk_info *di = d->di;
-    struct track_info *ti = &di->track[tracknr];
     unsigned int i;
     int speed_delta = 200;
     uint8_t byte = 0;

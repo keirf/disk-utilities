@@ -20,8 +20,6 @@
 #include <time.h>
 #include <utime.h>
 
-static int is_ffs, is_readonly;
-
 static void read_exact(int fd, void *buf, size_t count)
 {
     size_t done;

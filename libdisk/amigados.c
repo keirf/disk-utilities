@@ -177,7 +177,7 @@ static void ados_read_mfm(
 {
     struct disk_info *di = d->di;
     struct track_info *ti = &di->track[tracknr];
-    uint8_t hdr[4], lbl[16] = { 0 };
+    uint8_t lbl[16] = { 0 };
     uint8_t *dat = ti->dat;
     unsigned int i, j;
     uint32_t csum, info;

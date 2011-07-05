@@ -22,7 +22,6 @@ static struct stream *caps_open(const char *name)
 {
     int fd;
     char sig[4];
-    struct caps_stream *cpss;
 
     /* Simple signature check */
     if ( (fd = open(name, O_RDONLY)) == -1 )

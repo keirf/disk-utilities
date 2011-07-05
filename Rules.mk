@@ -63,8 +63,8 @@ endef
 cc-options-add = $(foreach o,$(3),$(call cc-option-add,$(1),$(2),$(o)))
 
 $(call cc-option-add,CFLAGS,CC,-fvisibility=hidden)
-$(call cc-option-add,CFLAGS,CC,-Wno-unused-variable)
-$(call cc-option-add,CFLAGS,CC,-Wno-unused-but-set-variable)
+#$(call cc-option-add,CFLAGS,CC,-Wno-unused-variable)
+#$(call cc-option-add,CFLAGS,CC,-Wno-unused-but-set-variable)
 
 DEPS = .*.d
 

@@ -49,7 +49,7 @@ static int adf_open(struct disk *d, bool_t quiet)
 {
     struct track_info *ti;
     struct disk_info *di;
-    unsigned int i, j, k, valid_sectors;
+    unsigned int i, j, k;
     off_t sz;
 
     sz = lseek(d->fd, 0, SEEK_END);

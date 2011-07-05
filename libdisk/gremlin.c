@@ -32,14 +32,12 @@ static void *gremlin_write_mfm(
 {
     struct disk_info *di = d->di;
     struct track_info *ti = &di->track[tracknr];
-    uint16_t *block = memalloc(ti->len);
-    unsigned int i, j, k, valid_blocks = 0, bad;
+    uint16_t *block = NULL;
+    unsigned int i;
 
-    while ( (stream_next_bit(s) != -1) &&
-            (valid_blocks != ((1u<<ti->nr_sectors)-1)) )
+    while ( (stream_next_bit(s) != -1) && !block )
     {
         uint16_t mfm[2], csum = 0, trk;
-        uint32_t nr_valid = 0;
         uint32_t idx_off = s->index_offset - 15;
 
         if ( (uint16_t)s->word != 0x4489 )
@@ -54,6 +52,8 @@ static void *gremlin_write_mfm(
             continue;
 
         ti->data_bitoff = idx_off;
+
+        block = memalloc(ti->len);
 
         for ( i = 0; i < ti->nr_sectors*ti->bytes_per_sector/2; i++ )
         {
@@ -71,18 +71,16 @@ static void *gremlin_write_mfm(
             goto done;
         trk = ntohs((mfm[0] & 0x5555u) | ((mfm[1] & 0x5555u) << 1));
 
-        if ( (csum == 0) && (tracknr == (trk^1)) )
-            valid_blocks = (1u << ti->nr_sectors) - 1;
+        if ( (csum != 0) || (tracknr != (trk^1)) )
+        {
+            memfree(block);
+            block = NULL;
+        }
     }
 
 done:
-    if ( valid_blocks == 0 )
-    {
-        free(block);
-        return NULL;
-    }
-
-    ti->valid_sectors = valid_blocks;
+    if ( block != NULL )
+        ti->valid_sectors = (1u << ti->nr_sectors) - 1;
 
     return block;
 }
@@ -123,8 +121,8 @@ static void gremlin_read_mfm(
 struct track_handler gremlin_handler = {
     .name = "Gremlin Graphics",
     .type = TRKTYP_gremlin,
-    .bytes_per_sector = 512,
-    .nr_sectors = 12,
+    .bytes_per_sector = 12*512,
+    .nr_sectors = 1,
     .write_mfm = gremlin_write_mfm,
     .read_mfm = gremlin_read_mfm
 };

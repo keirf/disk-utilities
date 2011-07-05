@@ -31,12 +31,11 @@ static void *rainbird_write_mfm(
     struct disk_info *di = d->di;
     struct track_info *ti = &di->track[tracknr];
     char *block = NULL;
-    unsigned int i, j, k, valid_blocks = 0, bad;
 
     while ( (stream_next_bit(s) != -1) && !block )
     {
         uint32_t raw_dat[2*ti->len/4], hdr, csum;
-        uint32_t idx_off = s->index_offset - 15, nr_valid = 0;
+        uint32_t idx_off = s->index_offset - 15;
 
         if ( (uint16_t)s->word != 0x4489 )
             continue;
