@@ -79,18 +79,18 @@ static void rainbird_read_mfm(
     uint32_t track, csum = 0, *dat = (uint32_t *)ti->dat;
     unsigned int i;
 
-    tbuf_bits(tbuf, DEFAULT_SPEED, TBUFDAT_raw, 32, 0x44894489);
+    tbuf_bits(tbuf, SPEED_AVG, TB_raw, 32, 0x44894489);
 
     track = (~0u << 8) | tracknr;
-    tbuf_bits(tbuf, DEFAULT_SPEED, TBUFDAT_even_odd, 32, track);
+    tbuf_bits(tbuf, SPEED_AVG, TB_even_odd, 32, track);
 
     for ( i = 0; i < ti->len/4; i++ )
         csum ^= ntohl(dat[i]);
     csum ^= csum >> 1;
     csum &= 0x55555555u;
-    tbuf_bits(tbuf, DEFAULT_SPEED, TBUFDAT_even_odd, 32, csum);
+    tbuf_bits(tbuf, SPEED_AVG, TB_even_odd, 32, csum);
 
-    tbuf_bytes(tbuf, DEFAULT_SPEED, TBUFDAT_even_odd, ti->len, dat);
+    tbuf_bytes(tbuf, SPEED_AVG, TB_even_odd, ti->len, dat);
 }
 
 struct track_handler rainbird_handler = {

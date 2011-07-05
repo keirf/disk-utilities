@@ -83,18 +83,18 @@ static void psygnosis_a_read_mfm(
     unsigned int i, dat_len = ti->len - 2;
 
     sync = ntohs(*(uint16_t *)&ti->dat[dat_len]);
-    tbuf_bits(tbuf, DEFAULT_SPEED, TBUFDAT_raw, 16, sync);
+    tbuf_bits(tbuf, SPEED_AVG, TB_raw, 16, sync);
 
     track = (~0u << 8) | tracknr;
-    tbuf_bits(tbuf, DEFAULT_SPEED, TBUFDAT_even_odd, 32, track);
+    tbuf_bits(tbuf, SPEED_AVG, TB_even_odd, 32, track);
 
     for ( i = 0; i < dat_len/4; i++ )
         csum ^= ntohl(dat[i]);
     csum ^= csum >> 1;
     csum &= 0x55555555u;
-    tbuf_bits(tbuf, DEFAULT_SPEED, TBUFDAT_even_odd, 32, csum);
+    tbuf_bits(tbuf, SPEED_AVG, TB_even_odd, 32, csum);
 
-    tbuf_bytes(tbuf, DEFAULT_SPEED, TBUFDAT_even_odd, dat_len, dat);
+    tbuf_bytes(tbuf, SPEED_AVG, TB_even_odd, dat_len, dat);
 }
 
 struct track_handler psygnosis_a_handler = {

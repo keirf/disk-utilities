@@ -91,17 +91,17 @@ static void gremlin_read_mfm(
     uint16_t csum = 0, *dat = (uint16_t *)ti->dat;
     unsigned int i;
 
-    tbuf_bits(tbuf, DEFAULT_SPEED, TBUFDAT_raw, 32, 0x44894489);
-    tbuf_bits(tbuf, DEFAULT_SPEED, TBUFDAT_raw, 32, 0x44895555);
+    tbuf_bits(tbuf, SPEED_AVG, TB_raw, 32, 0x44894489);
+    tbuf_bits(tbuf, SPEED_AVG, TB_raw, 32, 0x44895555);
 
     for ( i = 0; i < ti->nr_sectors*ti->bytes_per_sector/2; i++ )
     {
         csum += ntohs(dat[i]);
-        tbuf_bits(tbuf, DEFAULT_SPEED, TBUFDAT_odd_even, 16, ntohs(dat[i]));
+        tbuf_bits(tbuf, SPEED_AVG, TB_odd_even, 16, ntohs(dat[i]));
     }
 
-    tbuf_bits(tbuf, DEFAULT_SPEED, TBUFDAT_odd_even, 16, csum);
-    tbuf_bits(tbuf, DEFAULT_SPEED, TBUFDAT_odd_even, 16, tracknr^1);
+    tbuf_bits(tbuf, SPEED_AVG, TB_odd_even, 16, csum);
+    tbuf_bits(tbuf, SPEED_AVG, TB_odd_even, 16, tracknr^1);
 }
 
 struct track_handler gremlin_handler = {

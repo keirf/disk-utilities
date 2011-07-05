@@ -64,7 +64,7 @@ static void unformatted_read_mfm(
         byte |= rand() & 1;
         if ( (i & 7) == 7 )
         {
-            tbuf_bits(tbuf, DEFAULT_SPEED + speed_delta, TBUFDAT_raw, 8, byte);
+            tbuf_bits(tbuf, SPEED_AVG + speed_delta, TB_raw, 8, byte);
             speed_delta = -speed_delta;
         }
     }

@@ -4,7 +4,11 @@
 #include <libdisk/disk.h>
 #include <libdisk/stream.h>
 
-#define DEFAULT_SPEED 1000u
+/*
+ * Average bitcell timing: <time-per-revolution>/<#-bitcells>. Non-uniform
+ * track timings are represented by fractional multiples of this average.
+ */
+#define SPEED_AVG 1000u
 
 /* Determined empirically -- larger than expected for 2us bitcell @ 300rpm */
 #define DEFAULT_BITS_PER_TRACK       100150
@@ -33,12 +37,12 @@ struct track_buffer {
 };
 
 enum tbuf_data_type {
-    TBUFDAT_raw,        /* emit all bits; do not insert clock bits */
-    TBUFDAT_all,        /* emit all data bits */
-    TBUFDAT_even,       /* emit even-numbered data bits only */
-    TBUFDAT_odd,        /* emit odd-numbered data bits only */
-    TBUFDAT_even_odd,   /* emit all even-numbered bits; then odd-numbered */
-    TBUFDAT_odd_even    /* emit all odd-numbered bits; then even-numbered */
+    TB_raw,        /* emit all bits; do not insert clock bits */
+    TB_all,        /* emit all data bits */
+    TB_even,       /* emit even-numbered data bits only */
+    TB_odd,        /* emit odd-numbered data bits only */
+    TB_even_odd,   /* emit all even-numbered bits; then odd-numbered */
+    TB_odd_even    /* emit all odd-numbered bits; then even-numbered */
 };
 
 void tbuf_init(struct track_buffer *);

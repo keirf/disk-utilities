@@ -151,22 +151,22 @@ static void copylock_read_mfm(
     for ( i = 0; i < ARRAY_SIZE(sync_list); i++ )
     {
         uint16_t speed =
-            i == 4 ? (DEFAULT_SPEED * 94) / 100 :
-            i == 6 ? (DEFAULT_SPEED * 106) / 100 :
-            DEFAULT_SPEED;
-        tbuf_bits(tbuf, speed, TBUFDAT_raw, 16, sync_list[i]);
-        tbuf_bits(tbuf, speed, TBUFDAT_all, 8, i);
+            i == 4 ? (SPEED_AVG * 94) / 100 :
+            i == 6 ? (SPEED_AVG * 106) / 100 :
+            SPEED_AVG;
+        tbuf_bits(tbuf, speed, TB_raw, 16, sync_list[i]);
+        tbuf_bits(tbuf, speed, TB_all, 8, i);
         for ( j = 0; j < 512; j++ )
         {
             if ( (i == 6) && (j == 0) )
                 for ( j = 0; j < 16; j += 2 )
-                    tbuf_bits(tbuf, speed, TBUFDAT_all, 16, sec6_sig[j/2]);
+                    tbuf_bits(tbuf, speed, TB_all, 16, sec6_sig[j/2]);
             if ( !(j & 7) )
                 word = (word << 8) | *dat++;
-            tbuf_bits(tbuf, speed, TBUFDAT_all, 8, word >> (8 - (j&7)));
+            tbuf_bits(tbuf, speed, TB_all, 8, word >> (8 - (j&7)));
         }
         for ( j = 0; j < 48; j++ )
-            tbuf_bits(tbuf, speed, TBUFDAT_all, 8, 0);
+            tbuf_bits(tbuf, speed, TB_all, 8, 0);
     }
 }
 

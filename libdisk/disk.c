@@ -285,7 +285,7 @@ static void tbuf_finalise(struct track_buffer *tbuf)
     if ( tbuf->start == tbuf->pos )
         return; /* handler completely filled the buffer */
 
-    tbuf_bits(tbuf, DEFAULT_SPEED, TBUFDAT_all, 32, 0);
+    tbuf_bits(tbuf, SPEED_AVG, TB_all, 32, 0);
 
     pos = tbuf->start;
     for ( ; ; )
@@ -295,7 +295,7 @@ static void tbuf_finalise(struct track_buffer *tbuf)
         if ( pos == tbuf->pos )
             break;
         change_bit(tbuf->mfm, pos, b);
-        tbuf->speed[pos >> 3] = DEFAULT_SPEED;
+        tbuf->speed[pos >> 3] = SPEED_AVG;
         b = !b;
     }
 }
@@ -305,15 +305,15 @@ void tbuf_bits(struct track_buffer *tbuf, uint16_t speed,
 {
     unsigned int i;
 
-    if ( type == TBUFDAT_even_odd )
+    if ( type == TB_even_odd )
     {
-        tbuf_bits(tbuf, speed, TBUFDAT_even, bits, x);
-        type = TBUFDAT_odd;
+        tbuf_bits(tbuf, speed, TB_even, bits, x);
+        type = TB_odd;
     }
-    else if ( type == TBUFDAT_odd_even )
+    else if ( type == TB_odd_even )
     {
-        tbuf_bits(tbuf, speed, TBUFDAT_odd, bits, x);
-        type = TBUFDAT_even;
+        tbuf_bits(tbuf, speed, TB_odd, bits, x);
+        type = TB_even;
     }
 
     if ( bits != 8 )
@@ -324,7 +324,7 @@ void tbuf_bits(struct track_buffer *tbuf, uint16_t speed,
         return;
     }
 
-    if ( type == TBUFDAT_raw )
+    if ( type == TB_raw )
     {
         for ( i = 0; i < 8; i++ )
         {
@@ -338,8 +338,8 @@ void tbuf_bits(struct track_buffer *tbuf, uint16_t speed,
     }
     else
     {
-        unsigned int shift = (type == TBUFDAT_all);
-        if ( type == TBUFDAT_even )
+        unsigned int shift = (type == TB_all);
+        if ( type == TB_even )
             x >>= 1;
         for ( i = 0; i < (8 << shift); i++ )
         {
@@ -361,15 +361,15 @@ void tbuf_bytes(struct track_buffer *tbuf, uint16_t speed,
 {
     unsigned int i;
 
-    if ( type == TBUFDAT_even_odd )
+    if ( type == TB_even_odd )
     {
-        tbuf_bytes(tbuf, speed, TBUFDAT_even, bytes, data);
-        type = TBUFDAT_odd;
+        tbuf_bytes(tbuf, speed, TB_even, bytes, data);
+        type = TB_odd;
     }
-    else if ( type == TBUFDAT_odd_even )
+    else if ( type == TB_odd_even )
     {
-        tbuf_bytes(tbuf, speed, TBUFDAT_odd, bytes, data);
-        type = TBUFDAT_even;
+        tbuf_bytes(tbuf, speed, TB_odd, bytes, data);
+        type = TB_even;
     }
 
     for ( i = 0; i < bytes; i++ )
