@@ -1,7 +1,10 @@
 /******************************************************************************
- * disk/lemmings.c
+ * disk/psygnosis_b.c
  * 
- * Custom format as used by Lemmings.
+ * Custom format as used by various Psygnosis releases:
+ *   Amnios (Disk 2)
+ *   Aquaventura (Disk 2)
+ *   Lemmings
  * 
  * Written in 2011 by Keir Fraser
  * 
@@ -17,7 +20,7 @@
  *  Despite storing 6kB of data, minimal metadata means this is not stored
  *  on a long track. Cell timing is 2us as usual.
  * 
- * TRKTYP_lemmings data layout:
+ * TRKTYP_psygnosis_b data layout:
  *  u8 sector_data[6][1024]
  */
 
@@ -26,7 +29,7 @@
 
 #include <arpa/inet.h>
 
-static void *lemmings_write_mfm(
+static void *psygnosis_b_write_mfm(
     struct disk *d, unsigned int tracknr, struct stream *s)
 {
     struct disk_info *di = d->di;
@@ -91,7 +94,7 @@ done:
     return block;
 }
 
-static void lemmings_read_mfm(
+static void psygnosis_b_read_mfm(
     struct disk *d, unsigned int tracknr, struct track_buffer *tbuf)
 {
     struct disk_info *di = d->di;
@@ -126,11 +129,11 @@ static void lemmings_read_mfm(
     tbuf_finalise(tbuf);
 }
 
-struct track_handler lemmings_handler = {
-    .name = "Lemmings",
-    .type = TRKTYP_lemmings,
+struct track_handler psygnosis_b_handler = {
+    .name = "Psygnosis B",
+    .type = TRKTYP_psygnosis_b,
     .bytes_per_sector = 1024,
     .nr_sectors = 6,
-    .write_mfm = lemmings_write_mfm,
-    .read_mfm = lemmings_read_mfm
+    .write_mfm = psygnosis_b_write_mfm,
+    .read_mfm = psygnosis_b_read_mfm
 };

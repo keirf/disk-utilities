@@ -19,7 +19,7 @@ enum track_type {
     TRKTYP_amigados_extended,
     TRKTYP_copylock,
     TRKTYP_psygnosis_a,
-    TRKTYP_lemmings,
+    TRKTYP_psygnosis_b,
     TRKTYP_rnc_pdos,
     TRKTYP_core_design,
     TRKTYP_gremlin,
