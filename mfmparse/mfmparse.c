@@ -30,7 +30,8 @@ int main(int argc, char **argv)
     struct disk *d;
     struct disk_info *di;
     struct track_info *ti;
-    unsigned int prev_type = ~0u, st = 0;
+    const char *prev_name;
+    unsigned int st = 0;
 
     if ( argc != 3 )
         errx(1, "Usage: mfmparse <in> [<out>]");
@@ -63,11 +64,11 @@ int main(int argc, char **argv)
     }
 
 #if 1
-    prev_type = di->track[0].type;
+    prev_name = di->track[0].typename;
     for ( i = 1; i <= 160; i++ )
     {
         ti = &di->track[i];
-        if ( (ti->type == prev_type) && (i != 160) )
+        if ( (ti->typename == prev_name) && (i != 160) )
             continue;
         if ( st == i-1 )
             printf("T");
@@ -75,14 +76,8 @@ int main(int argc, char **argv)
             printf("T%u-", st);
         printf("%u: %s\n", i-1, di->track[i-1].typename);
         st = i;
-        prev_type = di->track[i].type;
+        prev_name = di->track[i].typename;
     }
-    
-#if 0
-    for ( i = 0; i < 160; i++ )
-        printf("%u: %u %u\n", i, di->track[i].data_bitoff, 
-               di->track[i].total_bits);
-#endif
 #endif
 
     disk_close(d);
