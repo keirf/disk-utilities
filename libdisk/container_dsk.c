@@ -253,6 +253,7 @@ static void dsk_write_mfm(
     {
         memset(ti, 0, sizeof(*ti));
         init_track_info_from_handler_info(ti, handlers[TRKTYP_unformatted]);
+        ti->typename = "Unformatted*";
         ti->total_bits = TRK_WEAK;
     }
     else
