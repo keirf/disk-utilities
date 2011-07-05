@@ -83,8 +83,7 @@ uint32_t mfm_decode_amigados(void *dat, unsigned int longs)
 static void *ados_write_mfm(
     struct disk *d, unsigned int tracknr, struct stream *s)
 {
-    struct disk_info *di = d->di;
-    struct track_info *ti = &di->track[tracknr];
+    struct track_info *ti = &d->di->track[tracknr];
     char *block, *p;
     unsigned int i, valid_blocks = 0, extended_blocks = 0;
 
@@ -186,16 +185,11 @@ static void write_csum(struct track_buffer *tbuf, uint32_t csum)
 static void ados_read_mfm(
     struct disk *d, unsigned int tracknr, struct track_buffer *tbuf)
 {
-    struct disk_info *di = d->di;
-    struct track_info *ti = &di->track[tracknr];
+    struct track_info *ti = &d->di->track[tracknr];
     uint8_t lbl[16] = { 0 };
     uint8_t *dat = ti->dat;
     unsigned int i, j;
     uint32_t sync, csum, info;
-
-    tbuf->start = ti->data_bitoff;
-    tbuf->len = ti->total_bits;
-    tbuf_init(tbuf);
 
     for ( i = 0; i < ti->nr_sectors; i++ )
     {
@@ -237,8 +231,6 @@ static void ados_read_mfm(
         /* gap */
         tbuf_bits(tbuf, DEFAULT_SPEED, TBUFDAT_all, 16, 0);
     }
-
-    tbuf_finalise(tbuf);
 }
 
 struct track_handler amigados_handler = {

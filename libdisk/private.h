@@ -40,7 +40,6 @@ enum tbuf_data_type {
 };
 
 void tbuf_init(struct track_buffer *);
-void tbuf_finalise(struct track_buffer *);
 void tbuf_bits(struct track_buffer *, uint16_t speed,
                enum tbuf_data_type type, unsigned int bits, uint32_t x);
 void tbuf_bytes(struct track_buffer *, uint16_t speed,

@@ -28,15 +28,12 @@
 static void *core_write_mfm(
     struct disk *d, unsigned int tracknr, struct stream *s)
 {
-    struct disk_info *di = d->di;
-    struct track_info *ti = &di->track[tracknr];
-    uint32_t *block = NULL;
+    struct track_info *ti = &d->di->track[tracknr];
+    uint32_t mfm[2], csum, *block = NULL;
     unsigned int i;
 
     while ( (stream_next_bit(s) != -1) && !block )
     {
-        uint32_t mfm[2], csum;
-
         if ( (uint16_t)s->word != 0x8915 )
             continue;
 
@@ -74,14 +71,9 @@ done:
 static void core_read_mfm(
     struct disk *d, unsigned int tracknr, struct track_buffer *tbuf)
 {
-    struct disk_info *di = d->di;
-    struct track_info *ti = &di->track[tracknr];
+    struct track_info *ti = &d->di->track[tracknr];
     uint32_t csum = 0, *dat = (uint32_t *)ti->dat;
     unsigned int i;
-
-    tbuf->start = ti->data_bitoff;
-    tbuf->len = ti->total_bits;
-    tbuf_init(tbuf);
 
     tbuf_bits(tbuf, DEFAULT_SPEED, TBUFDAT_raw, 16, 0x8915);
 
@@ -95,8 +87,6 @@ static void core_read_mfm(
         tbuf_bits(tbuf, DEFAULT_SPEED, TBUFDAT_even, 32, ntohl(dat[i]));
         tbuf_bits(tbuf, DEFAULT_SPEED, TBUFDAT_odd, 32, ntohl(dat[i]));
     }
-
-    tbuf_finalise(tbuf);
 }
 
 struct track_handler core_design_handler = {

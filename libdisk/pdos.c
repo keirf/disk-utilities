@@ -35,8 +35,7 @@
 static void *pdos_write_mfm(
     struct disk *d, unsigned int tracknr, struct stream *s)
 {
-    struct disk_info *di = d->di;
-    struct track_info *ti = &di->track[tracknr];
+    struct track_info *ti = &d->di->track[tracknr];
     char *block = memalloc(512 * 12);
     unsigned int i, j, valid_blocks = 0;
     struct rnc_pdos_key *keytag = (struct rnc_pdos_key *)
@@ -129,16 +128,11 @@ done:
 static void pdos_read_mfm(
     struct disk *d, unsigned int tracknr, struct track_buffer *tbuf)
 {
-    struct disk_info *di = d->di;
-    struct track_info *ti = &di->track[tracknr];
+    struct track_info *ti = &d->di->track[tracknr];
     uint32_t k, *dat = (uint32_t *)ti->dat;
     unsigned int i, j;
     struct rnc_pdos_key *keytag = (struct rnc_pdos_key *)
         disk_get_tag_by_id(d, DSKTAG_rnc_pdos_key);
-
-    tbuf->start = ti->data_bitoff;
-    tbuf->len = ti->total_bits;
-    tbuf_init(tbuf);
 
     tbuf_bits(tbuf, DEFAULT_SPEED, TBUFDAT_raw, 16, 0x1448);
 
@@ -180,8 +174,6 @@ static void pdos_read_mfm(
         for ( j = 0; j < 28; j++ )
             tbuf_bits(tbuf, DEFAULT_SPEED, TBUFDAT_all, 8, 0);
     }
-
-    tbuf_finalise(tbuf);
 }
 
 struct track_handler rnc_pdos_handler = {

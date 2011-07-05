@@ -30,8 +30,7 @@
 static void *gremlin_write_mfm(
     struct disk *d, unsigned int tracknr, struct stream *s)
 {
-    struct disk_info *di = d->di;
-    struct track_info *ti = &di->track[tracknr];
+    struct track_info *ti = &d->di->track[tracknr];
     uint16_t *block = NULL;
     unsigned int i;
 
@@ -88,14 +87,9 @@ done:
 static void gremlin_read_mfm(
     struct disk *d, unsigned int tracknr, struct track_buffer *tbuf)
 {
-    struct disk_info *di = d->di;
-    struct track_info *ti = &di->track[tracknr];
+    struct track_info *ti = &d->di->track[tracknr];
     uint16_t csum = 0, *dat = (uint16_t *)ti->dat;
     unsigned int i;
-
-    tbuf->start = ti->data_bitoff;
-    tbuf->len = ti->total_bits;
-    tbuf_init(tbuf);
 
     tbuf_bits(tbuf, DEFAULT_SPEED, TBUFDAT_raw, 16, 0x4489);
     tbuf_bits(tbuf, DEFAULT_SPEED, TBUFDAT_raw, 16, 0x4489);
@@ -114,8 +108,6 @@ static void gremlin_read_mfm(
 
     tbuf_bits(tbuf, DEFAULT_SPEED, TBUFDAT_odd, 16, tracknr^1);
     tbuf_bits(tbuf, DEFAULT_SPEED, TBUFDAT_even, 16, tracknr^1);
-
-    tbuf_finalise(tbuf);
 }
 
 struct track_handler gremlin_handler = {

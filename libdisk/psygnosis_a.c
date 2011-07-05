@@ -33,8 +33,7 @@
 static void *psygnosis_a_write_mfm(
     struct disk *d, unsigned int tracknr, struct stream *s)
 {
-    struct disk_info *di = d->di;
-    struct track_info *ti = &di->track[tracknr];
+    struct track_info *ti = &d->di->track[tracknr];
     char *block = NULL;
 
     while ( (stream_next_bit(s) != -1) && !block )
@@ -78,15 +77,10 @@ done:
 static void psygnosis_a_read_mfm(
     struct disk *d, unsigned int tracknr, struct track_buffer *tbuf)
 {
-    struct disk_info *di = d->di;
-    struct track_info *ti = &di->track[tracknr];
+    struct track_info *ti = &d->di->track[tracknr];
     uint32_t track, csum = 0, *dat = (uint32_t *)ti->dat;
     uint16_t sync;
     unsigned int i, dat_len = ti->len - 2;
-
-    tbuf->start = ti->data_bitoff;
-    tbuf->len = ti->total_bits;
-    tbuf_init(tbuf);
 
     sync = ntohs(*(uint16_t *)&ti->dat[dat_len]);
     tbuf_bits(tbuf, DEFAULT_SPEED, TBUFDAT_raw, 16, sync);
@@ -104,8 +98,6 @@ static void psygnosis_a_read_mfm(
 
     tbuf_bytes(tbuf, DEFAULT_SPEED, TBUFDAT_even, dat_len, dat);
     tbuf_bytes(tbuf, DEFAULT_SPEED, TBUFDAT_odd, dat_len, dat);
-
-    tbuf_finalise(tbuf);
 }
 
 struct track_handler psygnosis_a_handler = {

@@ -32,8 +32,7 @@
 static void *psygnosis_b_write_mfm(
     struct disk *d, unsigned int tracknr, struct stream *s)
 {
-    struct disk_info *di = d->di;
-    struct track_info *ti = &di->track[tracknr];
+    struct track_info *ti = &d->di->track[tracknr];
     char *block = memalloc(ti->len);
     unsigned int j, k, valid_blocks = 0;
 
@@ -97,14 +96,9 @@ done:
 static void psygnosis_b_read_mfm(
     struct disk *d, unsigned int tracknr, struct track_buffer *tbuf)
 {
-    struct disk_info *di = d->di;
-    struct track_info *ti = &di->track[tracknr];
+    struct track_info *ti = &d->di->track[tracknr];
     uint16_t *dat = (uint16_t *)ti->dat;
     unsigned int i, j;
-
-    tbuf->start = ti->data_bitoff;
-    tbuf->len = ti->total_bits;
-    tbuf_init(tbuf);
 
     tbuf_bits(tbuf, DEFAULT_SPEED, TBUFDAT_raw, 16, 0x4489);
     tbuf_bits(tbuf, DEFAULT_SPEED, TBUFDAT_all, 16, 0xf000);
@@ -125,8 +119,6 @@ static void psygnosis_b_read_mfm(
             dat++;
         }
     }
-
-    tbuf_finalise(tbuf);
 }
 
 struct track_handler psygnosis_b_handler = {

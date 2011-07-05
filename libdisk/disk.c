@@ -40,6 +40,8 @@ const struct track_handler *handlers[] = {
     NULL
 };
 
+static void tbuf_finalise(struct track_buffer *tbuf);
+
 static struct container *container_from_filename(
     const char *name, bool_t quiet)
 {
@@ -156,10 +158,18 @@ void track_read_mfm(struct disk *d, unsigned int tracknr,
     struct disk_info *di = d->di;
     struct track_info *ti = &di->track[tracknr];
     const struct track_handler *thnd;
-    struct track_buffer tbuf = { 0 };
+    struct track_buffer tbuf = {
+        .start = ti->data_bitoff,
+        .len = ti->total_bits
+    };
+
+    if ( (int32_t)tbuf.len > 0 )
+        tbuf_init(&tbuf);
 
     thnd = handlers[ti->type];
     thnd->read_mfm(d, tracknr, &tbuf);
+
+    tbuf_finalise(&tbuf);
 
     *mfm = tbuf.mfm;
     *speed = tbuf.speed;
@@ -267,10 +277,13 @@ static void change_bit(uint8_t *map, unsigned int bit, bool_t on)
         map[bit>>3] &= ~(0x80 >> (bit & 7));
 }
 
-void tbuf_finalise(struct track_buffer *tbuf)
+static void tbuf_finalise(struct track_buffer *tbuf)
 {
     int32_t pos;
     uint8_t b = 0;
+
+    if ( tbuf->start == tbuf->pos )
+        return; /* handler completely filled the buffer */
 
     tbuf_bits(tbuf, DEFAULT_SPEED, TBUFDAT_all, 32, 0);
 
