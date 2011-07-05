@@ -18,6 +18,7 @@ enum track_type {
     TRKTYP_amigados,
     TRKTYP_amigados_extended,
     TRKTYP_copylock,
+    TRKTYP_psygnosis_a,
     TRKTYP_lemmings,
     TRKTYP_rnc_pdos,
     TRKTYP_core_design,
