@@ -161,12 +161,10 @@ static void pdos_read_mfm(
         csum ^= csum >> 1;
         hdr |= (csum & 0x5555u) | ((csum >> 15) & 0xaaaau);
         hdr ^= keytag->key ^ (1u<<31);
-        tbuf_bits(tbuf, DEFAULT_SPEED, TBUFDAT_even, 32, hdr);
-        tbuf_bits(tbuf, DEFAULT_SPEED, TBUFDAT_odd, 32, hdr);
+        tbuf_bits(tbuf, DEFAULT_SPEED, TBUFDAT_even_odd, 32, hdr);
 
         /* data */
-        tbuf_bytes(tbuf, DEFAULT_SPEED, TBUFDAT_even, 512, enc);
-        tbuf_bytes(tbuf, DEFAULT_SPEED, TBUFDAT_odd, 512, enc);
+        tbuf_bytes(tbuf, DEFAULT_SPEED, TBUFDAT_even_odd, 512, enc);
 
         /* gap */
         tbuf_bits(tbuf, DEFAULT_SPEED, TBUFDAT_all, 8,

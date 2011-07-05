@@ -110,14 +110,9 @@ static void psygnosis_b_read_mfm(
             csum += ntohs(dat[j]);
         if ( !(ti->valid_sectors & (1u << i)) )
             csum = ~csum; /* bad checksum for an invalid sector */
-        tbuf_bits(tbuf, DEFAULT_SPEED, TBUFDAT_even, 16, csum);
-        tbuf_bits(tbuf, DEFAULT_SPEED, TBUFDAT_odd, 16, csum);
-        for ( j = 0; j < 512; j++ )
-        {
-            tbuf_bits(tbuf, DEFAULT_SPEED, TBUFDAT_even, 16, ntohs(*dat));
-            tbuf_bits(tbuf, DEFAULT_SPEED, TBUFDAT_odd, 16, ntohs(*dat));
-            dat++;
-        }
+        tbuf_bits(tbuf, DEFAULT_SPEED, TBUFDAT_even_odd, 16, csum);
+        for ( j = 0; j < 512; j++, dat++ )
+            tbuf_bits(tbuf, DEFAULT_SPEED, TBUFDAT_even_odd, 16, ntohs(*dat));
     }
 }
 

@@ -305,6 +305,17 @@ void tbuf_bits(struct track_buffer *tbuf, uint16_t speed,
 {
     unsigned int i;
 
+    if ( type == TBUFDAT_even_odd )
+    {
+        tbuf_bits(tbuf, speed, TBUFDAT_even, bits, x);
+        type = TBUFDAT_odd;
+    }
+    else if ( type == TBUFDAT_odd_even )
+    {
+        tbuf_bits(tbuf, speed, TBUFDAT_odd, bits, x);
+        type = TBUFDAT_even;
+    }
+
     if ( bits != 8 )
     {
         bits >>= 1;
@@ -349,6 +360,18 @@ void tbuf_bytes(struct track_buffer *tbuf, uint16_t speed,
                 enum tbuf_data_type type, unsigned int bytes, void *data)
 {
     unsigned int i;
+
+    if ( type == TBUFDAT_even_odd )
+    {
+        tbuf_bytes(tbuf, speed, TBUFDAT_even, bytes, data);
+        type = TBUFDAT_odd;
+    }
+    else if ( type == TBUFDAT_odd_even )
+    {
+        tbuf_bytes(tbuf, speed, TBUFDAT_odd, bytes, data);
+        type = TBUFDAT_even;
+    }
+
     for ( i = 0; i < bytes; i++ )
         tbuf_bits(tbuf, speed, type, 8, ((unsigned char *)data)[i]);
 }

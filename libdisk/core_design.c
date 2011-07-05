@@ -79,14 +79,10 @@ static void core_read_mfm(
 
     for ( i = 0; i < ti->len/4; i++ )
         csum += ntohl(dat[i]);
-    tbuf_bits(tbuf, DEFAULT_SPEED, TBUFDAT_even, 32, csum);
-    tbuf_bits(tbuf, DEFAULT_SPEED, TBUFDAT_odd, 32, csum);
+    tbuf_bits(tbuf, DEFAULT_SPEED, TBUFDAT_even_odd, 32, csum);
 
     for ( i = 0; i < ti->len/4; i++ )
-    {
-        tbuf_bits(tbuf, DEFAULT_SPEED, TBUFDAT_even, 32, ntohl(dat[i]));
-        tbuf_bits(tbuf, DEFAULT_SPEED, TBUFDAT_odd, 32, ntohl(dat[i]));
-    }
+        tbuf_bits(tbuf, DEFAULT_SPEED, TBUFDAT_even_odd, 32, ntohl(dat[i]));
 }
 
 struct track_handler core_design_handler = {

@@ -178,8 +178,7 @@ static void write_csum(struct track_buffer *tbuf, uint32_t csum)
     /* crappy parity-based checksum, only uses half the checksum bits! */
     csum ^= csum >> 1;
     csum &= 0x55555555u;
-    tbuf_bits(tbuf, DEFAULT_SPEED, TBUFDAT_even, 32, csum);
-    tbuf_bits(tbuf, DEFAULT_SPEED, TBUFDAT_odd, 32, csum);
+    tbuf_bits(tbuf, DEFAULT_SPEED, TBUFDAT_even_odd, 32, csum);
 }
 
 static void ados_read_mfm(
@@ -207,11 +206,9 @@ static void ados_read_mfm(
         /* sync mark */
         tbuf_bits(tbuf, DEFAULT_SPEED, TBUFDAT_raw, 32, sync);
         /* info */
-        tbuf_bits(tbuf, DEFAULT_SPEED, TBUFDAT_even, 32, info);
-        tbuf_bits(tbuf, DEFAULT_SPEED, TBUFDAT_odd, 32, info);
+        tbuf_bits(tbuf, DEFAULT_SPEED, TBUFDAT_even_odd, 32, info);
         /* lbl */
-        tbuf_bytes(tbuf, DEFAULT_SPEED, TBUFDAT_even, 16, lbl);
-        tbuf_bytes(tbuf, DEFAULT_SPEED, TBUFDAT_odd, 16, lbl);
+        tbuf_bytes(tbuf, DEFAULT_SPEED, TBUFDAT_even_odd, 16, lbl);
         /* header checksum */
         csum = info;
         for ( j = 0; j < 4; j++ )
@@ -225,8 +222,7 @@ static void ados_read_mfm(
             csum ^= 1; /* bad checksum for an invalid sector */
         write_csum(tbuf, csum);
         /* data */
-        tbuf_bytes(tbuf, DEFAULT_SPEED, TBUFDAT_even, STD_SEC, dat);
-        tbuf_bytes(tbuf, DEFAULT_SPEED, TBUFDAT_odd, STD_SEC, dat);
+        tbuf_bytes(tbuf, DEFAULT_SPEED, TBUFDAT_even_odd, STD_SEC, dat);
         dat += 512;
         /* gap */
         tbuf_bits(tbuf, DEFAULT_SPEED, TBUFDAT_all, 16, 0);

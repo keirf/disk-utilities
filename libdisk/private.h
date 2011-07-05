@@ -33,10 +33,12 @@ struct track_buffer {
 };
 
 enum tbuf_data_type {
-    TBUFDAT_raw,
-    TBUFDAT_all,
-    TBUFDAT_even,
-    TBUFDAT_odd
+    TBUFDAT_raw,        /* emit all bits; do not insert clock bits */
+    TBUFDAT_all,        /* emit all data bits */
+    TBUFDAT_even,       /* emit even-numbered data bits only */
+    TBUFDAT_odd,        /* emit odd-numbered data bits only */
+    TBUFDAT_even_odd,   /* emit all even-numbered bits; then odd-numbered */
+    TBUFDAT_odd_even    /* emit all odd-numbered bits; then even-numbered */
 };
 
 void tbuf_init(struct track_buffer *);
