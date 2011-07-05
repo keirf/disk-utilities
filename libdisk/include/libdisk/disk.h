@@ -22,6 +22,7 @@ enum track_type {
     TRKTYP_rnc_pdos,
     TRKTYP_core_design,
     TRKTYP_gremlin,
+    TRKTYP_rainbird,
 };
 
 struct track_info {

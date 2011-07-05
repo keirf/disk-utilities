@@ -23,6 +23,7 @@ extern struct track_handler lemmings_handler;
 extern struct track_handler rnc_pdos_handler;
 extern struct track_handler core_design_handler;
 extern struct track_handler gremlin_handler;
+extern struct track_handler rainbird_handler;
 
 const struct track_handler *handlers[] = {
     &unformatted_handler,
@@ -33,6 +34,7 @@ const struct track_handler *handlers[] = {
     &rnc_pdos_handler,
     &core_design_handler,
     &gremlin_handler,
+    &rainbird_handler,
     NULL
 };
 
