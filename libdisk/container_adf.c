@@ -101,26 +101,19 @@ static void adf_write_mfm(
     const struct track_handler *thnd = handlers[TRKTYP_amigados];
     struct disk_info *di = d->di;
     struct track_info *ti = &di->track[tracknr];
-    unsigned int i;
 
     stream_reset(s, tracknr);
     stream_next_index(s);
     ti->dat = thnd->write_mfm(d, tracknr, s);    
 
+    if ( ti->type != TRKTYP_amigados )
+    {
+        memfree(ti->dat);
+        ti->dat = NULL;
+    }
+
     if ( ti->dat == NULL )
-    {
         adf_init_track(ti);
-    }
-    else if ( ti->type == TRKTYP_amigados_extended )
-    {
-        unsigned int ext_sz = ti->bytes_per_sector;
-        init_track_info_from_handler_info(ti, thnd);
-        ext_sz -= ti->bytes_per_sector;
-        for ( i = 0; i < ti->nr_sectors; i++ )
-            memmove(ti->dat + i * ti->bytes_per_sector,
-                    ti->dat + i * (ti->bytes_per_sector + ext_sz) + ext_sz,
-                    ti->bytes_per_sector);
-    }
 }
 
 struct container container_adf = {
