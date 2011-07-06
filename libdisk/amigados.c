@@ -159,8 +159,8 @@ static void *ados_write_mfm(
                     block + i * EXT_SEC + (EXT_SEC - STD_SEC),
                     STD_SEC);
 
-    ti->type = extended_blocks ? TRKTYP_amigados_extended : TRKTYP_amigados;
-    init_track_info_from_handler_info(ti, handlers[ti->type]);
+    init_track_info(
+        ti, extended_blocks ? TRKTYP_amigados_extended : TRKTYP_amigados);
 
     ti->valid_sectors = valid_blocks;
 
@@ -229,7 +229,6 @@ static void ados_read_mfm(
 }
 
 struct track_handler amigados_handler = {
-    .type = TRKTYP_amigados,
     .bytes_per_sector = STD_SEC,
     .nr_sectors = 11,
     .write_mfm = ados_write_mfm,
@@ -237,7 +236,6 @@ struct track_handler amigados_handler = {
 };
 
 struct track_handler amigados_extended_handler = {
-    .type = TRKTYP_amigados_extended,
     .bytes_per_sector = EXT_SEC,
     .nr_sectors = 11,
     .write_mfm = ados_write_mfm,

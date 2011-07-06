@@ -92,7 +92,7 @@ static void dsk_init(struct disk *d)
     {
         ti = &di->track[i];
         memset(ti, 0, sizeof(*ti));
-        init_track_info_from_handler_info(ti, handlers[TRKTYP_unformatted]);
+        init_track_info(ti, TRKTYP_unformatted);
         ti->total_bits = TRK_WEAK;
     }
 
@@ -110,7 +110,6 @@ static int dsk_open(struct disk *d, bool_t quiet)
     struct disk_tag *dtag;
     struct disk_info *di;
     struct track_info *ti;
-    const struct track_handler *thnd;
     unsigned int i, bytes_per_th, read_bytes_per_th;
     off_t off;
 
@@ -132,8 +131,7 @@ static int dsk_open(struct disk *d, bool_t quiet)
         memset(&th, 0, sizeof(th));
         read_exact(d->fd, &th, read_bytes_per_th);
         ti = &di->track[i];
-        thnd = handlers[ntohs(th.type)];
-        init_track_info_from_handler_info(ti, thnd);
+        init_track_info(ti, ntohs(th.type));
         ti->flags = ntohs(th.flags);
         ti->valid_sectors = ntohl(th.valid_sectors);
         ti->len = ntohl(th.len);
@@ -228,6 +226,7 @@ static void dsk_write_mfm(
     const struct track_handler *thnd;
     struct disk_info *di = d->di;
     struct track_info *ti = &di->track[tracknr];
+    enum track_type type;
     int i;
 
     for ( i = -1; ti->dat == NULL; i++ )
@@ -238,11 +237,11 @@ static void dsk_write_mfm(
          */
         if ( (i == d->prev_type) || (i == TRKTYP_amigados_extended) )
             continue;
-        thnd = (i == -1) ? handlers[d->prev_type] : handlers[i];
-        if ( thnd == NULL )
+        type = (i == -1) ? d->prev_type : i;
+        if ( (thnd = handlers[type]) == NULL )
             break;
         memset(ti, 0, sizeof(*ti));
-        init_track_info_from_handler_info(ti, thnd);
+        init_track_info(ti, type);
         ti->total_bits = DEFAULT_BITS_PER_TRACK;
         stream_reset(s, tracknr);
         stream_next_index(s);
@@ -252,7 +251,7 @@ static void dsk_write_mfm(
     if ( ti->dat == NULL )
     {
         memset(ti, 0, sizeof(*ti));
-        init_track_info_from_handler_info(ti, handlers[TRKTYP_unformatted]);
+        init_track_info(ti, TRKTYP_unformatted);
         ti->typename = "Unformatted*";
         ti->total_bits = TRK_WEAK;
     }

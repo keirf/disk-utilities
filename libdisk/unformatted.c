@@ -71,7 +71,6 @@ static void unformatted_read_mfm(
 }
 
 struct track_handler unformatted_handler  = {
-    .type = TRKTYP_unformatted,
     .write_mfm = unformatted_write_mfm,
     .read_mfm = unformatted_read_mfm
 };

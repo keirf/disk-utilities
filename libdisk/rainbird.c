@@ -94,7 +94,6 @@ static void rainbird_read_mfm(
 }
 
 struct track_handler rainbird_handler = {
-    .type = TRKTYP_rainbird,
     .bytes_per_sector = 5120,
     .nr_sectors = 1,
     .write_mfm = rainbird_write_mfm,

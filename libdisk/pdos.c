@@ -175,7 +175,6 @@ static void pdos_read_mfm(
 }
 
 struct track_handler rnc_pdos_handler = {
-    .type = TRKTYP_rnc_pdos,
     .bytes_per_sector = 512,
     .nr_sectors = 12,
     .write_mfm = pdos_write_mfm,

@@ -17,10 +17,9 @@
 
 static void adf_init_track(struct track_info *ti)
 {
-    const struct track_handler *thnd = handlers[TRKTYP_amigados];
     unsigned int i;
 
-    init_track_info_from_handler_info(ti, thnd);
+    init_track_info(ti, TRKTYP_amigados);
     ti->flags = 0;
     ti->valid_sectors = 0;
     ti->dat = memalloc(ti->len);

@@ -151,7 +151,6 @@ static void archipelagos_read_mfm(
 }
 
 struct track_handler archipelagos_handler = {
-    .type = TRKTYP_archipelagos,
     .bytes_per_sector = 1024,
     .nr_sectors = 5,
     .write_mfm = archipelagos_write_mfm,

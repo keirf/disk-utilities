@@ -105,7 +105,6 @@ static void gremlin_read_mfm(
 }
 
 struct track_handler gremlin_handler = {
-    .type = TRKTYP_gremlin,
     .bytes_per_sector = 12*512,
     .nr_sectors = 1,
     .write_mfm = gremlin_write_mfm,

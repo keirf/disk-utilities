@@ -243,11 +243,11 @@ struct disk_tag *disk_set_tag(
  * PRIVATE HELPERS
  */
 
-void init_track_info_from_handler_info(
-    struct track_info *ti, const struct track_handler *thnd)
+void init_track_info(struct track_info *ti, enum track_type type)
 {
-    ti->type = thnd->type;
-    ti->typename = track_type_name[ti->type];
+    const struct track_handler *thnd = handlers[type];
+    ti->type = type;
+    ti->typename = track_type_name[type];
     ti->bytes_per_sector = thnd->bytes_per_sector;
     ti->nr_sectors = thnd->nr_sectors;
     ti->len = ti->bytes_per_sector * ti->nr_sectors;

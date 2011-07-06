@@ -52,7 +52,6 @@ void tbuf_bytes(struct track_buffer *, uint16_t speed,
                 enum tbuf_data_type type, unsigned int bytes, void *data);
 
 struct track_handler {
-    enum track_type type;
     unsigned int bytes_per_sector;
     unsigned int nr_sectors;
     void *(*write_mfm)(
@@ -63,8 +62,7 @@ struct track_handler {
 
 extern const struct track_handler *handlers[];
 
-void init_track_info_from_handler_info(
-    struct track_info *ti, const struct track_handler *thnd);
+void init_track_info(struct track_info *ti, enum track_type type);
 
 struct container {
     void (*init)(struct disk *);
