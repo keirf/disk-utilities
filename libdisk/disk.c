@@ -15,30 +15,21 @@
 #include <unistd.h>
 #include <arpa/inet.h>
 
-extern struct track_handler unformatted_handler;
-extern struct track_handler amigados_handler;
-extern struct track_handler amigados_extended_handler;
-extern struct track_handler copylock_handler;
-extern struct track_handler psygnosis_a_handler;
-extern struct track_handler psygnosis_b_handler;
-extern struct track_handler rnc_pdos_handler;
-extern struct track_handler core_design_handler;
-extern struct track_handler gremlin_handler;
-extern struct track_handler rainbird_handler;
-extern struct track_handler archipelagos_handler;
+#define X(a,b) extern struct track_handler a##_handler;
+#include <libdisk/track_types.h>
+#undef X
 
 const struct track_handler *handlers[] = {
-    &unformatted_handler,
-    &amigados_handler,
-    &amigados_extended_handler,
-    &copylock_handler,
-    &psygnosis_a_handler,
-    &psygnosis_b_handler,
-    &rnc_pdos_handler,
-    &core_design_handler,
-    &gremlin_handler,
-    &rainbird_handler,
-    &archipelagos_handler,
+#define X(a,b) &a##_handler,
+#include <libdisk/track_types.h>
+#undef X
+    NULL
+};
+
+const char *track_type_name[] = {
+#define X(a,b) b,
+#include <libdisk/track_types.h>
+#undef X
     NULL
 };
 
@@ -256,7 +247,7 @@ void init_track_info_from_handler_info(
     struct track_info *ti, const struct track_handler *thnd)
 {
     ti->type = thnd->type;
-    ti->typename = thnd->name;
+    ti->typename = track_type_name[ti->type];
     ti->bytes_per_sector = thnd->bytes_per_sector;
     ti->nr_sectors = thnd->nr_sectors;
     ti->len = ti->bytes_per_sector * ti->nr_sectors;

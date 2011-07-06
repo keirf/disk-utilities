@@ -98,7 +98,6 @@ static void psygnosis_a_read_mfm(
 }
 
 struct track_handler psygnosis_a_handler = {
-    .name = "Psygnosis A",
     .type = TRKTYP_psygnosis_a,
     .bytes_per_sector = 12*512,
     .nr_sectors = 1,

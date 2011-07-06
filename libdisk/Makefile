@@ -34,6 +34,7 @@ install: all
 	$(INSTALL_DATA) include/libdisk/disk.h $(INCLUDEDIR)/libdisk
 	$(INSTALL_DATA) include/libdisk/stream.h $(INCLUDEDIR)/libdisk
 	$(INSTALL_DATA) include/libdisk/util.h $(INCLUDEDIR)/libdisk
+	$(INSTALL_DATA) include/libdisk/track_types.h $(INCLUDEDIR)/libdisk
 
 clean:
 	$(RM) *.a *.o *.opic *.so* *~ $(DEPS)

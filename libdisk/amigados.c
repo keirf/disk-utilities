@@ -229,7 +229,6 @@ static void ados_read_mfm(
 }
 
 struct track_handler amigados_handler = {
-    .name = "AmigaDOS",
     .type = TRKTYP_amigados,
     .bytes_per_sector = STD_SEC,
     .nr_sectors = 11,
@@ -238,7 +237,6 @@ struct track_handler amigados_handler = {
 };
 
 struct track_handler amigados_extended_handler = {
-    .name = "AmigaDOS Extended",
     .type = TRKTYP_amigados_extended,
     .bytes_per_sector = EXT_SEC,
     .nr_sectors = 11,

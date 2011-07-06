@@ -14,17 +14,9 @@
 #define TRK_WEAK  (~0u)
 
 enum track_type {
-    TRKTYP_unformatted,
-    TRKTYP_amigados,
-    TRKTYP_amigados_extended,
-    TRKTYP_copylock,
-    TRKTYP_psygnosis_a,
-    TRKTYP_psygnosis_b,
-    TRKTYP_rnc_pdos,
-    TRKTYP_core_design,
-    TRKTYP_gremlin,
-    TRKTYP_rainbird,
-    TRKTYP_archipelagos,
+#define X(a,b) TRKTYP_##a,
+#include <libdisk/track_types.h>
+#undef X
 };
 
 struct track_info {

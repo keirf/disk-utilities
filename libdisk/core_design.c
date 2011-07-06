@@ -86,7 +86,6 @@ static void core_read_mfm(
 }
 
 struct track_handler core_design_handler = {
-    .name = "Core Design",
     .type = TRKTYP_core_design,
     .bytes_per_sector = 11*512,
     .nr_sectors = 1,

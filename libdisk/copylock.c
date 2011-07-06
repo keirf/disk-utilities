@@ -171,7 +171,6 @@ static void copylock_read_mfm(
 }
 
 struct track_handler copylock_handler = {
-    .name = "Copylock",
     .type = TRKTYP_copylock,
     .bytes_per_sector = 512,
     .nr_sectors = 11,

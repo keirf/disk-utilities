@@ -52,7 +52,6 @@ void tbuf_bytes(struct track_buffer *, uint16_t speed,
                 enum tbuf_data_type type, unsigned int bytes, void *data);
 
 struct track_handler {
-    const char *name;
     enum track_type type;
     unsigned int bytes_per_sector;
     unsigned int nr_sectors;
