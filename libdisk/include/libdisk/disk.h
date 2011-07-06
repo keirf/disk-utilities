@@ -24,6 +24,7 @@ enum track_type {
     TRKTYP_core_design,
     TRKTYP_gremlin,
     TRKTYP_rainbird,
+    TRKTYP_archipelagos,
 };
 
 struct track_info {
