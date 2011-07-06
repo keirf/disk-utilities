@@ -96,7 +96,7 @@ static void *ados_write_mfm(
     {
         struct ados_hdr ados_hdr;
         char raw_mfm_dat[2*(sizeof(struct ados_hdr)+STD_SEC)];
-        uint32_t sync = s->word, csum, idx_off = s->index_offset;
+        uint32_t sync = s->word, csum, idx_off = s->index_offset - 31;
 
         for ( i = 0; i < ARRAY_SIZE(syncs); i++ )
             if ( sync == syncs[i] )
@@ -141,8 +141,7 @@ static void *ados_write_mfm(
         memcpy(p+8, ados_hdr.lbl, 16);
         memcpy(p+24, &raw_mfm_dat[2*28], STD_SEC);
 
-        if ( (ados_hdr.sector == 0) ||
-             !(valid_blocks & (1u << (ados_hdr.sector-1))) )
+        if ( !(valid_blocks & ((1u<<ados_hdr.sector)-1)) )
             ti->data_bitoff = idx_off;
 
         valid_blocks |= 1u << ados_hdr.sector;
@@ -168,7 +167,7 @@ static void *ados_write_mfm(
     for ( i = 0; i < ti->nr_sectors; i++ )
         if ( valid_blocks & (1u << i) )
             break;
-    ti->data_bitoff -= i * 544 + 31;
+    ti->data_bitoff -= i * 544*8*2;
 
     return block;
 }
