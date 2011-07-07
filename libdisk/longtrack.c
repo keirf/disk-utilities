@@ -64,6 +64,7 @@ static void *longtrack_write_mfm(
         }
     }
 
+    memfree(dat);
     return NULL;
 
 found:
