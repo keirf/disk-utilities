@@ -28,7 +28,7 @@ struct token {
     union {
         char str[128];
         struct {
-            unsigned int start, end;
+            unsigned int start, end, step;
         } num;
         int ch;
     } u;
@@ -83,6 +83,7 @@ retry:
         while ( isdigit(c = mygetc()) )
             t->u.num.start = t->u.num.start * 10 + c - '0';
         t->u.num.end = t->u.num.start;
+        t->u.num.step = 1;
         if ( c == '-' )
         {
             t->u.num.end = 0;
@@ -90,6 +91,12 @@ retry:
                 t->u.num.end = t->u.num.end * 10 + c - '0';
             if ( t->u.num.end < t->u.num.start )
                 parse_err("bad range %u-%u", t->u.num.start, t->u.num.end);
+        }
+        if ( c == '/' )
+        {
+            t->u.num.step = 0;
+            while ( isdigit(c = mygetc()) )
+                t->u.num.step = t->u.num.step * 10 + c - '0';
         }
         myungetc(c);
     }
@@ -212,7 +219,7 @@ struct format_list *realloc_format_list(struct format_list *old)
 struct format_list **parse_config(char *config, char *specifier)
 {
     unsigned int i;
-    struct format_list **formats;
+    struct format_list **formats, ignore_list;
     struct token t;
     char *spec;
 
@@ -282,7 +289,7 @@ found:
     for ( ; ; )
     {
         const char *fmtname;
-        unsigned int start, end;
+        unsigned int start, end, step;
         struct format_list *list = realloc_format_list(NULL);
 
         while ( t.type != EOL )
@@ -293,11 +300,13 @@ found:
             t.type = NUM;
             t.u.num.start = 0;
             t.u.num.end = 159;
+            t.u.num.step = 1;
         }
         if ( t.type != NUM )
             break;
         start = t.u.num.start;
         end = t.u.num.end;
+        step = t.u.num.step;
         if ( (start >= NR_TRACKS) || (end >= NR_TRACKS) )
             parse_err("bad track range %u-%u", start, end);
         for ( ; ; )
@@ -307,6 +316,12 @@ found:
                 break;
             if ( t.type != STR )
                 parse_err("expected format string");
+            if ( !strcmp("ignore", t.u.str) )
+            {
+                memfree(list);
+                list = &ignore_list;
+                goto write_list;
+            }
             for ( i = 0;
                   (fmtname = disk_get_format_id_name(i)) != NULL;
                   i++ )
@@ -320,14 +335,19 @@ found:
         }
         if ( list->nr == 0 )
             parse_err("empty format list");
-        for ( i = start; i <= end; i++ )
+    write_list:
+        for ( i = start; i <= end; i += step )
             if ( formats[i] == NULL )
                 formats[i] = list;
     }
 
     for ( i = 0; i < NR_TRACKS; i++ )
+    {
         if ( formats[i] == NULL )
             parse_err("no format specified for track %u", i);
+        if ( formats[i] == &ignore_list )
+            formats[i] = NULL;
+    }
 
     memfree(spec);
     while ( fi != NULL )

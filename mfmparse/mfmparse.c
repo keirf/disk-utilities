@@ -107,7 +107,9 @@ int main(int argc, char **argv)
     for ( i = 0; i < 160; i++ )
     {
         struct format_list *list = format_lists[i];
-        unsigned int j = list->pos;
+        unsigned int j;
+        if ( list == NULL )
+            continue;
         for ( j = 0; j < list->nr; j++ )
         {
             if ( track_write_mfm_from_stream(
