@@ -123,9 +123,6 @@ int main(int argc, char **argv)
             unidentified++;
     }
 
-    if ( quiet )
-        goto out;
-
     for ( i = 1; i < 160; i++ )
     {
         unsigned int j;
@@ -135,12 +132,16 @@ int main(int argc, char **argv)
                 break;
         if ( j == ti->nr_sectors )
             continue;
+        unidentified++;
         printf("T%u: sectors ", i);
         for ( j = 0; j < ti->nr_sectors; j++ )
             if ( !(ti->valid_sectors & (1u << j)) )
                 printf("%u,", j);
         printf(" missing\n");
     }
+
+    if ( quiet )
+        goto out;
 
     prev_name = di->track[0].typename;
     for ( i = 1; i <= 160; i++ )
