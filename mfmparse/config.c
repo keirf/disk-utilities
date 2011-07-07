@@ -121,9 +121,19 @@ retry:
         *p = '\0';
         myungetc(c);
     }
-    else if ( c == '\\' )
+    else if ( c == '\\' ) /* ignore EOL at line break */
     {
-        while ( isspace(c = mygetc()) )
+        while ( isspace(c = mygetc()) && (c != '\n') )
+            continue;
+        if ( c != '\n' )
+            parse_err("expected newline after backslash");
+        while ( isspace(c = mygetc()) && (c != '\n') )
+            continue;
+        goto retry;
+    }
+    else if ( c == '#' ) /* ignore until EOL */
+    {
+        while ( ((c = mygetc()) != EOF) && (c != '\n') )
             continue;
         goto retry;
     }
