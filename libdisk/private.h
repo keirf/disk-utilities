@@ -24,7 +24,6 @@ struct disk {
     int fd;
     bool_t read_only;
     struct container *container;
-    enum track_type prev_type;
     struct disk_info *di;
     struct disk_list_tag *tags;
 };
@@ -68,7 +67,8 @@ struct container {
     void (*init)(struct disk *);
     int (*open)(struct disk *, bool_t quiet);
     void (*close)(struct disk *);
-    void (*write_mfm)(struct disk *, unsigned int tracknr, struct stream *);
+    int (*write_mfm)(struct disk *, unsigned int tracknr,
+                     enum track_type, struct stream *);
 };
 
 extern struct container container_adf;

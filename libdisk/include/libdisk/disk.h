@@ -80,6 +80,9 @@ struct disk *disk_create(const char *name);
 struct disk *disk_open(const char *name, int read_only, int quiet);
 void disk_close(struct disk *);
 
+const char *disk_get_format_id_name(enum track_type type);
+const char *disk_get_format_desc_name(enum track_type type);
+
 /* Valid until the disk is closed (disk_close()). */
 struct disk_info *disk_get_info(struct disk *);
 
@@ -90,10 +93,11 @@ struct disk_tag *disk_set_tag(
 
 void track_read_mfm(struct disk *d, unsigned int tracknr,
                     uint8_t **mfm, uint16_t **speed, uint32_t *bitlen);
-void track_write_mfm_from_stream(
-    struct disk *, unsigned int tracknr, struct stream *s);
-void track_write_mfm(
-    struct disk *, unsigned int tracknr,
+int track_write_mfm_from_stream(
+    struct disk *, unsigned int tracknr, enum track_type type,
+    struct stream *s);
+int track_write_mfm(
+    struct disk *, unsigned int tracknr, enum track_type type,
     uint8_t *mfm, uint16_t *speed, uint32_t bitlen);
 
 #pragma GCC visibility pop

@@ -1,0 +1,21 @@
+default = amigados
+probe
+    * amigados copylock psygnosis_a psygnosis_b rnc_pdos core_design \
+      gremlin rainbird
+
+"Archipelagos" = archipelagos
+"Jaguar XJ220" = core_design
+"Lemmings"     = psygnosis
+"Lemmings 2"   = amigados_copylock
+
+amigados
+    * amigados
+amigados_copylock
+    * amigados copylock
+archipelagos
+    0 amigados
+    * archipelagos
+core_design
+    * amigados core_design
+psygnosis
+    * amigados psygnosis_a psygnosis_b copylock

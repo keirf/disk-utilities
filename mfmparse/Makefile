@@ -14,12 +14,14 @@ endif
 all:
 	$(MAKE) $(TARGET)
 
-mfmparse: mfmparse.o $(LIBDISK_OBJ)
+mfmparse: mfmparse.o $(LIBDISK_OBJ) config.o
 	$(CC) $(CFLAGS) $(LIBS) $^ -o $@
 
 install: all
 	$(INSTALL_DIR) $(BINDIR)
 	$(INSTALL_PROG) mfmparse $(BINDIR)
+
+config.o: CFLAGS += -DPREFIX=\"$(PREFIX)\"
 
 clean:
 	$(RM) $(TARGET) *.a *.o *.opic *~ $(DEPS)

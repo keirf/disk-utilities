@@ -94,12 +94,16 @@ static void adf_close(struct disk *d)
         write_exact(d->fd, di->track[i].dat, 11*512);
 }
 
-static void adf_write_mfm(
-    struct disk *d, unsigned int tracknr, struct stream *s)
+static int adf_write_mfm(
+    struct disk *d, unsigned int tracknr, enum track_type type,
+    struct stream *s)
 {
     const struct track_handler *thnd = handlers[TRKTYP_amigados];
     struct disk_info *di = d->di;
     struct track_info *ti = &di->track[tracknr];
+
+    if ( type != TRKTYP_amigados )
+        errx(1, "Only AmigaDOS tracks can be written to ADF files");
 
     stream_reset(s, tracknr);
     stream_next_index(s);
@@ -113,6 +117,8 @@ static void adf_write_mfm(
 
     if ( ti->dat == NULL )
         adf_init_track(ti);
+
+    return 0;
 }
 
 struct container container_adf = {

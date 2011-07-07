@@ -19,9 +19,29 @@
 #include <arpa/inet.h>
 #include <time.h>
 #include <utime.h>
+#include <getopt.h>
 
 #include <libdisk/stream.h>
 #include <libdisk/disk.h>
+
+#include "common.h"
+
+int quiet, verbose;
+
+static void usage(int rc)
+{
+    printf("Usage: mfmparse [options] in_file out_file\n");
+    printf(" in_file: Kryoflux STREAM, SPS/IPF, .dsk, .adf, .dat\n");
+    printf(" out_file: .adf, .dsk\n");
+    printf("Options:\n");
+    printf("  -h, --help    Display this information\n");
+    printf("  -q, --quiet   Quiesce normal informational output\n");
+    printf("  -v, --verbose Print extra diagnostic info\n");
+    printf("  -f, --format=FORMAT Name of format descriptor in config file\n");
+    printf("  -c, --config=FILE   Config file to parse for format info\n");
+
+    exit(rc);
+}
 
 int main(int argc, char **argv)
 {
@@ -30,22 +50,79 @@ int main(int argc, char **argv)
     struct disk *d;
     struct disk_info *di;
     struct track_info *ti;
+    struct format_list **format_lists;
     const char *prev_name;
-    unsigned int st = 0;
+    char *config = NULL, *format = NULL;
+    unsigned int st = 0, unidentified = 0;
+    int ch;
 
-    if ( argc != 3 )
-        errx(1, "Usage: mfmparse <in> [<out>]");
+    const static char sopts[] = "hqvf:c:";
+    const static struct option lopts[] = {
+        { "help", 0, NULL, 'h' },
+        { "quiet", 0, NULL, 'q' },
+        { "verbose", 0, NULL, 'v' },
+        { "format", 1, NULL, 'f' },
+        { "config",  1, NULL, 'c' },
+        { 0, 0, 0, 0}
+    };
 
-    if ( (s = stream_open(argv[1])) == NULL )
-        errx(1, "Failed to probe input file: %s", argv[1]);
+    while ( (ch = getopt_long(argc, argv, sopts, lopts, NULL)) != -1 )
+    {
+        switch ( ch )
+        {
+        case 'h':
+            usage(0);
+            break;
+        case 'q':
+            quiet = 1;
+            break;
+        case 'v':
+            verbose = 1;
+            break;
+        case 'f':
+            format = optarg;
+            break;
+        case 'c':
+            config = optarg;
+            break;
+        default:
+            usage(1);
+            break;
+        }
+    }
 
-    if ( (d = disk_create(argv[2])) == NULL )
-        errx(1, "Unable to create new disk file: %s", argv[2]);
+    if ( argc != (optind + 2) )
+        usage(1);
+
+    format_lists = parse_config(config, format);
+
+    if ( (s = stream_open(argv[optind])) == NULL )
+        errx(1, "Failed to probe input file: %s", argv[optind]);
+
+    if ( (d = disk_create(argv[optind+1])) == NULL )
+        errx(1, "Unable to create new disk file: %s", argv[optind+1]);
 
     di = disk_get_info(d);
 
     for ( i = 0; i < 160; i++ )
-        track_write_mfm_from_stream(d, i, s);
+    {
+        struct format_list *list = format_lists[i];
+        unsigned int j = list->pos;
+        for ( j = 0; j < list->nr; j++ )
+        {
+            if ( track_write_mfm_from_stream(
+                     d, i, list->ent[list->pos], s) == 0 )
+                break;
+            if ( ++list->pos >= list->nr )
+                list->pos = 0;
+        }
+        if ( (j == list->nr) &&
+             (track_write_mfm_from_stream(d, i, TRKTYP_unformatted, s) != 0) )
+            unidentified++;
+    }
+
+    if ( quiet )
+        goto out;
 
     for ( i = 1; i < 160; i++ )
     {
@@ -63,7 +140,6 @@ int main(int argc, char **argv)
         printf(" missing\n");
     }
 
-#if 1
     prev_name = di->track[0].typename;
     for ( i = 1; i <= 160; i++ )
     {
@@ -78,7 +154,11 @@ int main(int argc, char **argv)
         st = i;
         prev_name = di->track[i].typename;
     }
-#endif
+
+out:
+    if ( unidentified )
+        fprintf(stderr,"** WARNING: %u tracks are damaged or unidentified!\n",
+                unidentified);
 
     disk_close(d);
     stream_close(s);

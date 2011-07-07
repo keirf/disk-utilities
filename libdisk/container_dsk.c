@@ -220,33 +220,19 @@ static void dsk_close(struct disk *d)
     }
 }
 
-static void dsk_write_mfm(
-    struct disk *d, unsigned int tracknr, struct stream *s)
+static int dsk_write_mfm(
+    struct disk *d, unsigned int tracknr, enum track_type type,
+    struct stream *s)
 {
-    const struct track_handler *thnd;
     struct disk_info *di = d->di;
     struct track_info *ti = &di->track[tracknr];
-    enum track_type type;
-    int i;
 
-    for ( i = -1; ti->dat == NULL; i++ )
-    {
-        /*
-         * Skip the one we optimistically tried first. Also skip
-         * AmigaDOS Extended, as it shares the basic AmigaDOS handler.
-         */
-        if ( (i == d->prev_type) || (i == TRKTYP_amigados_extended) )
-            continue;
-        type = (i == -1) ? d->prev_type : i;
-        if ( (thnd = handlers[type]) == NULL )
-            break;
-        memset(ti, 0, sizeof(*ti));
-        init_track_info(ti, type);
-        ti->total_bits = DEFAULT_BITS_PER_TRACK;
-        stream_reset(s, tracknr);
-        stream_next_index(s);
-        ti->dat = thnd->write_mfm(d, tracknr, s);
-    }
+    memset(ti, 0, sizeof(*ti));
+    init_track_info(ti, type);
+    ti->total_bits = DEFAULT_BITS_PER_TRACK;
+    stream_reset(s, tracknr);
+    stream_next_index(s);
+    ti->dat = handlers[type]->write_mfm(d, tracknr, s);
 
     if ( ti->dat == NULL )
     {
@@ -254,10 +240,7 @@ static void dsk_write_mfm(
         init_track_info(ti, TRKTYP_unformatted);
         ti->typename = "Unformatted*";
         ti->total_bits = TRK_WEAK;
-    }
-    else
-    {
-        d->prev_type = ti->type;
+        return -1;
     }
 
     if ( ti->total_bits == 0 )
@@ -271,6 +254,8 @@ static void dsk_write_mfm(
     ti->data_bitoff = (int32_t)ti->data_bitoff % (int32_t)ti->total_bits;
     if ( (int32_t)ti->data_bitoff < 0 )
         ti->data_bitoff += ti->total_bits;
+
+    return 0;
 }
 
 struct container container_dsk = {

@@ -26,11 +26,13 @@ const struct track_handler *handlers[] = {
     NULL
 };
 
-const char *track_type_name[] = {
-#define X(a,b) b,
+static struct track_format_names {
+    const char *id_name;
+    const char *desc_name;
+} track_format_names[] = {
+#define X(a,b) {#a,b},
 #include <libdisk/track_types.h>
 #undef X
-    NULL
 };
 
 static void tbuf_finalise(struct track_buffer *tbuf);
@@ -72,7 +74,6 @@ struct disk *disk_create(const char *name)
     d->fd = fd;
     d->read_only = 0;
     d->container = c;
-    d->prev_type = TRKTYP_amigados;
 
     c->init(d);
 
@@ -101,7 +102,6 @@ struct disk *disk_open(const char *name, int read_only, int quiet)
     d->fd = fd;
     d->read_only = read_only;
     d->container = c;
-    d->prev_type = TRKTYP_amigados;
 
     rc = c->open(d, quiet);
     if ( !rc )
@@ -169,8 +169,9 @@ void track_read_mfm(struct disk *d, unsigned int tracknr,
     *bitlen = tbuf.len;
 }
 
-void track_write_mfm_from_stream(
-    struct disk *d, unsigned int tracknr, struct stream *s)
+int track_write_mfm_from_stream(
+    struct disk *d, unsigned int tracknr, enum track_type type,
+    struct stream *s)
 {
     struct disk_info *di = d->di;
     struct track_info *ti = &di->track[tracknr];
@@ -178,16 +179,17 @@ void track_write_mfm_from_stream(
     memfree(ti->dat);
     ti->dat = NULL;
 
-    d->container->write_mfm(d, tracknr, s);
+    return d->container->write_mfm(d, tracknr, type, s);
 }
 
-void track_write_mfm(
-    struct disk *d, unsigned int tracknr,
+int track_write_mfm(
+    struct disk *d, unsigned int tracknr, enum track_type type,
     uint8_t *mfm, uint16_t *speed, uint32_t bitlen)
 {
     struct stream *s = stream_soft_open(mfm, speed, bitlen);
-    track_write_mfm_from_stream(d, tracknr, s);
+    int rc = track_write_mfm_from_stream(d, tracknr, type, s);
     stream_close(s);
+    return rc;
 }
 
 struct disk_tag *disk_get_tag_by_id(struct disk *d, uint16_t id)
@@ -238,6 +240,20 @@ struct disk_tag *disk_set_tag(
     return &dltag->tag;
 }
 
+const char *disk_get_format_id_name(enum track_type type)
+{
+    if ( type >= ARRAY_SIZE(track_format_names) )
+        return NULL;
+    return track_format_names[type].id_name;
+}
+
+const char *disk_get_format_desc_name(enum track_type type)
+{
+    if ( type >= ARRAY_SIZE(track_format_names) )
+        return NULL;
+    return track_format_names[type].desc_name;
+}
+
 
 /**********************************
  * PRIVATE HELPERS
@@ -247,7 +263,7 @@ void init_track_info(struct track_info *ti, enum track_type type)
 {
     const struct track_handler *thnd = handlers[type];
     ti->type = type;
-    ti->typename = track_type_name[type];
+    ti->typename = track_format_names[type].desc_name;
     ti->bytes_per_sector = thnd->bytes_per_sector;
     ti->nr_sectors = thnd->nr_sectors;
     ti->len = ti->bytes_per_sector * ti->nr_sectors;
