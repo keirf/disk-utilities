@@ -80,8 +80,6 @@ static int di_next_bit(struct stream *s)
     {
         dis->pos = 0;
         index_reset(s);
-        if ( s->nr_index >= 5 )
-            return -1;
     }
 
     dat = !!(dis->mfm[dis->pos >> 3] & (0x80u >> (dis->pos & 7)));

@@ -221,11 +221,7 @@ static int caps_next_bit(struct stream *s)
     uint8_t dat;
 
     if ( ++cpss->pos >= cpss->bitlen )
-    {
         caps_nextrevolution(s);
-        if ( s->nr_index >= 5 )
-            return -1;
-    }
 
     dat = !!(cpss->mfm[cpss->pos >> 3] & (0x80u >> (cpss->pos & 7)));
     speed = ((cpss->pos >> 3) < cpss->ti.timelen)

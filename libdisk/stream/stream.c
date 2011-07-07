@@ -65,6 +65,8 @@ void stream_next_index(struct stream *s)
 int stream_next_bit(struct stream *s)
 {
     int b;
+    if ( s->nr_index >= 5 )
+        return -1;
     s->index_offset++;
     b = s->type->next_bit(s);
     if ( b != -1 )

@@ -39,8 +39,6 @@ static int ss_next_bit(struct stream *s)
     {
         ss->pos = 0;
         index_reset(s);
-        if ( s->nr_index >= 5 )
-            return -1;
     }
 
     dat = !!(ss->dat[ss->pos >> 3] & (0x80u >> (ss->pos & 7)));
