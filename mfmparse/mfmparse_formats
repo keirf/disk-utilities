@@ -63,6 +63,8 @@ probe
 
 "F17 Challenge" = rnc_pdos
 
+"F/A-18 Interceptor" = amigados
+
 # Has lots of unformatted/unused tracks
 "F-19 Stealth Fighter Disk A"
     0 amigados
@@ -79,21 +81,41 @@ probe
     158-159 ignore
     * rainbird
 
+"F29 Retaliator" = amigados
+
+"Fire & Ice" = amigados_copylock
+
+"First Samurai" = amigados_copylock
+
+"Frontier: Elite II" = amigados
+
+"Goal!" = amigados_copylock
+
 "Harlequin"
     * amigados gremlin
 
+"Hook" = amigados_copylock
+
 "Jaguar XJ220"
     * amigados core_design
+
+"Jimmy White's Whirlwind Snooker" = amigados_copylock
+
+"Jungle Strike" = amigados_copylock
+
+# OCS and AGA versions
+"Jurassic Park" = rnc_pdos_copylock
+
+# At least SPS 2191 (v1.6e). My own dump has garbage from ~trk 110, but
+# it could be a damaged disk. I haven't got any image to load in UAE yet.
+"Kick Off 2" = amigados
 
 "Lemmings"
     * amigados copylock psygnosis_b
 "Lemmings 2" = amigados_copylock
 
-"Lotus Turbo Challenge" = "Lotus II"
-"Lotus II"
-    0-1 amigados
-    158-159 longtrack
-    * gremlin
+"Lotus Turbo Challenge" = gremlin_protected
+"Lotus II" = gremlin_protected
 "Lotus III"
     * amigados gremlin
 
@@ -101,17 +123,39 @@ probe
 
 "Overdrive" = rnc_pdos
 
+"Parasol Stars" = amigados_copylock
+
 "Project X" = amigados_copylock
 "Project X Special Edition 93" = rnc_pdos
 
 "Qwak" = amigados
 
+# Hit Squad re-release has no copylock
+"Rainbow Islands" = amigados_copylock
+
+"Speedball 2" = amigados_copylock
+
 "Speris Legacy" = amigados
+
+"Super Cars Disk 1" = gremlin_protected
+"Super Cars Disk 2"
+    * gremlin
+# SC2: Both disks protected tracks 158-159
+"Super Cars II" = gremlin_protected
 
 "Superfrog" = rnc_pdos
 
+"Tower Of Babel" = amigados
+
+"Walker" = amigados_copylock
+
 "Worms" = amigados
 "Worms: The Director's Cut" = amigados
+
+"Zeewolf" = amigados
+
+"Zool 2"
+    * amigados gremlin
 
 
 ####################
@@ -121,5 +165,11 @@ amigados
     * amigados
 amigados_copylock
     * amigados copylock
+gremlin_protected
+    0-1 amigados
+    158-159 longtrack
+    * gremlin
 rnc_pdos
     * amigados rnc_pdos
+rnc_pdos_copylock
+    * amigados rnc_pdos copylock
