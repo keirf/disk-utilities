@@ -34,17 +34,11 @@ static void *rainbird_write_mfm(
     while ( (stream_next_bit(s) != -1) && !block )
     {
         uint32_t raw_dat[2*ti->len/4], hdr, csum;
-        uint32_t idx_off = s->index_offset - 15;
 
-        if ( (uint16_t)s->word != 0x4489 )
+        if ( s->word != 0x44894489 )
             continue;
 
-        if ( stream_next_bits(s, 16) == -1 )
-            goto done;
-        if ( (uint16_t)s->word != 0x4489 )
-            continue;
-
-        ti->data_bitoff = idx_off;
+        ti->data_bitoff = s->index_offset - 31;
 
         if ( stream_next_bytes(s, raw_dat, 16) == -1 )
             goto done;
