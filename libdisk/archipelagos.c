@@ -20,12 +20,6 @@
  * 
  * TRKTYP_archipelagos data layout:
  *  u8 sector_data[5][1024]
- * 
- * Track 1 protection:
- * -------------------
- *  0x4454 sync mark
- *  u8 0x33  (6000 times)
- *  Protection track is long -- must be >= 107200 bits
  */
 
 #include <libdisk/util.h>
@@ -39,18 +33,6 @@ static void *archipelagos_write_mfm(
     struct track_info *ti = &d->di->track[tracknr];
     char *block = memalloc(ti->len);
     unsigned int i, valid_blocks = 0;
-
-    if ( tracknr == 1 )
-    {
-        /*
-         * No data worth analysing on the Archipelagos protection track.
-         * We can construct it entirely synthetically in the read_mfm handler.
-         */
-        ti->data_bitoff = 1000;  /* somewhat arbitrary */
-        ti->total_bits = 110000; /* likewise; but long enough */
-        ti->bytes_per_sector = ti->nr_sectors = ti->len = 0;
-        return block;
-    }
 
     while ( (stream_next_bit(s) != -1) &&
             (valid_blocks != ((1u<<ti->nr_sectors)-1)) )
@@ -117,15 +99,6 @@ static void archipelagos_read_mfm(
     struct track_info *ti = &d->di->track[tracknr];
     uint16_t *dat = (uint16_t *)ti->dat;
     unsigned int i, j;
-
-    if ( tracknr == 1 )
-    {
-        /* Long protection track. */
-        tbuf_bits(tbuf, SPEED_AVG, TB_raw, 16, 0x4454);
-        for ( i = 0; i < 6000; i++ )
-            tbuf_bits(tbuf, SPEED_AVG, TB_all, 8, 0x33);
-        return;
-    }
 
     for ( i = 0; i < ti->nr_sectors; i++ )
     {
