@@ -4,9 +4,6 @@
  * Custom format as used by various Psygnosis releases:
  *   Amnios
  *   Aquaventura (sync 0x4429)
- *   Betrayal
- *   Carrier Command
- *   Midwinter
  * 
  * Sometimes a single release will use both this and Psygnosis B.
  * 
