@@ -41,7 +41,8 @@ probe
 "Body Blows" = rnc_pdos
 "Body Blows Galactic" = rnc_pdos
 
-# CCommand: One release uses Rainbird format; another uses AmigaDOS+Copylock
+# Original release (SPS 0813) uses Rainbird custom format
+# A subsequent compilation release (SPS 1580) uses AmigaDOS+Copylock
 "Carrier Command"
     * amigados copylock rainbird
 
