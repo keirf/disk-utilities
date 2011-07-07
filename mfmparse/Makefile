@@ -20,6 +20,8 @@ mfmparse: mfmparse.o $(LIBDISK_OBJ) config.o
 install: all
 	$(INSTALL_DIR) $(BINDIR)
 	$(INSTALL_PROG) mfmparse $(BINDIR)
+	$(INSTALL_DIR) $(PREFIX)/share/mfmparse
+	$(INSTALL_DATA) mfmparse_formats $(PREFIX)/share/mfmparse
 
 config.o: CFLAGS += -DPREFIX=\"$(PREFIX)\"
 
