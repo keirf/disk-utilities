@@ -24,27 +24,29 @@
 
 #include <arpa/inet.h>
 
+static int check_sequence(struct stream *s, unsigned int nr, uint8_t byte)
+{
+    while ( --nr )
+    {
+        stream_next_bits(s, 16);
+        if ( (uint8_t)copylock_decode_word(s->word) != byte )
+            break;
+    }
+    return !nr;
+}
+
 static void *longtrack_write_mfm(
     struct disk *d, unsigned int tracknr, struct stream *s)
 {
     struct track_info *ti = &d->di->track[tracknr];
     uint16_t *dat = memalloc(2);
-    unsigned int i;
 
     while ( stream_next_bit(s) != -1 )
     {
         if ( s->word == 0x4454a525 )
         {
-            /* Check for a long sequence of encoded 0x333333.... */
-            for ( i = 0; i < 500; i++ )
-            {
-                stream_next_bits(s, 32);
-                if ( copylock_decode_word(s->word) != 0x3333 )
-                    break;
-            }
-            if ( i != 500 )
+            if ( !check_sequence(s, 1000, 0x33) )
                 continue;
-            /* Validated the sequence: we're done */
             ti->data_bitoff = s->index_offset - 31;
             ti->total_bits = 110000; /* long enough */
             *dat = 0;
@@ -53,18 +55,8 @@ static void *longtrack_write_mfm(
 
         if ( s->word == 0x41244124 )
         {
-#if 0
-            /* Check for a long sequence of encoded 0x00000.... */
-            for ( i = 0; i < 500; i++ )
-            {
-                stream_next_bits(s, 32);
-                if ( copylock_decode_word(s->word) != 0 )
-                    break;
-            }
-            if ( i != 500 )
+            if ( !check_sequence(s, 1000, 0x00) )
                 continue;
-#endif
-            /* Validated the sequence: we're done */
             ti->data_bitoff = s->index_offset - 31;
             ti->total_bits = 105500; /* long enough */
             *dat = 1;
