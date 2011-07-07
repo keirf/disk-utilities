@@ -7,19 +7,79 @@ probe
 ####################
 # Game List - every checked game is listed here
 
-"Archipelagos" = archipelagos
+# Alien Breed: Disk 2 Track 0 is a custom protection track
+"Alien Breed"
+    0 amigados alienbreed_protection
+    * amigados
+"Alien Breed Special Edition 92" = amigados_copylock
+"Alien Breed 2" = rnc_pdos
+"Alien Breed Tower Assault" = rnc_pdos
+"Alien Breed 3D" = amigados
+"Alien Breed 3D 2" = amigados
 
-"Harlequin"    = gremlin
+"Amnios Disk 1"
+    0 amigados
+    1 longtrack
+    * psygnosis_a
+"Amnios Disk 2"
+    * psygnosis_b
 
-"Jaguar XJ220" = core_design
+"Apache" = rnc_pdos
 
-"Lemmings"     = psygnosis
-"Lemmings 2"   = amigados_copylock
+"Arcade Pool" = rnc_pdos
 
-# Lotus Turbo Challenge series by Magnetic Fields
-"Lotus"        = gremlin
-"Lotus II"     = gremlin
-"Lotus III"    = gremlin
+"Assassin" = amigados_copylock
+"Assassin Special Edition" = rnc_pdos
+
+"Archipelagos"
+    0 amigados
+    1 longtrack
+    * archipelagos
+
+"Batman" = amigados_copylock
+
+"Body Blows" = rnc_pdos
+"Body Blows Galactic" = rnc_pdos
+
+# CCommand: One release uses Rainbird format; another uses AmigaDOS+Copylock
+"Carrier Command"
+    * amigados copylock rainbird
+
+"F17 Challenge" = rnc_pdos
+
+"Harlequin"
+    * amigados gremlin
+
+"Jaguar XJ220"
+    * amigados core_design
+
+"Lemmings"
+    * amigados copylock psygnosis_b
+"Lemmings 2" = amigados_copylock
+
+"Lotus Turbo Challenge" = "Lotus II"
+"Lotus II"
+    0-1 amigados
+    158-159 longtrack
+    * gremlin
+"Lotus III"
+    * amigados gremlin
+
+"New Zealand Story" = amigados_copylock
+
+"Overdrive" = rnc_pdos
+
+"Project X" = amigados_copylock
+"Project X Special Edition 93" = rnc_pdos
+
+"Qwak" = amigados
+
+"Speris Legacy" = amigados
+
+"Superfrog" = rnc_pdos
+
+"Worms" = amigados
+"Worms: The Director's Cut" = amigados
 
 
 ####################
@@ -29,12 +89,5 @@ amigados
     * amigados
 amigados_copylock
     * amigados copylock
-archipelagos
-    0 amigados
-    * archipelagos
-core_design
-    * amigados core_design
-gremlin
-    * amigados gremlin
-psygnosis
-    * amigados psygnosis_a psygnosis_b copylock
+rnc_pdos
+    * amigados rnc_pdos
