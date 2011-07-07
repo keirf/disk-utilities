@@ -38,15 +38,46 @@ probe
 
 "Batman" = amigados_copylock
 
+"Beneath A Steel Sky" = amigados
+
 "Body Blows" = rnc_pdos
 "Body Blows Galactic" = rnc_pdos
+
+"Brat" = amigados_copylock
+
+"Cadaver" = amigados_copylock
 
 # Original release (SPS 0813) uses Rainbird custom format
 # A subsequent compilation release (SPS 1580) uses AmigaDOS+Copylock
 "Carrier Command"
     * amigados copylock rainbird
 
+"Chaos Engine (OCS)" = amigados_copylock
+"Chaos Engine (AGA)" = rnc_pdos
+
+"Corporation" = amigados_copylock
+
+"Dennis" = amigados_copylock
+
+"Desert Strike" = amigados
+
 "F17 Challenge" = rnc_pdos
+
+# Has lots of unformatted/unused tracks
+"F-19 Stealth Fighter Disk A"
+    0 amigados
+    60-76/2 ignore
+    133-153/2 ignore
+    155-159 ignore
+    * rainbird
+"F-19 Stealth Fighter Disk B"
+    5-19/2 ignore
+    104-106/2 ignore
+    122 ignore
+    131-139/2 ignore
+    140 ignore
+    158-159 ignore
+    * rainbird
 
 "Harlequin"
     * amigados gremlin
