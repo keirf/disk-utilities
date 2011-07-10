@@ -32,8 +32,8 @@ static const char *df0_filename =
 static void track_load_byte(struct amiga_state *s)
 {
     s->disk.ns_per_cell = (s->disk.av_ns_per_cell *
-                           s->disk.speed[s->disk.mfmpos/8]) / 1000u;
-    s->disk.mfmbyte = s->disk.mfm[s->disk.mfmpos/8];
+                           s->disk.track_mfm->speed[s->disk.mfmpos/8]) / 1000u;
+    s->disk.mfmbyte = s->disk.track_mfm->mfm[s->disk.mfmpos/8];
 }
 
 static void disk_dma_word(struct amiga_state *s, uint16_t w)
@@ -70,7 +70,7 @@ static void mfm_cb(void *_s)
         if ( s->disk.mfmbyte & 0x80 )
             w |= 1;
         s->disk.mfmbyte <<= 1;
-        if ( ++s->disk.mfmpos == s->disk.bitlen )
+        if ( ++s->disk.mfmpos == s->disk.track_mfm->bitlen )
         {
             cia_set_icr_flag(s, &s->ciab, CIAICRB_FLG);
             s->disk.mfmpos = 0;
@@ -120,17 +120,19 @@ static void mfm_cb(void *_s)
 static void track_load(struct amiga_state *s)
 {
     log_info("Loading track %u", s->disk.tracknr);
-    track_read_mfm(s->disk.df0_disk, s->disk.tracknr,
-                   &s->disk.mfm, &s->disk.speed, &s->disk.bitlen);
+    track_mfm_put(s->disk.track_mfm);
+    s->disk.track_mfm = track_mfm_get(s->disk.df0_disk, s->disk.tracknr);
     s->disk.mfmpos = s->disk.bitpos = s->disk.mfm_word = 0;
     s->disk.last_mfm_bit_time = s->event_base.current_time;
-    s->disk.av_ns_per_cell = 200000000ul / s->disk.bitlen;
+    s->disk.av_ns_per_cell = 200000000ul / s->disk.track_mfm->bitlen;
     track_load_byte(s);
     mfm_cb(s);
 }
 
 static void track_unload(struct amiga_state *s)
 {
+    track_mfm_put(s->disk.track_mfm);
+    s->disk.track_mfm = NULL;
     event_unset(s->disk.mfm_delay);
 }
 

@@ -145,12 +145,12 @@ struct disk_info *disk_get_info(struct disk *d)
     return d->di;
 }
 
-void track_read_mfm(struct disk *d, unsigned int tracknr,
-                    uint8_t **mfm, uint16_t **speed, uint32_t *bitlen)
+struct track_mfm *track_mfm_get(struct disk *d, unsigned int tracknr)
 {
     struct disk_info *di = d->di;
     struct track_info *ti = &di->track[tracknr];
     const struct track_handler *thnd;
+    struct track_mfm *track_mfm;
     struct track_buffer tbuf = {
         .start = ti->data_bitoff,
         .len = ti->total_bits
@@ -164,9 +164,20 @@ void track_read_mfm(struct disk *d, unsigned int tracknr,
 
     tbuf_finalise(&tbuf);
 
-    *mfm = tbuf.mfm;
-    *speed = tbuf.speed;
-    *bitlen = tbuf.len;
+    track_mfm = memalloc(sizeof(*track_mfm));
+    track_mfm->mfm = tbuf.mfm;
+    track_mfm->speed = tbuf.speed;
+    track_mfm->bitlen = tbuf.len;
+    return track_mfm;
+}
+
+void track_mfm_put(struct track_mfm *track_mfm)
+{
+    if ( track_mfm == NULL )
+        return;
+    memfree(track_mfm->mfm);
+    memfree(track_mfm->speed);
+    memfree(track_mfm);
 }
 
 int track_write_mfm_from_stream(
@@ -184,9 +195,9 @@ int track_write_mfm_from_stream(
 
 int track_write_mfm(
     struct disk *d, unsigned int tracknr, enum track_type type,
-    uint8_t *mfm, uint16_t *speed, uint32_t bitlen)
+    struct track_mfm *mfm)
 {
-    struct stream *s = stream_soft_open(mfm, speed, bitlen);
+    struct stream *s = stream_soft_open(mfm->mfm, mfm->speed, mfm->bitlen);
     int rc = track_write_mfm_from_stream(d, tracknr, type, s);
     stream_close(s);
     return rc;

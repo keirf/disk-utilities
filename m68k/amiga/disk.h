@@ -21,6 +21,7 @@ enum step_state {
 };
 
 struct disk;
+struct track_mfm;
 
 struct amiga_disk {
     struct event *motor_delay;
@@ -34,9 +35,8 @@ struct amiga_disk {
     uint16_t tracknr;
 
     struct disk *df0_disk;
-    uint8_t *mfm;
-    uint16_t *speed;
-    uint32_t bitlen, av_ns_per_cell;
+    struct track_mfm *track_mfm;
+    unsigned int av_ns_per_cell;
 
     struct event *mfm_delay;
     time_ns_t last_mfm_bit_time;

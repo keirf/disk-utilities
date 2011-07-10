@@ -21,9 +21,8 @@ struct di_stream {
 
     /* Current track info */
     unsigned int track;
-    uint8_t *mfm;
-    uint16_t *speed;
-    uint32_t pos, bitlen, ns_per_cell;
+    struct track_mfm *track_mfm;
+    uint32_t pos, ns_per_cell;
 };
 
 static struct stream *di_open(const char *name)
@@ -46,9 +45,8 @@ static struct stream *di_open(const char *name)
 static void di_close(struct stream *s)
 {
     struct di_stream *dis = container_of(s, struct di_stream, s);
+    track_mfm_put(dis->track_mfm);
     disk_close(dis->d);
-    memfree(dis->mfm);
-    memfree(dis->speed);
     memfree(dis);
 }
 
@@ -58,13 +56,10 @@ static void di_reset(struct stream *s, unsigned int tracknr)
 
     if ( dis->track != tracknr )
     {
-        memfree(dis->mfm);
-        dis->mfm = NULL;
-        memfree(dis->speed);
-        dis->speed = NULL;
-        track_read_mfm(dis->d, tracknr, &dis->mfm, &dis->speed, &dis->bitlen);
+        track_mfm_put(dis->track_mfm);
+        dis->track_mfm = track_mfm_get(dis->d, tracknr);
         dis->track = tracknr;
-        dis->ns_per_cell = 200000000u / dis->bitlen;
+        dis->ns_per_cell = 200000000u / dis->track_mfm->bitlen;
     }
 
     index_reset(s);
@@ -76,14 +71,15 @@ static int di_next_bit(struct stream *s)
     struct di_stream *dis = container_of(s, struct di_stream, s);
     uint8_t dat;
 
-    if ( ++dis->pos >= dis->bitlen )
+    if ( ++dis->pos >= dis->track_mfm->bitlen )
     {
         dis->pos = 0;
         index_reset(s);
     }
 
-    dat = !!(dis->mfm[dis->pos >> 3] & (0x80u >> (dis->pos & 7)));
-    s->latency += (dis->ns_per_cell * dis->speed[dis->pos >> 3]) / 1000u;
+    dat = !!(dis->track_mfm->mfm[dis->pos >> 3] & (0x80u >> (dis->pos & 7)));
+    s->latency += (dis->ns_per_cell *
+                   dis->track_mfm->speed[dis->pos >> 3]) / 1000u;
 
     return dat;
 }
