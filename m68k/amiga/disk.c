@@ -18,45 +18,22 @@
 #include <amiga/amiga.h>
 #include <amiga/custom.h>
 
+#include <libdisk/disk.h>
+
 #define SUBSYSTEM subsystem_disk
 
-static const char *filename =
+static const char *df0_filename =
     "/home/keir/Amiga/raw_dumps/newzealandstory/nzs.dat";
-#define TRACK_LEN (128*1024)
 
 #define STEP_DELAY     MILLISECS(1)
 #define MOTORON_DELAY  MILLISECS(100)
 #define MOTOROFF_DELAY MILLISECS(1)
 
-static void read_exact(int fd, void *buf, size_t count)
-{
-    size_t done;
-
-    while ( count > 0 )
-    {
-        done = read(fd, buf, count);
-        if ( (done < 0) && ((errno == EAGAIN) || (errno == EINTR)) )
-            done = 0;
-        if ( done < 0 )
-            err(1, NULL);
-        count -= done;
-    }
-}
-
 static void track_load_byte(struct amiga_state *s)
 {
-    uint8_t latbyte;
-    if ( (s->disk.mfmpos/8) == (TRACK_LEN/2) )
-    {
-        log_warn("Disk read wrapped");
-        s->disk.mfmpos = 0;
-    }
-
-    latbyte = s->disk.buf[(s->disk.mfmpos/8)*2];
-    if ( latbyte & 0x80 )
-        cia_set_icr_flag(s, &s->ciab, CIAICRB_FLG);
-    s->disk.ns_per_cell = (CIA_TICK_NS * (latbyte&0x7f)) / 8;
-    s->disk.mfmbyte = s->disk.buf[(s->disk.mfmpos/8)*2+1];
+    s->disk.ns_per_cell = (s->disk.av_ns_per_cell *
+                           s->disk.speed[s->disk.mfmpos/8]) / 1000u;
+    s->disk.mfmbyte = s->disk.mfm[s->disk.mfmpos/8];
 }
 
 static void disk_dma_word(struct amiga_state *s, uint16_t w)
@@ -93,7 +70,12 @@ static void mfm_cb(void *_s)
         if ( s->disk.mfmbyte & 0x80 )
             w |= 1;
         s->disk.mfmbyte <<= 1;
-        if ( !(++s->disk.mfmpos & 7) )
+        if ( ++s->disk.mfmpos == s->disk.bitlen )
+        {
+            cia_set_icr_flag(s, &s->ciab, CIAICRB_FLG);
+            s->disk.mfmpos = 0;
+        }
+        if ( !(s->disk.mfmpos & 7) )
             track_load_byte(s);
         s->disk.bitpos++;
         s->custom[CUST_dskbytr] &= ~(1u<<12);
@@ -138,10 +120,11 @@ static void mfm_cb(void *_s)
 static void track_load(struct amiga_state *s)
 {
     log_info("Loading track %u", s->disk.tracknr);
-    (void)lseek(s->disk.fd, s->disk.tracknr * TRACK_LEN, SEEK_SET);
-    read_exact(s->disk.fd, s->disk.buf, TRACK_LEN);
+    track_read_mfm(s->disk.df0_disk, s->disk.tracknr,
+                   &s->disk.mfm, &s->disk.speed, &s->disk.bitlen);
     s->disk.mfmpos = s->disk.bitpos = s->disk.mfm_word = 0;
     s->disk.last_mfm_bit_time = s->event_base.current_time;
+    s->disk.av_ns_per_cell = 200000000ul / s->disk.bitlen;
     track_load_byte(s);
     mfm_cb(s);
 }
@@ -290,10 +273,9 @@ void disk_dsklen_changed(struct amiga_state *s)
 
 void disk_init(struct amiga_state *s)
 {
-    s->disk.fd = open(filename, O_RDONLY);
-    if ( s->disk.fd == -1 )
-        err(1, "%s", filename);
-    s->disk.buf = memalloc(TRACK_LEN);
+    s->disk.df0_disk = disk_open(df0_filename, 1, 0);
+    if ( s->disk.df0_disk == NULL )
+        errx(1, "%s", df0_filename);
 
     /* Set up CIA peripheral data registers. */
     s->ciaa.pra_i = 0xff; /* disk inputs, all off (active low) */
@@ -309,3 +291,9 @@ void disk_init(struct amiga_state *s)
     s->disk.tracknr = 1;
     s->disk.mfm_delay = event_alloc(&s->event_base, mfm_cb, s);
 }
+
+void amiga_insert_df0(const char *filename)
+{
+    df0_filename = filename;
+}
+

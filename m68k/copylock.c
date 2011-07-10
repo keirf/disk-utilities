@@ -66,8 +66,8 @@ int main(int argc, char **argv)
     int rc, i, fd, zeroes_run = 0;
     uint32_t off, len, base;
 
-    if ( argc < 5 )
-        errx(1, "Usage: %s <infile> <off> <len> <base>",
+    if ( argc != 6 )
+        errx(1, "Usage: %s <infile> <off> <len> <base> <df0_file>",
              argv[0]);
 
     fd = open(argv[1], O_RDONLY);
@@ -89,6 +89,7 @@ int main(int argc, char **argv)
         printf("%s ", argv[i]);
     printf("\n");
 
+    amiga_insert_df0(argv[5]);
     amiga_init(&s, MEM_SIZE);
     regs = s.ctxt.regs;
 

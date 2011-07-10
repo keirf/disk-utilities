@@ -40,7 +40,7 @@ struct amiga_state {
     struct cia ciaa, ciab;
 
     /* Disks */
-    struct disk disk;
+    struct amiga_disk disk;
 
     /* Passage of time. */
     struct event_base event_base;
@@ -70,6 +70,8 @@ void memfree(void *p);
 
 void amiga_init(struct amiga_state *, unsigned int mem_size);
 int amiga_emulate(struct amiga_state *);
+
+void amiga_insert_df0(const char *filename);
 
 void exec_init(struct amiga_state *);
 

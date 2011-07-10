@@ -20,7 +20,9 @@ enum step_state {
     step_none, step_in, step_out
 };
 
-struct disk {
+struct disk;
+
+struct amiga_disk {
     struct event *motor_delay;
     enum motor_state motor;
 
@@ -31,8 +33,11 @@ struct disk {
 
     uint16_t tracknr;
 
-    int fd;
-    unsigned char *buf;
+    struct disk *df0_disk;
+    uint8_t *mfm;
+    uint16_t *speed;
+    uint32_t bitlen, av_ns_per_cell;
+
     struct event *mfm_delay;
     time_ns_t last_mfm_bit_time;
     unsigned int mfmpos, bitpos, mfmbyte, ns_per_cell;

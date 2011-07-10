@@ -3,14 +3,14 @@ include $(ROOT)/Rules.mk
 
 CFLAGS += -I.
 
-LDFLAGS := -Lamiga -Lm68k
+LDFLAGS := -Lamiga -Lm68k -L../libdisk
 
 .PHONY: m68k/m68k.a amiga/amiga.a
 
 all: disassemble copylock
 
 copylock: m68k/m68k.a amiga/amiga.a copylock.o
-	$(CC) $(LDFLAGS) $@.o -lamiga -lm68k -o $@
+	$(CC) $(LDFLAGS) $@.o -lamiga -lm68k -ldisk -o $@
 
 disassemble: m68k/m68k.a amiga/amiga.a disassemble.o
 	$(CC) $(LDFLAGS) $@.o -lamiga -lm68k -o $@
