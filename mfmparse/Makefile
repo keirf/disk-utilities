@@ -4,7 +4,6 @@ include $(ROOT)/Rules.mk
 TARGET := mfmparse
 
 LIBS := -L../libdisk -ldisk
-# -ldl -lstdc++
 
 all:
 	$(MAKE) $(TARGET)
