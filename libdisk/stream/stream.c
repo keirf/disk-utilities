@@ -8,6 +8,9 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <unistd.h>
 #include "private.h"
 
 extern struct stream_type kryoflux_stream;
@@ -25,9 +28,19 @@ const static struct stream_type *stream_type[] = {
 
 struct stream *stream_open(const char *name)
 {
+    struct stat sbuf;
     const struct stream_type *st;
     struct stream *s;
     unsigned int i;
+
+    /* Only Kryoflux STREAMs may be anything other than a single file. */
+    if ( (stat(name, &sbuf) < 0) || S_ISDIR(sbuf.st_mode) )
+    {
+        st = &kryoflux_stream;
+        if ( (s = st->open(name)) != NULL )
+            s->type = st;
+        return s;
+    }
 
     for ( i = 0; (st = stream_type[i]) != NULL; i++ )
     {

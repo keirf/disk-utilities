@@ -16,7 +16,7 @@
 
 struct kfs_stream {
     struct stream s;
-    const char *basename;
+    char *basename;
 
     /* Current track number. */
     unsigned int track;
@@ -44,14 +44,22 @@ static struct stream *kfs_open(const char *name)
     char track0[strlen(name) + 9];
     struct stat sbuf;
     struct kfs_stream *kfss;
+    char *basename;
 
-    sprintf(track0, "%s%02u.%u.raw", name, 0, 0);
+    basename = memalloc(strlen(name) + 2);
+    strcpy(basename, name);
 
+    sprintf(track0, "%s%02u.%u.raw", basename, 0, 0);
     if ( stat(track0, &sbuf) < 0 )
-        return NULL;
+    {
+        strcat(basename, "/");
+        sprintf(track0, "%s%02u.%u.raw", basename, 0, 0);
+        if ( stat(track0, &sbuf) < 0 )
+            return NULL;
+    }
 
     kfss = memalloc(sizeof(*kfss));
-    kfss->basename = name;
+    kfss->basename = basename;
 
     return &kfss->s;
 }
@@ -60,6 +68,7 @@ static void kfs_close(struct stream *s)
 {
     struct kfs_stream *kfss = container_of(s, struct kfs_stream, s);
     memfree(kfss->dat);
+    memfree(kfss->basename);
     memfree(kfss);
 }
 
