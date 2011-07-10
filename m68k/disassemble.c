@@ -177,9 +177,7 @@ int main(int argc, char **argv)
     if ( (base+len) > MEM_SIZE )
         errx(1, "Image cannot be loaded into %ukB RAM\n", MEM_SIZE>>10);
 
-    if ( (s.mem = malloc(MEM_SIZE)) == NULL )
-        err(1, NULL);
-    memset(s.mem, 0, MEM_SIZE);
+    s.mem = memalloc(MEM_SIZE);
 
     if ( lseek(fd, off, SEEK_SET) != off )
         err(1, NULL);

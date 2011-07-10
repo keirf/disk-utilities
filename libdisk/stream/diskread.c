@@ -49,8 +49,6 @@ static struct stream *dr_open(const char *name)
         err(1, "%s", name);
 
     drs = memalloc(sizeof(*drs));
-    memset(drs, 0, sizeof(*drs));
-
     drs->fd = fd;
     drs->dat = memalloc(BYTES_PER_TRACK);
     drs->track = ~0u;

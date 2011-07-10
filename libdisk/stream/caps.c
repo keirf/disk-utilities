@@ -134,7 +134,6 @@ static struct stream *caps_open(const char *name)
         return NULL;
 
     cpss = memalloc(sizeof(*cpss));
-    memset(cpss, 0, sizeof(*cpss));
     cpss->track = ~0u;
 
     if ( (cpss->container = CAPSAddImage()) < 0 )

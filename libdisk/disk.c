@@ -69,8 +69,6 @@ struct disk *disk_create(const char *name)
     }
 
     d = memalloc(sizeof(*d));
-    memset(d, 0, sizeof(*d));
-
     d->fd = fd;
     d->read_only = 0;
     d->container = c;
@@ -97,8 +95,6 @@ struct disk *disk_open(const char *name, int read_only, int quiet)
     }
 
     d = memalloc(sizeof(*d));
-    memset(d, 0, sizeof(*d));
-
     d->fd = fd;
     d->read_only = read_only;
     d->container = c;

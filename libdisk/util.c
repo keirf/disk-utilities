@@ -14,7 +14,9 @@
 void *memalloc(size_t size)
 {
     void *p = malloc(size);
-    if ( p == NULL ) err(1, NULL);
+    if ( p == NULL )
+        err(1, NULL);
+    memset(p, 0, size);
     return p;
 }
 

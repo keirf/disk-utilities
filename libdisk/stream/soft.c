@@ -60,8 +60,6 @@ struct stream *stream_soft_open(
     struct soft_stream *ss;
 
     ss = memalloc(sizeof(*ss));
-    memset(ss, 0, sizeof(*ss));
-
     ss->dat = data;
     ss->speed = speed;
     ss->bitlen = bitlen;

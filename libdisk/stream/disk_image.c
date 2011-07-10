@@ -34,8 +34,6 @@ static struct stream *di_open(const char *name)
         return NULL;
 
     dis = memalloc(sizeof(*dis));
-    memset(dis, 0, sizeof(*dis));
-
     dis->d = d;
     dis->track = ~0u;
 

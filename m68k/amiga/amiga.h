@@ -12,6 +12,9 @@
 #include <stdint.h>
 #include <stdio.h>
 
+#include <libdisk/disk.h>
+#include <libdisk/util.h>
+
 #include <m68k/m68k_emulate.h>
 #include <amiga/cia.h>
 #include <amiga/disk.h>
@@ -64,9 +67,6 @@ void __assert_failed(
 #define ASSERT(p) do {                                          \
         if ( !(p) ) __assert_failed(s, __FILE__, __LINE__);     \
 } while (0)
-
-void *memalloc(size_t size);
-void memfree(void *p);
 
 void amiga_init(struct amiga_state *, unsigned int mem_size);
 int amiga_emulate(struct amiga_state *);

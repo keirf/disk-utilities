@@ -20,9 +20,6 @@ enum step_state {
     step_none, step_in, step_out
 };
 
-struct disk;
-struct track_mfm;
-
 struct amiga_disk {
     struct event *motor_delay;
     enum motor_state motor;

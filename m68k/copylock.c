@@ -67,9 +67,8 @@ int main(int argc, char **argv)
     if ( (base+len) > MEM_SIZE )
         errx(1, "Image cannot be loaded into %ukB RAM\n", MEM_SIZE>>10);
 
-    if ( ((shadow = malloc(MEM_SIZE)) == NULL) ||
-         ((bmap = malloc(MEM_SIZE/8)) == NULL) )
-        err(1, NULL);
+    shadow = memalloc(MEM_SIZE);
+    bmap = memalloc(MEM_SIZE/8);
 
     for ( i = 0; i < argc; i++ )
         printf("%s ", argv[i]);
@@ -85,9 +84,7 @@ int main(int argc, char **argv)
     close(fd);
     for ( i = 0; i < len; i++ )
         mem_write(base + i, shadow[i], 1, &s);
-
     memset(shadow, 0, MEM_SIZE);
-    memset(bmap, 0, MEM_SIZE/8);
 
     regs->pc = base;
     s.ctxt.disassemble = 1;

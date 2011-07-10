@@ -51,8 +51,6 @@ static struct stream *kfs_open(const char *name)
         return NULL;
 
     kfss = memalloc(sizeof(*kfss));
-    memset(kfss, 0, sizeof(*kfss));
-
     kfss->basename = name;
 
     return &kfss->s;

@@ -97,7 +97,6 @@ static void dsk_init(struct disk *d)
     }
 
     d->tags = memalloc(sizeof(*d->tags));
-    memset(d->tags, 0, sizeof(*d->tags));
     d->tags->tag.id = DSKTAG_end;
 }
 

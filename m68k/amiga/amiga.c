@@ -21,20 +21,6 @@
 #define CIAA_BASE   0xbfe001
 #define CIAB_BASE   0xbfd000
 
-void *memalloc(size_t size)
-{
-    void *p = malloc(size);
-    if ( p == NULL )
-        err(1, NULL);
-    memset(p, 0, size);
-    return p;
-}
-
-void memfree(void *p)
-{
-    free(p);
-}
-
 void __assert_failed(
     struct amiga_state *s, const char *file, unsigned int line)
 {

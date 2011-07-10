@@ -160,7 +160,6 @@ static struct file_info *open_file(char *name)
 {
     struct file_info *fi = memalloc(sizeof(*fi));
 
-    memset(fi, 0, sizeof(*fi));    
     fi->line = 1;
 
     if ( name[0] != '/' )
@@ -209,7 +208,6 @@ struct format_list *realloc_format_list(struct format_list *old)
     struct format_list *list;
     unsigned int max = old ? old->max*2 : 4;
     list = memalloc(sizeof(*list) + (max-1)*2);
-    memset(list, 0, sizeof(*list));
     if ( old )
         memcpy(list, old, sizeof(*list) + (old->max-1)*2);
     list->max = max;
@@ -224,7 +222,6 @@ struct format_list **parse_config(char *config, char *specifier)
     char *spec;
 
     formats = memalloc(NR_TRACKS * sizeof(*formats));
-    memset(formats, 0, NR_TRACKS * sizeof(*formats));
 
     if ( specifier == NULL )
         specifier = "default";
