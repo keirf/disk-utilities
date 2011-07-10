@@ -173,7 +173,8 @@ static void dsk_close(struct disk *d)
     unsigned int i, datoff;
 
     lseek(d->fd, 0, SEEK_SET);
-    ftruncate(d->fd, 0);
+    if ( ftruncate(d->fd, 0) < 0 )
+        err(1, NULL);
 
     strncpy(dh.signature, "DSK\0", 4);
     dh.version = 0;

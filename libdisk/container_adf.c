@@ -88,7 +88,8 @@ static void adf_close(struct disk *d)
     unsigned int i;
 
     lseek(d->fd, 0, SEEK_SET);
-    ftruncate(d->fd, 0);
+    if ( ftruncate(d->fd, 0) < 0 )
+        err(1, NULL);
 
     for ( i = 0; i < di->nr_tracks; i++ )
         write_exact(d->fd, di->track[i].dat, 11*512);
