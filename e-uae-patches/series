@@ -1,0 +1,15 @@
+fedora14-spec-file
+fedora14-patch0-irq-fixes
+fedora14-patch1-hardfile-fixes
+fedora14-patch2-execstack
+fedora14-patch3-gtk-64bit
+fix-do-while-0
+fix-alsa-hang
+fix-x11-xkb-config
+x11-no-change-kbd-repeat
+gtk-state-save-dialog
+state-save-hotkeys
+gtk-disk-tracknr
+copylock-sync-log
+cheatmode-fixes
+libdisk-support

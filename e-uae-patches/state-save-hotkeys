@@ -1,0 +1,15 @@
+# HG changeset patch
+# Parent 825e1f46882c2c193f5454b8a1ef1d7010dbd2c9
+
+diff -r 825e1f46882c src/gfx-x11/x11keys.c
+--- a/src/gfx-x11/x11keys.c	Thu May 26 17:03:51 2011 +0100
++++ b/src/gfx-x11/x11keys.c	Thu May 26 17:04:34 2011 +0100
+@@ -472,6 +472,8 @@ static struct uae_hotkeyseq x11_hotkeys[
+     { MAKE_HOTKEYSEQ (XK_F12, XK_a, -1, -1,           INPUTEVENT_SPC_SWITCHINTERPOL) },
+     { MAKE_HOTKEYSEQ (XK_F12, XK_KP_Add, -1, -1,      INPUTEVENT_SPC_INCRFRAMERATE) },
+     { MAKE_HOTKEYSEQ (XK_F12, XK_KP_Subtract, -1, -1, INPUTEVENT_SPC_DECRFRAMERATE) },
++    { MAKE_HOTKEYSEQ (XK_F12, XK_0, -1, -1,	      INPUTEVENT_SPC_STATESAVEDIALOG) },
++    { MAKE_HOTKEYSEQ (XK_F12, XK_1, -1, -1,	      INPUTEVENT_SPC_STATERESTOREDIALOG) },
+     { MAKE_HOTKEYSEQ (XK_F12, XK_F1, -1, -1,	      INPUTEVENT_SPC_FLOPPY0) },
+     { MAKE_HOTKEYSEQ (XK_F12, XK_F2, -1, -1,	      INPUTEVENT_SPC_FLOPPY1) },
+     { MAKE_HOTKEYSEQ (XK_F12, XK_F3, -1, -1,	      INPUTEVENT_SPC_FLOPPY2) },

@@ -1,0 +1,78 @@
+# HG changeset patch
+# Parent 0f93ca01092a2d3b11e3daaad443bf99f5fc47bc
+
+diff -r 0f93ca01092a src/debug.c
+--- a/src/debug.c	Mon Jun 13 09:01:04 2011 +0100
++++ b/src/debug.c	Tue Jun 14 21:19:26 2011 +0100
+@@ -572,47 +572,46 @@ static void cheatsearch (const char **c)
+     uae_u32 type = 0; /* not yet */
+     uae_u32 count = 0;
+     uae_u32 fcount = 0;
+-    uae_u32 full = 0;
+ 
+     ignore_ws (c);
+     val = readhex (c);
++
++    if ( val == 0x123 )
++    {
++        free(vlist);
++        vlist = NULL;
++        return;
++    }
++
+     if (vlist == NULL) {
+-	vlist = malloc (256 * 4);
++	vlist = malloc (100000 * 4);
+ 	if (vlist != 0) {
+-	    for (count = 0; count < 255; count++)
+-		vlist[count] = 0;
+ 	    count = 0;
+-	    for (ptr = 0; ptr < allocated_chipmem - 40; ptr += 2, p += 2) {
+-		if (ptr >= 0x438 && p[3] == (val & 0xff)
+-		    && p[2] == (val >> 8 & 0xff)
+-		    && p[1] == (val >> 16 & 0xff)
+-		    && p[0] == (val >> 24 & 0xff))
++	    for (ptr = 0; ptr < allocated_chipmem - 40; ptr++, p++) {
++		if (ptr >= 0x438 && p[0] == (val & 0xff))
+ 		{
+-		    if (count < 255) {
++		    if (count < (100000-1)) {
+ 			vlist[count++]=ptr;
+-			console_out ("%08x: %x%x%x%x\n",ptr,p[0],p[1],p[2],p[3]);
+-		    } else
+-			full = 1;
+-		}
+-	    }
++			console_out ("%08x: %x\n",ptr,p[0]);
++                    }
++                }
++            }
++            vlist[count] = 0;
+ 	    console_out ("Found %d possible addresses with %d\n",count,val);
+ 	    console_out ("Now continue with 'g' and use 'C' with a different value\n");
+ 	}
+     } else {
+-	for (count = 0; count<255; count++) {
+-	    if (p[vlist[count]+3] == (val & 0xff)
+-		&& p[vlist[count]+2] == (val>>8 & 0xff)
+-		&& p[vlist[count]+1] == (val>>16 & 0xff)
+-		&& p[vlist[count]] == (val>>24 & 0xff))
++	for (count = 0; count<100000; count++) {
++            if (vlist[count] == 0)
++                break;
++	    if (p[vlist[count]] == (val & 0xff))
+ 	    {
+-		fcount++;
+-		console_out ("%08x: %x%x%x%x\n", vlist[count], p[vlist[count]],
+-			p[vlist[count]+1], p[vlist[count]+2], p[vlist[count]+3]);
++		console_out ("%08x: %x\n", vlist[count], p[vlist[count]]);
++		vlist[fcount++] = vlist[count];
+ 	    }
+ 	}
++        vlist[fcount] = 0;
+ 	console_out ("%d hits of %d found\n",fcount,val);
+-	free (vlist);
+-	vlist = NULL;
+     }
+ }
+ 

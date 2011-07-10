@@ -1,0 +1,225 @@
+# HG changeset patch
+# Parent 24de29ace6894215d8c8bf6a8b0625b844d0ab36
+
+diff -r 24de29ace689 src/disk.c
+--- a/src/disk.c	Sun Jun 05 09:05:32 2011 +0100
++++ b/src/disk.c	Sun Jun 05 10:20:50 2011 +0100
+@@ -618,6 +618,7 @@ static void update_drive_gui (int num)
+     gui_data.crc32[num] = drv->crc32;
+     gui_data.drive_motor[num] = drv->state;
+     gui_data.drive_track[num] = drv->cyl;
++    gui_data.drive_selected = ~selected;
+     gui_data.drive_side = side;
+     gui_data.drive_writing[num] = writ;
+     gui_ledstate &= ~(2 << num);
+diff -r 24de29ace689 src/gui-gtk/floppyfileentry.c
+--- a/src/gui-gtk/floppyfileentry.c	Sun Jun 05 09:05:32 2011 +0100
++++ b/src/gui-gtk/floppyfileentry.c	Sun Jun 05 10:20:50 2011 +0100
+@@ -81,6 +81,9 @@ static void floppyfileentry_init (Floppy
+     GTK_WIDGET_UNSET_FLAGS (ffe->path_widget, GTK_CAN_FOCUS);
+     gtk_editable_set_editable (GTK_EDITABLE (ffe->path_widget), FALSE);
+ 
++    ffe->tracknr_widget = gtk_label_new("0");
++    gtk_label_set_width_chars(GTK_LABEL(ffe->tracknr_widget), 3);
++
+     bbox = gtk_hbox_new (TRUE, 2);
+     ffe->insert_button = gtk_button_new_with_label ("Insert...");
+     ffe->eject_button  = gtk_button_new_with_label ("Eject");
+@@ -89,6 +92,7 @@ static void floppyfileentry_init (Floppy
+     gtk_box_pack_start (GTK_BOX (bbox), ffe->insert_button, TRUE, TRUE, 2);
+ 
+     hbox = gtk_hbox_new (FALSE, 3);
++    gtk_box_pack_start (GTK_BOX (hbox), ffe->tracknr_widget, FALSE, FALSE, 2);
+     gtk_box_pack_start (GTK_BOX (hbox), ledbox, FALSE, FALSE, 2);
+     gtk_box_pack_start (GTK_BOX (hbox), ffe->path_widget, TRUE, TRUE, 2);
+     gtk_box_pack_start (GTK_BOX (hbox), bbox, FALSE, FALSE, 2);
+@@ -289,6 +293,13 @@ void floppyfileentry_set_led (FloppyFile
+     led_set_color (LED (ffe->led), color);
+ }
+ 
++void floppyfileentry_set_tracknr (FloppyFileEntry *ffe, unsigned int nr)
++{
++    char txt[6];
++    sprintf(txt, "%u", nr);
++    gtk_label_set_text(GTK_LABEL(ffe->tracknr_widget), txt);
++}
++
+ void floppyfileentry_do_dialog (FloppyFileEntry *ffe)
+ {
+     on_insert (NULL, ffe);
+diff -r 24de29ace689 src/gui-gtk/floppyfileentry.h
+--- a/src/gui-gtk/floppyfileentry.h	Sun Jun 05 09:05:32 2011 +0100
++++ b/src/gui-gtk/floppyfileentry.h	Sun Jun 05 10:20:50 2011 +0100
+@@ -24,6 +24,7 @@ struct _FloppyFileEntry
+     GtkWidget *insert_button;
+     GtkWidget *eject_button;
+     GtkWidget *path_widget;
++    GtkWidget *tracknr_widget;
+ 
+     gchar     *filename;
+     gchar     *drivename;
+@@ -49,6 +50,7 @@ G_CONST_RETURN
+ #endif
+ gchar		       *floppyfileentry_get_filename	(FloppyFileEntry *ffentry);
+ void			floppyfileentry_set_led		(FloppyFileEntry *ffentry, gboolean state);
++void			floppyfileentry_set_tracknr	(FloppyFileEntry *ffe, unsigned int nr);
+ void			floppyfileentry_do_dialog	(FloppyFileEntry *ffentry);
+ 
+ #ifdef __cplusplus
+diff -r 24de29ace689 src/gui-gtk/gtkui.c
+--- a/src/gui-gtk/gtkui.c	Sun Jun 05 09:05:32 2011 +0100
++++ b/src/gui-gtk/gtkui.c	Sun Jun 05 10:20:50 2011 +0100
+@@ -104,6 +104,7 @@ static GtkAdjustment *cachesize_adj;
+ static GtkWidget *joy_widget[2][7];
+ 
+ static unsigned int prevledstate;
++static unsigned int prevtracknr[4];
+ 
+ static GtkWidget *hdlist_widget;
+ static int selected_hd_row;
+@@ -161,7 +162,8 @@ enum gui_commands {
+     GUICMD_MSGBOX,       // Display a message box for me, please
+     GUICMD_FLOPPYDLG,    // Open a floppy insert dialog
+     GUICMD_SAVEDLG,      /* Open a save image dialog */
+-    GUICMD_RESTOREDLG    /* Open a restore image dialog */
++    GUICMD_RESTOREDLG,   /* Open a restore image dialog */
++    GUICMD_UPDATELEDS    /* Update LEDs and other gui_info */
+ };
+ 
+ enum uae_commands {
+@@ -566,8 +568,8 @@ static void saverestore_dialog(int cmd)
+     gtk_widget_show(*psel);
+ }
+ 
+-#define MY_IDLE_PERIOD        250
+-#define LEDS_CALLBACK_PERIOD  1000
++static void leds_callback (void);
++
+ /*
+  * my_idle()
+  *
+@@ -634,39 +636,64 @@ static int my_idle (void)
+         case GUICMD_RESTOREDLG:
+             saverestore_dialog(cmd);
+             break;
++        case GUICMD_UPDATELEDS:
++            leds_callback();
++            break;
+ 	}
+     }
+     return 1;
+ }
+ 
+-static int leds_callback (void)
++static void leds_callback (void)
+ {
+     unsigned int leds = gui_ledstate;
+     unsigned int i;
+ 
+-    if (!quit_gui) {
+-	for (i = 0; i < 5; i++) {
+-	    GtkWidget *widget = i ? floppy_widget[i-1] : power_led;
+-	    unsigned int mask = 1 << i;
+-	    unsigned int on = leds & mask;
+-
+-	    if (!widget)
+-		continue;
+-
+-	   if (on == (prevledstate & mask))
+-		continue;
+-
+-	    if (i > 0)
+-		floppyfileentry_set_led (FLOPPYFILEENTRY (widget), on);
+-	    else {
+-		static GdkColor red   = {0, 0xffff, 0x0000, 0x0000};
+-		static GdkColor black = {0, 0x0000, 0x0000, 0x0000};
+-		led_set_color (LED (widget), on ? red : black);
+-	    }
+-	}
+-	prevledstate = leds;
++    if (quit_gui)
++        return;
++
++    for (i = 0; i < 5; i++) {
++        GtkWidget *widget = i ? floppy_widget[i-1] : power_led;
++        unsigned int mask = 1 << i;
++        unsigned int on = leds & mask;
++            
++        if (!widget)
++            continue;
++
++        if (on == (prevledstate & mask))
++            continue;
++
++        if (i > 0)
++            floppyfileentry_set_led (FLOPPYFILEENTRY (widget), on);
++        else {
++            static GdkColor red   = {0, 0xffff, 0x0000, 0x0000};
++            static GdkColor black = {0, 0x0000, 0x0000, 0x0000};
++            led_set_color (LED (widget), on ? red : black);
++        }
+     }
+-    return 1;
++
++    for ( i = 0; i < 4; i++ )
++    {
++        unsigned int tracknr = gui_data.drive_track[i]*2+gui_data.drive_side;
++        /* Ignore disabled drives and those where track # has not changed. */
++        if ( gui_data.drive_disabled[i] || (tracknr == prevtracknr[i]) )
++            continue;
++        /*
++         * Extra hack: disk side selection (lsb of track nr) is a global line.
++         * Prevent useless updates to inactive drives by checking each drive's
++         * select line if its cylinder # has not changed. If the drive hasn't
++         * stepped, and it is not selected, the dskside change is probably not
++         * relevant to it!
++         */
++        if ( !(gui_data.drive_selected & (1u<<i)) &&
++             ((tracknr ^ prevtracknr[i]) == 1) )
++            continue;
++        floppyfileentry_set_tracknr(
++            FLOPPYFILEENTRY(floppy_widget[i]), tracknr);
++        prevtracknr[i] = tracknr;
++    }
++
++    prevledstate = leds;
+ }
+ 
+ static int find_current_toggle (GtkWidget **widgets, int count)
+@@ -2013,8 +2040,6 @@ static void create_guidlg (void)
+     gtk_notebook_set_page (GTK_NOTEBOOK (notebook), i - 1);
+ 
+     gtk_widget_show (vbox);
+-
+-    gtk_timeout_add (1000, (GtkFunction)leds_callback, 0);
+ }
+ 
+ /*
+@@ -2075,12 +2100,13 @@ void gui_fps (int fps, int idle)
+  *
+  * Called from the main UAE thread to inform the GUI
+  * of disk activity so that indicator LEDs may be refreshed.
+- *
+- * We don't respond to this, since our LEDs are updated
+- * periodically by my_idle()
+  */
+ void gui_led (int num, int on)
+ {
++    gui_ledstate &= ~(1 << num);
++    if ( on )
++        gui_ledstate |= 1 << num;
++    write_comm_pipe_int (&to_gui_pipe, GUICMD_UPDATELEDS, 0);
+ }
+ 
+ 
+diff -r 24de29ace689 src/include/gui.h
+--- a/src/include/gui.h	Sun Jun 05 09:05:32 2011 +0100
++++ b/src/include/gui.h	Sun Jun 05 10:20:50 2011 +0100
+@@ -28,6 +28,7 @@ struct gui_info
+     uae_u8 drive_disabled[4];	    /* drive is disabled */
+     uae_u8 powerled;                /* state of power led */
+     uae_u8 drive_side;		    /* floppy side */
++    uae_u8 drive_selected;	    /* mask of selected floppies */
+     uae_u8 hd;			    /* harddrive */
+     uae_u8 cd;			    /* CD */
+     int fps, idle;

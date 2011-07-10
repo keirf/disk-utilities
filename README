@@ -71,3 +71,14 @@ mfmparse/
                    output from Amiga diskread tool.
     Converts To: ADF, .DSK
     Auto-detects and rips disk custom formats into an open container format.
+
+e-uae-patches/
+    A set of patches to fix and improve vanilla E-UAE-0.8.29-WIP4.
+    Improvements include disk track counters and save/restore dialogs for
+    the GTK-based UI, and support for reading libdisk .DSK images.
+
+    To use these patches, create a plain e-uae-0.8.29-wip4 tree, and then,
+    from within the e-uae-patches/ directory:
+    # for i in `cat series`; do patch -d xxx -p1 <$i ; done
+    where 'xxx' above is the path to your e-uae-0.8.29-wip4 tree!
+    You can now configure/build/install e-uae as usual.

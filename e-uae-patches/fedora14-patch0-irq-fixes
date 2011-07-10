@@ -1,0 +1,277 @@
+# HG changeset patch
+# Parent 85c4d46dd98bcc6afa4ac76d3efe4fa2cceb5501
+
+diff -r 85c4d46dd98b src/custom.c
+--- a/src/custom.c	Thu May 26 11:45:33 2011 +0100
++++ b/src/custom.c	Thu May 26 11:48:15 2011 +0100
+@@ -2550,86 +2550,103 @@ static void DMACON (unsigned int hpos, u
+ 
+ #ifdef CPUEMU_6
+ 
+-static int irq_pending[15];       /* If true, an IRQ is pending arrival at the CPU. */
+-static unsigned long irq_due[15]; /* Cycle time that IRQ will arrive at CPU */
++static int           irq_pending[15];	/* If true, an IRQ is pending arrival at the CPU. If false,
++					 * an IRQ has arrived or is disabled. */
++static unsigned long irq_time[15];	/* Cycle time an IRQ will arrive at the CPU if that IRQ is
++					 * pending or has arrived; otherwise 0, if an IRQ is disabled. */
+ 
+ /*
+- * Handle interrupt delay in cycle-exact mode.
++ * Get priority level of IRQ (cycle-exact mode)
+  */
+-static int intlev_2 (void)
+-{
+-    uae_u16 imask = intreq & intena;
+-    int il = -1;
+-
+-    if (imask && (intena & 0x4000)) {
+-	unsigned long cycles = get_cycles ();
+-	int i;
+-
+-	for (i = 14; i >= 0; i--) {
+-	    if (imask & (1 << i)) {
+-		if (irq_pending[i] && (cycles >= irq_due[i])) {
+-		    irq_pending[i] = 0;
+-
+-		    if (i == 13 || i == 14)
+-			il = -1;
+-		    else if (i == 11 || i == 12)
+-			return 5;
+-		    else if (i >= 7 && i <= 10)
+-			return 4;
+-		    else if (i >= 4 && i <= 6)
+-			return 3;
+-		    else if (i == 3)
+-			return 2;
+-		    else
+-			return 1;
+-	        }
++STATIC_INLINE int intlev_exact (uae_u16 imask)
++{
++#if 0
++    assert ((imask & 0x7FFF) != 0);
++#endif
++
++    unsigned long curr_time = get_cycles ();
++    int i;
++
++    for (i = 14; i >= 0; i--) {
++	if (imask & (1 << i)) {
++	    if (irq_pending[i] == 0 || ((curr_time - irq_time[i]) > 4 * CYCLE_UNIT)) {
++		/* Mark IRQ as arrived. */
++		irq_pending[i] = 0;
++
++		/* Get priority level of IRQ. */
++		if (i == 13 || i == 14)
++		    return 6;
++		if (i == 11 || i == 12)
++		    return 5;
++		if (i >= 7 && i <= 10)
++		    return 4;
++		if (i >= 4 && i <= 6)
++		    return 3;
++		if (i == 3)
++		    return 2;
++		else
++		    return 1;
+ 	    }
+ 	}
+-    } else
+-	unset_special (&regs, SPCFLAG_INT);
+-
+-    return il;
++    }
++    /* If we got here, then an at least one IRQ must be pending,
++     * but has not yet arrived at the CPU. */
++    return 0;
+ }
+ #endif
+ 
+ /*
+- * Get interrupt level of IRQ.
++ * Get priority level of IRQ (not cycle-exact mode)
++ */
++STATIC_INLINE int intlev_simple (uae_u16 imask)
++{
++#if 0
++    assert ((imask & 0x7FFF) != 0);
++#endif
++
++    if (imask & 0x6000)
++	return 6;
++    if (imask & 0x1800)
++	return 5;
++    if (imask & 0x0780)
++	return 4;
++    if (imask & 0x0070)
++	return 3;
++    if (imask & 0x0008)
++	return 2;
++    else
++	return 1;
++}
++
++/*
++ * Get level of interrupt request presented to CPU.
++ *
++ * If no IRQs are active and enabled, returns -1.
++ * If none of the active IRQs have yet reached the CPU, returns 0.
++ * Otherwise, returns the priority level of the highest priorty active IRQ.
+  */
+ int intlev (void)
+ {
+-    int il = -1;
+-
++    uae_u16 imask = intreq & intena;
++
++    if (imask && (intena & 0x4000)) {
+ #ifdef CPUEMU_6
+-    if (currprefs.cpu_cycle_exact) {
+-	il = intlev_2 ();
+-	if (il >= 0 && il <= (int) regs.intmask)
+-	    unset_special (&regs, SPCFLAG_INT);
+-    } else
++	if (currprefs.cpu_cycle_exact)
++	    return intlev_exact (imask);
++	else
+ #endif
+-    {
+-	uae_u16 imask = intreq & intena;
+-	if (imask && (intena & 0x4000)) {
+-	    if (imask & 0x6000)
+-		il = 6;
+-	    if (imask & 0x1800)
+-		il = 5;
+-	    if (imask & 0x0780)
+-		il = 4;
+-	    if (imask & 0x0070)
+-		il = 3;
+-	    if (imask & 0x0008)
+-		il = 2;
+-	    if (imask & 0x0007)
+-		il = 1;
+-	}
++	    return intlev_simple (imask);
+     }
+-
+-    return il;
+-}
+-
++    return -1;
++}
++
++/*
++ * Enable/disable an IRQ.
++ */
+ static void doint (void)
+ {
+-    set_special (&regs, SPCFLAG_INT);
++    if (intena & 0x4000)
++	set_special (&regs, SPCFLAG_INT);
+ 
+ #ifdef CPUEMU_6
+     if (currprefs.cpu_cycle_exact) {
+@@ -2639,12 +2656,12 @@ static void doint (void)
+ 	imask = intreq & intena;
+ 
+ 	if (imask && (intena & 0x4000)) {
+-	    /* Set up delay for IRQ to arrive at the CPU. */
+-	    unsigned long cycle_irq_due = get_cycles () + 4 * CYCLE_UNIT;
++	    /* Set up time for IRQ to arrive at the CPU. */
++	    unsigned long curr_time = get_cycles ();
+ 	    for (i = 0; i < 15; i++) {
+ 		if ((imask & (1 << i)) && irq_pending[i] == 0) {
+ 		    irq_pending[i] = 1;
+-		    irq_due[i]     = cycle_irq_due;
++		    irq_time[i]  = curr_time;
+ 		}
+ 	    }
+ 	}
+@@ -2677,14 +2694,17 @@ void INTREQ_0 (uae_u16 v)
+ 	     * pending status. */
+ 	    int i;
+ 	    for (i = 0; i < 15; i++) {
+-		if (v & (1 << i))
++		if (v & (1 << i)) {
+ 		    irq_pending[i] = 0;
++		    irq_time[i]    = 0;
++		}
+ 	    }
+ 	}
+     }
+ #endif
+ 
+-    doint ();
++    if (intena & 0x4000)
++	doint ();
+ }
+ 
+ void INTREQ (uae_u16 v)
+diff -r 85c4d46dd98b src/newcpu.c
+--- a/src/newcpu.c	Thu May 26 11:45:33 2011 +0100
++++ b/src/newcpu.c	Thu May 26 11:48:15 2011 +0100
+@@ -687,7 +687,10 @@ void REGPARAM2 MakeFromSR (struct regstr
+ 	}
+     }
+ 
++   /* Interrupt priority level may have changed. Assert SPCFLAG_INT
++    * to check if there's an IRQ ready to go at the new level. */
+     set_special (regs, SPCFLAG_INT);
++
+     if (regs->t1 || regs->t0)
+ 	set_special (regs, SPCFLAG_TRACE);
+     else
+@@ -973,15 +976,12 @@ void REGPARAM2 Exception (int nr, struct
+ 
+ STATIC_INLINE void service_interrupt (unsigned int level, struct regstruct *regs)
+ {
+-    if (level > regs->intmask) {
++    regs->stopped = 0;
++    unset_special (regs, SPCFLAG_STOP);
+ 
+-	regs->stopped = 0;
+-	unset_special (regs, SPCFLAG_STOP);
++    Exception (level + 24, regs, 0);
+ 
+-	Exception (level + 24, regs, 0);
+-
+-	regs->intmask = level;
+-    }
++    regs->intmask = level;
+ }
+ 
+ /*
+@@ -1694,12 +1694,14 @@ STATIC_INLINE int do_specialties (int cy
+      * In non-cycle-exact mode we handle this by separating the interrupt request
+      * pending (SPCFLAG_INT) and interrupt request arrived (SPCFLAG_DOINT) events.
+      * This ensures that there's always a delay of one opcode (and so at least 2
+-     * machine cycles) between the interrupt controller requesting an interrupt
+-     * and us servicing it here.
++     * machine cycles) between the interrupt controller requesting an interrupt or
++     * the processor changing its interrupt priority level and us servicing it here.
+      *
+      * In cycle-exact mode, there's just one event (SPCFLAG_INT) and the delay is
+      * handled internally by the interrupt controller code in custom.c - intlev()
+      * and friends.
++     *
++     * This stuff needs some tidying up!
+      */
+     if ((regs->spcflags & SPCFLAG_DOINT) ||
+ 	(currprefs.cpu_cycle_exact && (regs->spcflags & SPCFLAG_INT))) {
+@@ -1708,8 +1710,15 @@ STATIC_INLINE int do_specialties (int cy
+ 
+ 	unset_special (regs, SPCFLAG_DOINT);
+ 
+-	if (intr != -1)
++	if (intr > (int)regs->intmask) {
++	    if (currprefs.cpu_cycle_exact)
++		unset_special(regs, SPCFLAG_INT);
++
+ 	    service_interrupt (intr, regs);
++	} else {
++	    if (intr < 0 && currprefs.cpu_cycle_exact)
++		unset_special (regs, SPCFLAG_INT);
++	}
+     }
+ 
+     if ((regs->spcflags & SPCFLAG_INT) && !currprefs.cpu_cycle_exact) {

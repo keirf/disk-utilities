@@ -1,0 +1,16 @@
+# HG changeset patch
+# Parent d5a8a96dbfedb0335e8730e69ffc102674e59dc1
+
+diff -r d5a8a96dbfed src/gfx-x11/xwin.c
+--- a/src/gfx-x11/xwin.c	Mon Jun 06 08:56:16 2011 +0100
++++ b/src/gfx-x11/xwin.c	Mon Jun 06 08:56:26 2011 +0100
+@@ -38,6 +38,9 @@
+ #include "keymap/keymap.h"
+ #include "keymap/keymap_all.h"
+ 
++#define XAutoRepeatOn(x) ((void)0)
++#define XAutoRepeatOff(x) ((void)0)
++
+ #ifdef __cplusplus
+ #define VI_CLASS c_class
+ #else
