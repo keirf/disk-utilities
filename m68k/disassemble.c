@@ -145,20 +145,8 @@ static struct m68k_emulate_ops emul_ops = {
     .addr_name = emul_addr_name
 };
 
-static void read_exact(int fd, void *buf, size_t count)
-{
-    size_t done;
-
-    while ( count > 0 )
-    {
-        done = read(fd, buf, count);
-        if ( (done < 0) && ((errno == EAGAIN) || (errno == EINTR)) )
-            done = 0;
-        if ( done < 0 )
-            err(1, NULL);
-        count -= done;
-    }
-}
+/* read_exact */
+#include "../libdisk/util.c"
 
 int main(int argc, char **argv)
 {

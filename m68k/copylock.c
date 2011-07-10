@@ -1,7 +1,7 @@
 /******************************************************************************
- * m68k/disassemble.c
+ * m68k/copylock.c
  * 
- * Disassemble 680x0 code.
+ * Copylock extracter.
  * 
  * Written in 2011 by Keir Fraser
  */
@@ -22,23 +22,9 @@
 #include <utime.h>
 
 #include <amiga/amiga.h>
+#include <libdisk/util.h>
 
 #define MEM_SIZE (512*1024) /* our system has 512kB RAM */
-
-static void read_exact(int fd, void *buf, size_t count)
-{
-    size_t done;
-
-    while ( count > 0 )
-    {
-        done = read(fd, buf, count);
-        if ( (done < 0) && ((errno == EAGAIN) || (errno == EINTR)) )
-            done = 0;
-        if ( done < 0 )
-            err(1, NULL);
-        count -= done;
-    }
-}
 
 static void set_bit(unsigned int bit, char *map)
 {

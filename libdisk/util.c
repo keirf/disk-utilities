@@ -25,7 +25,7 @@ void memfree(void *p)
 
 void read_exact(int fd, void *buf, size_t count)
 {
-    size_t done;
+    ssize_t done;
     char *_buf = buf;
 
     while ( count > 0 )
@@ -47,7 +47,7 @@ void read_exact(int fd, void *buf, size_t count)
 
 void write_exact(int fd, const void *buf, size_t count)
 {
-    size_t done;
+    ssize_t done;
     const char *_buf = buf;
 
     while ( count > 0 )

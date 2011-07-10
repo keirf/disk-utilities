@@ -112,35 +112,8 @@ struct ffs_fileheader {
 
 static int is_ffs, is_readonly;
 
-static void read_exact(int fd, void *buf, size_t count)
-{
-    size_t done;
-
-    while ( count > 0 )
-    {
-        done = read(fd, buf, count);
-        if ( (done < 0) && ((errno == EAGAIN) || (errno == EINTR)) )
-            done = 0;
-        if ( done < 0 )
-            err(1, NULL);
-        count -= done;
-    }
-}
-
-static void write_exact(int fd, const void *buf, size_t count)
-{
-    size_t done;
-
-    while ( count > 0 )
-    {
-        done = write(fd, buf, count);
-        if ( (done < 0) && ((errno == EAGAIN) || (errno == EINTR)) )
-            done = 0;
-        if ( done < 0 )
-            err(1, NULL);
-        count -= done;
-    }
-}
+/* read_exact, write_exact */
+#include "../libdisk/util.c"
 
 static void *get_block(int fd, unsigned int block)
 {
