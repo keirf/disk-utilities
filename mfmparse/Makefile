@@ -3,18 +3,13 @@ include $(ROOT)/Rules.mk
 
 TARGET := mfmparse
 
-ifeq ($(caps),y)
-LIBS := -ldl -lstdc++
-LIBDISK_OBJ := ../libdisk/libdisk_caps.o
-else
-LIBS :=
-LIBDISK_OBJ := ../libdisk/libdisk.o
-endif
+LIBS := -L../libdisk -ldisk
+# -ldl -lstdc++
 
 all:
 	$(MAKE) $(TARGET)
 
-mfmparse: mfmparse.o $(LIBDISK_OBJ) config.o
+mfmparse: mfmparse.o config.o
 	$(CC) $(CFLAGS) $(LIBS) $^ -o $@
 
 install: all

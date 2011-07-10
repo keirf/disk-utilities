@@ -2,28 +2,18 @@ ROOT := ../..
 include $(ROOT)/Rules.mk
 
 OBJS := stream.o kryoflux_stream.o diskread.o disk_image.o soft.o
-
-OBJS += $(OBJS-y)
+ifeq ($(caps),y)
+OBJS += caps.o
+else
+OBJS += caps_disabled.o
+endif
 
 PICOBJS := $(patsubst %.o,%.opic,$(OBJS))
 
-all: streams.o streams.opic streams_caps.o streams_caps.opic
+all: streams.opic
 
-streams.o: $(OBJS) caps_disabled.o
+streams.opic: $(PICOBJS)
 	$(LD) -r -o $@ $^
-	$(OBJCOPY) --localize-hidden $@
-
-streams.opic: $(PICOBJS) caps_disabled.opic
-	$(LD) -r -o $@ $^
-	$(OBJCOPY) --localize-hidden $@
-
-streams_caps.o: $(OBJS) caps.o
-	$(LD) -r -o $@ $^
-	$(OBJCOPY) --localize-hidden $@
-
-streams_caps.opic: $(PICOBJS) caps.opic
-	$(LD) -r -o $@ $^
-	$(OBJCOPY) --localize-hidden $@
 
 clean:
 	$(RM) *.a *.o *.opic *.so* *~ $(DEPS)

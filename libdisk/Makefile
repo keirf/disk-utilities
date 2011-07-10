@@ -8,22 +8,18 @@ PICOBJS := $(patsubst %.o,%.opic,$(OBJS))
 MAJOR := 0
 MINOR := 0
 
+LIBS :=
+LIBS-$(caps) := -ldl -lstdc++
+LIBS += $(LIBS-y)
+
 all:
 	$(MAKE) -C stream all
-	$(MAKE) libdisk.so libdisk.o libdisk_caps.o
+	$(MAKE) libdisk.so
 
 libdisk.so: $(PICOBJS) stream/streams.opic
-	$(LD) -h $(@).$(MAJOR) -shared -o $(@).$(MAJOR).$(MINOR) $^
+	$(CC) -Wl,-h,$(@).$(MAJOR) -shared $(LIBS) -o $(@).$(MAJOR).$(MINOR) $^
 	ln -sf $(@).$(MAJOR).$(MINOR) $(@).$(MAJOR)
 	ln -sf $(@).$(MAJOR) $(@)
-
-libdisk.o: $(OBJS) stream/streams.o
-	$(LD) -r -o $@ $^
-	$(OBJCOPY) --localize-hidden $@
-
-libdisk_caps.o: $(OBJS) stream/streams_caps.o
-	$(LD) -r -o $@ $^
-	$(OBJCOPY) --localize-hidden $@
 
 install: all
 	$(INSTALL_DIR) $(LIBDIR)
