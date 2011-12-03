@@ -19,7 +19,7 @@ static struct memory *find_memory(
     struct amiga_state *s, uint32_t addr, uint32_t bytes)
 {
     struct memory *m = s->memory;
-    while ( m && (m->end < (addr + bytes - 1)) )
+    while (m && (m->end < (addr + bytes - 1)))
         m = m->next;
     return (m && (m->start <= addr)) ? m : NULL;
 }
@@ -29,8 +29,7 @@ int mem_read(uint32_t addr, uint32_t *val, unsigned int bytes,
 {
     struct memory *m = find_memory(s, addr, bytes);
 
-    if ( m == NULL )
-    {
+    if (m == NULL) {
         log_warn("Read %u bytes non-RAM", bytes);
         return M68KEMUL_UNHANDLEABLE;
         *val = bytes == 1 ? 0xff : bytes == 2 ? 0xffff : 0xffffffff;
@@ -38,8 +37,7 @@ int mem_read(uint32_t addr, uint32_t *val, unsigned int bytes,
     }
 
     addr -= m->start;
-    switch ( bytes )
-    {
+    switch (bytes) {
     case 1:
         *val = *(uint8_t *)&m->dat[addr];
         break;
@@ -61,16 +59,14 @@ int mem_write(uint32_t addr, uint32_t val, unsigned int bytes,
 {
     struct memory *m = find_memory(s, addr, bytes);
 
-    if ( m == NULL )
-    {
+    if (m == NULL) {
         log_warn("Write %u bytes non-RAM", bytes);
         return M68KEMUL_UNHANDLEABLE;
         return M68KEMUL_OKAY;
     }
 
     addr -= m->start;
-    switch ( bytes )
-    {
+    switch (bytes) {
     case 1:
         *(uint8_t *)&m->dat[addr] = val;
         break;
@@ -90,8 +86,7 @@ int mem_write(uint32_t addr, uint32_t val, unsigned int bytes,
 static void regions_dump(struct region *r)
 {
     printf("Region list: ");
-    while ( r )
-    {
+    while (r) {
         printf("%x-%x, ", r->start, r->end);
         r = r->next;
     }
@@ -109,20 +104,15 @@ void mem_reserve(struct amiga_state *s, uint32_t start, uint32_t bytes)
     regions_dump(m->free);
 
     pprev = &m->free;
-    while ( ((r = *pprev) != NULL) && (r->end < start) )
+    while (((r = *pprev) != NULL) && (r->end < start))
         pprev = &r->next;
 
     ASSERT((r != NULL) && (r->start <= start) && (r->end >= end));
-    if ( r->start == start )
-    {
+    if (r->start == start) {
         r->start = end + 1;
-    }
-    else if ( r->end == end )
-    {
+    } else if (r->end == end) {
         r->end = start - 1;
-    }
-    else
-    {
+    } else {
         n = memalloc(sizeof(*n));
         n->start = end + 1;
         n->end = r->end;
@@ -131,8 +121,7 @@ void mem_reserve(struct amiga_state *s, uint32_t start, uint32_t bytes)
         r->next = n;
     }
 
-    if ( r->start > r->end )
-    {
+    if (r->start > r->end) {
         ASSERT(r->start == (r->end + 1));
         *pprev = r->next;
         memfree(r);
@@ -149,16 +138,15 @@ uint32_t mem_alloc(struct amiga_state *s, struct memory *m, uint32_t bytes)
     regions_dump(m->free);
 
     pprev = &m->free;
-    while ( ((r = *pprev) != NULL) && ((r->end - r->start + 1) < bytes) )
+    while (((r = *pprev) != NULL) && ((r->end - r->start + 1) < bytes))
         pprev = &r->next;
 
-    if ( r == NULL )
+    if (r == NULL)
         return 0;
 
     addr = r->start;
     r->start += bytes;
-    if ( r->start > r->end )
-    {
+    if (r->start > r->end) {
         ASSERT(r->start == (r->end + 1));
         *pprev = r->next;
         memfree(r);
@@ -179,15 +167,12 @@ void mem_free(struct amiga_state *s, uint32_t addr, uint32_t bytes)
     regions_dump(m->free);
 
     pprev = &m->free;
-    while ( ((r = *pprev) != NULL) && (r->end < addr) )
+    while (((r = *pprev) != NULL) && (r->end < addr))
         pprev = &r->next;
 
-    if ( (r != NULL) && (r->start == (addr + bytes)) )
-    {
+    if ((r != NULL) && (r->start == (addr + bytes))) {
         r->start -= bytes;
-    }
-    else
-    {
+    } else {
         r = memalloc(sizeof(*r));
         r->start = addr;
         r->end = addr + bytes - 1;
@@ -196,8 +181,7 @@ void mem_free(struct amiga_state *s, uint32_t addr, uint32_t bytes)
     }
 
     prev = container_of(pprev, struct region, next);
-    if ( (pprev != &m->free) && (prev->end >= (addr-1)) )
-    {
+    if ((pprev != &m->free) && (prev->end >= (addr-1))) {
         ASSERT(prev->end == (addr-1));
         prev->end = r->end;
         prev->next = r->next;
@@ -225,10 +209,20 @@ struct memory *mem_init(struct amiga_state *s, uint32_t start, uint32_t bytes)
     m->free->end = m->end;
 
     pprev = &s->memory;
-    while ( ((curr = *pprev) != NULL) && (curr->start < m->start) )
+    while (((curr = *pprev) != NULL) && (curr->start < m->start))
         pprev = &curr->next;
     m->next = curr;
     *pprev = m;
 
     return m;
 }
+
+/*
+ * Local variables:
+ * mode: C
+ * c-file-style: "Linux"
+ * c-basic-offset: 4
+ * tab-width: 4
+ * indent-tabs-mode: nil
+ * End:
+ */

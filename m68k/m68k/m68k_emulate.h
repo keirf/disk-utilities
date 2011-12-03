@@ -167,3 +167,13 @@ int m68k_deliver_exception(
 #define M68KVEC_trap_0         0x20
 
 #endif /* __M68K_EMULATE_H__ */
+
+/*
+ * Local variables:
+ * mode: C
+ * c-file-style: "Linux"
+ * c-basic-offset: 4
+ * tab-width: 4
+ * indent-tabs-mode: nil
+ * End:
+ */

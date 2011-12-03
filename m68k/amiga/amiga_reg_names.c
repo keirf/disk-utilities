@@ -262,3 +262,13 @@ const char *cia_reg_name[16] = {
     "cra",
     "crb"
 };
+
+/*
+ * Local variables:
+ * mode: C
+ * c-file-style: "Linux"
+ * c-basic-offset: 4
+ * tab-width: 4
+ * indent-tabs-mode: nil
+ * End:
+ */

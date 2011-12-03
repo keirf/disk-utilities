@@ -14,11 +14,10 @@
 void custom_write_reg(struct amiga_state *s, uint16_t addr, uint16_t val)
 {
     addr >>= 1;
-    if ( addr >= ARRAY_SIZE(custom_reg_name) )
+    if (addr >= ARRAY_SIZE(custom_reg_name))
         return;
 
-    switch ( addr )
-    {
+    switch (addr) {
     case CUST_dsklen:
         s->custom[addr] = val;
         disk_dsklen_changed(s);
@@ -27,7 +26,7 @@ void custom_write_reg(struct amiga_state *s, uint16_t addr, uint16_t val)
     case CUST_intena:
     case CUST_intreq:
     case CUST_adkcon:
-        if ( val & 0x8000 )
+        if (val & 0x8000)
             s->custom[addr] |= val & 0x7fff;
         else
             s->custom[addr] &= ~val;
@@ -47,11 +46,10 @@ uint16_t custom_read_reg(struct amiga_state *s, uint16_t addr)
     uint16_t val = 0xffff;
 
     addr >>= 1;
-    if ( addr >= ARRAY_SIZE(custom_reg_name) )
+    if (addr >= ARRAY_SIZE(custom_reg_name))
         return val;
 
-    switch ( addr )
-    {
+    switch (addr) {
     case CUST_dmaconr:
         val = s->custom[CUST_dmacon];
         break;
@@ -73,7 +71,7 @@ uint16_t custom_read_reg(struct amiga_state *s, uint16_t addr)
         break;
     }
 
-    if ( addr != CUST_dskbytr )
+    if (addr != CUST_dskbytr)
         log_info("Read %04x from custom register %s (%x)",
                  val, custom_reg_name[addr], (addr<<1)+0xdff000);
 
@@ -82,7 +80,17 @@ uint16_t custom_read_reg(struct amiga_state *s, uint16_t addr)
 
 void intreq_set_bit(struct amiga_state *s, uint8_t bit)
 {
-    if ( !(s->custom[CUST_intreq] & (1u<<bit)) )
+    if (!(s->custom[CUST_intreq] & (1u<<bit)))
         log_info("INTREQ bit %u set", bit);
     s->custom[CUST_intreq] |= 1u << bit;
 }
+
+/*
+ * Local variables:
+ * mode: C
+ * c-file-style: "Linux"
+ * c-basic-offset: 4
+ * tab-width: 4
+ * indent-tabs-mode: nil
+ * End:
+ */

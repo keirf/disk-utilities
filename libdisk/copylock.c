@@ -45,8 +45,7 @@ uint16_t copylock_decode_word(uint32_t x)
 {
     uint16_t y = 0;
     unsigned int i;
-    for ( i = 0; i < 16; i++ )
-    {
+    for (i = 0; i < 16; i++) {
         y |= (x & 1) << i;
         x >>= 2;
     }
@@ -63,40 +62,36 @@ static void *copylock_write_mfm(
 
     p = info = memalloc(ARRAY_SIZE(sync_list) * (512/8));
 
-    while ( (stream_next_bit(s) != -1) &&
-            (sync < ARRAY_SIZE(sync_list)) )
-    {
-        if ( (uint16_t)s->word != sync_list[sync] )
+    while ((stream_next_bit(s) != -1) &&
+           (sync < ARRAY_SIZE(sync_list))) {
+
+        if ((uint16_t)s->word != sync_list[sync])
             continue;
 
-        if ( sync == 0 )
+        if (sync == 0)
             ti->data_bitoff = s->index_offset - 15;
 
-        if ( stream_next_bits(s, 16) == -1 )
+        if (stream_next_bits(s, 16) == -1)
             goto fail;
-        if ( copylock_decode_word((uint16_t)s->word) != sync )
+        if (copylock_decode_word((uint16_t)s->word) != sync)
             continue;
 
         s->latency = 0;
-        for ( j = 0; j < 256; j++ )
-        {
-            if ( stream_next_bits(s, 32) == -1 )
+        for (j = 0; j < 256; j++) {
+            if (stream_next_bits(s, 32) == -1)
                 goto fail;
             x = copylock_decode_word((uint32_t)s->word);
-            if ( (sync == 0) && (j == 0) )
+            if ((sync == 0) && (j == 0))
                 key = x>>9;
-            if ( (sync == 6) && (j < ARRAY_SIZE(sec6_sig)) )
-            {
-                if ( x != sec6_sig[j] )
+            if ((sync == 6) && (j < ARRAY_SIZE(sec6_sig))) {
+                if (x != sec6_sig[j])
                     goto fail;
-            }
-            else
-            {
-                if ( (((x >> 7) ^ x) & 0xf8) ||
-                     (((x>>9) ^ key) & 0x7f) )
+            } else {
+                if ((((x >> 7) ^ x) & 0xf8) ||
+                    (((x>>9) ^ key) & 0x7f))
                     goto fail;
                 key = x;
-                if ( (j & 3) == 0 )
+                if ((j & 3) == 0)
                     *p++ = x >> 8;
             }
         }
@@ -107,28 +102,25 @@ static void *copylock_write_mfm(
     *p++ = x << 1;
 
 fail:
-    if ( sync != ARRAY_SIZE(sync_list) )
-    {
+    if (sync != ARRAY_SIZE(sync_list)) {
         memfree(info);
         return NULL;
     }
 
-    for ( i = 0; i < ARRAY_SIZE(latency); i++ )
-    {
+    for (i = 0; i < ARRAY_SIZE(latency); i++) {
         float d = (100.0 * ((int)latency[i] - (int)latency[5]))
             / (int)latency[5];
-        switch ( i )
-        {
+        switch (i) {
         case 4:
-            if ( d > -4.8 )
+            if (d > -4.8)
                 printf("Copylock: Short sector is only %.2f%% different\n", d);
             break;
         case 6:
-            if ( d < 4.8 )
+            if (d < 4.8)
                 printf("Copylock: Long sector is only %.2f%% different\n", d);
             break;
         default:
-            if ( (d < -2.0) || (d > 2.0) )
+            if ((d < -2.0) || (d > 2.0))
                 printf("Copylock: Normal sector is %.2f%% different\n", d);
             break;
         }
@@ -148,24 +140,22 @@ static void copylock_read_mfm(
     uint8_t *dat = ti->dat;
     uint16_t word = *dat++;
 
-    for ( i = 0; i < ARRAY_SIZE(sync_list); i++ )
-    {
+    for (i = 0; i < ARRAY_SIZE(sync_list); i++) {
         uint16_t speed =
             i == 4 ? (SPEED_AVG * 94) / 100 :
             i == 6 ? (SPEED_AVG * 106) / 100 :
             SPEED_AVG;
         tbuf_bits(tbuf, speed, TB_raw, 16, sync_list[i]);
         tbuf_bits(tbuf, speed, TB_all, 8, i);
-        for ( j = 0; j < 512; j++ )
-        {
-            if ( (i == 6) && (j == 0) )
-                for ( j = 0; j < 16; j += 2 )
+        for (j = 0; j < 512; j++) {
+            if ((i == 6) && (j == 0))
+                for (j = 0; j < 16; j += 2)
                     tbuf_bits(tbuf, speed, TB_all, 16, sec6_sig[j/2]);
-            if ( !(j & 7) )
+            if (!(j & 7))
                 word = (word << 8) | *dat++;
             tbuf_bits(tbuf, speed, TB_all, 8, word >> (8 - (j&7)));
         }
-        for ( j = 0; j < 48; j++ )
+        for (j = 0; j < 48; j++)
             tbuf_bits(tbuf, speed, TB_all, 8, 0);
     }
 }
@@ -176,3 +166,13 @@ struct track_handler copylock_handler = {
     .write_mfm = copylock_write_mfm,
     .read_mfm = copylock_read_mfm
 };
+
+/*
+ * Local variables:
+ * mode: C
+ * c-file-style: "Linux"
+ * c-basic-offset: 4
+ * tab-width: 4
+ * indent-tabs-mode: nil
+ * End:
+ */

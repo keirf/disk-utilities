@@ -24,11 +24,11 @@ static struct stream *caps_open(const char *name)
     char sig[4];
 
     /* Simple signature check */
-    if ( (fd = open(name, O_RDONLY)) == -1 )
+    if ((fd = open(name, O_RDONLY)) == -1)
         return NULL;
     read_exact(fd, sig, 4);
     close(fd);
-    if ( strncmp(sig, "CAPS", 4) )
+    if (strncmp(sig, "CAPS", 4))
         return NULL;
 
     w("CAPS/IPF image is detected, but support is not enabled.\n");
@@ -42,3 +42,13 @@ static struct stream *caps_open(const char *name)
 struct stream_type caps = {
     .open = caps_open,
 };
+
+/*
+ * Local variables:
+ * mode: C
+ * c-file-style: "Linux"
+ * c-basic-offset: 4
+ * tab-width: 4
+ * indent-tabs-mode: nil
+ * End:
+ */

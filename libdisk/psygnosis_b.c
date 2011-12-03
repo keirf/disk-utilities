@@ -36,54 +36,50 @@ static void *psygnosis_b_write_mfm(
     char *block = memalloc(ti->len);
     unsigned int j, k, valid_blocks = 0;
 
-    while ( (stream_next_bit(s) != -1) &&
-            (valid_blocks != ((1u<<6)-1)) )
-    {
+    while ((stream_next_bit(s) != -1) &&
+           (valid_blocks != ((1u<<6)-1))) {
+
         uint16_t raw_dat[6*513];
         uint32_t idx_off, nr_valid = 0;
 
-        if ( (uint16_t)s->word != 0x4489 )
+        if ((uint16_t)s->word != 0x4489)
             continue;
 
         idx_off = s->index_offset - 15;
 
-        if ( stream_next_bits(s, 32) == -1 )
+        if (stream_next_bits(s, 32) == -1)
             goto done;
 
-        if ( s->word != 0x552aaaaa )
+        if (s->word != 0x552aaaaa)
             continue;
 
-        for ( j = 0; j < sizeof(raw_dat)/2; j++ )
-        {
+        for (j = 0; j < sizeof(raw_dat)/2; j++) {
             uint16_t e, o;
-            if ( stream_next_bits(s, 32) == -1 )
+            if (stream_next_bits(s, 32) == -1)
                 goto done;
             e = s->word >> 16;
             o = s->word;
             raw_dat[j] = htons(((e & 0x5555u) << 1) | (o & 0x5555u));
         }
 
-        for ( j = 0; j < 6; j++ )
-        {
+        for (j = 0; j < 6; j++) {
             uint16_t *sec = &raw_dat[j*513];
             uint16_t csum = ntohs(*sec++), c = 0;
-            for ( k = 0; k < 512; k++ )
+            for (k = 0; k < 512; k++)
                 c += ntohs(sec[k]);
-            if ( c == csum )
-            {
+            if (c == csum) {
                 memcpy(&block[j*1024], sec, 1024);
                 valid_blocks |= 1u << j;
                 nr_valid++;
             }
         }
 
-        if ( nr_valid )
+        if (nr_valid)
             ti->data_bitoff = idx_off;
     }
 
 done:
-    if ( valid_blocks == 0 )
-    {
+    if (valid_blocks == 0) {
         free(block);
         return NULL;
     }
@@ -103,15 +99,14 @@ static void psygnosis_b_read_mfm(
     tbuf_bits(tbuf, SPEED_AVG, TB_raw, 16, 0x4489);
     tbuf_bits(tbuf, SPEED_AVG, TB_all, 16, 0xf000);
 
-    for ( i = 0; i < 6; i++ )
-    {
+    for (i = 0; i < 6; i++) {
         uint16_t csum = 0;
-        for ( j = 0; j < 512; j++ )
+        for (j = 0; j < 512; j++)
             csum += ntohs(dat[j]);
-        if ( !(ti->valid_sectors & (1u << i)) )
+        if (!(ti->valid_sectors & (1u << i)))
             csum = ~csum; /* bad checksum for an invalid sector */
         tbuf_bits(tbuf, SPEED_AVG, TB_even_odd, 16, csum);
-        for ( j = 0; j < 512; j++, dat++ )
+        for (j = 0; j < 512; j++, dat++)
             tbuf_bits(tbuf, SPEED_AVG, TB_even_odd, 16, ntohs(*dat));
     }
 }
@@ -122,3 +117,13 @@ struct track_handler psygnosis_b_handler = {
     .write_mfm = psygnosis_b_write_mfm,
     .read_mfm = psygnosis_b_read_mfm
 };
+
+/*
+ * Local variables:
+ * mode: C
+ * c-file-style: "Linux"
+ * c-basic-offset: 4
+ * tab-width: 4
+ * indent-tabs-mode: nil
+ * End:
+ */

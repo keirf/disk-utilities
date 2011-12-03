@@ -35,8 +35,7 @@ static int ss_next_bit(struct stream *s)
     uint16_t speed;
     uint8_t dat;
 
-    if ( ++ss->pos >= ss->bitlen )
-    {
+    if (++ss->pos >= ss->bitlen) {
         ss->pos = 0;
         index_reset(s);
     }
@@ -69,3 +68,13 @@ struct stream *stream_soft_open(
 
     return &ss->s;
 }
+
+/*
+ * Local variables:
+ * mode: C
+ * c-file-style: "Linux"
+ * c-basic-offset: 4
+ * tab-width: 4
+ * indent-tabs-mode: nil
+ * End:
+ */

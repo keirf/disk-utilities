@@ -13,3 +13,13 @@ struct stream_type {
 void index_reset(struct stream *s);
 
 #endif /* __STREAM_PRIVATE_H__ */
+
+/*
+ * Local variables:
+ * mode: C
+ * c-file-style: "Linux"
+ * c-basic-offset: 4
+ * tab-width: 4
+ * indent-tabs-mode: nil
+ * End:
+ */

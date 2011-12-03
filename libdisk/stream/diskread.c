@@ -42,10 +42,10 @@ static struct stream *dr_open(const char *name)
     struct dr_stream *drs;
     int fd;
 
-    if ( (stat(name, &sbuf) < 0) || (sbuf.st_size != BYTES_PER_FILE) )
+    if ((stat(name, &sbuf) < 0) || (sbuf.st_size != BYTES_PER_FILE))
         return NULL;
 
-    if ( (fd = open(name, O_RDONLY)) == -1 )
+    if ((fd = open(name, O_RDONLY)) == -1)
         err(1, "%s", name);
 
     drs = memalloc(sizeof(*drs));
@@ -69,15 +69,14 @@ static void dr_reset(struct stream *s, unsigned int tracknr)
     struct dr_stream *drs = container_of(s, struct dr_stream, s);
     unsigned int i;
 
-    if ( drs->track != tracknr )
-    {
+    if (drs->track != tracknr) {
         lseek(drs->fd, tracknr*BYTES_PER_TRACK, SEEK_SET);
         read_exact(drs->fd, drs->dat, BYTES_PER_TRACK);
         drs->track = tracknr;
     }
 
     /* Skip garbage start-of-track data. */
-    for ( i = 16; (i < BYTES_PER_TRACK/2) && (drs->dat[2*i+1] == 0); i++ )
+    for (i = 16; (i < BYTES_PER_TRACK/2) && (drs->dat[2*i+1] == 0); i++)
         continue;
     drs->dat_idx = i;
     drs->bpos = 0;
@@ -88,11 +87,10 @@ static int dr_next_bit(struct stream *s)
     struct dr_stream *drs = container_of(s, struct dr_stream, s);
     int bit;
 
-    if ( (drs->bpos & 7) == 0 )
-    {
-        if ( drs->dat_idx >= BYTES_PER_TRACK/2 )
+    if ((drs->bpos & 7) == 0) {
+        if (drs->dat_idx >= BYTES_PER_TRACK/2)
             return -1;
-        if ( (drs->byte_latency = drs->dat[2*drs->dat_idx]) & 0x80 )
+        if ((drs->byte_latency = drs->dat[2*drs->dat_idx]) & 0x80)
             index_reset(s);
         drs->byte_latency &= 0x7f;
         drs->byte_latency *= CIA_NS_PER_TICK;
@@ -104,7 +102,7 @@ static int dr_next_bit(struct stream *s)
     bit = (drs->b >> (7 - drs->bpos)) & 1;
 
     s->latency += drs->byte_latency >> 3;
-    if ( drs->bpos++ == 7 )
+    if (drs->bpos++ == 7)
         s->latency += drs->byte_latency & 7;
 
     return bit;
@@ -116,3 +114,13 @@ struct stream_type diskread = {
     .reset = dr_reset,
     .next_bit = dr_next_bit
 };
+
+/*
+ * Local variables:
+ * mode: C
+ * c-file-style: "Linux"
+ * c-basic-offset: 4
+ * tab-width: 4
+ * indent-tabs-mode: nil
+ * End:
+ */

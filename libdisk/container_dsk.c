@@ -67,8 +67,7 @@ struct tag_header {
 
 static void tag_swizzle(struct disk_tag *dtag)
 {
-    switch ( dtag->id )
-    {
+    switch (dtag->id) {
     case DSKTAG_rnc_pdos_key: {
         struct rnc_pdos_key *t = (struct rnc_pdos_key *)dtag;
         t->key = ntohl(t->key);
@@ -88,8 +87,7 @@ static void dsk_init(struct disk *d)
     di->flags = 0;
     di->track = memalloc(nr_tracks * sizeof(*ti));
 
-    for ( i = 0; i < nr_tracks; i++ )
-    {
+    for (i = 0; i < nr_tracks; i++) {
         ti = &di->track[i];
         memset(ti, 0, sizeof(*ti));
         init_track_info(ti, TRKTYP_unformatted);
@@ -113,8 +111,8 @@ static int dsk_open(struct disk *d, bool_t quiet)
     off_t off;
 
     read_exact(d->fd, &dh, sizeof(dh));
-    if ( strncmp(dh.signature, "DSK\0", 4) ||
-         (ntohs(dh.version) != 0) )
+    if (strncmp(dh.signature, "DSK\0", 4) ||
+        (ntohs(dh.version) != 0))
         return 0;
 
     di = memalloc(sizeof(*di));
@@ -122,11 +120,10 @@ static int dsk_open(struct disk *d, bool_t quiet)
     di->flags = ntohs(dh.flags);
     di->track = memalloc(di->nr_tracks * sizeof(*ti));
     read_bytes_per_th = bytes_per_th = ntohs(dh.bytes_per_thdr);
-    if ( read_bytes_per_th > sizeof(*ti) )
+    if (read_bytes_per_th > sizeof(*ti))
         read_bytes_per_th = sizeof(*ti);
 
-    for ( i = 0; i < di->nr_tracks; i++ )
-    {
+    for (i = 0; i < di->nr_tracks; i++) {
         memset(&th, 0, sizeof(th));
         read_exact(d->fd, &th, read_bytes_per_th);
         ti = &di->track[i];
@@ -154,7 +151,7 @@ static int dsk_open(struct disk *d, bool_t quiet)
         tag_swizzle(dtag);
         *pprevtag = dltag;
         pprevtag = &dltag->next;
-    } while ( dtag->id != DSKTAG_end );
+    } while (dtag->id != DSKTAG_end);
     *pprevtag = NULL;
 
     d->di = di;
@@ -172,7 +169,7 @@ static void dsk_close(struct disk *d)
     unsigned int i, datoff;
 
     lseek(d->fd, 0, SEEK_SET);
-    if ( ftruncate(d->fd, 0) < 0 )
+    if (ftruncate(d->fd, 0) < 0)
         err(1, NULL);
 
     strncpy(dh.signature, "DSK\0", 4);
@@ -183,11 +180,10 @@ static void dsk_close(struct disk *d)
     write_exact(d->fd, &dh, sizeof(dh));
 
     datoff = sizeof(dh) + di->nr_tracks * sizeof(th);
-    for ( dltag = d->tags; dltag != NULL; dltag = dltag->next )
+    for (dltag = d->tags; dltag != NULL; dltag = dltag->next)
         datoff += sizeof(struct tag_header) + dltag->tag.len;
 
-    for ( i = 0; i < di->nr_tracks; i++ )
-    {
+    for (i = 0; i < di->nr_tracks; i++) {
         ti = &di->track[i];
         th.type = htons(ti->type);
         th.flags = htons(ti->flags);
@@ -200,8 +196,7 @@ static void dsk_close(struct disk *d)
         datoff += ti->len;
     }
 
-    for ( dltag = d->tags; dltag != NULL; dltag = dltag->next )
-    {
+    for (dltag = d->tags; dltag != NULL; dltag = dltag->next) {
         struct tag_header tagh;
         dtag = &dltag->tag;
         tagh.id = htons(dtag->id);
@@ -212,10 +207,9 @@ static void dsk_close(struct disk *d)
         tag_swizzle(dtag);
     }
 
-    for ( i = 0; i < di->nr_tracks; i++ )
-    {
+    for (i = 0; i < di->nr_tracks; i++) {
         ti = &di->track[i];
-        if ( ti->len != 0 )
+        if (ti->len != 0)
             write_exact(d->fd, ti->dat, ti->len);
     }
 }
@@ -234,8 +228,7 @@ static int dsk_write_mfm(
     stream_next_index(s);
     ti->dat = handlers[type]->write_mfm(d, tracknr, s);
 
-    if ( ti->dat == NULL )
-    {
+    if (ti->dat == NULL) {
         memset(ti, 0, sizeof(*ti));
         init_track_info(ti, TRKTYP_unformatted);
         ti->typename = "Unformatted*";
@@ -243,8 +236,7 @@ static int dsk_write_mfm(
         return -1;
     }
 
-    if ( ti->total_bits == 0 )
-    {
+    if (ti->total_bits == 0) {
         stream_reset(s, tracknr);
         stream_next_index(s);
         stream_next_index(s);
@@ -252,7 +244,7 @@ static int dsk_write_mfm(
     }
 
     ti->data_bitoff = (int32_t)ti->data_bitoff % (int32_t)ti->total_bits;
-    if ( (int32_t)ti->data_bitoff < 0 )
+    if ((int32_t)ti->data_bitoff < 0)
         ti->data_bitoff += ti->total_bits;
 
     return 0;
@@ -264,3 +256,13 @@ struct container container_dsk = {
     .close = dsk_close,
     .write_mfm = dsk_write_mfm
 };
+
+/*
+ * Local variables:
+ * mode: C
+ * c-file-style: "Linux"
+ * c-basic-offset: 4
+ * tab-width: 4
+ * indent-tabs-mode: nil
+ * End:
+ */

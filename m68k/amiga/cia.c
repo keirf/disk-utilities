@@ -24,14 +24,13 @@ void cia_write_reg(
 {
     log_info("%s write %02x to reg %02x", cia_name(cia,s), val, off);
 
-    switch ( off )
-    {
+    switch (off) {
     case CIAPRA:
         cia->pra_o = val;
         break;
     case CIAPRB:
         cia->prb_o = val;
-        if ( is_ciab(cia, s) )
+        if (is_ciab(cia, s))
             disk_cia_changed(s);
         break;
     case CIADDRA:
@@ -57,7 +56,7 @@ void cia_write_reg(
         /* Start timer if CRB[3]=1 (one-shot mode) */
         break;
     case CIAICR:
-        if ( val & 0x80 )
+        if (val & 0x80)
             cia->icrw |= val & 0x7f;
         else
             cia->icrw &= ~val;
@@ -79,8 +78,7 @@ uint8_t cia_read_reg(
 {
     uint8_t val = 0xff;
 
-    switch ( off )
-    {
+    switch (off) {
     case CIAPRA:
         val = (cia->pra_i & ~cia->ddra) | (cia->pra_o & cia->ddra);
         break;
@@ -120,7 +118,7 @@ uint8_t cia_read_reg(
         break;
     }
 
-    if ( val || (off != 0xd) )
+    if (val || (off != 0xd))
         log_info("%s read %02x from reg %02x", cia_name(cia,s), val, off);
 
     return val;
@@ -132,3 +130,13 @@ void cia_set_icr_flag(
     log_info("%s ICR bit %u set", cia_name(cia,s), bit);
     cia->icrr |= 1u << bit;
 }
+
+/*
+ * Local variables:
+ * mode: C
+ * c-file-style: "Linux"
+ * c-basic-offset: 4
+ * tab-width: 4
+ * indent-tabs-mode: nil
+ * End:
+ */

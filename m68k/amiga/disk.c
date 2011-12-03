@@ -38,8 +38,7 @@ static void track_load_byte(struct amiga_state *s)
 
 static void disk_dma_word(struct amiga_state *s, uint16_t w)
 {
-    if ( s->disk.dsklen & 0x3fff )
-    {
+    if (s->disk.dsklen & 0x3fff) {
         uint32_t dskpt =
             (s->custom[CUST_dskpth] << 16) | s->custom[CUST_dskptl];
         s->ctxt.ops->write(dskpt, w, 2, &s->ctxt);
@@ -49,8 +48,7 @@ static void disk_dma_word(struct amiga_state *s, uint16_t w)
         s->disk.dsklen--;
     }
 
-    if ( !(s->disk.dsklen & 0x3fff) )
-    {
+    if (!(s->disk.dsklen & 0x3fff)) {
         log_info("Disk DMA finished");
         s->disk.dma = 0;
         intreq_set_bit(s, 1); /* disk block done */
@@ -64,37 +62,32 @@ static void mfm_cb(void *_s)
     time_ns_t now = s->event_base.current_time;
     uint16_t w = s->disk.mfm_word;
 
-    for ( t += s->disk.ns_per_cell; t <= now; t += s->disk.ns_per_cell )
-    {
+    for (t += s->disk.ns_per_cell; t <= now; t += s->disk.ns_per_cell) {
         w <<= 1;
-        if ( s->disk.mfmbyte & 0x80 )
+        if (s->disk.mfmbyte & 0x80)
             w |= 1;
         s->disk.mfmbyte <<= 1;
-        if ( ++s->disk.mfmpos == s->disk.track_mfm->bitlen )
-        {
+        if (++s->disk.mfmpos == s->disk.track_mfm->bitlen) {
             cia_set_icr_flag(s, &s->ciab, CIAICRB_FLG);
             s->disk.mfmpos = 0;
         }
-        if ( !(s->disk.mfmpos & 7) )
+        if (!(s->disk.mfmpos & 7))
             track_load_byte(s);
         s->disk.bitpos++;
         s->custom[CUST_dskbytr] &= ~(1u<<12);
-        if ( !(s->disk.bitpos & 7) )
-        {
+        if (!(s->disk.bitpos & 7)) {
             s->custom[CUST_dskbytr] &= 0x7f00;
             s->custom[CUST_dskbytr] |= 0x8000 | (uint8_t)w;
-            if ( (s->disk.dma == 2) && !(s->disk.bitpos & 15) )
+            if ((s->disk.dma == 2) && !(s->disk.bitpos & 15))
                 disk_dma_word(s, w);
         }
-        if ( (s->custom[CUST_adkcon] & (1u<<10)) /* WORDSYNC? */
-             && (w == s->custom[CUST_dsksync]) )
-        {
+        if ((s->custom[CUST_adkcon] & (1u<<10)) /* WORDSYNC? */
+            && (w == s->custom[CUST_dsksync])) {
             log_info("Disk sync found");
             intreq_set_bit(s, 12); /* disk sync found */
             s->custom[CUST_dskbytr] |= 1u<<12; /* WORDEQUAL */
             s->disk.bitpos = 0;
-            if ( (s->custom[CUST_dmacon] & (1u<<4)) && (s->disk.dma == 1) )
-            {
+            if ((s->custom[CUST_dmacon] & (1u<<4)) && (s->disk.dma == 1)) {
                 /*
                  * How much checking should I do for DMA read start?
                  * RNC Copylock only sets dmacon[4], doesn't touch the
@@ -139,11 +132,10 @@ static void track_unload(struct amiga_state *s)
 static void disk_recalc_cia_inputs(struct amiga_state *s)
 {
     s->ciaa.pra_i |= 0x3c;
-    if ( s->ciab.prb_o & (1u << CIAB_DSKSEL0) )
+    if (s->ciab.prb_o & (1u << CIAB_DSKSEL0))
         return;
 
-    switch ( s->disk.motor )
-    {
+    switch (s->disk.motor) {
     case motor_off:
     case motor_spinning_up:
         s->ciaa.pra_i |= 1u << CIAB_DSKRDY;
@@ -154,21 +146,18 @@ static void disk_recalc_cia_inputs(struct amiga_state *s)
         break;
     }
 
-    if ( s->disk.tracknr <= 1 )
+    if (s->disk.tracknr <= 1)
         s->ciaa.pra_i &= ~(1u << CIAB_DSKTRACK0);
 }
 
 static void motor_cb(void *_s)
 {
     struct amiga_state *s = _s;
-    if ( s->disk.motor == motor_spinning_up )
-    {
+    if (s->disk.motor == motor_spinning_up) {
         log_info("Disk motor on and fully spun up");
         s->disk.motor = motor_on;
         track_load(s);
-    }
-    else
-    {
+    } else {
         log_info("Disk motor off and fully spun down");
         s->disk.motor = motor_off;
         track_unload(s);
@@ -179,7 +168,7 @@ static void motor_cb(void *_s)
 static void step_cb(void *_s)
 {
     struct amiga_state *s = _s;
-    if ( s->disk.step == step_in )
+    if (s->disk.step == step_in)
         s->disk.tracknr += 2;
     else
         s->disk.tracknr -= 2;
@@ -193,44 +182,33 @@ void disk_cia_changed(struct amiga_state *s)
     uint8_t old_ciabb = s->disk.old_ciabb;
 
     /* Disk side. */
-    if ( (old_ciabb ^ new_ciabb) & CIAB_DSKSIDE )
-    {
+    if ((old_ciabb ^ new_ciabb) & CIAB_DSKSIDE) {
         s->disk.tracknr ^= 1;
         track_load(s);
     }
 
     /* Skip most of this if DF0: not selected. */
-    if ( new_ciabb & (1u << CIAB_DSKSEL0) )
+    if (new_ciabb & (1u << CIAB_DSKSEL0))
         goto out;
 
     /* Latch motor state on disk-selection edge. */
-    if ( old_ciabb & (1u << CIAB_DSKSEL0) )
-    {
-        if ( !(new_ciabb & (1u << CIAB_DSKMOTOR)) )
-        {
-            if ( s->disk.motor == motor_off )
-            {
+    if (old_ciabb & (1u << CIAB_DSKSEL0)) {
+        if (!(new_ciabb & (1u << CIAB_DSKMOTOR))) {
+            if (s->disk.motor == motor_off) {
                 log_info("Disk spinning up %lu");
                 s->disk.motor = motor_spinning_up;
                 event_set_delta(s->disk.motor_delay, MOTORON_DELAY);
-            }
-            else if ( s->disk.motor == motor_spinning_down )
-            {
+            } else if (s->disk.motor == motor_spinning_down) {
                 log_warn("Disk spindown aborted");
                 s->disk.motor = motor_on;
                 event_unset(s->disk.motor_delay);
             }
-        }
-        else
-        {
-            if ( s->disk.motor == motor_on )
-            {
+        } else {
+            if (s->disk.motor == motor_on) {
                 log_info("Disk spinning down");
                 s->disk.motor = motor_spinning_down;
                 event_set_delta(s->disk.motor_delay, MOTOROFF_DELAY);
-            }
-            else if ( s->disk.motor == motor_spinning_up )
-            {
+            } else if (s->disk.motor == motor_spinning_up) {
                 log_warn("Disk spinup aborted");
                 s->disk.motor = motor_off;
                 event_unset(s->disk.motor_delay);
@@ -239,15 +217,14 @@ void disk_cia_changed(struct amiga_state *s)
     }
 
     /* Disk step request? */
-    if ( !(old_ciabb & (1u << CIAB_DSKSTEP)) &&
-         (new_ciabb & (1u << CIAB_DSKSTEP)) &&
-         (s->disk.step == step_none) )
-    {
+    if (!(old_ciabb & (1u << CIAB_DSKSTEP)) &&
+        (new_ciabb & (1u << CIAB_DSKSTEP)) &&
+        (s->disk.step == step_none)) {
         s->disk.step = (new_ciabb & CIAB_DSKDIREC) ? step_out : step_in;
-        if ( ((s->disk.step == step_out) && (s->disk.tracknr <= 1)) ||
-             ((s->disk.step == step_in) && (s->disk.tracknr >= 159)) )
+        if (((s->disk.step == step_out) && (s->disk.tracknr <= 1)) ||
+            ((s->disk.step == step_in) && (s->disk.tracknr >= 159)))
             s->disk.step = step_none;
-        if ( s->disk.step != step_none )
+        if (s->disk.step != step_none)
             event_set_delta(s->disk.step_delay, STEP_DELAY);
     }
 
@@ -260,13 +237,10 @@ void disk_dsklen_changed(struct amiga_state *s)
 {
     uint16_t old_dsklen = s->disk.dsklen;
     uint16_t new_dsklen = s->custom[CUST_dsklen];
-    if ( (old_dsklen & new_dsklen & 0x8000) && !s->disk.dma )
-    {
+    if ((old_dsklen & new_dsklen & 0x8000) && !s->disk.dma) {
         log_info("DSKLEN requests DMA start %04x", new_dsklen);
         s->disk.dma = 1;
-    }
-    else if ( !(new_dsklen & 0x8000) && s->disk.dma )
-    {
+    } else if (!(new_dsklen & 0x8000) && s->disk.dma) {
         log_warn("Disk DMA aborted, %u words left", old_dsklen & 0x3fff);
         s->disk.dma = 0;
     }
@@ -276,7 +250,7 @@ void disk_dsklen_changed(struct amiga_state *s)
 void disk_init(struct amiga_state *s)
 {
     s->disk.df0_disk = disk_open(df0_filename, 1, 0);
-    if ( s->disk.df0_disk == NULL )
+    if (s->disk.df0_disk == NULL)
         errx(1, "%s", df0_filename);
 
     /* Set up CIA peripheral data registers. */
@@ -299,3 +273,12 @@ void amiga_insert_df0(const char *filename)
     df0_filename = filename;
 }
 
+/*
+ * Local variables:
+ * mode: C
+ * c-file-style: "Linux"
+ * c-basic-offset: 4
+ * tab-width: 4
+ * indent-tabs-mode: nil
+ * End:
+ */

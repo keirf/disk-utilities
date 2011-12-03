@@ -120,15 +120,15 @@ static void *get_block(int fd, unsigned int block)
     off_t off;
     void *dat;
 
-    if ( block >= BLOCKS_PER_DISK )
+    if (block >= BLOCKS_PER_DISK)
         errx(1, "Block index %u out of range", block);
 
     dat = malloc(BYTES_PER_BLOCK);
-    if ( dat == NULL )
+    if (dat == NULL)
         err(1, NULL);
 
     off = lseek(fd, block * BYTES_PER_BLOCK, SEEK_SET);
-    if ( off < 0 )
+    if (off < 0)
         err(1, NULL);
 
     read_exact(fd, dat, BYTES_PER_BLOCK);
@@ -147,17 +147,17 @@ static void checksum_block(void *dat)
     uint32_t sum = 0, *blk = dat;
     unsigned int i;
 
-    for ( i = 0; i < BYTES_PER_BLOCK/4; i++ )
+    for (i = 0; i < BYTES_PER_BLOCK/4; i++)
         sum += ntohl(blk[i]);
 
-    if ( sum != 0 )
+    if (sum != 0)
         errx(1, "Bad block checksum %08x", sum);
 }
 
 static const char *format_bcpl_string(uint8_t *bcpl_str)
 {
     static char str[64];
-    if ( bcpl_str[0] > (sizeof(str)-1) )
+    if (bcpl_str[0] > (sizeof(str)-1))
         errx(1, "BCPL string too long");
     sprintf(str, "%.*s", bcpl_str[0], &bcpl_str[1]);
     return str;
@@ -197,34 +197,32 @@ static void handle_file(int fd, char *path, struct ffs_fileheader *file)
            ntohl(file->file_size),
            format_datestamp(&file->datestamp));
 
-    if ( is_readonly )
+    if (is_readonly)
         return;
 
     file_fd = open(path, O_WRONLY|O_CREAT|O_TRUNC, 0666);
-    if ( file_fd == -1 )
+    if (file_fd == -1)
         err(1, "%s", path);
 
     data_per_block = is_ffs ? BYTES_PER_BLOCK : BYTES_PER_BLOCK-24;
 
     todo = ntohl(file->file_size);
-    for ( nxtblk = 0; todo != 0; nxtblk++ )
-    {
+    for (nxtblk = 0; todo != 0; nxtblk++) {
         unsigned int idx, this_todo;
         char *dat;
-        if ( nxtblk == HASH_SIZE )
-        {
+        if (nxtblk == HASH_SIZE) {
             idx = ntohl(file->extension);
             put_block(file);
             file = get_block(fd, idx);
             checksum_block(file);
-            if ( (ntohl(file->type) != T_LIST) ||
-                 (ntohl(file->subtype) != ST_FILE) )
+            if ((ntohl(file->type) != T_LIST) ||
+                (ntohl(file->subtype) != ST_FILE))
                 errx(1, "Bad file-ext block");
             nxtblk = 0;
         }
         idx = ntohl(file->data[HASH_SIZE-nxtblk-1]);
         dat = get_block(fd, idx);
-        if ( !is_ffs )
+        if (!is_ffs)
             checksum_block(dat);
         this_todo = (todo > data_per_block) ? data_per_block : todo;
         write_exact(file_fd, &dat[is_ffs?0:24], this_todo);
@@ -247,32 +245,29 @@ static void handle_dir(int fd, char *prefix, struct ffs_dir *dir)
     const char *name;
     struct ffs_fileheader *file;
 
-    if ( !is_readonly )
+    if (!is_readonly)
         (void)mkdir(prefix, 0777);
 
     strcat(prefix, "/");
     printf(" %-61s %s\n", prefix, format_datestamp(&dir->datestamp));
 
-    for ( i = 0; i < HASH_SIZE; i++ )
-    {
+    for (i = 0; i < HASH_SIZE; i++) {
         idx = ntohl(dir->hash[i]);
-        while ( idx != 0 )
-        {
+        while (idx != 0) {
             file = get_block(fd, idx);
-            if ( ntohl(file->type) != T_HEADER )
+            if (ntohl(file->type) != T_HEADER)
                 errx(1, "Not a header block (type %08x)", ntohl(file->type));
             checksum_block(file);
 
             name = format_bcpl_string(file->file_name);
-            if ( (path = malloc(strlen(prefix) + strlen(name) + 2)) == NULL )
+            if ((path = malloc(strlen(prefix) + strlen(name) + 2)) == NULL)
                 err(1, NULL);
             strcpy(path, prefix);
             strcat(path, name);
 
             idx = ntohl(file->hash_chain);
 
-            switch ( (int)ntohl(file->subtype) )
-            {
+            switch ((int)ntohl(file->subtype)) {
             case ST_USERDIR:
                 handle_dir(fd, path, (struct ffs_dir *)file);
                 break;
@@ -285,7 +280,7 @@ static void handle_dir(int fd, char *prefix, struct ffs_dir *dir)
         }
     }
 
-    if ( !is_readonly )
+    if (!is_readonly)
         set_times(prefix, time_from_datestamp(&dir->datestamp));
 
     put_block(dir);
@@ -300,43 +295,43 @@ int main(int argc, char **argv)
     char *boot_block, *dest_dir = ".", *tmp;
     const char *vol;
 
-    if ( argc == 3 )
+    if (argc == 3)
         dest_dir = argv[2];
-    else if ( argc == 2 )
+    else if (argc == 2)
         is_readonly = 1;
     else
         errx(1, "Usage: adfread <filename> [<dest_dir>]");
 
     fd = open(argv[1], O_RDONLY);
-    if ( fd == -1 )
+    if (fd == -1)
         err(1, "%s", argv[1]);
 
     sz = lseek(fd, 0, SEEK_END);
-    if ( sz < 0 )
+    if (sz < 0)
         err(1, NULL);
-    if ( sz != BYTES_PER_DISK )
+    if (sz != BYTES_PER_DISK)
         errx(1, "Bad file size %ld bytes (expected %ld bytes)",
              (long)sz, (long)BYTES_PER_DISK);
 
     boot_block = get_block(fd, 0);
-    if ( strncmp(boot_block, "DOS", 3) )
+    if (strncmp(boot_block, "DOS", 3))
         errx(1, "Bad Amiga bootblock");
     is_ffs = boot_block[3] & 1;
     put_block(boot_block);
 
     root_block = get_block(fd, BLOCKS_PER_DISK/2);
     checksum_block(root_block);
-    if ( (ntohl(root_block->type) != T_HEADER) ||
-         (ntohl(root_block->subtype) != ST_ROOT) ||
-         (ntohl(root_block->hash_size) != HASH_SIZE) )
+    if ((ntohl(root_block->type) != T_HEADER) ||
+        (ntohl(root_block->subtype) != ST_ROOT) ||
+        (ntohl(root_block->hash_size) != HASH_SIZE))
         errx(1, "Bad root block");
 
     vol = format_bcpl_string(root_block->disk_name);
-    if ( (tmp = malloc(strlen(dest_dir) + 1 + strlen(vol) + 2)) == NULL )
+    if ((tmp = malloc(strlen(dest_dir) + 1 + strlen(vol) + 2)) == NULL)
         err(1, NULL);
     strcpy(tmp, dest_dir);
     dest_dir = tmp;
-    if ( dest_dir[strlen(dest_dir)-1] != '/' )
+    if (dest_dir[strlen(dest_dir)-1] != '/')
         strcat(dest_dir, "/");
     strcat(dest_dir, vol);
 
@@ -350,3 +345,13 @@ int main(int argc, char **argv)
 
     return 0;
 }
+
+/*
+ * Local variables:
+ * mode: C
+ * c-file-style: "Linux"
+ * c-basic-offset: 4
+ * tab-width: 4
+ * indent-tabs-mode: nil
+ * End:
+ */

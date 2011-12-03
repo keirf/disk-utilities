@@ -30,13 +30,13 @@ static void *decode_dat(const char *filename, unsigned int *psz)
     off_t sz;
     int fd;
 
-    if ( (fd = open(filename, O_RDONLY)) == -1 )
+    if ((fd = open(filename, O_RDONLY)) == -1)
         err(1, "%s", filename);
 
-    if ( (sz = lseek(fd, 0, SEEK_END)) < 0 )
+    if ((sz = lseek(fd, 0, SEEK_END)) < 0)
         err(1, NULL);
 
-    if ( (buf = malloc(sz)) == NULL )
+    if ((buf = malloc(sz)) == NULL)
         err(1, NULL);
     lseek(fd, 0, SEEK_SET);
     read_exact(fd, buf, sz);
@@ -44,16 +44,15 @@ static void *decode_dat(const char *filename, unsigned int *psz)
 
     p = buf;
     type = longs = 0;
-    while ( (char *)p < ((char *)buf + sz - 8) )
-    {
+    while ((char *)p < ((char *)buf + sz - 8)) {
         type = ntohl(*p++);
         longs = ntohl(*p++);
-        if ( type == 0x3e9 )
+        if (type == 0x3e9)
             break;
         p += longs;
     }
 
-    if ( (type != 0x3e9) || ((char *)&p[longs] > ((char *)buf + sz)) )
+    if ((type != 0x3e9) || ((char *)&p[longs] > ((char *)buf + sz)))
         errx(1, "No valid executable chunk detected");
 
     *psz = longs * 4;
@@ -82,19 +81,17 @@ int main(int argc, char **argv)
     unsigned int fsec, lsec, csec, datsz;
     uint32_t key = 0;
 
-    while ( argc > 5 )
-    {
-        if ( !strcmp(argv[argc-1], "-f") )
+    while (argc > 5) {
+        if (!strcmp(argv[argc-1], "-f"))
             postfill = 1;
-        else if ( !strncmp(argv[argc-1], "-e", 2) )
+        else if (!strncmp(argv[argc-1], "-e", 2))
             key = strtol(argv[argc-1]+2, NULL, 16);
         else
             goto usage;
         argc--;
     }
 
-    if ( argc != 5 )
-    {
+    if (argc != 5) {
     usage:
         errx(1, "Usage: adfwrite <adffile> <datfile> <startsec> "
              "<endsec> [-f] [-e<key>]\n"
@@ -105,33 +102,30 @@ int main(int argc, char **argv)
     }
 
     fd = open(argv[1], O_RDWR);
-    if ( fd == -1 )
+    if (fd == -1)
         err(1, "%s", argv[1]);
 
     fsec = atoi(argv[3]);
     lsec = atoi(argv[4]);
-    if ( (fsec < 2) || (lsec >= (160*11)) || (fsec > lsec) )
+    if ((fsec < 2) || (lsec >= (160*11)) || (fsec > lsec))
         errx(1, "Bad sector range %u-%u", fsec, lsec);
 
     sz = lseek(fd, 0, SEEK_END);
-    if ( sz != (160*11*512) )
+    if (sz != (160*11*512))
         errx(1, "Bad ADF image size (%u bytes)", (unsigned int)sz);
 
     dat = decode_dat(argv[2], &datsz);
-    if ( datsz > ((lsec - fsec + 1) * 512) )
+    if (datsz > ((lsec - fsec + 1) * 512))
         errx(1, "Data too big (%u bytes > %u bytes)",
              datsz, (lsec - fsec + 1) * 512);
 
-    if ( key )
-    {
+    if (key) {
         unsigned int i;
-        for ( i = 0; i < datsz; i += 4 )
-        {
+        for (i = 0; i < datsz; i += 4) {
             key = next_key(key);
             *(uint32_t *)&dat[i] ^= htonl(key);
         }
-        for ( i = 0; i < 512; i += 4 )
-        {
+        for (i = 0; i < 512; i += 4) {
             key = next_key(key);
             *(uint32_t *)&zero[i] ^= key;
         }
@@ -139,12 +133,12 @@ int main(int argc, char **argv)
 
     lseek(fd, fsec*512, SEEK_SET);
     write_exact(fd, dat, datsz);
-    if ( datsz & 511 )
+    if (datsz & 511)
         write_exact(fd, zero, 512 - (datsz&511));
     csec = fsec + (datsz+511)/512;
 
-    if ( postfill )
-        for ( ; csec <= lsec; csec++ )
+    if (postfill)
+        for (; csec <= lsec; csec++)
             write_exact(fd, zero, 512);
 
     printf("Sectors %u-%u inclusive are stuffed!\n", fsec, csec - 1);
@@ -152,3 +146,13 @@ int main(int argc, char **argv)
     close(fd);
     return 0;
 }
+
+/*
+ * Local variables:
+ * mode: C
+ * c-file-style: "Linux"
+ * c-basic-offset: 4
+ * tab-width: 4
+ * indent-tabs-mode: nil
+ * End:
+ */

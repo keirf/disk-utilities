@@ -34,18 +34,15 @@ struct stream *stream_open(const char *name)
     unsigned int i;
 
     /* Only Kryoflux STREAMs may be anything other than a single file. */
-    if ( (stat(name, &sbuf) < 0) || S_ISDIR(sbuf.st_mode) )
-    {
+    if ((stat(name, &sbuf) < 0) || S_ISDIR(sbuf.st_mode)) {
         st = &kryoflux_stream;
-        if ( (s = st->open(name)) != NULL )
+        if ((s = st->open(name)) != NULL)
             s->type = st;
         return s;
     }
 
-    for ( i = 0; (st = stream_type[i]) != NULL; i++ )
-    {
-        if ( (s = st->open(name)) != NULL )
-        {
+    for (i = 0; (st = stream_type[i]) != NULL; i++) {
+        if ((s = st->open(name)) != NULL) {
             s->type = st;
             break;
         }
@@ -70,19 +67,19 @@ void stream_reset(struct stream *s, unsigned int tracknr)
 void stream_next_index(struct stream *s)
 {
     do {
-        if ( stream_next_bit(s) == -1 )
+        if (stream_next_bit(s) == -1)
             break;
-    } while ( s->index_offset != 0 );
+    } while (s->index_offset != 0);
 }
 
 int stream_next_bit(struct stream *s)
 {
     int b;
-    if ( s->nr_index >= 5 )
+    if (s->nr_index >= 5)
         return -1;
     s->index_offset++;
     b = s->type->next_bit(s);
-    if ( b != -1 )
+    if (b != -1)
         s->word = (s->word << 1) | b;
     return b;
 }
@@ -90,8 +87,8 @@ int stream_next_bit(struct stream *s)
 int stream_next_bits(struct stream *s, unsigned int bits)
 {
     unsigned int i;
-    for ( i = 0; i < bits; i++ )
-        if ( stream_next_bit(s) == -1 )
+    for (i = 0; i < bits; i++)
+        if (stream_next_bit(s) == -1)
             return -1;
     return 0;
 }
@@ -101,9 +98,8 @@ int stream_next_bytes(struct stream *s, void *p, unsigned int bytes)
     unsigned int i;
     unsigned char *dat = p;
 
-    for ( i = 0; i < bytes; i++ )
-    {
-        if ( stream_next_bits(s, 8) == -1 )
+    for (i = 0; i < bytes; i++) {
+        if (stream_next_bits(s, 8) == -1)
             return -1;
         dat[i] = (uint8_t)s->word;
     }
@@ -117,3 +113,13 @@ void index_reset(struct stream *s)
     s->index_offset = 0;
     s->nr_index++;
 }
+
+/*
+ * Local variables:
+ * mode: C
+ * c-file-style: "Linux"
+ * c-basic-offset: 4
+ * tab-width: 4
+ * indent-tabs-mode: nil
+ * End:
+ */

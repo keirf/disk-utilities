@@ -38,3 +38,13 @@ void __log_error(struct amiga_state *, enum subsystem, const char *, ...);
 void logging_init(struct amiga_state *);
 
 #endif /* __LOGGING_H__ */
+
+/*
+ * Local variables:
+ * mode: C
+ * c-file-style: "Linux"
+ * c-basic-offset: 4
+ * tab-width: 4
+ * indent-tabs-mode: nil
+ * End:
+ */

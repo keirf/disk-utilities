@@ -22,7 +22,7 @@ static void remove_from_list(struct event **pprev, struct event *e)
 {
     struct event *curr, **_pprev = pprev;
 
-    while ( (curr = *_pprev) != e )
+    while ((curr = *_pprev) != e)
         _pprev = &curr->next;
 
     *_pprev = e->next;
@@ -32,7 +32,7 @@ static void add_to_list(struct event **pprev, struct event *e)
 {
     struct event *curr, **_pprev = pprev;
 
-    while ( ((curr = *_pprev) != NULL) && (curr->time <= e->time) )
+    while (((curr = *_pprev) != NULL) && (curr->time <= e->time))
         _pprev = &curr->next;
 
     e->next = curr;
@@ -71,7 +71,7 @@ void event_set_delta(struct event *event, time_ns_t delta)
 
 void event_unset(struct event *event)
 {
-    if ( !event->time )
+    if (!event->time)
         return;
     remove_from_list(&event->base->active_events, event);
     event->time = 0;
@@ -81,11 +81,20 @@ void fire_events(struct event_base *base)
 {
     struct event *event;
 
-    while ( ((event = base->active_events) != NULL) &&
-            (event->time <= base->current_time) )
-    {
+    while (((event = base->active_events) != NULL) &&
+           (event->time <= base->current_time)) {
         base->active_events = event->next;
         event->time = 0;
         (*event->cb)(event->cb_data);
     }
 }
+
+/*
+ * Local variables:
+ * mode: C
+ * c-file-style: "Linux"
+ * c-basic-offset: 4
+ * tab-width: 4
+ * indent-tabs-mode: nil
+ * End:
+ */

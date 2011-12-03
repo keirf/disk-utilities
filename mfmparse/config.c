@@ -1,5 +1,5 @@
 /******************************************************************************
- * mfmparse/config.h
+ * mfmparse/config.c
  * 
  * Parse config file which defines allowed formats for particular disks.
  * 
@@ -56,14 +56,14 @@ static void parse_err(const char *f, ...)
 static int mygetc(void)
 {
     int c = fgetc(fi->f);
-    if ( c == '\n' )
+    if (c == '\n')
         fi->line++;
     return c;
 }
 
 static void myungetc(int c)
 {
-    if ( c == '\n' )
+    if (c == '\n')
         fi->line--;
     ungetc(c, fi->f);
 }
@@ -72,85 +72,68 @@ static void parse_token(struct token *t)
 {
     int c;
 
-    while ( isspace(c = mygetc()) && (c != '\n') )
+    while (isspace(c = mygetc()) && (c != '\n'))
         continue;
 
 retry:
-    if ( isdigit(c) )
-    {
+    if (isdigit(c)) {
         t->type = NUM;
         t->u.num.start = c - '0';
-        while ( isdigit(c = mygetc()) )
+        while (isdigit(c = mygetc()))
             t->u.num.start = t->u.num.start * 10 + c - '0';
         t->u.num.end = t->u.num.start;
         t->u.num.step = 1;
-        if ( c == '-' )
-        {
+        if (c == '-') {
             t->u.num.end = 0;
-            while ( isdigit(c = mygetc()) )
+            while (isdigit(c = mygetc()))
                 t->u.num.end = t->u.num.end * 10 + c - '0';
-            if ( t->u.num.end < t->u.num.start )
+            if (t->u.num.end < t->u.num.start)
                 parse_err("bad range %u-%u", t->u.num.start, t->u.num.end);
         }
-        if ( c == '/' )
-        {
+        if (c == '/') {
             t->u.num.step = 0;
-            while ( isdigit(c = mygetc()) )
+            while (isdigit(c = mygetc()))
                 t->u.num.step = t->u.num.step * 10 + c - '0';
         }
         myungetc(c);
-    }
-    else if ( c == '"' )
-    {
+    } else if (c == '"') {
         char *p = t->u.str;
         t->type = STR;
-        while ( (c = mygetc()) != '"' )
-        {
-            if ( (c == '\n') || (c == '\r') || (c == EOF) )
+        while ((c = mygetc()) != '"') {
+            if ((c == '\n') || (c == '\r') || (c == EOF))
                 parse_err("unexpected newline or end-of-file in string");
             *p++ = c;
-            if ( (p - t->u.str) >= (sizeof(t->u.str)-1) )
+            if ((p - t->u.str) >= (sizeof(t->u.str)-1))
                 parse_err("string too long");
         }
         *p = '\0';
-    }
-    else if ( isalpha(c) )
-    {
+    } else if (isalpha(c)) {
         char *p = t->u.str;
         t->type = STR;
         *p++ = c;
-        while ( isalnum(c = mygetc()) || (c == '_') )
-        {
+        while (isalnum(c = mygetc()) || (c == '_')) {
             *p++ = c;
-            if ( (p - t->u.str) >= (sizeof(t->u.str)-1) )
+            if ((p - t->u.str) >= (sizeof(t->u.str)-1))
                 parse_err("string too long");
         }
         *p = '\0';
         myungetc(c);
-    }
-    else if ( c == '\\' ) /* ignore EOL at line break */
-    {
-        while ( isspace(c = mygetc()) && (c != '\n') )
+    } else if (c == '\\') { /* ignore EOL at line break */
+        while (isspace(c = mygetc()) && (c != '\n'))
             continue;
-        if ( c != '\n' )
+        if (c != '\n')
             parse_err("expected newline after backslash");
-        while ( isspace(c = mygetc()) && (c != '\n') )
+        while (isspace(c = mygetc()) && (c != '\n'))
             continue;
         goto retry;
-    }
-    else if ( c == '#' ) /* ignore until EOL */
-    {
-        while ( ((c = mygetc()) != EOF) && (c != '\n') )
+    } else if (c == '#') { /* ignore until EOL */
+        while (((c = mygetc()) != EOF) && (c != '\n'))
             continue;
         goto retry;
-    }
-    else if ( (c == EOF) || (c == '\n') )
-    {
+    } else if ((c == EOF) || (c == '\n')) {
         t->type = EOL;
         t->u.ch = c;
-    }
-    else
-    {
+    } else {
         t->type = CHR;
         t->u.ch = c;
     }
@@ -162,31 +145,26 @@ static struct file_info *open_file(char *name)
 
     fi->line = 1;
 
-    if ( name[0] != '/' )
-    {
+    if (name[0] != '/') {
         char *path;
-        if ( (path = getcwd(NULL, 0)) == NULL )
+        if ((path = getcwd(NULL, 0)) == NULL)
             err(1, NULL);
         fi->name = memalloc(strlen(path) + strlen(name) + 2);
         sprintf(fi->name, "%s/%s", path, name);
         free(path);
-        if ( (fi->f = fopen(fi->name, "r")) == NULL )
-        {
+        if ((fi->f = fopen(fi->name, "r")) == NULL) {
             memfree(fi->name);
             fi->name = memalloc(strlen(DEF_DIR) + strlen(name) + 2);
             sprintf(fi->name, "%s/%s", DEF_DIR, name);
             fi->f = fopen(fi->name, "r");
         }
-    }
-    else
-    {
+    } else {
         fi->name = memalloc(strlen(name) + 1);
         strcpy(fi->name, name);
         fi->f = fopen(fi->name, "r");
     }
 
-    if ( fi->f == NULL )
-    {
+    if (fi->f == NULL) {
         memfree(fi->name);
         memfree(fi);
         fi = NULL;
@@ -197,7 +175,7 @@ static struct file_info *open_file(char *name)
 
 void close_file(struct file_info *fi)
 {
-    if ( fi->f != NULL )
+    if (fi->f != NULL)
         fclose(fi->f);
     memfree(fi->name);
     memfree(fi);
@@ -208,7 +186,7 @@ struct format_list *realloc_format_list(struct format_list *old)
     struct format_list *list;
     unsigned int max = old ? old->max*2 : 4;
     list = memalloc(sizeof(*list) + (max-1)*2);
-    if ( old )
+    if (old)
         memcpy(list, old, sizeof(*list) + (old->max-1)*2);
     list->max = max;
     return list;
@@ -223,132 +201,117 @@ struct format_list **parse_config(char *config, char *specifier)
 
     formats = memalloc(NR_TRACKS * sizeof(*formats));
 
-    if ( specifier == NULL )
+    if (specifier == NULL)
         specifier = "default";
 
     spec = memalloc(strlen(specifier)+1);
     strcpy(spec, specifier);
 
-    if ( (fi = open_file(config ? : DEF_FIL)) == NULL )
+    if ((fi = open_file(config ? : DEF_FIL)) == NULL)
         errx(1, "could not open config file \"%s\"", config ? : DEF_FIL);
 
-    for ( ; ; )
-    {
+    for (;;) {
         parse_token(&t);
-        if ( (t.type == EOL) && (t.u.ch == EOF) )
-        {
+        if ((t.type == EOL) && (t.u.ch == EOF)) {
             struct file_info *fi2 = fi->next;
-            if ( fi2 == NULL )
+            if (fi2 == NULL)
                 parse_err("no match for \"%s\"", spec);
             close_file(fi);
             fi = fi2;
-        }
-        else if ( t.type != STR )
-            /* nothing */;
-        else if ( !strcmp("INCLUDE", t.u.str) )
-        {
+        } else if (t.type != STR) {
+            /* nothing */
+        } else if (!strcmp("INCLUDE", t.u.str)) {
             struct file_info *fi2;
             parse_token(&t);
-            if ( t.type != STR )
+            if (t.type != STR)
                 parse_err("expected string after INCLUDE");
-            if ( (fi2 = open_file(t.u.str)) == NULL )
+            if ((fi2 = open_file(t.u.str)) == NULL)
                 parse_err("could not open config file \"%s\"", t.u.str);
             fi2->next = fi;
             fi = fi2;
             t.type = EOL;
-        }
-        else if ( !strcmp(spec, t.u.str) )
-        {
+        } else if (!strcmp(spec, t.u.str)) {
             parse_token(&t);
-            if ( (t.type == CHR) && (t.u.ch == '=') )
-            {
+            if ((t.type == CHR) && (t.u.ch == '=')) {
                 parse_token(&t);
-                if ( t.type != STR )
+                if (t.type != STR)
                     parse_err("expected string after =");
-                if ( verbose )
+                if (verbose)
                     printf("Format \"%s\"->\"%s\"\n", spec, t.u.str);
                 memfree(spec);
                 spec = memalloc(strlen(t.u.str+1));
                 strcpy(spec, t.u.str);
-            }
-            else
-            {
+            } else {
                 goto found;
             }
         }
-        while ( t.type != EOL )
+        while (t.type != EOL)
             parse_token(&t);
     }
 
 found:
-    if ( verbose )
+    if (verbose)
         printf("Found format \"%s\"\n", spec);
-    for ( ; ; )
-    {
+    for (;;) {
         const char *fmtname;
         unsigned int start, end, step;
         struct format_list *list = realloc_format_list(NULL);
 
-        while ( t.type != EOL )
+        while (t.type != EOL)
             parse_token(&t);
         parse_token(&t);
-        if ( (t.type == CHR) && (t.u.ch == '*') )
-        {
+        if ((t.type == CHR) && (t.u.ch == '*')) {
             t.type = NUM;
             t.u.num.start = 0;
             t.u.num.end = 159;
             t.u.num.step = 1;
         }
-        if ( t.type != NUM )
+        if (t.type != NUM)
             break;
         start = t.u.num.start;
         end = t.u.num.end;
         step = t.u.num.step;
-        if ( (start >= NR_TRACKS) || (end >= NR_TRACKS) )
+        if ((start >= NR_TRACKS) || (end >= NR_TRACKS))
             parse_err("bad track range %u-%u", start, end);
-        for ( ; ; )
-        {
+        for (;;) {
             parse_token(&t);
-            if ( t.type == EOL )
+            if (t.type == EOL)
                 break;
-            if ( t.type != STR )
+            if (t.type != STR)
                 parse_err("expected format string");
-            if ( !strcmp("ignore", t.u.str) )
-            {
+            if (!strcmp("ignore", t.u.str)) {
                 memfree(list);
                 list = &ignore_list;
                 goto write_list;
             }
-            for ( i = 0;
-                  (fmtname = disk_get_format_id_name(i)) != NULL;
-                  i++ )
-                if ( !strcmp(fmtname, t.u.str) )
+            for (i = 0;
+                 (fmtname = disk_get_format_id_name(i)) != NULL;
+                 i++)
+                if (!strcmp(fmtname, t.u.str))
                     break;
-            if ( fmtname == NULL )
+            if (fmtname == NULL)
                 parse_err("bad format name \"%s\"", t.u.str);
-            if ( list->nr == list->max )
+            if (list->nr == list->max)
                 list = realloc_format_list(list);
             list->ent[list->nr++] = i;
         }
-        if ( list->nr == 0 )
+        if (list->nr == 0)
             parse_err("empty format list");
     write_list:
-        for ( i = start; i <= end; i += step )
-            if ( formats[i] == NULL )
+        for (i = start; i <= end; i += step)
+            if (formats[i] == NULL)
                 formats[i] = list;
     }
 
-    for ( i = 0; i < NR_TRACKS; i++ )
-    {
-        if ( formats[i] == NULL )
+    for (i = 0; i < NR_TRACKS; i++) {
+        if (formats[i] == NULL)
             parse_err("no format specified for track %u", i);
-        if ( formats[i] == &ignore_list )
+        if (formats[i] == &ignore_list)
             formats[i] = NULL;
     }
 
     memfree(spec);
-    while ( fi != NULL )
-    {
+    while (fi != NULL) {
         struct file_info *fi2 = fi->next;
         close_file(fi);
         fi = fi2;
@@ -356,3 +319,13 @@ found:
 
     return formats;
 }
+
+/*
+ * Local variables:
+ * mode: C
+ * c-file-style: "Linux"
+ * c-basic-offset: 4
+ * tab-width: 4
+ * indent-tabs-mode: nil
+ * End:
+ */

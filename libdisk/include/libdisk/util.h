@@ -33,3 +33,13 @@ void write_exact(int fd, const void *buf, size_t count);
 #pragma GCC visibility pop
 
 #endif /* __LIBDISK_UTIL_H__ */
+
+/*
+ * Local variables:
+ * mode: C
+ * c-file-style: "Linux"
+ * c-basic-offset: 4
+ * tab-width: 4
+ * indent-tabs-mode: nil
+ * End:
+ */

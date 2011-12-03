@@ -30,7 +30,7 @@ static struct stream *di_open(const char *name)
     struct di_stream *dis;
     struct disk *d;
 
-    if ( (d = disk_open(name, 1, 1)) == NULL )
+    if ((d = disk_open(name, 1, 1)) == NULL)
         return NULL;
 
     dis = memalloc(sizeof(*dis));
@@ -52,8 +52,7 @@ static void di_reset(struct stream *s, unsigned int tracknr)
 {
     struct di_stream *dis = container_of(s, struct di_stream, s);
 
-    if ( dis->track != tracknr )
-    {
+    if (dis->track != tracknr) {
         track_mfm_put(dis->track_mfm);
         dis->track_mfm = track_mfm_get(dis->d, tracknr);
         dis->track = tracknr;
@@ -69,8 +68,7 @@ static int di_next_bit(struct stream *s)
     struct di_stream *dis = container_of(s, struct di_stream, s);
     uint8_t dat;
 
-    if ( ++dis->pos >= dis->track_mfm->bitlen )
-    {
+    if (++dis->pos >= dis->track_mfm->bitlen) {
         dis->pos = 0;
         index_reset(s);
     }
@@ -88,3 +86,13 @@ struct stream_type disk_image = {
     .reset = di_reset,
     .next_bit = di_next_bit
 };
+
+/*
+ * Local variables:
+ * mode: C
+ * c-file-style: "Linux"
+ * c-basic-offset: 4
+ * tab-width: 4
+ * indent-tabs-mode: nil
+ * End:
+ */

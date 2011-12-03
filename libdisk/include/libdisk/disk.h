@@ -109,3 +109,13 @@ int track_write_mfm(
 #pragma GCC visibility pop
 
 #endif /* __LIBDISK_DISK_H__ */
+
+/*
+ * Local variables:
+ * mode: C
+ * c-file-style: "Linux"
+ * c-basic-offset: 4
+ * tab-width: 4
+ * indent-tabs-mode: nil
+ * End:
+ */

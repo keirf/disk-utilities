@@ -34,59 +34,57 @@ static void *archipelagos_write_mfm(
     char *block = memalloc(ti->len);
     unsigned int i, valid_blocks = 0;
 
-    while ( (stream_next_bit(s) != -1) &&
-            (valid_blocks != ((1u<<ti->nr_sectors)-1)) )
-    {
+    while ((stream_next_bit(s) != -1) &&
+           (valid_blocks != ((1u<<ti->nr_sectors)-1))) {
+
         uint32_t idx_off = s->index_offset - 31;
         uint16_t csum, w, *p;
         uint8_t sec;
 
-        if ( s->word != 0x44894489 )
+        if (s->word != 0x44894489)
             continue;
 
-        if ( stream_next_bits(s, 32) == -1 )
+        if (stream_next_bits(s, 32) == -1)
             goto done;
-        if ( copylock_decode_word(s->word) != (0xff00 | tracknr) )
+        if (copylock_decode_word(s->word) != (0xff00 | tracknr))
             continue;
 
-        if ( stream_next_bits(s, 16) == -1 )
+        if (stream_next_bits(s, 16) == -1)
             goto done;
         sec = copylock_decode_word((uint16_t)s->word) - 1;
-        if ( (sec >= ti->nr_sectors) || (valid_blocks & (1u<<sec)) )
+        if ((sec >= ti->nr_sectors) || (valid_blocks & (1u<<sec)))
             continue;
 
-        if ( stream_next_bits(s, 32) == -1 )
+        if (stream_next_bits(s, 32) == -1)
             goto done;
         csum = copylock_decode_word(s->word);
 
         p = (uint16_t *)(block + sec * ti->bytes_per_sector);
-        for ( i = 0; i < ti->bytes_per_sector/2; i++ )
-        {
-            if ( stream_next_bits(s, 32) == -1 )
+        for (i = 0; i < ti->bytes_per_sector/2; i++) {
+            if (stream_next_bits(s, 32) == -1)
                 goto done;
             csum -= w = copylock_decode_word(s->word);
             *p++ = htons(w);
         }
 
-        if ( csum )
+        if (csum)
             continue;
 
         valid_blocks |= 1u << sec;
-        if ( !(valid_blocks & ((1u<<sec)-1)) )
+        if (!(valid_blocks & ((1u<<sec)-1)))
             ti->data_bitoff = idx_off;
     }
 
 done:
-    if ( valid_blocks == 0 )
-    {
+    if (valid_blocks == 0) {
         free(block);
         return NULL;
     }
 
     ti->valid_sectors = valid_blocks;
 
-    for ( i = 0; i < ti->nr_sectors; i++ )
-        if ( valid_blocks & (1u << i) )
+    for (i = 0; i < ti->nr_sectors; i++)
+        if (valid_blocks & (1u << i))
             break;
     ti->data_bitoff -= i * 0x820;
 
@@ -100,8 +98,7 @@ static void archipelagos_read_mfm(
     uint16_t *dat = (uint16_t *)ti->dat;
     unsigned int i, j;
 
-    for ( i = 0; i < ti->nr_sectors; i++ )
-    {
+    for (i = 0; i < ti->nr_sectors; i++) {
         uint16_t csum = 0;
         /* header */
         tbuf_bits(tbuf, SPEED_AVG, TB_raw, 32, 0x44894489);
@@ -109,16 +106,16 @@ static void archipelagos_read_mfm(
         tbuf_bits(tbuf, SPEED_AVG, TB_all, 8, tracknr);
         tbuf_bits(tbuf, SPEED_AVG, TB_all, 8, i+1);
         /* csum */
-        for ( j = 0; j < ti->bytes_per_sector/2; j++ )
+        for (j = 0; j < ti->bytes_per_sector/2; j++)
             csum += ntohs(dat[j]);
-        if ( !(ti->valid_sectors & (1u << i)) )
+        if (!(ti->valid_sectors & (1u << i)))
             csum = ~csum; /* bad checksum for an invalid sector */
         tbuf_bits(tbuf, SPEED_AVG, TB_all, 16, csum);
         /* data */
-        for ( j = 0; j < 512; j++, dat++ )
+        for (j = 0; j < 512; j++, dat++)
             tbuf_bits(tbuf, SPEED_AVG, TB_all, 16, ntohs(*dat));
         /* gap */
-        for ( j = 0; j < 9; j++ )
+        for (j = 0; j < 9; j++)
             tbuf_bits(tbuf, SPEED_AVG, TB_all, 8, 0);
     }
 }
@@ -129,3 +126,13 @@ struct track_handler archipelagos_handler = {
     .write_mfm = archipelagos_write_mfm,
     .read_mfm = archipelagos_read_mfm
 };
+
+/*
+ * Local variables:
+ * mode: C
+ * c-file-style: "Linux"
+ * c-basic-offset: 4
+ * tab-width: 4
+ * indent-tabs-mode: nil
+ * End:
+ */

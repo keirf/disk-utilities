@@ -32,3 +32,13 @@ const char *custom_reg_name[243];
 #define CUST_adkcon   (0x9e/2)
 
 #endif /* __AMIGA_CUSTOM_H__ */
+
+/*
+ * Local variables:
+ * mode: C
+ * c-file-style: "Linux"
+ * c-basic-offset: 4
+ * tab-width: 4
+ * indent-tabs-mode: nil
+ * End:
+ */

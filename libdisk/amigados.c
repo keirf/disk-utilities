@@ -71,8 +71,7 @@ uint32_t mfm_decode_amigados(void *dat, unsigned int longs)
     uint32_t *even = dat, *odd = even + longs, csum = 0;
     unsigned int i;
 
-    for ( i = 0; i < longs; i++, even++, odd++ )
-    {
+    for (i = 0; i < longs; i++, even++, odd++) {
         csum ^= *even ^ *odd;
         *even = ((*even & 0x55555555u) << 1) | (*odd & 0x55555555u);
     }
@@ -88,23 +87,23 @@ static void *ados_write_mfm(
     unsigned int i, valid_blocks = 0, extended_blocks = 0;
 
     block = memalloc(EXT_SEC * ti->nr_sectors);
-    for ( i = 0; i < EXT_SEC * ti->nr_sectors / 4; i++ )
+    for (i = 0; i < EXT_SEC * ti->nr_sectors / 4; i++)
         memcpy((uint32_t *)block + i, "NDOS", 4);
 
-    while ( (stream_next_bit(s) != -1) &&
-            (valid_blocks != ((1u<<ti->nr_sectors)-1)) )
-    {
+    while ((stream_next_bit(s) != -1) &&
+           (valid_blocks != ((1u<<ti->nr_sectors)-1))) {
+
         struct ados_hdr ados_hdr;
         char raw_mfm_dat[2*(sizeof(struct ados_hdr)+STD_SEC)];
         uint32_t sync = s->word, csum, idx_off = s->index_offset - 31;
 
-        for ( i = 0; i < ARRAY_SIZE(syncs); i++ )
-            if ( sync == syncs[i] )
+        for (i = 0; i < ARRAY_SIZE(syncs); i++)
+            if (sync == syncs[i])
                 break;
-        if ( i == ARRAY_SIZE(syncs) )
+        if (i == ARRAY_SIZE(syncs))
             continue;
 
-        if ( stream_next_bytes(s, raw_mfm_dat, sizeof(raw_mfm_dat)) == -1 )
+        if (stream_next_bytes(s, raw_mfm_dat, sizeof(raw_mfm_dat)) == -1)
             break;
 
         csum = mfm_decode_amigados(&raw_mfm_dat[2*0], 4/4);
@@ -113,26 +112,26 @@ static void *ados_write_mfm(
         memcpy(ados_hdr.lbl, &raw_mfm_dat[2*4], 16);
         csum ^= mfm_decode_amigados(&raw_mfm_dat[2*20], 4/4);
         ados_hdr.hdr_checksum = ((uint32_t *)raw_mfm_dat)[2*20/4];
-        if ( csum != 0 )
+        if (csum != 0)
             continue;
 
         csum = mfm_decode_amigados(&raw_mfm_dat[2*24], 4/4);
         ados_hdr.dat_checksum = ((uint32_t *)raw_mfm_dat)[2*24/4];
         csum ^= mfm_decode_amigados(&raw_mfm_dat[2*28], STD_SEC/4);
-        if ( csum != 0 )
+        if (csum != 0)
             continue;
 
-        if ( (ados_hdr.sector >= ti->nr_sectors) ||
-             (valid_blocks & (1u<<ados_hdr.sector)) )
+        if ((ados_hdr.sector >= ti->nr_sectors) ||
+            (valid_blocks & (1u<<ados_hdr.sector)))
             continue;
 
         /* Detect non-standard header info. */
-        if ( (ados_hdr.format != 0xffu) ||
-             (ados_hdr.track != tracknr) ||
-             (sync != syncs[0]) )
+        if ((ados_hdr.format != 0xffu) ||
+            (ados_hdr.track != tracknr) ||
+            (sync != syncs[0]))
             extended_blocks |= 1u << ados_hdr.sector;
-        for ( i = 0; i < 16; i++ )
-            if ( ados_hdr.lbl[i] != 0 )
+        for (i = 0; i < 16; i++)
+            if (ados_hdr.lbl[i] != 0)
                 extended_blocks |= 1u << ados_hdr.sector;
 
         p = block + ados_hdr.sector * EXT_SEC;
@@ -141,20 +140,19 @@ static void *ados_write_mfm(
         memcpy(p+8, ados_hdr.lbl, 16);
         memcpy(p+24, &raw_mfm_dat[2*28], STD_SEC);
 
-        if ( !(valid_blocks & ((1u<<ados_hdr.sector)-1)) )
+        if (!(valid_blocks & ((1u<<ados_hdr.sector)-1)))
             ti->data_bitoff = idx_off;
 
         valid_blocks |= 1u << ados_hdr.sector;
     }
 
-    if ( valid_blocks == 0 )
-    {
+    if (valid_blocks == 0) {
         memfree(block);
         return NULL;
     }
 
-    if ( !extended_blocks )
-        for ( i = 0; i < ti->nr_sectors; i++ )
+    if (!extended_blocks)
+        for (i = 0; i < ti->nr_sectors; i++)
             memmove(block + i * STD_SEC,
                     block + i * EXT_SEC + (EXT_SEC - STD_SEC),
                     STD_SEC);
@@ -164,8 +162,8 @@ static void *ados_write_mfm(
 
     ti->valid_sectors = valid_blocks;
 
-    for ( i = 0; i < ti->nr_sectors; i++ )
-        if ( valid_blocks & (1u << i) )
+    for (i = 0; i < ti->nr_sectors; i++)
+        if (valid_blocks & (1u << i))
             break;
     ti->data_bitoff -= i * 544*8*2;
 
@@ -189,13 +187,11 @@ static void ados_read_mfm(
     unsigned int i, j;
     uint32_t sync, csum, info;
 
-    for ( i = 0; i < ti->nr_sectors; i++ )
-    {
+    for (i = 0; i < ti->nr_sectors; i++) {
         sync = syncs[0];
         info = (0xffu << 24) | (tracknr << 16) | (i << 8) | (11-i);
 
-        if ( ti->type == TRKTYP_amigados_extended )
-        {
+        if (ti->type == TRKTYP_amigados_extended) {
             sync = ntohl(*(uint32_t *)&dat[0]);
             info = ntohl(*(uint32_t *)&dat[4]);
             memcpy(lbl, &dat[8], 16);
@@ -210,14 +206,14 @@ static void ados_read_mfm(
         tbuf_bytes(tbuf, SPEED_AVG, TB_even_odd, 16, lbl);
         /* header checksum */
         csum = info;
-        for ( j = 0; j < 4; j++ )
+        for (j = 0; j < 4; j++)
             csum ^= ntohl(((uint32_t *)lbl)[j]);
         write_csum(tbuf, csum);
         /* data checksum */
         csum = 0;
-        for ( j = 0; j < 128; j++ )
+        for (j = 0; j < 128; j++)
             csum ^= ntohl(((uint32_t *)dat)[j]);
-        if ( !(ti->valid_sectors & (1u << i)) )
+        if (!(ti->valid_sectors & (1u << i)))
             csum ^= 1; /* bad checksum for an invalid sector */
         write_csum(tbuf, csum);
         /* data */
@@ -241,3 +237,13 @@ struct track_handler amigados_extended_handler = {
     .write_mfm = ados_write_mfm,
     .read_mfm = ados_read_mfm
 };
+
+/*
+ * Local variables:
+ * mode: C
+ * c-file-style: "Linux"
+ * c-basic-offset: 4
+ * tab-width: 4
+ * indent-tabs-mode: nil
+ * End:
+ */

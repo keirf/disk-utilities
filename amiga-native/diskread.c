@@ -42,24 +42,23 @@ static void release_drive(void)
 
 static void acquire_drive(void)
 {
-    if ( (port_drive = CreatePort(NULL, NULL)) == NULL )
+    if ((port_drive = CreatePort(NULL, NULL)) == NULL)
         goto fail1;
 
-    if ( (req_drive = (struct IOExtTD *)
-          CreateExtIO(port_drive, sizeof(*req_drive))) == NULL )
+    if ((req_drive = (struct IOExtTD *)
+         CreateExtIO(port_drive, sizeof(*req_drive))) == NULL)
         goto fail2;
 
-    if ( OpenDevice(TD_NAME, unit, (struct IORequest *)req_drive, 0) != 0 )
+    if (OpenDevice(TD_NAME, unit, (struct IORequest *)req_drive, 0) != 0)
         goto fail3;
 
-    if ( Inhibit(drivename) == 0 )
+    if (Inhibit(drivename) == 0)
         goto fail4;
 
     req_drive->iotd_Req.io_Command = TD_CHANGESTATE;
     req_drive->iotd_Req.io_Flags = IOF_QUICK;
-    if ( (DoIO((struct IORequest *)req_drive) != 0) ||
-         (req_drive->iotd_Req.io_Actual != 0) )
-    {
+    if ((DoIO((struct IORequest *)req_drive) != 0) ||
+        (req_drive->iotd_Req.io_Actual != 0)) {
         fprintf(stderr, "Insert disk in %s and retry.\n", drivename);
         goto fail5;
     }
@@ -103,7 +102,7 @@ static void cia_delay_ms(unsigned int ms)
     ciab->ciatalo = (UBYTE)ticks;
     ciab->ciatahi = (UBYTE)(ticks >> 8);
 
-    while ( !(ciab->ciaicr & CIAICRF_TA) )
+    while (!(ciab->ciaicr & CIAICRF_TA))
         continue;
 }
 
@@ -113,8 +112,7 @@ static void seek_track0(void)
     ciab->ciaprb |= CIAF_DSKDIREC;
     cia_delay_ms(18);
 
-    while ( ciaa->ciapra & CIAF_DSKTRACK0 )
-    {
+    while (ciaa->ciapra & CIAF_DSKTRACK0) {
         /* Step the heads inwards one track. */
         ciab->ciaprb &= (UBYTE)~CIAF_DSKSTEP;
         ciab->ciaprb |= CIAF_DSKSTEP;
@@ -129,9 +127,8 @@ static void wait_dskrdy(void)
     int i;
 
     /* Wait up to 500ms for dskrdy signal. */
-    for ( i = 0; i < 50; i++ )
-    {
-        if ( !(ciaa->ciapra & CIAF_DSKRDY) )
+    for (i = 0; i < 50; i++) {
+        if (!(ciaa->ciapra & CIAF_DSKRDY))
             break; /* dskrdy asserted */
         cia_delay_ms(10);
     }
@@ -150,27 +147,24 @@ int main(int argc, char **argv)
     int track;
     unsigned char *dat;
 
-    if ( (argc != 2) && (argc != 3) )
-    {
+    if ((argc != 2) && (argc != 3)) {
         fprintf(stderr, "Usage: diskread <target_filename> [drive #]\n");
         exit(1);
     }
 
-    if ( argc == 3 )
+    if (argc == 3)
         unit = *argv[2] - '0';
     drivename[2] = '0' + unit;
 
     acquire_drive();
 
-    if ( (fp = fopen(argv[1], "w")) == NULL )
-    {
+    if ((fp = fopen(argv[1], "w")) == NULL) {
         fprintf(stderr, "Could not open file \"%s\"\n", argv[1]);
         release_drive();
         exit(1);
     }
 
-    if ( (dat = malloc(BYTES_PER_TRACK)) == NULL )
-    {
+    if ((dat = malloc(BYTES_PER_TRACK)) == NULL) {
         fprintf(stderr, "Could not alloc %u bytes\n", BYTES_PER_TRACK);
         fclose(fp);
         release_drive();
@@ -179,11 +173,10 @@ int main(int argc, char **argv)
 
     printf("Reading %s track 0", drivename);
 
-    for ( track = 0; track < 160; track++ )
-    {
-        if ( track > 10 )
+    for (track = 0; track < 160; track++) {
+        if (track > 10)
             putchar('\b');
-        if ( track > 100 )
+        if (track > 100)
             putchar('\b');            
         printf("\b%d", track);
         fflush(stdout);
@@ -216,17 +209,12 @@ int main(int argc, char **argv)
 
         wait_dskrdy();
 
-        if ( track & 1 )
-        {
+        if (track & 1) {
             /* Side 1. */
             ciab->ciaprb &= ~(UBYTE)CIAF_DSKSIDE;
-        }
-        else if ( track == 0 )
-        {
+        } else if (track == 0) {
             seek_track0();
-        }
-        else
-        {
+        } else {
             /* Step the heads inwards one track. */
             ciab->ciaprb &= (UBYTE)~CIAF_DSKSTEP;
             ciab->ciaprb |= CIAF_DSKSTEP;
@@ -244,7 +232,7 @@ int main(int argc, char **argv)
         /* Stop CIAB timer A. */
         ciab->ciacra &= 0xc0;
 
-        if ( track == 159 )
+        if (track == 159)
             seek_track0();
 
         custom->adkcon = 0x7f00;
@@ -265,3 +253,13 @@ int main(int argc, char **argv)
 
     return 0;
 }
+
+/*
+ * Local variables:
+ * mode: C
+ * c-file-style: "Linux"
+ * c-basic-offset: 4
+ * tab-width: 4
+ * indent-tabs-mode: nil
+ * End:
+ */

@@ -65,7 +65,7 @@ struct amiga_state {
 void __assert_failed(
     struct amiga_state *s, const char *file, unsigned int line);
 #define ASSERT(p) do {                                          \
-        if ( !(p) ) __assert_failed(s, __FILE__, __LINE__);     \
+        if (!(p)) __assert_failed(s, __FILE__, __LINE__);       \
 } while (0)
 
 void amiga_init(struct amiga_state *, unsigned int mem_size);
@@ -76,3 +76,13 @@ void amiga_insert_df0(const char *filename);
 void exec_init(struct amiga_state *);
 
 #endif /* __AMIGA_H__ */
+
+/*
+ * Local variables:
+ * mode: C
+ * c-file-style: "Linux"
+ * c-basic-offset: 4
+ * tab-width: 4
+ * indent-tabs-mode: nil
+ * End:
+ */

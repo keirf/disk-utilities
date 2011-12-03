@@ -66,10 +66,8 @@ int main(int argc, char **argv)
         { 0, 0, 0, 0}
     };
 
-    while ( (ch = getopt_long(argc, argv, sopts, lopts, NULL)) != -1 )
-    {
-        switch ( ch )
-        {
+    while ((ch = getopt_long(argc, argv, sopts, lopts, NULL)) != -1) {
+        switch (ch) {
         case 'h':
             usage(0);
             break;
@@ -91,65 +89,61 @@ int main(int argc, char **argv)
         }
     }
 
-    if ( argc != (optind + 2) )
+    if (argc != (optind + 2))
         usage(1);
 
     format_lists = parse_config(config, format);
 
-    if ( (s = stream_open(argv[optind])) == NULL )
+    if ((s = stream_open(argv[optind])) == NULL)
         errx(1, "Failed to probe input file: %s", argv[optind]);
 
-    if ( (d = disk_create(argv[optind+1])) == NULL )
+    if ((d = disk_create(argv[optind+1])) == NULL)
         errx(1, "Unable to create new disk file: %s", argv[optind+1]);
 
     di = disk_get_info(d);
 
-    for ( i = 0; i < 160; i++ )
-    {
+    for (i = 0; i < 160; i++) {
         struct format_list *list = format_lists[i];
         unsigned int j;
-        if ( list == NULL )
+        if (list == NULL)
             continue;
-        for ( j = 0; j < list->nr; j++ )
-        {
-            if ( track_write_mfm_from_stream(
-                     d, i, list->ent[list->pos], s) == 0 )
+        for (j = 0; j < list->nr; j++) {
+            if (track_write_mfm_from_stream(
+                    d, i, list->ent[list->pos], s) == 0)
                 break;
-            if ( ++list->pos >= list->nr )
+            if (++list->pos >= list->nr)
                 list->pos = 0;
         }
-        if ( (j == list->nr) &&
-             (track_write_mfm_from_stream(d, i, TRKTYP_unformatted, s) != 0) )
+        if ((j == list->nr) &&
+            (track_write_mfm_from_stream(d, i, TRKTYP_unformatted, s) != 0))
             unidentified++;
     }
 
-    for ( i = 1; i < 160; i++ )
-    {
+    for (i = 1; i < 160; i++) {
         unsigned int j;
         ti = &di->track[i];
-        for ( j = 0; j < ti->nr_sectors; j++ )
-            if ( !(ti->valid_sectors & (1u << j)) )
+        for (j = 0; j < ti->nr_sectors; j++)
+            if (!(ti->valid_sectors & (1u << j)))
                 break;
-        if ( j == ti->nr_sectors )
+        if (j == ti->nr_sectors)
             continue;
         unidentified++;
         printf("T%u: sectors ", i);
-        for ( j = 0; j < ti->nr_sectors; j++ )
-            if ( !(ti->valid_sectors & (1u << j)) )
+        for (j = 0; j < ti->nr_sectors; j++)
+            if (!(ti->valid_sectors & (1u << j)))
                 printf("%u,", j);
         printf(" missing\n");
     }
 
-    if ( quiet )
+    if (quiet)
         goto out;
 
     prev_name = di->track[0].typename;
-    for ( i = 1; i <= 160; i++ )
-    {
+    for (i = 1; i <= 160; i++) {
         ti = &di->track[i];
-        if ( (ti->typename == prev_name) && (i != 160) )
+        if ((ti->typename == prev_name) && (i != 160))
             continue;
-        if ( st == i-1 )
+        if (st == i-1)
             printf("T");
         else
             printf("T%u-", st);
@@ -159,7 +153,7 @@ int main(int argc, char **argv)
     }
 
 out:
-    if ( unidentified )
+    if (unidentified)
         fprintf(stderr,"** WARNING: %u tracks are damaged or unidentified!\n",
                 unidentified);
 
@@ -168,3 +162,13 @@ out:
 
     return 0;
 }
+
+/*
+ * Local variables:
+ * mode: C
+ * c-file-style: "Linux"
+ * c-basic-offset: 4
+ * tab-width: 4
+ * indent-tabs-mode: nil
+ * End:
+ */

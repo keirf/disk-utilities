@@ -23,20 +23,17 @@ static void *unformatted_write_mfm(
      * Scan for bit sequences that break the MFM encoding rules.
      * Random noise will obviously do this a *lot*.
      */
-    while ( stream_next_bit(s) != -1 )
-    {
-        if ( s->word & 1 )
-        {
-            if ( !nr_zero )
+    while (stream_next_bit(s) != -1) {
+        if (s->word & 1) {
+            if (!nr_zero)
                 bad++;
             nr_zero = 0;
         }
-        else if ( ++nr_zero > 3 )
+        else if (++nr_zero > 3)
             bad++;
 
-        if ( ++i >= SCAN_SECTOR_BITS )
-        {
-            if ( bad < SECTOR_BAD_THRESH )
+        if (++i >= SCAN_SECTOR_BITS) {
+            if (bad < SECTOR_BAD_THRESH)
                 return NULL;
             bad = nr_zero = i = 0;
         }
@@ -58,19 +55,27 @@ static void unformatted_read_mfm(
     tbuf->len = (120000 * ((rand() & 255) + 1000 - 128)) / 1000;
     tbuf_init(tbuf);
 
-    for ( i = 0; i < tbuf->len; i++ )
-    {
+    for (i = 0; i < tbuf->len; i++) {
         byte <<= 1;
         byte |= rand() & 1;
-        if ( (i & 7) == 7 )
-        {
+        if ((i & 7) == 7) {
             tbuf_bits(tbuf, SPEED_AVG + speed_delta, TB_raw, 8, byte);
             speed_delta = -speed_delta;
         }
     }
 }
 
-struct track_handler unformatted_handler  = {
+struct track_handler unformatted_handler = {
     .write_mfm = unformatted_write_mfm,
     .read_mfm = unformatted_read_mfm
 };
+
+/*
+ * Local variables:
+ * mode: C
+ * c-file-style: "Linux"
+ * c-basic-offset: 4
+ * tab-width: 4
+ * indent-tabs-mode: nil
+ * End:
+ */

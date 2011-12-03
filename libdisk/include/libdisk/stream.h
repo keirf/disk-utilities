@@ -43,3 +43,13 @@ int stream_next_bytes(struct stream *s, void *p, unsigned int bytes);
 #pragma GCC visibility pop
 
 #endif /* __LIBDISK_STREAM_H__ */
+
+/*
+ * Local variables:
+ * mode: C
+ * c-file-style: "Linux"
+ * c-basic-offset: 4
+ * tab-width: 4
+ * indent-tabs-mode: nil
+ * End:
+ */

@@ -14,7 +14,7 @@
 void *memalloc(size_t size)
 {
     void *p = malloc(size);
-    if ( p == NULL )
+    if (p == NULL)
         err(1, NULL);
     memset(p, 0, size);
     return p;
@@ -30,15 +30,14 @@ void read_exact(int fd, void *buf, size_t count)
     ssize_t done;
     char *_buf = buf;
 
-    while ( count > 0 )
-    {
+    while (count > 0) {
         done = read(fd, _buf, count);
-        if ( (done < 0) && ((errno == EAGAIN) || (errno == EINTR)) )
-            done = 0;
-        if ( done < 0 )
+        if (done < 0) {
+            if ((errno == EAGAIN) || (errno == EINTR))
+                continue;
             err(1, NULL);
-        if ( done == 0 )
-        {
+        }
+        if (done == 0) {
             memset(_buf, 0, count);
             done = count;
         }
@@ -52,14 +51,24 @@ void write_exact(int fd, const void *buf, size_t count)
     ssize_t done;
     const char *_buf = buf;
 
-    while ( count > 0 )
-    {
+    while (count > 0) {
         done = write(fd, _buf, count);
-        if ( (done < 0) && ((errno == EAGAIN) || (errno == EINTR)) )
-            done = 0;
-        if ( done < 0 )
+        if (done < 0) {
+            if ((errno == EAGAIN) || (errno == EINTR))
+                continue;
             err(1, NULL);
+        }
         count -= done;
         _buf += done;
     }
 }
+
+/*
+ * Local variables:
+ * mode: C
+ * c-file-style: "Linux"
+ * c-basic-offset: 4
+ * tab-width: 4
+ * indent-tabs-mode: nil
+ * End:
+ */

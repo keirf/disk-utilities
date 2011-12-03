@@ -38,3 +38,13 @@ int mem_write(uint32_t addr, uint32_t val, unsigned int bytes,
 struct memory *mem_init(struct amiga_state *, uint32_t start, uint32_t bytes);
 
 #endif /* __AMIGA_MEM_H__ */
+
+/*
+ * Local variables:
+ * mode: C
+ * c-file-style: "Linux"
+ * c-basic-offset: 4
+ * tab-width: 4
+ * indent-tabs-mode: nil
+ * End:
+ */

@@ -33,30 +33,30 @@ static void *psygnosis_a_write_mfm(
     struct track_info *ti = &d->di->track[tracknr];
     char *block = NULL;
 
-    while ( (stream_next_bit(s) != -1) && !block )
-    {
+    while ((stream_next_bit(s) != -1) && !block) {
+
         uint32_t raw_dat[2*ti->len/4], hdr, csum;
         uint32_t idx_off = s->index_offset - 15;
         uint16_t sync = s->word;
 
-        if ( (sync != 0x4489) && (sync != 0x4429) )
+        if ((sync != 0x4489) && (sync != 0x4429))
             continue;
 
         ti->data_bitoff = idx_off;
 
-        if ( stream_next_bytes(s, raw_dat, 16) == -1 )
+        if (stream_next_bytes(s, raw_dat, 16) == -1)
             goto done;
         mfm_decode_amigados(&raw_dat[0], 1);
         mfm_decode_amigados(&raw_dat[2], 1);
         hdr = ntohl(raw_dat[0]);
         csum = ntohl(raw_dat[2]);
 
-        if ( hdr != (0xffffff00u | tracknr) )
+        if (hdr != (0xffffff00u | tracknr))
             continue;
 
-        if ( stream_next_bytes(s, raw_dat, sizeof(raw_dat)) == -1 )
+        if (stream_next_bytes(s, raw_dat, sizeof(raw_dat)) == -1)
             goto done;
-        if ( (csum ^= mfm_decode_amigados(raw_dat, ti->len/4)) != 0 )
+        if ((csum ^= mfm_decode_amigados(raw_dat, ti->len/4)) != 0)
             continue;
 
         block = memalloc(ti->len + 2);
@@ -65,7 +65,7 @@ static void *psygnosis_a_write_mfm(
     }
 
 done:
-    if ( block )
+    if (block)
         ti->valid_sectors = 1;
     ti->len += 2; /* for the sync mark */
     return block;
@@ -85,7 +85,7 @@ static void psygnosis_a_read_mfm(
     track = (~0u << 8) | tracknr;
     tbuf_bits(tbuf, SPEED_AVG, TB_even_odd, 32, track);
 
-    for ( i = 0; i < dat_len/4; i++ )
+    for (i = 0; i < dat_len/4; i++)
         csum ^= ntohl(dat[i]);
     csum ^= csum >> 1;
     csum &= 0x55555555u;
@@ -100,3 +100,13 @@ struct track_handler psygnosis_a_handler = {
     .write_mfm = psygnosis_a_write_mfm,
     .read_mfm = psygnosis_a_read_mfm
 };
+
+/*
+ * Local variables:
+ * mode: C
+ * c-file-style: "Linux"
+ * c-basic-offset: 4
+ * tab-width: 4
+ * indent-tabs-mode: nil
+ * End:
+ */

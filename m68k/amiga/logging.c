@@ -22,7 +22,7 @@ static void write_log(
     enum subsystem subsystem,
     const char *fmt, va_list args)
 {
-    if ( loglevel < s->max_loglevel )
+    if (loglevel < s->max_loglevel)
         return;
     fprintf(s->logfile, "[%s,PC=%08x,%u.%03uus] ",
             subsys_name[subsystem], s->ctxt.regs->pc,
@@ -50,3 +50,13 @@ void __log_##lvl(struct amiga_state *s, enum subsystem subsystem,       \
 LOG(info)
 LOG(warn)
 LOG(error)
+
+/*
+ * Local variables:
+ * mode: C
+ * c-file-style: "Linux"
+ * c-basic-offset: 4
+ * tab-width: 4
+ * indent-tabs-mode: nil
+ * End:
+ */

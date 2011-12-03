@@ -26,10 +26,9 @@
 
 static int check_sequence(struct stream *s, unsigned int nr, uint8_t byte)
 {
-    while ( --nr )
-    {
+    while (--nr) {
         stream_next_bits(s, 16);
-        if ( (uint8_t)copylock_decode_word(s->word) != byte )
+        if ((uint8_t)copylock_decode_word(s->word) != byte)
             break;
     }
     return !nr;
@@ -41,11 +40,10 @@ static void *longtrack_write_mfm(
     struct track_info *ti = &d->di->track[tracknr];
     uint16_t *dat = memalloc(2);
 
-    while ( stream_next_bit(s) != -1 )
-    {
-        if ( s->word == 0x4454a525 )
-        {
-            if ( !check_sequence(s, 1000, 0x33) )
+    while (stream_next_bit(s) != -1) {
+
+        if (s->word == 0x4454a525) {
+            if (!check_sequence(s, 1000, 0x33))
                 continue;
             ti->data_bitoff = s->index_offset - 31;
             ti->total_bits = 110000; /* long enough */
@@ -53,9 +51,8 @@ static void *longtrack_write_mfm(
             goto found;
         }
 
-        if ( s->word == 0x41244124 )
-        {
-            if ( !check_sequence(s, 1000, 0x00) )
+        if (s->word == 0x41244124) {
+            if (!check_sequence(s, 1000, 0x00))
                 continue;
             ti->data_bitoff = s->index_offset - 31;
             ti->total_bits = 105500; /* long enough */
@@ -80,16 +77,15 @@ static void longtrack_read_mfm(
     uint16_t *dat = (uint16_t *)ti->dat;
     unsigned int i;
 
-    switch ( ntohs(*dat) )
-    {
+    switch (ntohs(*dat)) {
     case 0:
         tbuf_bits(tbuf, SPEED_AVG, TB_raw, 16, 0x4454);
-        for ( i = 0; i < 6000; i++ )
+        for (i = 0; i < 6000; i++)
             tbuf_bits(tbuf, SPEED_AVG, TB_all, 8, 0x33);
         break;
     case 1:
         tbuf_bits(tbuf, SPEED_AVG, TB_raw, 32, 0x41244124);
-        for ( i = 0; i < 6000; i++ )
+        for (i = 0; i < 6000; i++)
             tbuf_bits(tbuf, SPEED_AVG, TB_all, 8, 0);
         break;
     }
@@ -99,3 +95,13 @@ struct track_handler longtrack_handler = {
     .write_mfm = longtrack_write_mfm,
     .read_mfm = longtrack_read_mfm
 };
+
+/*
+ * Local variables:
+ * mode: C
+ * c-file-style: "Linux"
+ * c-basic-offset: 4
+ * tab-width: 4
+ * indent-tabs-mode: nil
+ * End:
+ */

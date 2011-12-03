@@ -32,37 +32,35 @@ static void *core_write_mfm(
     uint32_t mfm[2], csum, *block = NULL;
     unsigned int i;
 
-    while ( (stream_next_bit(s) != -1) && !block )
-    {
-        if ( (uint16_t)s->word != 0x8915 )
+    while ((stream_next_bit(s) != -1) && !block) {
+
+        if ((uint16_t)s->word != 0x8915)
             continue;
 
         ti->data_bitoff = s->index_offset - 15;
 
-        if ( stream_next_bytes(s, mfm, sizeof(mfm)) == -1 )
+        if (stream_next_bytes(s, mfm, sizeof(mfm)) == -1)
             goto done;
         mfm_decode_amigados(mfm, 4/4);
         csum = ntohl(mfm[0]);
 
         block = memalloc(ti->len);
 
-        for ( i = 0; i < ti->len/4; i++ )
-        {
-            if ( stream_next_bytes(s, mfm, sizeof(mfm)) == -1 )
+        for (i = 0; i < ti->len/4; i++) {
+            if (stream_next_bytes(s, mfm, sizeof(mfm)) == -1)
                 goto done;
             mfm_decode_amigados(mfm, 4/4);
             csum -= ntohl(block[i] = mfm[0]);
         }
 
-        if ( csum )
-        {
+        if (csum) {
             memfree(block);
             block = NULL;
         }
     }
 
 done:
-    if ( block != NULL )
+    if (block != NULL)
         ti->valid_sectors = (1u << ti->nr_sectors) - 1;
 
     return block;
@@ -77,11 +75,11 @@ static void core_read_mfm(
 
     tbuf_bits(tbuf, SPEED_AVG, TB_raw, 16, 0x8915);
 
-    for ( i = 0; i < ti->len/4; i++ )
+    for (i = 0; i < ti->len/4; i++)
         csum += ntohl(dat[i]);
     tbuf_bits(tbuf, SPEED_AVG, TB_even_odd, 32, csum);
 
-    for ( i = 0; i < ti->len/4; i++ )
+    for (i = 0; i < ti->len/4; i++)
         tbuf_bits(tbuf, SPEED_AVG, TB_even_odd, 32, ntohl(dat[i]));
 }
 
@@ -91,3 +89,13 @@ struct track_handler core_design_handler = {
     .write_mfm = core_write_mfm,
     .read_mfm = core_read_mfm
 };
+
+/*
+ * Local variables:
+ * mode: C
+ * c-file-style: "Linux"
+ * c-basic-offset: 4
+ * tab-width: 4
+ * indent-tabs-mode: nil
+ * End:
+ */

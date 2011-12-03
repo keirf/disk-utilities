@@ -41,34 +41,32 @@ static void *pdos_write_mfm(
     struct rnc_pdos_key *keytag = (struct rnc_pdos_key *)
         disk_get_tag_by_id(d, DSKTAG_rnc_pdos_key);
 
-    while ( (stream_next_bit(s) != -1) &&
-            (valid_blocks != ((1u<<6)-1)) )
-    {
+    while ((stream_next_bit(s) != -1) &&
+           (valid_blocks != ((1u<<6)-1))) {
+
         uint8_t hdr[2*4], dat[2*512], skip;
         uint32_t k, *p, *q, csum;
 
-        if ( (uint16_t)s->word != 0x1448 )
+        if ((uint16_t)s->word != 0x1448)
             continue;
         ti->data_bitoff = s->index_offset - 15;
 
-        for ( i = 0; i < 12; i++ )
-        {
+        for (i = 0; i < 12; i++) {
             /* Check per-sector sync. */
-            if ( stream_next_bits(s, 16) == -1 )
+            if (stream_next_bits(s, 16) == -1)
                 goto done;
-            if ( (uint16_t)s->word != 0x4891 )
+            if ((uint16_t)s->word != 0x4891)
                 break;
 
             /* Read and MFM-decode the header and data areas. */
-            if ( (stream_next_bytes(s, hdr, 2*4) == -1) ||
-                 (stream_next_bytes(s, dat, 2*512) == -1) )
+            if ((stream_next_bytes(s, hdr, 2*4) == -1) ||
+                (stream_next_bytes(s, dat, 2*512) == -1))
                 goto done;
             mfm_decode_amigados(hdr, 4/4);
             csum = mfm_decode_amigados(dat, 512/4);
             csum = (uint16_t)(csum | (csum >> 15));
 
-            if ( keytag == NULL )
-            {
+            if (keytag == NULL) {
                 /* Brute-force the key. */
                 uint32_t key = ((hdr[0] ^ i) & 0x7f) << 24;
                 key |= (hdr[1] ^ tracknr) << 16;
@@ -76,13 +74,11 @@ static void *pdos_write_mfm(
                 key |= hdr[3] ^ (uint8_t)csum;
                 keytag = (struct rnc_pdos_key *)
                     disk_set_tag(d, DSKTAG_rnc_pdos_key, 4, &key);
-            }
-            else
-            {
+            } else {
                 *(uint32_t *)hdr ^= ntohl(keytag->key) ^ 0x80;
-                if ( (hdr[0] != i) || (hdr[1] != tracknr) ||
-                      (hdr[2] != (uint8_t)(csum>>8)) ||
-                      (hdr[3] != (uint8_t)csum) )
+                if ((hdr[0] != i) || (hdr[1] != tracknr) ||
+                    (hdr[2] != (uint8_t)(csum>>8)) ||
+                    (hdr[3] != (uint8_t)csum))
                 break;
             }
 
@@ -90,31 +86,28 @@ static void *pdos_write_mfm(
             k = keytag->key;
             p = (uint32_t *)dat;
             q = (uint32_t *)&block[i*512];
-            for ( j = 0; j < 512/4; j++ )
-            {
+            for (j = 0; j < 512/4; j++) {
                 uint32_t enc = ntohl(*p++);
                 *q++ = htonl(enc ^ k);
                 k = enc;
             }
 
             /* Skip the sector gap. */
-            if ( stream_next_bits(s, 16) == -1 )
+            if (stream_next_bits(s, 16) == -1)
                 goto done;
             skip = copylock_decode_word((uint16_t)s->word);
-            if ( stream_next_bits(s, skip*16) == -1 )
+            if (stream_next_bits(s, skip*16) == -1)
                 goto done;
         }
 
-        if ( i == 12 )
-        {
+        if (i == 12) {
             valid_blocks = (1u << 12) - 1;
             break;
         }
     }
 
 done:
-    if ( valid_blocks == 0 )
-    {
+    if (valid_blocks == 0) {
         free(block);
         return NULL;
     }
@@ -136,8 +129,8 @@ static void pdos_read_mfm(
 
     tbuf_bits(tbuf, SPEED_AVG, TB_raw, 16, 0x1448);
 
-    for ( i = 0; i < ti->nr_sectors; i++ )
-    {
+    for (i = 0; i < ti->nr_sectors; i++) {
+
         uint32_t csum = 0;
         uint32_t hdr = (i << 24) | (tracknr << 16);
         uint32_t enc[128];
@@ -147,16 +140,15 @@ static void pdos_read_mfm(
 
         /* encrypt data */
         k = keytag->key;
-        for ( j = 0; j < 128; j++ )
-        {
+        for (j = 0; j < 128; j++) {
             k ^= ntohl(*dat++);
             enc[j] = htonl(k);
         }
 
         /* header */
-        for ( j = 0; j < 128; j++ )
+        for (j = 0; j < 128; j++)
             csum ^= ntohl(enc[j]);
-        if ( !(ti->valid_sectors & (1u << i)) )
+        if (!(ti->valid_sectors & (1u << i)))
             csum ^= 1; /* bad checksum for an invalid sector */
         csum ^= csum >> 1;
         hdr |= (csum & 0x5555u) | ((csum >> 15) & 0xaaaau);
@@ -169,7 +161,7 @@ static void pdos_read_mfm(
         /* gap */
         tbuf_bits(tbuf, SPEED_AVG, TB_all, 8,
                   i == (ti->nr_sectors - 1) ? 0 : 28);
-        for ( j = 0; j < 28; j++ )
+        for (j = 0; j < 28; j++)
             tbuf_bits(tbuf, SPEED_AVG, TB_all, 8, 0);
     }
 }
@@ -180,3 +172,13 @@ struct track_handler rnc_pdos_handler = {
     .write_mfm = pdos_write_mfm,
     .read_mfm = pdos_read_mfm
 };
+
+/*
+ * Local variables:
+ * mode: C
+ * c-file-style: "Linux"
+ * c-basic-offset: 4
+ * tab-width: 4
+ * indent-tabs-mode: nil
+ * End:
+ */

@@ -47,7 +47,7 @@ struct m68k_emulate_priv_ctxt {
 #define M68KEMUL_SKIP_EMULATION 16
 
 /* Helper macro to avoid cumbersome if() stmts everywhere. */
-#define bail_if(_op) do { if ( (_op) != 0 ) goto bail; } while (0)
+#define bail_if(_op) do { if ((_op) != 0) goto bail; } while (0)
 
 /* Helper macro to pick a shadow register value. */
 #define sh_reg(c,n) ((c)->p->sh_regs.n)
@@ -59,7 +59,7 @@ struct m68k_emulate_priv_ctxt {
 } while (0)
 
 #define raise_exception_if(p, vec) do {         \
-    if ( p ) raise_exception(vec);              \
+    if (p) raise_exception(vec);                \
 } while (0)
 
 static const char op_sz_ch[] = { 'b', 'w', 'l', '?' };
@@ -74,7 +74,7 @@ static int check_addr_align(
     enum access_type access_type)
 {
     uint16_t sw = 0;
-    if ( (bytes == 1) || !(addr & 1) )
+    if ((bytes == 1) || !(addr & 1))
         return M68KEMUL_OKAY;
     /*
      * Status word:
@@ -87,7 +87,7 @@ static int check_addr_align(
      */
     sw  = access_type == access_write ? 0x00 : 0x10;
     sw |= access_type == access_fetch ? 0x02 : 0x09;
-    if ( c->regs->sr & SR_S )
+    if (c->regs->sr & SR_S)
         sw |= 0x04;
     c->p->exception.status_word = sw;
     c->p->exception.fault_addr = addr;
@@ -95,14 +95,14 @@ static int check_addr_align(
     return M68KEMUL_EXCEPTION;
 }
 
-#define raise_addr_err_if(p, a, b, t) do {                       \
-    if ( p ) { rc = raise_addr_err(c, a, t); goto bail; }       \
+#define raise_addr_err_if(p, a, b, t) do {              \
+    if (p) { rc = raise_addr_err(c, a, t); goto bail; } \
 } while (0)
 
 static void acct_cycles_for_mem_access(
     struct m68k_emulate_ctxt *c, unsigned int bytes)
 {
-    c->cycles += bytes == 4 ? 8 : 4;
+    c->cycles += (bytes == 4) ? 8 : 4;
 }
 
 static int fetch(
@@ -123,7 +123,7 @@ static int read(
     struct m68k_emulate_ctxt *c)
 {
     int rc;
-    if ( !c->emulate )
+    if (!c->emulate)
         return M68KEMUL_SKIP_EMULATION;
     bail_if(rc = check_addr_align(c, addr, bytes, access_read));
     bail_if(rc = c->ops->read(addr, val, bytes, c));
@@ -137,7 +137,7 @@ static int write(
     struct m68k_emulate_ctxt *c)
 {
     int rc;
-    if ( !c->emulate )
+    if (!c->emulate)
         return M68KEMUL_SKIP_EMULATION;
     bail_if(rc = check_addr_align(c, addr, bytes, access_write));
     bail_if(rc = c->ops->write(addr, val, bytes, c));
@@ -148,7 +148,7 @@ bail:
 
 static const char *addr_name(struct m68k_emulate_ctxt *c, uint32_t addr)
 {
-    if ( !c->disassemble || !c->ops->addr_name )
+    if (!c->disassemble || !c->ops->addr_name)
         return NULL;
     return c->ops->addr_name(addr, c);
 }
@@ -167,8 +167,7 @@ static int fetch_insn_##s##bytes(struct m68k_emulate_ctxt *c,   \
 {                                                               \
     int rc = 0;                                                 \
                                                                 \
-    switch ( sz )                                               \
-    {                                                           \
+    switch (sz) {                                               \
     case OPSZ_B:                                                \
         rc = fetch((uint32_t *)imm, 2, c);                      \
         c->op[c->op_words++] = *imm;                            \
@@ -198,7 +197,7 @@ static void dump(struct m68k_emulate_ctxt *c, const char *fmt, ...)
 {
     va_list args;
 
-    if ( !c->disassemble )
+    if (!c->disassemble)
         return;
 
     va_start(args, fmt);
@@ -208,7 +207,7 @@ static void dump(struct m68k_emulate_ctxt *c, const char *fmt, ...)
 
 static int deliver_exception(struct m68k_emulate_ctxt *c)
 {
-    if ( c->ops->deliver_exception )
+    if (c->ops->deliver_exception)
         return c->ops->deliver_exception(c, &c->p->exception);
     return m68k_deliver_exception(c, &c->p->exception);
 }
@@ -216,8 +215,7 @@ static int deliver_exception(struct m68k_emulate_ctxt *c)
 static void update_sr(struct m68k_emulate_ctxt *c, uint16_t new_sr)
 {
     uint16_t old_sr = sh_reg(c, sr);
-    if ( (old_sr ^ new_sr) & SR_S )
-    {
+    if ((old_sr ^ new_sr) & SR_S) {
         uint32_t xsp = sh_reg(c, a[7]);
         sh_reg(c, a[7]) = sh_reg(c, xsp);
         sh_reg(c, xsp) = xsp;
@@ -229,9 +227,9 @@ static void cc_mov(struct m68k_emulate_ctxt *c, uint32_t result)
 {
     uint16_t sr = sh_reg(c, sr);
     sr &= ~(CC_N|CC_Z|CC_V|CC_C);
-    if ( c->op_sz == OPSZ_W )
+    if (c->op_sz == OPSZ_W)
         result = (int16_t)result;
-    else if ( c->op_sz == OPSZ_B )
+    else if (c->op_sz == OPSZ_B)
         result = (int8_t)result;
     sr |= result & (1u<<31) ? CC_N : 0;
     sr |= result == 0 ? CC_Z : 0;
@@ -243,8 +241,7 @@ static int cc_eval_condition(struct m68k_emulate_ctxt *c, uint8_t cond)
     uint8_t cc = c->regs->sr;
     int r = 0;
 
-    switch ( (cond >> 1) & 7 )
-    {
+    switch ((cond >> 1) & 7) {
     case 0: r = 1; break;
     case 1: r = !(cc & CC_C) && !(cc & CC_Z); break;
     case 2: r = !(cc & CC_C); break;
@@ -274,8 +271,7 @@ static int decode_ea(struct m68k_emulate_ctxt *c)
     mode = (c->op[0] >> 3) & 7;
     reg = c->op[0] & 7;
 
-    switch ( mode )
-    {
+    switch (mode) {
     case 0:
         op->type = OP_REG;
         op->reg = &sh_reg(c, d[reg]);
@@ -289,7 +285,7 @@ static int decode_ea(struct m68k_emulate_ctxt *c)
     case 2:
         op->reg = &sh_reg(c, a[reg]);
         op->mem = *op->reg;
-        if ( (name = addr_name(c, op->mem)) != NULL )
+        if ((name = addr_name(c, op->mem)) != NULL)
             dump(c, "%s", name);
         dump(c, "(%s)", areg[reg]);
         break;
@@ -309,9 +305,9 @@ static int decode_ea(struct m68k_emulate_ctxt *c)
         int32_t disp;
         bail_if(rc = fetch_insn_sbytes(c, &disp, OPSZ_W));
         op->mem = sh_reg(c, a[reg]) + disp;
-        if ( (name = addr_name(c, op->mem)) != NULL )
+        if ((name = addr_name(c, op->mem)) != NULL)
             dump(c, "%s", name);
-        else if ( disp < 0 )
+        else if (disp < 0)
             dump(c, "-%x", -disp);
         else
             dump(c, "%x", disp);
@@ -321,38 +317,33 @@ static int decode_ea(struct m68k_emulate_ctxt *c)
     case 6: {
         uint16_t ext;
         bail_if(rc = fetch_insn_word(c, &ext));
-        if ( !(ext & (1u << 8)) )
-        {
+        if (!(ext & (1u << 8))) {
             int32_t idx = (ext & (1u<<15) ? sh_reg(c,a) : sh_reg(c,d))[
                 (ext>>12)&7];
             int8_t disp = (int8_t)ext;
-            if ( !(ext & (1u<<11)) )
+            if (!(ext & (1u<<11)))
                 idx = (int16_t)idx;
             idx <<= (ext>>9)&3;
             op->mem = sh_reg(c, a[reg]) + disp + idx;
-            if ( disp < 0 )
-            {
+            if (disp < 0) {
                 dump(c, "-");
                 disp = -disp;
             }
             dump(c, "%x(%s,%s.%c*%u)", disp, areg[reg],
                  (ext & (1u<<15) ? areg : dreg)[(ext>>12)&7],
                  ext & (1u<<11) ? 'l' : 'w', 1u << ((ext>>9)&3));
-        }
-        else
-        {
+        } else {
             dump(c, "???[68020+]");
             rc = M68KEMUL_UNHANDLEABLE;
         }
         break;
     }
     case 7: {
-        switch ( reg )
-        {
+        switch (reg) {
         case 0:
             bail_if(rc = fetch_insn_ubytes(c, &op->mem, OPSZ_W));
         abs_addr:
-            if ( (name = addr_name(c, op->mem)) != NULL )
+            if ((name = addr_name(c, op->mem)) != NULL)
                 dump(c, "%s", name);
             else
                 dump(c, "%x", op->mem);
@@ -373,20 +364,17 @@ static int decode_ea(struct m68k_emulate_ctxt *c)
             uint16_t ext;
             bail_if(rc = fetch_insn_word(c, &ext));
             target += (int8_t)ext;
-            if ( !(ext & (1u << 8)) )
-            {
+            if (!(ext & (1u << 8))) {
                 int32_t idx = (ext & (1u<<15) ? sh_reg(c,a) : sh_reg(c,d))[
                     (ext>>12)&7];
-                if ( !(ext & (1u<<11)) )
+                if (!(ext & (1u<<11)))
                     idx = (int16_t)idx;
                 idx <<= (ext>>9)&3;
                 op->mem = target + idx;
                 dump(c, "%04x(pc,%s.%c*%u)", target,
                      (ext & (1u<<15) ? areg : dreg)[(ext>>12)&7],
                      ext & (1u<<11) ? 'l' : 'w', 1u << ((ext>>9)&3));
-            }
-            else
-            {
+            } else {
                 dump(c, "???[68020+]");
                 rc = M68KEMUL_UNHANDLEABLE;
             }
@@ -412,7 +400,7 @@ bail:
 static int decode_mem_ea(struct m68k_emulate_ctxt *c)
 {
     int rc = decode_ea(c);
-    if ( (rc == 0) && (c->p->operand.type != OP_MEM) )
+    if ((rc == 0) && (c->p->operand.type != OP_MEM))
         rc = M68KEMUL_UNHANDLEABLE;
     return rc;
 }
@@ -426,19 +414,18 @@ static int read_ea(struct m68k_emulate_ctxt *c)
     bytes = ((c->op_sz == OPSZ_B) ? 1 :
              (c->op_sz == OPSZ_W) ? 2 :
              (c->op_sz == OPSZ_L) ? 4 : 0);
-    if ( !bytes )
+    if (!bytes)
         return M68KEMUL_UNHANDLEABLE;
 
-    switch ( op->type )
-    {
+    switch (op->type) {
     case OP_MEM:
         rc = read(op->mem, &op->val, bytes, c);
         break;
     case OP_REG:
         op->val = *op->reg;
-        if ( bytes == 1 )
+        if (bytes == 1)
             op->val = (uint8_t)op->val;
-        else if ( bytes == 2 )
+        else if (bytes == 2)
             op->val = (uint16_t)op->val;
         break;
     case OP_IMM:
@@ -446,7 +433,7 @@ static int read_ea(struct m68k_emulate_ctxt *c)
         break;
     case OP_SR:
         op->val = sh_reg(c, sr);
-        if ( bytes == 1 )
+        if (bytes == 1)
             op->val = (uint8_t)op->val;
         break;
     }
@@ -463,11 +450,10 @@ static int write_ea(struct m68k_emulate_ctxt *c)
     bytes = ((c->op_sz == OPSZ_B) ? 1 :
              (c->op_sz == OPSZ_W) ? 2 :
              (c->op_sz == OPSZ_L) ? 4 : 0);
-    if ( !bytes )
+    if (!bytes)
         return M68KEMUL_UNHANDLEABLE;
 
-    switch ( op->type )
-    {
+    switch (op->type) {
     case OP_MEM:
         rc = write(op->mem, op->val, bytes, c);
         break;
@@ -477,7 +463,7 @@ static int write_ea(struct m68k_emulate_ctxt *c)
                     op->val);
         break;
     case OP_SR:
-        if ( bytes == 1 )
+        if (bytes == 1)
             sh_reg(c, sr) = (sh_reg(c, sr) & ~0xffu) | (uint8_t)op->val;
         else
             update_sr(c, op->val);
@@ -499,13 +485,13 @@ static uint32_t _op_sub(struct m68k_emulate_ctxt *c, uint32_t s, uint32_t d)
     r = d - s;
 
     sr = sh_reg(c, sr) & ~(CC_N|CC_Z|CC_V|CC_C);
-    if ( r & msb )
+    if (r & msb)
         sr |= CC_N;
-    if ( (r & ((msb<<1)-1)) == 0 )
+    if ((r & ((msb<<1)-1)) == 0)
         sr |= CC_Z;
-    if ( ((s ^ d) & msb) && ((d ^ r) & msb) )
+    if (((s ^ d) & msb) && ((d ^ r) & msb))
         sr |= CC_V;
-    if ( (s & ~d & msb) || (r & ~d & msb) || (s & r & msb) )
+    if ((s & ~d & msb) || (r & ~d & msb) || (s & r & msb))
         sr |= CC_C;
     sh_reg(c, sr) = sr;
 
@@ -521,7 +507,7 @@ static int op_sub(struct m68k_emulate_ctxt *c, uint32_t s)
 {
     c->p->operand.val = _op_sub(c, s, c->p->operand.val);
     sh_reg(c, sr) &= ~CC_X;
-    if ( sh_reg(c, sr) & CC_C )
+    if (sh_reg(c, sr) & CC_C)
         sh_reg(c, sr) |= CC_X;
     return write_ea(c);
 }
@@ -536,13 +522,13 @@ static int op_add(struct m68k_emulate_ctxt *c, uint32_t s)
     r = d + s;
 
     sr = sh_reg(c, sr) & ~(CC_X|CC_N|CC_Z|CC_V|CC_C);
-    if ( r & msb )
+    if (r & msb)
         sr |= CC_N;
-    if ( (r & ((msb<<1)-1)) == 0 )
+    if ((r & ((msb<<1)-1)) == 0)
         sr |= CC_Z;
-    if ( !((s ^ d) & msb) && ((d ^ r) & msb) )
+    if (!((s ^ d) & msb) && ((d ^ r) & msb))
         sr |= CC_V;
-    if ( (s & d & msb) || (s & ~r & msb) || (d & ~r & msb) )
+    if ((s & d & msb) || (s & ~r & msb) || (d & ~r & msb))
         sr |= CC_C | CC_X;
     sh_reg(c, sr) = sr;
 
@@ -561,39 +547,28 @@ static int misc_insn(struct m68k_emulate_ctxt *c)
      */
 
     /* 1. Simple full opcode matches. */
-    if ( op == 0x4afau )
-    {
+    if (op == 0x4afau) {
         /* bgnd */
         dump(c, "bgnd");
         rc = M68KEMUL_UNHANDLEABLE;
-    }
-    else if ( op == 0x4afcu )
-    {
+    } else if (op == 0x4afcu) {
         /* illegal */
         dump(c, "illegal");
         raise_exception(M68KVEC_illegal_insn);
-    }
-    else if ( op == 0x4e70u )
-    {
+    } else if (op == 0x4e70u) {
         /* reset */
         dump(c, "reset");
         rc = M68KEMUL_UNHANDLEABLE;
-    }
-    else if ( op == 0x4e71u )
-    {
+    } else if (op == 0x4e71u) {
         /* nop */
         dump(c, "nop");
-    }
-    else if ( op == 0x4e72u )
-    {
+    } else if (op == 0x4e72u) {
         /* stop */
         uint16_t data;
         bail_if(rc = fetch_insn_word(c, &data));
         dump(c, "stop\t#%x", data);
         rc = M68KEMUL_UNHANDLEABLE;
-    }
-    else if ( op == 0x4e73u )
-    {
+    } else if (op == 0x4e73u) {
         /* rte */
         uint32_t new_pc, new_sr;
         dump(c, "rte");
@@ -603,35 +578,27 @@ static int misc_insn(struct m68k_emulate_ctxt *c)
         sh_reg(c, a[7]) += 6;
         update_sr(c, new_sr);
         sh_reg(c, pc) = new_pc;
-    }
-    else if ( op == 0x4e74u )
-    {
+    } else if (op == 0x4e74u) {
         /* rtd */
         int32_t disp;
         bail_if(rc = fetch_insn_sbytes(c, &disp, OPSZ_W));
         dump(c, "rtd\t#");
-        if ( disp < 0 )
+        if (disp < 0)
             dump(c, "-%x", -disp);
         else
             dump(c, "%x", disp);
         bail_if(rc = read(sh_reg(c,a[7]), &sh_reg(c, pc), 4, c));
         sh_reg(c, a[7]) += 4 + disp;
-    }
-    else if ( op == 0x4e75u )
-    {
+    } else if (op == 0x4e75u) {
         /* rts */
         dump(c, "rts");
         bail_if(rc = read(sh_reg(c,a[7]), &sh_reg(c, pc), 4, c));
         sh_reg(c, a[7]) += 4;
-    }
-    else if ( op == 0x4e76u )
-    {
+    } else if (op == 0x4e76u) {
         /* trapv */
         dump(c, "trapv");
         raise_exception_if(sh_reg(c, sr) & CC_V, M68KVEC_trapcc_trapv);
-    }
-    else if ( op == 0x4e77u )
-    {
+    } else if (op == 0x4e77u) {
         /* rtr */
         uint32_t new_pc, new_sr;
         dump(c, "rtr");
@@ -644,32 +611,25 @@ static int misc_insn(struct m68k_emulate_ctxt *c)
     }
 
     /* 2. Exact matches with no invalid cases. */
-    else if ( (op & 0xfff8u) == 0x4840u )
-    {
+    else if ((op & 0xfff8u) == 0x4840u) {
         /* swap */
         uint32_t *reg = &sh_reg(c, d[op&7]);
         c->op_sz = OPSZ_L;
         dump(c, "swap\t%s", dreg[op&7]);
         *reg = (*reg << 16) | (uint16_t)(*reg >> 16);
         cc_mov(c, *reg);
-    }
-    else if ( (op & 0xfff8u) == 0x4848u )
-    {
+    } else if ((op & 0xfff8u) == 0x4848u) {
         /* bkpt */
         dump(c, "bkpt\t#%x", op&7);
         rc = M68KEMUL_UNHANDLEABLE;
-    }
-    else if ( (op & 0xfff8u) == 0x49c0u )
-    {
+    } else if ((op & 0xfff8u) == 0x49c0u) {
         /* extb */
         uint32_t *reg = &sh_reg(c, d[op&7]);
         c->op_sz = OPSZ_L;
         dump(c, "extb.%c\t%s", op_sz_ch[c->op_sz], dreg[op&7]);
         *reg = (int8_t)*reg;
         cc_mov(c, *reg);
-    }
-    else if ( ((op & 0xfff8u) == 0x4e50u) || ((op & 0xfff8u) == 0x4808u) )
-    {
+    } else if (((op & 0xfff8u) == 0x4e50u) || ((op & 0xfff8u) == 0x4808u)) {
         /* link */
         int32_t disp;
         uint32_t *reg = &sh_reg(c, a[op&7]);
@@ -677,8 +637,7 @@ static int misc_insn(struct m68k_emulate_ctxt *c)
         bail_if(rc = fetch_insn_sbytes(c, &disp, c->op_sz));
         dump(c, "link.%c\t%s,#",
              op_sz_ch[c->op_sz], areg[op&7]);
-        if ( disp < 0 )
-        {
+        if (disp < 0) {
             dump(c, "-");
             disp = -disp;
         }
@@ -687,9 +646,7 @@ static int misc_insn(struct m68k_emulate_ctxt *c)
         bail_if(rc = write(sh_reg(c, a[7]), *reg, 4, c));
         *reg = sh_reg(c, a[7]);
         sh_reg(c, a[7]) += disp;
-    }
-    else if ( (op & 0xfff8u) == 0x4e58u )
-    {
+    } else if ((op & 0xfff8u) == 0x4e58u) {
         /* unlk */
         uint32_t *reg = &sh_reg(c, a[op&7]);
         dump(c, "unlk\t%s", areg[op&7]);
@@ -703,18 +660,15 @@ static int misc_insn(struct m68k_emulate_ctxt *c)
      * invalid cases for the matched instruction. Where that matters, we should
      * have already decoded the correct instruction with a more precise match.
      */
-    else if ( (op & 0xf140u) == 0x4100u )
-    {
+    else if ((op & 0xf140u) == 0x4100u) {
         /* chk */
         c->op_sz = (op & (1u<<7)) ? OPSZ_W : OPSZ_L;
         dump(c, "chk.%c\t", op_sz_ch[c->op_sz]);
         bail_if(rc = decode_ea(c));
         dump(c, ",%s", dreg[(op >> 9) & 7]);
         rc = M68KEMUL_UNHANDLEABLE;
-    }
-    else if ( ((op & 0xff00u) == 0x4200u) &&
-              ((c->op_sz = (op>>6)&3) != OPSZ_X) )
-    {
+    } else if (((op & 0xff00u) == 0x4200u) &&
+               ((c->op_sz = (op>>6)&3) != OPSZ_X)) {
         /* clr */
         dump(c, "clr.%c\t", op_sz_ch[c->op_sz]);
         bail_if(rc = decode_ea(c));
@@ -722,27 +676,23 @@ static int misc_insn(struct m68k_emulate_ctxt *c)
         bail_if(rc = write_ea(c));
         sh_reg(c, sr) &= ~(CC_N|CC_Z|CC_V|CC_C);
         sh_reg(c, sr) |= CC_Z;
-    }
-    else if ( (op & 0xffc0u) == 0x4c40u )
-    {
+    } else if ((op & 0xffc0u) == 0x4c40u) {
         /* divs/divu.l */
         uint16_t ext, dr, dq, sz;
         bail_if(rc = fetch_insn_word(c, &ext));
         dr = ext&7; dq = (ext>>12)&7; sz = (ext>>10)&1;
         c->op_sz = OPSZ_L;
         dump(c, "div%c", ext & (1u<<11) ? 's' : 'u');
-        if ( !sz && (dr != dq) )
+        if (!sz && (dr != dq))
             dump(c, "l");
         dump(c, ".l\t");
         bail_if(rc = decode_ea(c));
         dump(c, ",");
-        if ( sz || (dr != dq) )
+        if (sz || (dr != dq))
             dump(c, "%s:", dreg[dr]);
         dump(c, "%s", dreg[dq]);
         rc = M68KEMUL_UNHANDLEABLE;
-    }
-    else if ( (op & 0xffb8u) == 0x4880u )
-    {
+    } else if ((op & 0xffb8u) == 0x4880u) {
         /* ext */
         uint32_t *reg = &sh_reg(c, d[op&7]);
         c->op_sz = (op & (1u<<6)) ? OPSZ_L : OPSZ_W;
@@ -751,75 +701,59 @@ static int misc_insn(struct m68k_emulate_ctxt *c)
                 ? (*reg & ~0xffffu) | (uint16_t)(int8_t)*reg
                 : (int16_t)*reg);
         cc_mov(c, *reg);
-    }
-    else if ( (op & 0xff80u) == 0x4e80u )
-    {
+    } else if ((op & 0xff80u) == 0x4e80u) {
         /* jmp/jsr */
         dump(c, "j%s\t", (op & (1u<<6)) ? "mp" : "sr");
         bail_if(rc = decode_mem_ea(c));
-        if ( !(op & (1u<<6)) )
-        {
+        if (!(op & (1u<<6))) {
             /* push return address (current pc) */
             sh_reg(c, a[7]) -= 4;
             bail_if(rc = write(sh_reg(c, a[7]), sh_reg(c, pc), 4, c));
         }
         /* update pc to jump target */
         sh_reg(c, pc) = c->p->operand.mem;
-    }
-    else if ( (op & 0xf1c0u) == 0x41c0u )
-    {
+    } else if ((op & 0xf1c0u) == 0x41c0u) {
         /* lea */
         c->op_sz = OPSZ_L;
         dump(c, "lea.l\t");
         bail_if(rc = decode_mem_ea(c));
         dump(c, ",%s", areg[(op>>9)&7]);
         sh_reg(c, a[(op>>9)&7]) = c->p->operand.mem;
-    }
-    else if ( (op & 0xfdc0u) == 0x40c0u )
-    {
+    } else if ((op & 0xfdc0u) == 0x40c0u) {
         /* move from ccr/sr */
         c->op_sz = OPSZ_W;
         dump(c, "move.w\t%s,", op & (1u<<9) ? "ccr" : "sr");
         bail_if(rc = decode_ea(c));
         c->p->operand.val = sh_reg(c, sr);
-        if ( op & (1u<<9) )
+        if (op & (1u<<9))
             c->p->operand.val = (uint8_t)c->p->operand.val;
         bail_if(rc = write_ea(c));
-    }
-    else if ( (op & 0xfdc0u) == 0x44c0u )
-    {
+    } else if ((op & 0xfdc0u) == 0x44c0u) {
         /* move to ccr/sr */
         c->op_sz = OPSZ_W;
         dump(c, "move.w\t");
         bail_if(rc = decode_ea(c));
         dump(c, ",%s", op & (1u<<9) ? "sr" : "ccr");
         bail_if(rc = read_ea(c));
-        if ( op & (1u<<9) )
-        {
+        if (op & (1u<<9)) {
             raise_exception_if(!(sh_reg(c, sr) & SR_S),
                                M68KVEC_priv_violation);
             update_sr(c, c->p->operand.val);
-        }
-        else
-        {
+        } else {
             sh_reg(c, sr) &= ~0xffu;
             sh_reg(c, sr) |= (uint8_t)c->p->operand.val;
         }
-    }
-    else if ( (op & 0xfff0u) == 0x4e60u )
-    {
+    } else if ((op & 0xfff0u) == 0x4e60u) {
         /* move to/from usp */
         c->op_sz = OPSZ_L;
         dump(c, "move.l\t");
         dump(c, op&(1u<<3) ? "usp,%s" : "%s,usp", areg[op&7]);
         raise_exception_if(!(sh_reg(c, sr) & SR_S), M68KVEC_priv_violation);
-        if ( op & (1u<<3) )
+        if (op & (1u<<3))
             sh_reg(c, a[op&7]) = sh_reg(c, xsp);
         else
             sh_reg(c, xsp) = sh_reg(c, a[op&7]);
-    }
-    else if ( (op & 0xfffeu) == 0x4e7au )
-    {
+    } else if ((op & 0xfffeu) == 0x4e7au) {
         /* movec */
         const static char *creg[] = {
             "sfc", "dfc", "cacr", "tc", "itt0", "itt1", "dtt0", "dtt1",
@@ -829,91 +763,76 @@ static int misc_insn(struct m68k_emulate_ctxt *c)
         bail_if(rc = fetch_insn_word(c, &ext));
         idx = ext & 0x0fffu;
         greg = (ext & (1u<<15) ? areg : dreg)[(ext>>12)&7];
-        if ( ((idx > 7) && (idx < 0x800u)) || (idx > 0x807u) )
+        if (((idx > 7) && (idx < 0x800u)) || (idx > 0x807u))
             goto unknown; /* bad creg */
         idx = (idx & 7) | ((idx & 0x800u) >> 8);
         c->op_sz = OPSZ_L;
         dump(c, "movec.l\t");
-        if ( op & 1 )
+        if (op & 1)
             dump(c, "%s,%s", greg, creg[idx]);
         else
             dump(c, "%s,%s", creg[idx], greg);
         raise_exception(M68KVEC_illegal_insn);
-    }
-    else if ( (op & 0xfb80u) == 0x4880u )
-    {
+    } else if ((op & 0xfb80u) == 0x4880u) {
         /* movem */
         uint32_t mask, *r;
         int reg, predec = ((op & 0x38u) == 0x20u);
         c->op_sz = op & (1u<<6) ? OPSZ_L : OPSZ_W;
         bail_if(rc = fetch_insn_ubytes(c, &mask, OPSZ_W));
         dump(c, "movem.%c\t", op_sz_ch[c->op_sz]);
-        if ( op & (1u<<10) )
-        {
+        if (op & (1u<<10)) {
             bail_if(rc = decode_ea(c));
             dump(c, ",");
         }
-        if ( predec )
-        {
+        if (predec) {
             /* flip the mask for predec addr mode */
             uint16_t tmp = mask;
-            for ( reg=0, mask=0; reg < 16; reg++, tmp >>= 1 )
+            for (reg=0, mask=0; reg < 16; reg++, tmp >>= 1)
                 mask = (mask << 1) | (tmp & 1);
         }
-        for ( reg = 0; reg < 16; reg++ )
-        {
-            if ( !(mask & (1u<<reg)) )
+        for (reg = 0; reg < 16; reg++) {
+            if (!(mask & (1u<<reg)))
                 continue;
-            if ( !(reg & 7) || !(mask & (1u<<(reg-1))) )
-            {
-                if ( mask & ((1u<<reg)-1) )
+            if (!(reg & 7) || !(mask & (1u<<(reg-1)))) {
+                if (mask & ((1u<<reg)-1))
                     dump(c, "/");
                 dump(c, "%s", ((reg&8)?areg:dreg)[reg&7]);
-            }
-            else if ( ((reg&7)==7) || !(mask & (2u<<reg)) )
-            {
-                if ( mask & (1u<<(reg-1)) )
+            } else if (((reg&7)==7) || !(mask & (2u<<reg))) {
+                if (mask & (1u<<(reg-1)))
                     dump(c, "-");
                 dump(c, "%s", ((reg&8)?areg:dreg)[reg&7]);
             }
         }
-        if ( !(op & (1u<<10)) )
-        {
+        if (!(op & (1u<<10))) {
             dump(c, ",");
             bail_if(rc = decode_ea(c));
         }
         /* Now the actual movem emulation... */
-        for ( !predec ? (reg = 0) : (reg = 15);
-              !predec ? reg < 16  : reg >= 0;
-              !predec ? reg++     : reg-- )
-        {
-            if ( !(mask & (1u<<reg)) )
+        for (!predec ? (reg = 0) : (reg = 15);
+             !predec ? reg < 16  : reg >= 0;
+             !predec ? reg++     : reg--) {
+            if (!(mask & (1u<<reg)))
                 continue;
             r = (reg > 7) ? &sh_reg(c,a[reg&7]) : &sh_reg(c,d[reg]);
-            if ( op & (1u<<10) )
-            {
+            if (op & (1u<<10)) {
                 bail_if(rc = read_ea(c));
                 *r = c->op_sz == OPSZ_L
                     ? c->p->operand.val
                     : (*r & ~0xffffu) | (uint16_t)c->p->operand.val;
-            }
-            else
-            {
+            } else {
                 c->p->operand.val = *r;
                 bail_if(rc = write_ea(c));
             }
-            if ( predec )
+            if (predec)
                 c->p->operand.mem -= c->op_sz == OPSZ_W ? 2 : 4;
             else
                 c->p->operand.mem += c->op_sz == OPSZ_W ? 2 : 4;
         }
-        if ( predec )
+        if (predec)
             c->p->operand.mem += c->op_sz == OPSZ_W ? 2 : 4;
-        if ( predec || ((op & 0x38u) == 0x18u) ) /* predec / postinc */
+        if (predec || ((op & 0x38u) == 0x18u)) /* predec / postinc */
             *c->p->operand.reg = c->p->operand.mem;
-    }
-    else if ( (op & 0xffc0u) == 0x4c00u )
-    {
+    } else if ((op & 0xffc0u) == 0x4c00u) {
         /* muls/mulu.l */
         uint16_t ext, dh, dl, sz;
         bail_if(rc = fetch_insn_word(c, &ext));
@@ -922,22 +841,18 @@ static int misc_insn(struct m68k_emulate_ctxt *c)
         dump(c, "mul%c.l\t", ext & (1u<<11) ? 's' : 'u');
         bail_if(rc = decode_ea(c));
         dump(c, ",");
-        if ( sz )
+        if (sz)
             dump(c, "%s:", dreg[dh]);
         dump(c, "%s", dreg[dl]);
         rc = M68KEMUL_UNHANDLEABLE;
-    }
-    else if ( (op & 0xffc0u) == 0x4800u )
-    {
+    } else if ((op & 0xffc0u) == 0x4800u) {
         /* nbcd */
         c->op_sz = OPSZ_B;
         dump(c, "nbcd.%c\t", op_sz_ch[c->op_sz]);
         bail_if(rc = decode_ea(c));
         rc = M68KEMUL_UNHANDLEABLE;
-    }
-    else if ( ((op & 0xff00u) == 0x4400u) &&
-              ((c->op_sz = (op>>6)&3) != OPSZ_X) )
-    {
+    } else if (((op & 0xff00u) == 0x4400u) &&
+               ((c->op_sz = (op>>6)&3) != OPSZ_X)) {
         /* neg */
         uint32_t s;
         dump(c, "neg.%c\t", op_sz_ch[c->op_sz]);
@@ -947,20 +862,16 @@ static int misc_insn(struct m68k_emulate_ctxt *c)
         c->p->operand.val = 0;
         rc = op_sub(c, s);
         sh_reg(c, sr) &= ~(CC_X|CC_C);
-        if ( !(sh_reg(c, sr) & CC_Z) )
+        if (!(sh_reg(c, sr) & CC_Z))
             sh_reg(c, sr) |= CC_X|CC_C;
-    }
-    else if ( ((op & 0xff00u) == 0x4000u) &&
-              ((c->op_sz = (op>>6)&3) != OPSZ_X) )
-    {
+    } else if (((op & 0xff00u) == 0x4000u) &&
+               ((c->op_sz = (op>>6)&3) != OPSZ_X)) {
         /* negx */
         dump(c, "negx.%c\t", op_sz_ch[c->op_sz]);
         bail_if(rc = decode_ea(c));
         rc = M68KEMUL_UNHANDLEABLE;
-    }
-    else if ( ((op & 0xff00u) == 0x4600u) &&
-              ((c->op_sz = (op>>6)&3) != OPSZ_X) )
-    {
+    } else if (((op & 0xff00u) == 0x4600u) &&
+               ((c->op_sz = (op>>6)&3) != OPSZ_X)) {
         /* not */
         dump(c, "not.%c\t", op_sz_ch[c->op_sz]);
         bail_if(rc = decode_ea(c));
@@ -968,42 +879,32 @@ static int misc_insn(struct m68k_emulate_ctxt *c)
         c->p->operand.val = ~c->p->operand.val;
         cc_mov(c, c->p->operand.val);
         rc = write_ea(c);
-    }
-    else if ( (op & 0xffc0u) == 0x4840u )
-    {
+    } else if ((op & 0xffc0u) == 0x4840u) {
         /* pea */
         c->op_sz = OPSZ_L;
         dump(c, "pea.l\t");
         bail_if(rc = decode_mem_ea(c));
         sh_reg(c, a[7]) -= 4;
         bail_if(rc = write(sh_reg(c, a[7]), c->p->operand.mem, 4, c));
-    }
-    else if ( (op & 0xffc0u) == 0x4ac0u )
-    {
+    } else if ((op & 0xffc0u) == 0x4ac0u) {
         /* tas */
         c->op_sz = OPSZ_B;
         dump(c, "tas.b\t");
         bail_if(rc = decode_ea(c));
         rc = M68KEMUL_UNHANDLEABLE;
-    }
-    else if ( (op & 0xfff0u) == 0x4e40u )
-    {
+    } else if ((op & 0xfff0u) == 0x4e40u) {
         /* trap */
         uint8_t trap = op & 15;
         dump(c, "trap\t#%x", trap);
         raise_exception(M68KVEC_trap_0 + trap);
-    }
-    else if ( ((op & 0xff00u) == 0x4a00u) &&
-              ((c->op_sz = (op>>6)&3) != OPSZ_X) )
-    {
+    } else if (((op & 0xff00u) == 0x4a00u) &&
+               ((c->op_sz = (op>>6)&3) != OPSZ_X)) {
         /* tst */
         dump(c, "tst.%c\t", op_sz_ch[c->op_sz]);
         bail_if(rc = decode_ea(c));
         bail_if(rc = read_ea(c));
         cc_mov(c, c->p->operand.val);
-    }
-    else
-    {
+    } else {
     unknown:
         dump(c, "???");
         raise_exception(M68KVEC_illegal_insn);
@@ -1030,13 +931,11 @@ int m68k_emulate(struct m68k_emulate_ctxt *c)
     c->cycles = 0;
     bail_if(rc = fetch_insn_word(c, &op));
 
-    switch ( (op >> 12) & 0xf )
-    {
+    switch ((op >> 12) & 0xf) {
     case 0x0: { /* COMPLETE (but callm/cas/cas2/chk2/cmp2/moves/rtm) */
         static const char *imm_alu_op[] = {
             "or", "and", "sub", "add", NULL, "eor", "cmp", NULL };
-        if ( !(op & 0x0100u) && imm_alu_op[(op>>9)&7] )
-        {
+        if (!(op & 0x0100u) && imm_alu_op[(op>>9)&7]) {
             /* addi/andi/cmpi/eori/ori/subi */
             uint32_t imm;
             c->op_sz = (op >> 6) & 3;
@@ -1044,22 +943,18 @@ int m68k_emulate(struct m68k_emulate_ctxt *c)
             dump(c, "%si.%c\t", imm_alu_op[(op>>9)&7],
                  op_sz_ch[c->op_sz]);
             dump(c, "#%x,", imm);
-            if ( (op & 0x3fu) == 0x3cu )
-            {
+            if ((op & 0x3fu) == 0x3cu) {
                 dump(c, "%s", (c->op_sz==OPSZ_B) ? "ccr" : "sr");
                 c->p->operand.type = OP_SR;
                 raise_exception_if(
                     (c->op_sz != OPSZ_B) && !(sh_reg(c, sr) & SR_S),
                     M68KVEC_priv_violation);
-            }
-            else
-            {
+            } else {
                 bail_if(rc = decode_ea(c));
             }
 
             bail_if(rc = read_ea(c));
-            switch ( (op >> 9) & 7 )
-            {
+            switch ((op >> 9) & 7) {
             case 0: /* or */
                 c->p->operand.val |= imm;
                 cc_mov(c, c->p->operand.val);
@@ -1088,69 +983,56 @@ int m68k_emulate(struct m68k_emulate_ctxt *c)
                 rc = M68KEMUL_UNHANDLEABLE;
                 break;
             }
-        }
-        else if ( (op & 0xf138u) == 0x0108u )
-        {
+        } else if ((op & 0xf138u) == 0x0108u) {
             /* movep */
             uint32_t v=0, b, *reg = &sh_reg(c, d[(op>>9)&7]);
             int i;
             c->op_sz = op & (1u<<6) ? OPSZ_L : OPSZ_W;
             dump(c, "movep.%c\t", op_sz_ch[c->op_sz]);
-            if ( op & (1u<<7) )
+            if (op & (1u<<7))
                 dump(c, "%s,", dreg[(op>>9)&7]);
             c->op[0] |= 1u<<5; /* fix the ea mode to be d16(An) */
             bail_if(rc = decode_ea(c));
             c->op[0] = op;
-            if ( !(op & (1u<<7)) )
-            {
+            if (!(op & (1u<<7))) {
                 dump(c, ",%s", dreg[(op>>9)&7]);
-                for ( i = 0; i < (c->op_sz == OPSZ_L ? 4 : 2); i++ )
-                {
+                for (i = 0; i < (c->op_sz == OPSZ_L ? 4 : 2); i++) {
                     bail_if(rc = read(c->p->operand.mem+i*2, &b, 1, c));
                     v = (v << 8) | b;
                 }
                 *reg = c->op_sz == OPSZ_W
                     ? (*reg & ~0xffffu) | (uint16_t)v : v;
-            }
-            else
-            {
+            } else {
                 v = *reg;
-                for ( i = (c->op_sz == OPSZ_L ? 3 : 1); i >= 0; i-- )
-                {
+                for (i = (c->op_sz == OPSZ_L ? 3 : 1); i >= 0; i--) {
                     bail_if(rc = write(c->p->operand.mem+i*2, v, 1, c));
                     v >>= 8;
                 }
             }
-        }
-        else
-        {
+        } else {
             /* bchg/bclr/bset/btst */
             static const char *bitop[] = {
                 "btst", "bchg", "bclr", "bset" };
             uint16_t idx;
             c->op_sz = !(op & 0x38u) ? OPSZ_L: OPSZ_B;
             dump(c, "%s.%c\t", bitop[(op>>6)&3], op_sz_ch[c->op_sz]);
-            if ( op & (1u<<8) )
-            {
+            if (op & (1u<<8)) {
                 idx = sh_reg(c, d[(op>>9)&7]);
                 dump(c, "%s,", dreg[(op>>9)&7]);
-            }
-            else if ( (op & 0x0f00u) == 0x0800u )
-            {
+            } else if ((op & 0x0f00u) == 0x0800u) {
                 bail_if(rc = fetch_insn_word(c, &idx));
                 idx &= c->op_sz == OPSZ_B ? 7 : 31;
                 dump(c, "#%x,", idx);
-            }
-            else
+            } else {
                 goto unknown;
+            }
             bail_if(rc = decode_ea(c));
             bail_if(rc = read_ea(c));
             idx &= c->op_sz == OPSZ_B ? 7 : 31;
             sh_reg(c, sr) &= ~CC_Z;
-            if ( !(c->p->operand.val & (1u<<idx)) )
+            if (!(c->p->operand.val & (1u<<idx)))
                 sh_reg(c, sr) |= CC_Z;
-            switch ( (op >> 6 ) & 3 )
-            {
+            switch ((op >> 6 ) & 3) {
             case 1: c->p->operand.val ^= 1u << idx; break;
             case 2: c->p->operand.val &= ~(1u << idx); break;
             case 3: c->p->operand.val |= 1u << idx; break;
@@ -1169,23 +1051,19 @@ int m68k_emulate(struct m68k_emulate_ctxt *c)
         struct operand src, dst;
         c->op_sz = OPSZ_W;
     move:
-        if ( ((op >> 6) & 7) == 1 )
-        {
-            if ( c->op_sz == OPSZ_B )
+        if (((op >> 6) & 7) == 1) {
+            if (c->op_sz == OPSZ_B)
                 goto unknown;
             dump(c, "movea.%c\t", op_sz_ch[c->op_sz]);
             bail_if(rc = decode_ea(c));
             dump(c, ",%s", areg[(op>>9)&7]);
             bail_if(rc = read_ea(c));
-            if ( c->op_sz == OPSZ_W )
-            {
+            if (c->op_sz == OPSZ_W) {
                 c->p->operand.val = (int16_t)c->p->operand.val;
                 c->op_sz = OPSZ_L;
             }
             sh_reg(c, a[(op>>9)&7]) = c->p->operand.val;
-        }
-        else
-        {
+        } else {
             dump(c, "move.%c\t", op_sz_ch[c->op_sz]);
             bail_if(rc = decode_ea(c));
             src = c->p->operand;
@@ -1213,8 +1091,7 @@ int m68k_emulate(struct m68k_emulate_ctxt *c)
             "t",  "f",  "hi", "ls", "cc", "cs", "ne", "eq",
             "vc", "vs", "pl", "mi", "ge", "lt", "gt", "le" };
         uint8_t cond = (op >> 8) & 0xf;
-        if ( (op & 0x00c0u) != 0x00c0u )
-        {
+        if ((op & 0x00c0u) != 0x00c0u) {
             /* addq/subq */
             uint8_t val = (op >> 9) & 7 ? : 8;
             c->op_sz = (op >> 6) & 3;
@@ -1224,38 +1101,30 @@ int m68k_emulate(struct m68k_emulate_ctxt *c)
             bail_if(rc = decode_ea(c));
             bail_if(rc = read_ea(c));
             bail_if(rc = ((op & (1u<<8)) ? op_sub : op_add)(c, val));
-        }
-        else if ( (op & 0x0038u) == 0x0008u )
-        {
+        } else if ((op & 0x0038u) == 0x0008u) {
             /* dbcc */
             uint32_t pc = sh_reg(c,pc);
             int32_t disp;
             bail_if(rc = fetch_insn_sbytes(c, &disp, OPSZ_W));
             dump(c, "db%s.w\t%s,%04x", cc[cond], dreg[op&7], pc + disp);
-            if ( !cc_eval_condition(c, cond) )
-            {
+            if (!cc_eval_condition(c, cond)) {
                 uint32_t *reg = &sh_reg(c, d[op&7]);
                 *reg = (*reg & ~0xffffu) | (uint16_t)(*reg - 1);
-                if ( (int16_t)*reg != -1 )
+                if ((int16_t)*reg != -1)
                     sh_reg(c, pc) = pc + disp;
             }
-        }
-        else if ( (op & 0x003fu) >= 0x003au )
-        {
+        } else if ((op & 0x003fu) >= 0x003au) {
             /* trapcc */
             uint32_t imm;
             dump(c, "trap%s", cc[cond]);
-            if ( op & 2 )
-            {
+            if (op & 2) {
                 c->op_sz = op&1 ? OPSZ_L : OPSZ_W;
                 bail_if(rc = fetch_insn_ubytes(c, &imm, c->op_sz));
                 dump(c, "\t#%x", imm);
             }
             raise_exception_if(cc_eval_condition(c, cond),
                                M68KVEC_trapcc_trapv);
-        }
-        else
-        {
+        } else {
             /* scc */
             c->op_sz = OPSZ_B;
             dump(c, "s%s.b\t", cc[cond]);
@@ -1274,18 +1143,16 @@ int m68k_emulate(struct m68k_emulate_ctxt *c)
         uint8_t cond = (op >> 8) & 0xf;
         c->op_sz = (disp == 0  ? OPSZ_W : disp == -1 ? OPSZ_L : OPSZ_B);
         dump(c, "b%s.%c", cc[cond], op_sz_ch[c->op_sz]);
-        if ( disp == 0 )
+        if (disp == 0)
             bail_if(rc = fetch_insn_sbytes(c, &disp, OPSZ_W));
-        else if ( disp == -1 )
+        else if (disp == -1)
             bail_if(rc = fetch_insn_sbytes(c, &disp, OPSZ_L));
         dump(c, "\t%04x", target + disp);
-        if ( cond == 1 )
-        {
+        if (cond == 1) {
             /* bsr: push return address (current pc) onto stack */
             sh_reg(c, a[7]) -= 4;
             bail_if(rc = write(sh_reg(c, a[7]), sh_reg(c, pc), 4, c));
-        }
-        else if ( !cc_eval_condition(c, cond) )
+        } else if (!cc_eval_condition(c, cond))
             break; /* bcc condition is false: no branch */
         sh_reg(c, pc) = target + disp;
         break;
@@ -1296,8 +1163,7 @@ int m68k_emulate(struct m68k_emulate_ctxt *c)
         *reg = val;
         c->op_sz = OPSZ_L;
         dump(c, "moveq\t#");
-        if ( val < 0 )
-        {
+        if (val < 0) {
             dump(c, "-");
             val = -val;
         }
@@ -1312,39 +1178,31 @@ int m68k_emulate(struct m68k_emulate_ctxt *c)
         goto addsub;
     case 0xb: { /* COMPLETE */
         c->op_sz = (op>>6)&3;
-        if ( (op & 0xc0u) == 0xc0u )
-        {
+        if ((op & 0xc0u) == 0xc0u) {
             /* cmpa */
             c->op_sz = op & (1u<<8) ? OPSZ_L : OPSZ_W;
             dump(c, "cmpa.%c\t", op_sz_ch[c->op_sz]);
             bail_if(rc = decode_ea(c));
             dump(c, ",%s", areg[(op>>9)&7]);
             bail_if(rc = read_ea(c));
-            if ( c->op_sz == OPSZ_W )
-            {
+            if (c->op_sz == OPSZ_W) {
                 c->p->operand.val = (int16_t)c->p->operand.val;
                 c->op_sz = OPSZ_L;
             }
             op_cmp(c, c->p->operand.val, sh_reg(c, a[(op>>9)&7]));
-        }
-        else if ( (op & 0xf100u) == 0xb000u )
-        {
+        } else if ((op & 0xf100u) == 0xb000u) {
             /* cmp */
             dump(c, "cmp.%c\t", op_sz_ch[c->op_sz]);
             bail_if(rc = decode_ea(c));
             dump(c, ",%s", dreg[(op>>9)&7]);
             bail_if(rc = read_ea(c));
             op_cmp(c, c->p->operand.val, sh_reg(c, d[(op>>9)&7]));
-        }
-        else if ( (op & 0xf138u) == 0xb108u )
-        {
+        } else if ((op & 0xf138u) == 0xb108u) {
             /* cmpm */
             dump(c, "cmpm.%c\t(%s)+,(%s)+", op_sz_ch[c->op_sz],
                  areg[op&7], areg[(op>>9)&7]);
             rc = M68KEMUL_UNHANDLEABLE;
-        }
-        else
-        {
+        } else {
             /* eor */
             dump(c, "eor.%c\t%s,", op_sz_ch[c->op_sz],
                            dreg[(op>>9)&7]);
@@ -1357,18 +1215,15 @@ int m68k_emulate(struct m68k_emulate_ctxt *c)
         break;
     }
     case 0xc: case_0xc: { /* COMPLETE */
-        if ( (op & 0xb1f0u) == 0x8100u )
-        {
+        if ((op & 0xb1f0u) == 0x8100u) {
             /* abcd/sbcd */
             dump(c, "%cbcd.b\t", op & (1u<<14) ? 'a' : 's');
-            if ( op & (1u<<3) )
+            if (op & (1u<<3))
                 dump(c, "-(%s),-(%s)", areg[op&7], areg[(op>>9)&7]);
             else
                 dump(c, "-%s,%s", dreg[op&7], dreg[(op>>9)&7]);
             rc = M68KEMUL_UNHANDLEABLE;
-        }
-        else if ( (op & 0xf0c0u) == 0x80c0u )
-        {
+        } else if ((op & 0xf0c0u) == 0x80c0u) {
             /* divs.w/divu.w */
             uint32_t q, r, *reg = &sh_reg(c, d[(op>>9)&7]);
             c->op_sz = OPSZ_W;
@@ -1379,29 +1234,24 @@ int m68k_emulate(struct m68k_emulate_ctxt *c)
             bail_if(rc = read_ea(c));
             raise_exception_if((uint16_t)c->p->operand.val == 0,
                                M68KVEC_zero_divide);
-            if ( op & (1u<<8) )
-            {
+            if (op & (1u<<8)) {
                 q = (int32_t)*reg / (int16_t)c->p->operand.val;
                 r = (int32_t)*reg % (int16_t)c->p->operand.val;
-                if ( ((int32_t)q > 0x7fff) || ((int32_t)q < -0x8000) )
+                if (((int32_t)q > 0x7fff) || ((int32_t)q < -0x8000))
                     sh_reg(c, sr) |= CC_V;
-            }
-            else
-            {
+            } else {
                 q = (uint32_t)*reg / (uint16_t)c->p->operand.val;
                 r = (uint32_t)*reg % (uint16_t)c->p->operand.val;
-                if ( q > 0xffff )
+                if (q > 0xffff)
                     sh_reg(c, sr) |= CC_V;
             }
-            if ( !(sh_reg(c, sr) & CC_V) )
+            if (!(sh_reg(c, sr) & CC_V))
                 *reg = (r << 16) | (uint16_t)q;
-            if ( (uint16_t)q == 0 )
+            if ((uint16_t)q == 0)
                 sh_reg(c, sr) |= CC_Z;
-            if ( (int16_t)q < 0 )
+            if ((int16_t)q < 0)
                 sh_reg(c, sr) |= CC_N;
-        }
-        else if ( (op & 0xf0c0u) == 0xc0c0u )
-        {
+        } else if ((op & 0xf0c0u) == 0xc0c0u) {
             /* muls.w/mulu.w */
             uint32_t *reg = &sh_reg(c, d[(op>>9)&7]);
             c->op_sz = OPSZ_W;
@@ -1410,17 +1260,15 @@ int m68k_emulate(struct m68k_emulate_ctxt *c)
             dump(c, ",%s", dreg[(op>>9)&7]);
             sh_reg(c, sr) &= ~(CC_N|CC_Z|CC_V|CC_C);
             bail_if(rc = read_ea(c));
-            if ( op & (1u<<8) )
+            if (op & (1u<<8))
                 *reg = (int16_t)*reg * (int16_t)c->p->operand.val;
             else
                 *reg = (uint16_t)*reg * (uint16_t)c->p->operand.val;
-            if ( (uint32_t)*reg == 0 )
+            if ((uint32_t)*reg == 0)
                 sh_reg(c, sr) |= CC_Z;
-            if ( (int32_t)*reg < 0 )
+            if ((int32_t)*reg < 0)
                 sh_reg(c, sr) |= CC_N;
-        }
-        else if ( (op & 0xf130u) == 0xc100u )
-        {
+        } else if ((op & 0xf130u) == 0xc100u) {
             /* exg */
             uint32_t *r1, *r2, t;
             r1 = ((op & 0xf8u) == 0x48u ? sh_reg(c,a) : sh_reg(c,d));
@@ -1433,31 +1281,26 @@ int m68k_emulate(struct m68k_emulate_ctxt *c)
             t = *r1;
             *r1 = *r2;
             *r2 = t;
-        }
-        else
-        {
+        } else {
             /* and/or */
             uint32_t r, *reg = &sh_reg(c, d[(op>>9)&7]);
             c->op_sz = (op>>6) & 3;
             dump(c, "%s.%c\t",
                  op & (1u<<14) ? "and" : "or",
                  op_sz_ch[c->op_sz]);
-            if ( op & (1u<<8) )
+            if (op & (1u<<8))
                 dump(c, "%s,", dreg[(op>>9)&7]);
             bail_if(rc = decode_ea(c));
-            if ( !(op & (1u<<8)) )
+            if (!(op & (1u<<8)))
                 dump(c, ",%s", dreg[(op>>9)&7]);
             bail_if(rc = read_ea(c));
             r = op & (1u<<14) ?
                 c->p->operand.val & *reg : c->p->operand.val | *reg;
             cc_mov(c, r);
-            if ( op & (1u<<8) )
-            {
+            if (op & (1u<<8)) {
                 c->p->operand.val = r;
                 bail_if(rc = write_ea(c));
-            }
-            else
-            {
+            } else {
                 *reg = r;
             }
         }
@@ -1467,8 +1310,7 @@ int m68k_emulate(struct m68k_emulate_ctxt *c)
         dump(c, "add");
         addsub:
         c->op_sz = (op>>6)&3;
-        if ( (op & 0xc0u) == 0xc0u )
-        {
+        if ((op & 0xc0u) == 0xc0u) {
             /* adda/suba */
             uint32_t r, *reg = &sh_reg(c, a[(op>>9)&7]);
             c->op_sz = op & (1u<<8) ? OPSZ_L : OPSZ_W;
@@ -1477,37 +1319,31 @@ int m68k_emulate(struct m68k_emulate_ctxt *c)
             dump(c, ",%s", areg[(op>>9)&7]);
             bail_if(rc = read_ea(c));
             r = c->p->operand.val;
-            if ( c->op_sz == OPSZ_W )
-            {
+            if (c->op_sz == OPSZ_W) {
                 r = (int16_t)r;
                 c->op_sz = OPSZ_L;
             }
             *reg = op & (1u<<14) ? *reg + r : *reg - r;
-        }
-        else if ( (op & 0x130u) == 0x100u )
-        {
+        } else if ((op & 0x130u) == 0x100u) {
             /* addx/subx */
             dump(c, "x.%c\t", op_sz_ch[c->op_sz]);
-            if ( op & (1u<<3) )
+            if (op & (1u<<3))
                 dump(c, "-(%s),-(%s)", areg[op&7], areg[(op>>9)&7]);
             else
                 dump(c, "%s,%s", dreg[op&7], dreg[(op>>9)&7]);
             rc = M68KEMUL_UNHANDLEABLE;
-        }
-        else
-        {
+        } else {
             /* add/sub */
             uint32_t op1, *reg = &sh_reg(c, d[(op>>9)&7]);
             op1 = *reg;
             dump(c, ".%c\t", op_sz_ch[c->op_sz]);
-            if ( op & (1u<<8) )
+            if (op & (1u<<8))
                 dump(c, "%s,", dreg[(op>>9)&7]);
             bail_if(rc = decode_ea(c));
-            if ( !(op & (1u<<8)) )
+            if (!(op & (1u<<8)))
                 dump(c, ",%s", dreg[(op>>9)&7]);
             bail_if(rc = read_ea(c));
-            if ( !(op & (1u<<8)) )
-            {
+            if (!(op & (1u<<8))) {
                 op1 = c->p->operand.val;
                 c->p->operand.type = OP_REG;
                 c->p->operand.reg = reg;
@@ -1522,13 +1358,10 @@ int m68k_emulate(struct m68k_emulate_ctxt *c)
             "as", "ls", "rox", "ro" };
         uint32_t m, v;
         uint8_t x, typ, cnt;
-        if ( (op & 0xf8c0u) == 0xe8c0u )
-        {
+        if ((op & 0xf8c0u) == 0xe8c0u) {
             /* bitfield access */
             goto unknown;
-        }
-        else if ( (op & 0xc0u) == 0xc0u )
-        {
+        } else if ((op & 0xc0u) == 0xc0u) {
             /* shift/rotate <ea> */
             c->op_sz = OPSZ_W;
             typ = (op >> 9) & 3;
@@ -1536,21 +1369,16 @@ int m68k_emulate(struct m68k_emulate_ctxt *c)
             dump(c, "%s%c.%c\t", sr[typ],
                  op&(1u<<8) ? 'l' : 'r', op_sz_ch[c->op_sz]);
             bail_if(rc = decode_ea(c));
-        }
-        else
-        {
+        } else {
             /* shift/rotate <dn> */
             c->op_sz = (op >> 6) & 3;
             typ = (op >> 3) & 3;
             dump(c, "%s%c.%c\t", sr[typ],
                  op&(1u<<8) ? 'l' : 'r', op_sz_ch[c->op_sz]);
-            if ( op & (1u<<5) )
-            {
+            if (op & (1u<<5)) {
                 cnt = sh_reg(c, d[(op>>9)&7]) & 63;
                 dump(c, "%s", dreg[(op>>9)&7]);
-            }
-            else
-            {
+            } else {
                 cnt = (op >> 9) & 7 ?: 8;
                 dump(c, "#%x", cnt);
             }
@@ -1562,33 +1390,31 @@ int m68k_emulate(struct m68k_emulate_ctxt *c)
         v = c->p->operand.val;
         m = 1u << (c->op_sz == OPSZ_L ? 31 : c->op_sz == OPSZ_W ? 15 : 7);
         sh_reg(c, sr) &= ~(CC_N|CC_Z|CC_V|CC_C);
-        while ( cnt-- )
-        {
-            switch ( (typ << 1) | ((op >> 8) & 1) )
-            {
+        while (cnt--) {
+            switch ((typ << 1) | ((op >> 8) & 1)) {
             case 0: /* asr */
                 sh_reg(c, sr) &= ~(CC_X|CC_C);
-                if ( v & 1 )
+                if (v & 1)
                     sh_reg(c, sr) |= CC_X|CC_C;
                 v = (v >> 1) | (v & m);
                 break;
             case 1: /* asl */
                 sh_reg(c, sr) &= ~(CC_X|CC_C);
-                if ( v & m )
+                if (v & m)
                     sh_reg(c, sr) |= CC_X|CC_C;
-                if ( (v ^ (v << 1)) & m )
+                if ((v ^ (v << 1)) & m)
                     sh_reg(c, sr) |= CC_V;
                 v = (v << 1);
                 break;
             case 2: /* lsr */
                 sh_reg(c, sr) &= ~(CC_X|CC_C);
-                if ( v & 1 )
+                if (v & 1)
                     sh_reg(c, sr) |= CC_X|CC_C;
                 v = (v >> 1);
                 break;
             case 3: /* lsl */
                 sh_reg(c, sr) &= ~(CC_X|CC_C);
-                if ( v & m )
+                if (v & m)
                     sh_reg(c, sr) |= CC_X|CC_C;
                 v = (v << 1);
                 break;
@@ -1606,19 +1432,19 @@ int m68k_emulate(struct m68k_emulate_ctxt *c)
                 break;
             case 6: /* ror */
                 sh_reg(c, sr) &= ~CC_C;
-                if ( v & 1 )
+                if (v & 1)
                     sh_reg(c, sr) |= CC_C;
                 v = (v >> 1) | (sh_reg(c, sr) & CC_C ? m : 0);
                 break;
             case 7: /* rol */
                 sh_reg(c, sr) &= ~CC_C;
-                if ( v & m )
+                if (v & m)
                     sh_reg(c, sr) |= CC_C;
                 v = (v << 1) | (sh_reg(c, sr) & CC_C ? 1 : 0);
                 break;
             }
         }
-        if ( typ == 2 ) /* roxl/roxr */
+        if (typ == 2) /* roxl/roxr */
             sh_reg(c, sr) |= sh_reg(c, sr) & CC_X ? CC_C : 0;
         v &= (m << 1) - 1;
         sh_reg(c, sr) |= (v == 0 ? CC_Z : 0) | (v & m ? CC_N : 0);
@@ -1633,24 +1459,21 @@ int m68k_emulate(struct m68k_emulate_ctxt *c)
     }
 
 bail:
-    if ( !c->emulate || (rc == M68KEMUL_UNHANDLEABLE) )
+    if (!c->emulate || (rc == M68KEMUL_UNHANDLEABLE))
         goto out;
 
     /* Check for unaligned instruction prefetch. */
     rc = check_addr_align(c, sh_reg(c, pc), 2, access_fetch) ? : rc;
 
     /* Exception/trap processing. */
-    if ( (rc != M68KEMUL_EXCEPTION) ||
-         (c->p->exception.vector == M68KVEC_zero_divide) ||
-         (c->p->exception.vector == M68KVEC_chk_chk2) ||
-         (c->p->exception.vector == M68KVEC_trapcc_trapv) ||
-         (c->p->exception.vector >= M68KVEC_trap_0) )
-    {
+    if ((rc != M68KEMUL_EXCEPTION) ||
+        (c->p->exception.vector == M68KVEC_zero_divide) ||
+        (c->p->exception.vector == M68KVEC_chk_chk2) ||
+        (c->p->exception.vector == M68KVEC_trapcc_trapv) ||
+        (c->p->exception.vector >= M68KVEC_trap_0)) {
         /* No instruction-aborting exception? Write back register state. */
         *c->regs = c->p->sh_regs;
-    }
-    else
-    {
+    } else {
         /* Instruction was aborted. Discard register state; no trace. */
         trace = 0;
 
@@ -1658,24 +1481,23 @@ bail:
          * Address/bus errors have PC "in the vicinity of" the instruction.
          * Just past the main opcode word seems to work well.
          */
-        if ( (c->p->exception.vector == M68KVEC_addr_error) ||
-             (c->p->exception.vector == M68KVEC_bus_error) )
+        if ((c->p->exception.vector == M68KVEC_addr_error) ||
+            (c->p->exception.vector == M68KVEC_bus_error))
             c->regs->pc += 2;
     }
 
     /* Now deliver exceptions and traps. */
-    if ( rc == M68KEMUL_EXCEPTION )
+    if (rc == M68KEMUL_EXCEPTION)
         rc = deliver_exception(c);
 
     /* Finally, check trace mode. */
-    if ( trace && (rc != M68KEMUL_UNHANDLEABLE) )
-    {
+    if (trace && (rc != M68KEMUL_UNHANDLEABLE)) {
         c->p->exception.vector = M68KVEC_trace;
         rc = deliver_exception(c);
     }
 
 out:
-    if ( rc != M68KEMUL_UNHANDLEABLE )
+    if (rc != M68KEMUL_UNHANDLEABLE)
         rc = M68KEMUL_OKAY;
     return rc;
 }
@@ -1705,22 +1527,21 @@ void m68k_dump_stack(
 {
     int i;
     uint32_t sp = c->regs->a[7];
-    if ( ((stack == stack_user) && (c->regs->sr & SR_S)) ||
-         ((stack == stack_super) && !(c->regs->sr & SR_S)) )
+    if (((stack == stack_user) && (c->regs->sr & SR_S)) ||
+        ((stack == stack_super) && !(c->regs->sr & SR_S)))
         sp = c->regs->xsp;
     print("Stack trace from %s=%08x:\n",
           stack == stack_user ? "USP" : stack == stack_super ? "SSP" : "SP",
           sp);
-    for ( i = 0 ; i < 24; i++ )
-    {
+    for (i = 0 ; i < 24; i++) {
         uint32_t v;
-        if ( (i & 7) == 0 )
+        if ((i & 7) == 0)
             print(" %08x: ", sp);
-        if ( c->ops->read(sp, &v, 2, c) )
+        if (c->ops->read(sp, &v, 2, c))
             print("???? ");
         else
             print("%04x ", v);
-        if ( (i & 7) == 7 )
+        if ((i & 7) == 7)
             print("\n");
         sp += 2;
     }
@@ -1743,8 +1564,7 @@ int m68k_deliver_exception(
     bail_if(rc = write(sh_reg(c, a[7]) + 0, old_sr, 2, c));
 
     /* Bus error or address error? */
-    if ( e->vector <= M68KVEC_addr_error )
-    {
+    if (e->vector <= M68KVEC_addr_error) {
         /* Extended stack frame with faulting access information. */
         sh_reg(c, a[7]) -= 8;
         bail_if(rc = write(sh_reg(c, a[7]) + 0, e->status_word, 2, c));
@@ -1757,3 +1577,13 @@ int m68k_deliver_exception(
 bail:
     return rc;
 }
+
+/*
+ * Local variables:
+ * mode: C
+ * c-file-style: "Linux"
+ * c-basic-offset: 4
+ * tab-width: 4
+ * indent-tabs-mode: nil
+ * End:
+ */

@@ -49,3 +49,13 @@ void disk_cia_changed(struct amiga_state *);
 void disk_dsklen_changed(struct amiga_state *);
 
 #endif /* __DISK_H__ */
+
+/*
+ * Local variables:
+ * mode: C
+ * c-file-style: "Linux"
+ * c-basic-offset: 4
+ * tab-width: 4
+ * indent-tabs-mode: nil
+ * End:
+ */

@@ -26,7 +26,7 @@ static void adf_init_track(struct track_info *ti)
     ti->data_bitoff = 1024;
     ti->total_bits = DEFAULT_BITS_PER_TRACK;
 
-    for ( i = 0; i < ti->len/4; i++ )
+    for (i = 0; i < ti->len/4; i++)
         memcpy(ti->dat+i*4, "NDOS", 4);
 }
 
@@ -40,7 +40,7 @@ static void adf_init(struct disk *d)
     di->flags = 0;
     di->track = memalloc(di->nr_tracks * sizeof(struct track_info));
 
-    for ( i = 0; i < di->nr_tracks; i++ )
+    for (i = 0; i < di->nr_tracks; i++)
         adf_init_track(&di->track[i]);
 }
 
@@ -52,9 +52,8 @@ static int adf_open(struct disk *d, bool_t quiet)
     off_t sz;
 
     sz = lseek(d->fd, 0, SEEK_END);
-    if ( sz != 160*512*11 )
-    {
-        if ( !quiet )
+    if (sz != 160*512*11) {
+        if (!quiet)
             warnx("ADF file bad size: %lu bytes", (unsigned long)sz);
         return 0;
     }
@@ -63,18 +62,16 @@ static int adf_open(struct disk *d, bool_t quiet)
     adf_init(d);
     di = d->di;
 
-    for ( i = 0; i < di->nr_tracks; i++ )
-    {
+    for (i = 0; i < di->nr_tracks; i++) {
         ti = &di->track[i];
         read_exact(d->fd, ti->dat, ti->len);
         ti->valid_sectors = 0;
-        for ( j = 0; j < ti->nr_sectors; j++ )
-        {
+        for (j = 0; j < ti->nr_sectors; j++) {
             unsigned char *p = ti->dat + j*ti->bytes_per_sector;
-            for ( k = 0; k < ti->bytes_per_sector/4; k++ )
-                if ( memcmp(p+k*4, "NDOS", 4) )
+            for (k = 0; k < ti->bytes_per_sector/4; k++)
+                if (memcmp(p+k*4, "NDOS", 4))
                     break;
-            if ( k != ti->bytes_per_sector/4 )
+            if (k != ti->bytes_per_sector/4)
                 ti->valid_sectors |= 1u << j;
         }
     }
@@ -88,10 +85,10 @@ static void adf_close(struct disk *d)
     unsigned int i;
 
     lseek(d->fd, 0, SEEK_SET);
-    if ( ftruncate(d->fd, 0) < 0 )
+    if (ftruncate(d->fd, 0) < 0)
         err(1, NULL);
 
-    for ( i = 0; i < di->nr_tracks; i++ )
+    for (i = 0; i < di->nr_tracks; i++)
         write_exact(d->fd, di->track[i].dat, 11*512);
 }
 
@@ -103,20 +100,19 @@ static int adf_write_mfm(
     struct disk_info *di = d->di;
     struct track_info *ti = &di->track[tracknr];
 
-    if ( type != TRKTYP_amigados )
+    if (type != TRKTYP_amigados)
         errx(1, "Only AmigaDOS tracks can be written to ADF files");
 
     stream_reset(s, tracknr);
     stream_next_index(s);
     ti->dat = thnd->write_mfm(d, tracknr, s);    
 
-    if ( ti->type != TRKTYP_amigados )
-    {
+    if (ti->type != TRKTYP_amigados) {
         memfree(ti->dat);
         ti->dat = NULL;
     }
 
-    if ( ti->dat == NULL )
+    if (ti->dat == NULL)
         adf_init_track(ti);
 
     return 0;
@@ -128,3 +124,13 @@ struct container container_adf = {
     .close = adf_close,
     .write_mfm = adf_write_mfm
 };
+
+/*
+ * Local variables:
+ * mode: C
+ * c-file-style: "Linux"
+ * c-basic-offset: 4
+ * tab-width: 4
+ * indent-tabs-mode: nil
+ * End:
+ */

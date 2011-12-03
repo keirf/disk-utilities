@@ -37,3 +37,13 @@ void event_unset(struct event *event);
 void fire_events(struct event_base *base);
 
 #endif /* __EVENT_H__ */
+
+/*
+ * Local variables:
+ * mode: C
+ * c-file-style: "Linux"
+ * c-basic-offset: 4
+ * tab-width: 4
+ * indent-tabs-mode: nil
+ * End:
+ */

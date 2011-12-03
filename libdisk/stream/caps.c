@@ -72,15 +72,15 @@ static struct {
 
 static int get_capslib(void)
 {
-    if ( capslib.ref++ )
+    if (capslib.ref++)
         return 1;
 
-    if ( (capslib.handle = dlopen(CAPSLIB_NAME, RTLD_LAZY)) == NULL )
+    if ((capslib.handle = dlopen(CAPSLIB_NAME, RTLD_LAZY)) == NULL)
         goto fail_no_handle;
 
 #define GETSYM(sym)                                     \
     capslib.sym = dlsym(capslib.handle, "CAPS"#sym);    \
-    if ( dlerror() != 0 ) goto fail;
+    if (dlerror() != 0) goto fail;
     GETSYM(Init);
     GETSYM(Exit);
     GETSYM(AddImage);
@@ -94,7 +94,7 @@ static int get_capslib(void)
     GETSYM(UnlockTrack);
     GETSYM(UnlockAllTracks);
 #undef GETSYM
-    if ( CAPSInit() != imgeOk )
+    if (CAPSInit() != imgeOk)
         goto fail;
     return 1;
 
@@ -110,7 +110,7 @@ fail_no_handle:
 
 static void put_capslib(void)
 {
-    if ( --capslib.ref )
+    if (--capslib.ref)
         return;
     CAPSExit();
     dlclose(capslib.handle);
@@ -123,33 +123,30 @@ static struct stream *caps_open(const char *name)
     struct caps_stream *cpss;
 
     /* Simple signature check */
-    if ( (fd = open(name, O_RDONLY)) == -1 )
+    if ((fd = open(name, O_RDONLY)) == -1)
         return NULL;
     read_exact(fd, sig, 4);
     close(fd);
-    if ( strncmp(sig, "CAPS", 4) )
+    if (strncmp(sig, "CAPS", 4))
         return NULL;
 
-    if ( !get_capslib() )
+    if (!get_capslib())
         return NULL;
 
     cpss = memalloc(sizeof(*cpss));
     cpss->track = ~0u;
 
-    if ( (cpss->container = CAPSAddImage()) < 0 )
-    {
+    if ((cpss->container = CAPSAddImage()) < 0) {
         warnx("caps: Could not create image container");
         goto fail1;
     }
 
-    if ( CAPSLockImage(cpss->container, name) != imgeOk )
-    {
+    if (CAPSLockImage(cpss->container, name) != imgeOk) {
         warnx("caps: Could not load image into container");
         goto fail2;
     }
 
-    if ( CAPSLoadImage (cpss->container, CAPS_FLAGS) != imgeOk )
-    {
+    if (CAPSLoadImage (cpss->container, CAPS_FLAGS) != imgeOk) {
         warnx("caps: Could not prefetch image data");
         goto fail3;
     }
@@ -193,18 +190,16 @@ static void caps_reset(struct stream *s, unsigned int tracknr)
     struct caps_stream *cpss = container_of(s, struct caps_stream, s);
     unsigned int i;
 
-    if ( cpss->track != tracknr )
-    {
+    if (cpss->track != tracknr) {
         memfree(cpss->speed);
         cpss->speed = NULL;
         memset(&cpss->ti, 0, sizeof(cpss->ti));
         CAPSLockTrack(&cpss->ti, cpss->container,
                       tracknr / 2, tracknr & 1, CAPS_FLAGS);
         cpss->track = tracknr;
-        if ( cpss->ti.timelen )
-        {
+        if (cpss->ti.timelen) {
             cpss->speed = memalloc(cpss->ti.timelen * sizeof(uint16_t));
-            for ( i = 0; i < cpss->ti.timelen; i++ )
+            for (i = 0; i < cpss->ti.timelen; i++)
                 cpss->speed[i] = cpss->ti.timebuf[i];
         }
     }
@@ -219,7 +214,7 @@ static int caps_next_bit(struct stream *s)
     uint16_t speed;
     uint8_t dat;
 
-    if ( ++cpss->pos >= cpss->bitlen )
+    if (++cpss->pos >= cpss->bitlen)
         caps_nextrevolution(s);
 
     dat = !!(cpss->mfm[cpss->pos >> 3] & (0x80u >> (cpss->pos & 7)));
@@ -236,3 +231,13 @@ struct stream_type caps = {
     .reset = caps_reset,
     .next_bit = caps_next_bit
 };
+
+/*
+ * Local variables:
+ * mode: C
+ * c-file-style: "Linux"
+ * c-basic-offset: 4
+ * tab-width: 4
+ * indent-tabs-mode: nil
+ * End:
+ */

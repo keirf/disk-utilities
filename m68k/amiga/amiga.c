@@ -32,34 +32,31 @@ static int amiga_read(uint32_t addr, uint32_t *val, unsigned int bytes,
 {
     struct amiga_state *s = container_of(ctxt, struct amiga_state, ctxt);
 
-    if ( addr & 0xff000000 )
+    if (addr & 0xff000000)
         log_warn("32-bit address access %08x @ PC=%08x", addr, ctxt->regs->pc);
     addr &= 0xffffff;
 
-    if ( (addr & 0xfff0ff) == CIAB_BASE )
-    {
+    if ((addr & 0xfff0ff) == CIAB_BASE) {
         *val = cia_read_reg(s, &s->ciab, (addr >> 8) & 15);
         return M68KEMUL_OKAY;
     }
 
-    if ( (addr & 0xfff0ff) == CIAA_BASE )
-    {
+    if ((addr & 0xfff0ff) == CIAA_BASE) {
         *val = cia_read_reg(s, &s->ciaa, (addr >> 8) & 15);
         return M68KEMUL_OKAY;
     }
 
-    if ( (addr & 0xfff000) == CUSTOM_BASE )
-    {
+    if ((addr & 0xfff000) == CUSTOM_BASE) {
         addr -= CUSTOM_BASE;
-        if ( bytes == 4 )
+        if (bytes == 4) {
             *val = (custom_read_reg(s, addr) << 16)
                 | custom_read_reg(s, addr + 2);
-        else if ( bytes == 2 )
+        } else if (bytes == 2) {
             *val = custom_read_reg(s, addr);
-        else
-        {
+        } else {
             *val = custom_read_reg(s, addr&~1);
-            if ( !(addr & 1) ) *val >>= 8;
+            if (!(addr & 1))
+                *val >>= 8;
             *val = (uint8_t)*val;
         }
         return M68KEMUL_OKAY;
@@ -73,41 +70,35 @@ static int amiga_write(uint32_t addr, uint32_t val, unsigned int bytes,
 {
     struct amiga_state *s = container_of(ctxt, struct amiga_state, ctxt);
 
-    if ( addr & 0xff000000 )
+    if (addr & 0xff000000)
         log_warn("32-bit address access %08x @ PC=%08x", addr, ctxt->regs->pc);
     addr &= 0xffffff;
 
-    if ( (addr & 0xfff0ff) == CIAB_BASE )
-    {
+    if ((addr & 0xfff0ff) == CIAB_BASE) {
         cia_write_reg(s, &s->ciab, (addr >> 8) & 15, val);
         return M68KEMUL_OKAY;
     }
 
-    if ( (addr & 0xfff0ff) == CIAA_BASE )
-    {
+    if ((addr & 0xfff0ff) == CIAA_BASE) {
         cia_write_reg(s, &s->ciaa, (addr >> 8) & 15, val);
         return M68KEMUL_OKAY;
     }
 
-    if ( (addr & 0xfff000) == CUSTOM_BASE )
-    {
+    if ((addr & 0xfff000) == CUSTOM_BASE) {
         addr -= CUSTOM_BASE;
-        if ( bytes == 4 )
-        {
+        if (bytes == 4) {
             custom_write_reg(s, addr, val >> 16);
             custom_write_reg(s, addr+2, val);
-        }
-        else if ( bytes == 2 )
+        } else if (bytes == 2) {
             custom_write_reg(s, addr, val);
-        else
-        {
+        } else {
             val = (uint8_t)val;
             custom_write_reg(s, addr&~1, val << (!(addr&1)?8:0));
         }
         return M68KEMUL_OKAY;
     }
 
-    if ( (addr & 0xff0000) == 0xff0000 )
+    if ((addr & 0xff0000) == 0xff0000)
         return mem_write(addr, val, bytes, s);
 
     return mem_write(addr, val, bytes, s);
@@ -119,31 +110,28 @@ static const char *amiga_addr_name(
     struct amiga_state *s = container_of(ctxt, struct amiga_state, ctxt);
     char ciax;
 
-    if ( addr > CUSTOM_BASE ) /* skip dff000 itself */
-    {
-        if ( addr & 1 )
+    if (addr > CUSTOM_BASE) { /* skip dff000 itself */
+        if (addr & 1)
             return NULL;
         addr = (addr - CUSTOM_BASE) >> 1;
         return (addr < ARRAY_SIZE(custom_reg_name)
                 ? custom_reg_name[addr] : NULL);
     }
 
-    if ( addr >= CIAA_BASE )
-    {
+    if (addr >= CIAA_BASE) {
         addr -= CIAA_BASE;
         ciax = 'a';
     cia:
-        if ( addr & 0xff )
+        if (addr & 0xff)
             return NULL;
         addr >>= 8;
-        if ( addr >= ARRAY_SIZE(cia_reg_name) )
+        if (addr >= ARRAY_SIZE(cia_reg_name))
             return NULL;
         sprintf(s->addr_name, "cia%c%s", ciax, cia_reg_name[addr]);
         return s->addr_name;
     }
 
-    if ( addr >= CIAB_BASE )
-    {
+    if (addr >= CIAB_BASE) {
         addr -= CIAB_BASE;
         ciax = 'b';
         goto cia;
@@ -158,8 +146,7 @@ static int amiga_deliver_exception(
     struct amiga_state *s = container_of(ctxt, struct amiga_state, ctxt);
     uint32_t target;
 
-    if ( exc->vector != M68KVEC_trace )
-    {
+    if (exc->vector != M68KVEC_trace) {
         (void)ctxt->ops->read(exc->vector*4, &target, 4, ctxt);
         log_warn("Exception %02x: %08x -> %08x",
                  exc->vector, ctxt->regs->pc, target);
@@ -178,7 +165,7 @@ static struct m68k_emulate_ops amiga_m68k_ops = {
 int amiga_emulate(struct amiga_state *s)
 {
     int rc = m68k_emulate(&s->ctxt);
-    if ( (rc != M68KEMUL_OKAY) || !s->ctxt.emulate )
+    if ((rc != M68KEMUL_OKAY) || !s->ctxt.emulate)
         return rc;
     s->event_base.current_time += s->ctxt.cycles * M68K_CYCLE_NS;
     fire_events(&s->event_base);
@@ -201,3 +188,13 @@ void amiga_init(struct amiga_state *s, unsigned int mem_size)
     s->ctxt.regs->a[7] = 0x2000; /* USP */
     s->ctxt.regs->xsp = 0x1000;  /* SSP */
 }
+
+/*
+ * Local variables:
+ * mode: C
+ * c-file-style: "Linux"
+ * c-basic-offset: 4
+ * tab-width: 4
+ * indent-tabs-mode: nil
+ * End:
+ */

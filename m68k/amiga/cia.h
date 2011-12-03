@@ -106,3 +106,13 @@ const char *cia_reg_name[16];
 #define CIAB_DSKSTEP	(0)   /* disk step heads* */
 
 #endif /* __CIA_H__ */
+
+/*
+ * Local variables:
+ * mode: C
+ * c-file-style: "Linux"
+ * c-basic-offset: 4
+ * tab-width: 4
+ * indent-tabs-mode: nil
+ * End:
+ */
