@@ -1,4 +1,4 @@
-/******************************************************************************
+/*
  * adfwrite.c
  * 
  * Stuff sectors of an ADF image with specified data.

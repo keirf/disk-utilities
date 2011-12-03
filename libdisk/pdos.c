@@ -1,4 +1,4 @@
-/******************************************************************************
+/*
  * disk/pdos.c
  * 
  * Rob Northen Computing Protected DOS (RNC PDOS) format.

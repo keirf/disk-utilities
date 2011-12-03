@@ -1,4 +1,4 @@
-/******************************************************************************
+/*
  * stream/soft.c
  * 
  * Construct a soft stream based on an in-memory image of raw track data.

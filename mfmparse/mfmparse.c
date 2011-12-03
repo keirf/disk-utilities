@@ -1,4 +1,4 @@
-/******************************************************************************
+/*
  * mfmparse.c
  * 
  * Read a raw disk file from (Amiga program) diskread.

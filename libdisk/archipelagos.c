@@ -1,4 +1,4 @@
-/******************************************************************************
+/*
  * disk/archipelagos.c
  * 
  * Custom format as used in Archipelagos by Logotron Entertainment.

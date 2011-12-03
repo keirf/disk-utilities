@@ -1,4 +1,4 @@
-/******************************************************************************
+/*
  * adfread.c
  * 
  * Read Amiga Disk File (ADF) images and write contents to a local directory

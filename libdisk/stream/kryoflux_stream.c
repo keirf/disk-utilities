@@ -1,4 +1,4 @@
-/******************************************************************************
+/*
  * stream/kryoflux_stream.c
  * 
  * Parse KryoFlux STREAM format, as read directly from the device.

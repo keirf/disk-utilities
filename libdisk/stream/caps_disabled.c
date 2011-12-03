@@ -1,4 +1,4 @@
-/******************************************************************************
+/*
  * stream/caps_disabled.c
  * 
  * Stub CAPS/IPF handler used when library support is disabled at compile time.

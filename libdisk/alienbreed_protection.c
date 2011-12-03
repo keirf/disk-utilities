@@ -1,4 +1,4 @@
-/******************************************************************************
+/*
  * disk/alienbreed_protection.c
  * 
  * Simple protection track as used in the original release of Alien Breed

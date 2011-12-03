@@ -1,4 +1,4 @@
-/******************************************************************************
+/*
  * mfmparse/config.c
  * 
  * Parse config file which defines allowed formats for particular disks.

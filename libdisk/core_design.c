@@ -1,4 +1,4 @@
-/******************************************************************************
+/*
  * disk/core_design.c
  * 
  * Custom format as used by various releases by Core Design:

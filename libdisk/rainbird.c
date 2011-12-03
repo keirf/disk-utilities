@@ -1,4 +1,4 @@
-/******************************************************************************
+/*
  * disk/rainbird.c
  * 
  * Custom format as used by various Rainbird releases:

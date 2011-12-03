@@ -1,4 +1,4 @@
-/******************************************************************************
+/*
  * disk/gremlin.c
  * 
  * Custom format as used by various Gremlin Graphics releases:

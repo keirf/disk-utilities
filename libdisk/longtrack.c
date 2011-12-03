@@ -1,4 +1,4 @@
-/******************************************************************************
+/*
  * disk/longtrack.c
  * 
  * Detect various custom long protection tracks.

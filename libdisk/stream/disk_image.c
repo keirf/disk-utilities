@@ -1,4 +1,4 @@
-/******************************************************************************
+/*
  * stream/disk_image.c
  * 
  * Convert a disk image into stream format.

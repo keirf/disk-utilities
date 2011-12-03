@@ -1,4 +1,4 @@
-/******************************************************************************
+/*
  * disk/psygnosis_b.c
  * 
  * Custom format as used by various Psygnosis releases:

@@ -1,4 +1,4 @@
-/******************************************************************************
+/*
  * disk/copylock.c
  * 
  * RobNorthen CopyLock protection track (Amiga).

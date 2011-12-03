@@ -1,4 +1,4 @@
-/******************************************************************************
+/*
  * libdisk/disk.h
  * 
  * Custom disk layouts -- container format and handlers.

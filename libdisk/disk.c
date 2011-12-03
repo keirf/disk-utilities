@@ -1,4 +1,4 @@
-/******************************************************************************
+/*
  * libdisk/disk.c
  * 
  * Framework for container types and track-format handlers.
@@ -256,7 +256,7 @@ const char *disk_get_format_desc_name(enum track_type type)
 }
 
 
-/**********************************
+/*
  * PRIVATE HELPERS
  */
 

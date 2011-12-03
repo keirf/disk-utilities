@@ -1,4 +1,4 @@
-/******************************************************************************
+/*
  * adfbb.c
  * 
  * Check boot block in an Amiga Disk File (ADF) image and optionally fix.

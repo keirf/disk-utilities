@@ -1,4 +1,4 @@
-/******************************************************************************
+/*
  * stream/diskread.c
  * 
  * Parse data from the Amiga 'diskread' utility.
