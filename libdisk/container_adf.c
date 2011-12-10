@@ -44,7 +44,7 @@ static void adf_init(struct disk *d)
         adf_init_track(&di->track[i]);
 }
 
-static int adf_open(struct disk *d, bool_t quiet)
+static int adf_open(struct disk *d)
 {
     struct track_info *ti;
     struct disk_info *di;
@@ -53,8 +53,7 @@ static int adf_open(struct disk *d, bool_t quiet)
 
     sz = lseek(d->fd, 0, SEEK_END);
     if (sz != 160*512*11) {
-        if (!quiet)
-            warnx("ADF file bad size: %lu bytes", (unsigned long)sz);
+        warnx("ADF file bad size: %lu bytes", (unsigned long)sz);
         return 0;
     }
     lseek(d->fd, 0, SEEK_SET);

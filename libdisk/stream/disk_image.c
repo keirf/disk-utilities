@@ -30,7 +30,7 @@ static struct stream *di_open(const char *name)
     struct di_stream *dis;
     struct disk *d;
 
-    if ((d = disk_open(name, 1, 1)) == NULL)
+    if ((d = disk_open(name, 1)) == NULL)
         return NULL;
 
     dis = memalloc(sizeof(*dis));
@@ -84,7 +84,8 @@ struct stream_type disk_image = {
     .open = di_open,
     .close = di_close,
     .reset = di_reset,
-    .next_bit = di_next_bit
+    .next_bit = di_next_bit,
+    .suffix = { "adf", "dsk", NULL }
 };
 
 /*

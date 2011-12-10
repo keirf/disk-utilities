@@ -98,7 +98,7 @@ static void dsk_init(struct disk *d)
     d->tags->tag.id = DSKTAG_end;
 }
 
-static int dsk_open(struct disk *d, bool_t quiet)
+static int dsk_open(struct disk *d)
 {
     struct disk_header dh;
     struct track_header th;

@@ -229,7 +229,8 @@ struct stream_type caps = {
     .open = caps_open,
     .close = caps_close,
     .reset = caps_reset,
-    .next_bit = caps_next_bit
+    .next_bit = caps_next_bit,
+    .suffix = { "ipf", NULL }
 };
 
 /*

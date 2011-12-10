@@ -65,7 +65,7 @@ void init_track_info(struct track_info *ti, enum track_type type);
 
 struct container {
     void (*init)(struct disk *);
-    int (*open)(struct disk *, bool_t quiet);
+    int (*open)(struct disk *);
     void (*close)(struct disk *);
     int (*write_mfm)(struct disk *, unsigned int tracknr,
                      enum track_type, struct stream *);

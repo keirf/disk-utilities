@@ -31,14 +31,18 @@ int quiet, verbose;
 static void usage(int rc)
 {
     printf("Usage: mfmparse [options] in_file out_file\n");
-    printf(" in_file: Kryoflux STREAM, SPS/IPF, .dsk, .adf, .dat\n");
-    printf(" out_file: .adf, .dsk\n");
     printf("Options:\n");
     printf("  -h, --help    Display this information\n");
     printf("  -q, --quiet   Quiesce normal informational output\n");
     printf("  -v, --verbose Print extra diagnostic info\n");
     printf("  -f, --format=FORMAT Name of format descriptor in config file\n");
     printf("  -c, --config=FILE   Config file to parse for format info\n");
+    printf("Supported file formats (suffix => type):\n");
+    printf("  .adf => ADF\n");
+    printf("  .ipf => SPS/IPF\n");
+    printf("  .dat => Diskread (read-only)\n");
+    printf("  .dsk => Libdisk\n");
+    printf("  .raw => Kryoflux STREAM (read-only)\n");
 
     exit(rc);
 }

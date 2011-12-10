@@ -8,6 +8,7 @@ struct stream_type {
     void (*close)(struct stream *);
     void (*reset)(struct stream *, unsigned int tracknr);
     int (*next_bit)(struct stream *);
+    const char *suffix[];
 };
 
 void index_reset(struct stream *s);

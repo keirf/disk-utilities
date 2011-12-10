@@ -249,7 +249,7 @@ void disk_dsklen_changed(struct amiga_state *s)
 
 void disk_init(struct amiga_state *s)
 {
-    s->disk.df0_disk = disk_open(df0_filename, 1, 0);
+    s->disk.df0_disk = disk_open(df0_filename, 1);
     if (s->disk.df0_disk == NULL)
         errx(1, "%s", df0_filename);
 

@@ -8,6 +8,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <unistd.h>
@@ -30,24 +31,32 @@ struct stream *stream_open(const char *name)
 {
     struct stat sbuf;
     const struct stream_type *st;
+    const char *suffix, *const *suffix_list;
     struct stream *s;
     unsigned int i;
 
     /* Only Kryoflux STREAMs may be anything other than a single file. */
     if ((stat(name, &sbuf) < 0) || S_ISDIR(sbuf.st_mode)) {
         st = &kryoflux_stream;
-        if ((s = st->open(name)) != NULL)
-            s->type = st;
-        return s;
+        goto found;
     }
 
+    if ((suffix = strrchr(name, '.')) == NULL)
+        return NULL;
+    suffix++;
+
     for (i = 0; (st = stream_type[i]) != NULL; i++) {
-        if ((s = st->open(name)) != NULL) {
-            s->type = st;
-            break;
+        for (suffix_list = st->suffix; *suffix_list != NULL; suffix_list++) {
+            if (!strcmp(suffix, *suffix_list))
+                goto found;
         }
     }
 
+    return NULL;
+
+found:
+    if ((s = st->open(name)) != NULL)
+        s->type = st;
     return s;
 }
 

@@ -77,7 +77,7 @@ struct stream;
 #pragma GCC visibility push(default)
 
 struct disk *disk_create(const char *name);
-struct disk *disk_open(const char *name, int read_only, int quiet);
+struct disk *disk_open(const char *name, int read_only);
 void disk_close(struct disk *);
 
 const char *disk_get_format_id_name(enum track_type type);

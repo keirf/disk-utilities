@@ -112,7 +112,8 @@ struct stream_type diskread = {
     .open = dr_open,
     .close = dr_close,
     .reset = dr_reset,
-    .next_bit = dr_next_bit
+    .next_bit = dr_next_bit,
+    .suffix = { "dat", NULL }
 };
 
 /*

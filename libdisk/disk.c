@@ -38,7 +38,7 @@ static struct track_format_names {
 static void tbuf_finalise(struct track_buffer *tbuf);
 
 static struct container *container_from_filename(
-    const char *name, bool_t quiet)
+    const char *name)
 {
     const char *p = name + strlen(name) - 4;
     if (p < name)
@@ -48,8 +48,7 @@ static struct container *container_from_filename(
     if (!strcmp(p, ".dsk"))
         return &container_dsk;
 fail:
-    if (!quiet)
-        warnx("Unknown file suffix: %s (valid suffixes: .adf,.dsk)", name);
+    warnx("Unknown file suffix: %s (valid suffixes: .adf,.dsk)", name);
     return NULL;
 }
 
@@ -59,7 +58,7 @@ struct disk *disk_create(const char *name)
     struct container *c;
     int fd;
 
-    if ((c = container_from_filename(name, 0)) == NULL)
+    if ((c = container_from_filename(name)) == NULL)
         return NULL;
 
     if ((fd = open(name, O_WRONLY|O_CREAT|O_TRUNC, 0666)) == -1) {
@@ -77,18 +76,17 @@ struct disk *disk_create(const char *name)
     return d;
 }
 
-struct disk *disk_open(const char *name, int read_only, int quiet)
+struct disk *disk_open(const char *name, int read_only)
 {
     struct disk *d;
     struct container *c;
     int fd, rc;
 
-    if ((c = container_from_filename(name, quiet)) == NULL)
+    if ((c = container_from_filename(name)) == NULL)
         return NULL;
 
     if ((fd = open(name, read_only ? O_RDONLY : O_RDWR)) == -1) {
-        if (!quiet)
-            warn("%s", name);
+        warn("%s", name);
         return NULL;
     }
 
@@ -97,10 +95,9 @@ struct disk *disk_open(const char *name, int read_only, int quiet)
     d->read_only = read_only;
     d->container = c;
 
-    rc = c->open(d, quiet);
+    rc = c->open(d);
     if (!rc) {
-        if (!quiet)
-            warnx("%s: Bad disk image", name);
+        warnx("%s: Bad disk image", name);
         memfree(d);
         return NULL;
     }
