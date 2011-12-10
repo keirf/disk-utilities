@@ -9,6 +9,7 @@
 #ifndef __LIBDISK_UTIL_H__
 #define __LIBDISK_UTIL_H__
 
+#include <inttypes.h>
 #include <err.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -29,6 +30,9 @@ void memfree(void *p);
 
 void read_exact(int fd, void *buf, size_t count);
 void write_exact(int fd, const void *buf, size_t count);
+
+uint32_t crc32_add(const void *buf, size_t len, uint32_t crc);
+uint32_t crc32(const void *buf, size_t len);
 
 #pragma GCC visibility pop
 
