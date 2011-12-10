@@ -12,7 +12,7 @@
 #include <caps/capsimage.h>
 #include <dlfcn.h>
 
-#define CAPSLIB_NAME    "libcapsimage.so.2"
+#define CAPSLIB_NAME    "libcapsimage.so.4"
 
 #define CAPS_FLAGS (DI_LOCK_DENVAR|DI_LOCK_DENNOISE|DI_LOCK_NOISE|      \
                     DI_LOCK_UPDATEFD|DI_LOCK_TYPE)

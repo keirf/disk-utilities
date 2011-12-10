@@ -9,7 +9,7 @@ MAJOR := 0
 MINOR := 0
 
 LIBS :=
-LIBS-$(caps) := -ldl -lstdc++
+LIBS-$(caps) := -ldl
 LIBS += $(LIBS-y)
 
 all:
