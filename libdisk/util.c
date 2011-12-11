@@ -113,6 +113,7 @@ uint32_t crc32_add(const void *buf, size_t len, uint32_t crc)
 {
     unsigned int i;
     const char *b = buf;
+    crc = ~crc;
     for (i = 0; i < len; i++)
         crc = crc32_tab[(uint8_t)(crc ^ *b++)] ^ (crc >> 8);
     return ~crc;
@@ -120,7 +121,7 @@ uint32_t crc32_add(const void *buf, size_t len, uint32_t crc)
 
 uint32_t crc32(const void *buf, size_t len)
 {
-    return crc32_add(buf, len, ~0u);
+    return crc32_add(buf, len, 0);
 }
 
 /*
