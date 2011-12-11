@@ -50,12 +50,11 @@ static void unformatted_read_mfm(
     unsigned int i;
     int speed_delta = 200;
     uint8_t byte = 0;
+    uint32_t bitlen = (120000 * ((rand() & 255) + 1000 - 128)) / 1000;
 
-    tbuf->start = 0;
-    tbuf->len = (120000 * ((rand() & 255) + 1000 - 128)) / 1000;
-    tbuf_init(tbuf);
+    tbuf_init(tbuf, 0, bitlen);
 
-    for (i = 0; i < tbuf->len; i++) {
+    for (i = 0; i < bitlen; i++) {
         byte <<= 1;
         byte |= rand() & 1;
         if ((i & 7) == 7) {

@@ -40,15 +40,18 @@ static void tbuf_finalise(struct track_buffer *tbuf);
 static struct container *container_from_filename(
     const char *name)
 {
-    const char *p = name + strlen(name) - 4;
-    if (p < name)
+    const char *p = strrchr(name, '.');
+    if (p == NULL)
         goto fail;
-    if (!strcmp(p, ".adf"))
+    p++;
+    if (!strcmp(p, "adf"))
         return &container_adf;
-    if (!strcmp(p, ".dsk"))
+    if (!strcmp(p, "dsk"))
         return &container_dsk;
+    if (!strcmp(p, "ipf"))
+        return &container_ipf;
 fail:
-    warnx("Unknown file suffix: %s (valid suffixes: .adf,.dsk)", name);
+    warnx("Unknown file suffix: %s (valid suffixes: .adf,.dsk,.ipf)", name);
     return NULL;
 }
 
@@ -140,13 +143,10 @@ struct track_mfm *track_mfm_get(struct disk *d, unsigned int tracknr)
     struct track_info *ti = &di->track[tracknr];
     const struct track_handler *thnd;
     struct track_mfm *track_mfm;
-    struct track_buffer tbuf = {
-        .start = ti->data_bitoff,
-        .len = ti->total_bits
-    };
+    struct track_buffer tbuf;
 
-    if ((int32_t)tbuf.len > 0)
-        tbuf_init(&tbuf);
+    if ((int32_t)ti->total_bits > 0)
+        tbuf_init(&tbuf, ti->data_bitoff, ti->total_bits);
 
     thnd = handlers[ti->type];
     thnd->read_mfm(d, tracknr, &tbuf);
@@ -267,15 +267,6 @@ void init_track_info(struct track_info *ti, enum track_type type)
     ti->len = ti->bytes_per_sector * ti->nr_sectors;
 }
 
-void tbuf_init(struct track_buffer *tbuf)
-{
-    unsigned int bytes = tbuf->len + 7 / 8;
-    tbuf->pos = tbuf->start;
-    tbuf->mfm = memalloc(bytes);
-    tbuf->speed = memalloc(2*bytes);
-    tbuf->prev_data_bit = 0;
-}
-
 static void change_bit(uint8_t *map, unsigned int bit, bool_t on)
 {
     if (on)
@@ -284,47 +275,11 @@ static void change_bit(uint8_t *map, unsigned int bit, bool_t on)
         map[bit>>3] &= ~(0x80 >> (bit & 7));
 }
 
-static void tbuf_finalise(struct track_buffer *tbuf)
-{
-    int32_t pos;
-    uint8_t b = 0;
-
-    if (tbuf->start == tbuf->pos)
-        return; /* handler completely filled the buffer */
-
-    tbuf_bits(tbuf, SPEED_AVG, TB_all, 32, 0);
-
-    pos = tbuf->start;
-    for (;;) {
-        if (--pos < 0)
-            pos += tbuf->len;
-        if (pos == tbuf->pos)
-            break;
-        change_bit(tbuf->mfm, pos, b);
-        tbuf->speed[pos >> 3] = SPEED_AVG;
-        b = !b;
-    }
-}
-
-void tbuf_bits(struct track_buffer *tbuf, uint16_t speed,
-               enum tbuf_data_type type, unsigned int bits, uint32_t x)
+static void mfm_tbuf_byte(
+    struct track_buffer *tbuf, uint16_t speed,
+    enum tbuf_data_type type, uint8_t x)
 {
     unsigned int i;
-
-    if (type == TB_even_odd) {
-        tbuf_bits(tbuf, speed, TB_even, bits, x);
-        type = TB_odd;
-    } else if (type == TB_odd_even) {
-        tbuf_bits(tbuf, speed, TB_odd, bits, x);
-        type = TB_even;
-    }
-
-    if (bits != 8) {
-        bits >>= 1;
-        tbuf_bits(tbuf, speed, type, bits, x>>bits);
-        tbuf_bits(tbuf, speed, type, bits, x);
-        return;
-    }
 
     if (type == TB_raw) {
         for (i = 0; i < 8; i++) {
@@ -353,6 +308,54 @@ void tbuf_bits(struct track_buffer *tbuf, uint16_t speed,
     }
 }
 
+void tbuf_init(struct track_buffer *tbuf, uint32_t bitstart, uint32_t bitlen)
+{
+    unsigned int bytes = bitlen + 7 / 8;
+    tbuf->start = tbuf->pos = bitstart;
+    tbuf->len = bitlen;
+    tbuf->mfm = memalloc(bytes);
+    tbuf->speed = memalloc(2*bytes);
+    tbuf->prev_data_bit = 0;
+    tbuf->byte = mfm_tbuf_byte;
+}
+
+static void tbuf_finalise(struct track_buffer *tbuf)
+{
+    int32_t pos;
+    uint8_t b = 0;
+
+    if (tbuf->start == tbuf->pos)
+        return; /* handler completely filled the buffer */
+
+    tbuf_bits(tbuf, SPEED_AVG, TB_all, 32, 0);
+
+    pos = tbuf->start;
+    for (;;) {
+        if (--pos < 0)
+            pos += tbuf->len;
+        if (pos == tbuf->pos)
+            break;
+        change_bit(tbuf->mfm, pos, b);
+        tbuf->speed[pos >> 3] = SPEED_AVG;
+        b = !b;
+    }
+}
+
+void tbuf_bits(struct track_buffer *tbuf, uint16_t speed,
+               enum tbuf_data_type type, unsigned int bits, uint32_t x)
+{
+    if (type == TB_even_odd) {
+        tbuf_bits(tbuf, speed, TB_even, bits, x);
+        type = TB_odd;
+    } else if (type == TB_odd_even) {
+        tbuf_bits(tbuf, speed, TB_odd, bits, x);
+        type = TB_even;
+    }
+
+    for (bits -= 8; (int)bits >= 0; bits -= 8)
+        tbuf->byte(tbuf, speed, type, x >> bits);
+}
+
 void tbuf_bytes(struct track_buffer *tbuf, uint16_t speed,
                 enum tbuf_data_type type, unsigned int bytes, void *data)
 {
@@ -367,7 +370,7 @@ void tbuf_bytes(struct track_buffer *tbuf, uint16_t speed,
     }
 
     for (i = 0; i < bytes; i++)
-        tbuf_bits(tbuf, speed, type, 8, ((unsigned char *)data)[i]);
+        tbuf->byte(tbuf, speed, type, ((unsigned char *)data)[i]);
 }
 
 /*

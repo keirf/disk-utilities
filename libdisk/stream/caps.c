@@ -146,7 +146,7 @@ static struct stream *caps_open(const char *name)
         goto fail2;
     }
 
-    if (CAPSLoadImage (cpss->container, CAPS_FLAGS) != imgeOk) {
+    if (CAPSLoadImage(cpss->container, CAPS_FLAGS) != imgeOk) {
         warnx("caps: Could not prefetch image data");
         goto fail3;
     }

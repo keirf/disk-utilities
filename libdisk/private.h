@@ -28,13 +28,6 @@ struct disk {
     struct disk_list_tag *tags;
 };
 
-struct track_buffer {
-    uint8_t *mfm;
-    uint16_t *speed;
-    uint32_t start, pos, len;
-    uint8_t prev_data_bit;
-};
-
 enum tbuf_data_type {
     TB_raw,        /* emit all bits; do not insert clock bits */
     TB_all,        /* emit all data bits */
@@ -44,7 +37,16 @@ enum tbuf_data_type {
     TB_odd_even    /* emit all odd-numbered bits; then even-numbered */
 };
 
-void tbuf_init(struct track_buffer *);
+struct track_buffer {
+    uint8_t *mfm;
+    uint16_t *speed;
+    uint32_t start, pos, len;
+    uint8_t prev_data_bit;
+    void (*byte)(struct track_buffer *, uint16_t speed,
+                 enum tbuf_data_type type, uint8_t x);
+};
+
+void tbuf_init(struct track_buffer *, uint32_t bitstart, uint32_t bitlen);
 void tbuf_bits(struct track_buffer *, uint16_t speed,
                enum tbuf_data_type type, unsigned int bits, uint32_t x);
 void tbuf_bytes(struct track_buffer *, uint16_t speed,
@@ -73,6 +75,7 @@ struct container {
 
 extern struct container container_adf;
 extern struct container container_dsk;
+extern struct container container_ipf;
 
 extern uint16_t copylock_decode_word(uint32_t);
 extern uint32_t mfm_decode_amigados(void *dat, unsigned int longs);
