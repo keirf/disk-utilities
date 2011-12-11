@@ -1,5 +1,5 @@
 # HG changeset patch
-# Parent afa3716402004acb0fb20abd87ad3be0ba4d8d6d
+# Parent bcef32515512608823483d02cf9e6ffbc1899f1b
 
 diff --git a/src/Makefile.in b/src/Makefile.in
 --- a/src/Makefile.in
@@ -159,7 +159,7 @@ new file mode 100644
 +    int warned;
 +    unsigned int ref;
 +    void *handle;
-+    struct disk *(*disk_open)(const char *name, int read_only, int quiet);
++    struct disk *(*disk_open)(const char *name, int read_only);
 +    void (*disk_close)(struct disk *);
 +    struct track_mfm *(*track_mfm_get)(struct disk *d, unsigned int tracknr);
 +    void (*track_mfm_put)(struct track_mfm *);
@@ -220,7 +220,7 @@ new file mode 100644
 +        return 0;
 +    if ( disk[drv] )
 +        disklib.disk_close(disk[drv]);
-+    disk[drv] = disklib.disk_open(name, 1, 0);
++    disk[drv] = disklib.disk_open(name, 1);
 +    if ( !disk[drv] )
 +        put_libdisk();
 +    return disk[drv] != NULL;
