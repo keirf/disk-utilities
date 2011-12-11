@@ -123,7 +123,7 @@ int main(int argc, char **argv)
             unidentified++;
     }
 
-    for (i = 1; i < 160; i++) {
+    for (i = 0; i < 160; i++) {
         unsigned int j;
         ti = &di->track[i];
         for (j = 0; j < ti->nr_sectors; j++)
