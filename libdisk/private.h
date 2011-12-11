@@ -13,6 +13,7 @@
 /* Determined empirically -- larger than expected for 2us bitcell @ 300rpm */
 #define DEFAULT_BITS_PER_TRACK       100150
 
+/* Track handlers can tag a disk with format metadata (e.g., encrypt keys). */
 struct disk_list_tag {
     struct disk_list_tag *next;
     struct disk_tag tag;
@@ -20,6 +21,7 @@ struct disk_list_tag {
 
 struct container;
 
+/* Private data relating to an open disk. */
 struct disk {
     int fd;
     bool_t read_only;
@@ -28,6 +30,7 @@ struct disk {
     struct disk_list_tag *tags;
 };
 
+/* How to interpret data being appended to a track buffer. */
 enum tbuf_data_type {
     TB_raw,        /* emit all bits; do not insert clock bits */
     TB_all,        /* emit all data bits */
@@ -37,6 +40,7 @@ enum tbuf_data_type {
     TB_odd_even    /* emit all odd-numbered bits; then even-numbered */
 };
 
+/* Track buffer: this is opaque to MFM encoders, updated via tbuf_* helpers. */
 struct track_buffer {
     uint8_t *mfm;
     uint16_t *speed;
@@ -46,12 +50,14 @@ struct track_buffer {
                  enum tbuf_data_type type, uint8_t x);
 };
 
+/* Append new raw track data into a track buffer. */
 void tbuf_init(struct track_buffer *, uint32_t bitstart, uint32_t bitlen);
 void tbuf_bits(struct track_buffer *, uint16_t speed,
                enum tbuf_data_type type, unsigned int bits, uint32_t x);
 void tbuf_bytes(struct track_buffer *, uint16_t speed,
                 enum tbuf_data_type type, unsigned int bytes, void *data);
 
+/* MFM track handler -- interface for various MFM analysers/encoders. */
 struct track_handler {
     unsigned int bytes_per_sector;
     unsigned int nr_sectors;
@@ -61,22 +67,37 @@ struct track_handler {
         struct disk *, unsigned int tracknr, struct track_buffer *);
 };
 
+/* Array of supported MFM analysers/handlers. */
 extern const struct track_handler *handlers[];
 
+/* Set up a track with defaults for a given track format. */
 void init_track_info(struct track_info *ti, enum track_type type);
 
+/* Container -- interface for a disk-image container format. */
 struct container {
+    /* Create a brand new empty container. */
     void (*init)(struct disk *);
+    /* Open an existing container file. */
     int (*open)(struct disk *);
+    /* Close, writing back any pending changes. */
     void (*close)(struct disk *);
+    /* Analyse and write an MFM stream to given track in container. */
     int (*write_mfm)(struct disk *, unsigned int tracknr,
                      enum track_type, struct stream *);
 };
 
+/* Supported container formats. */
 extern struct container container_adf;
 extern struct container container_dsk;
 extern struct container container_ipf;
 
+/* Helpers for container implementations: defaults for init() & write_mfm(). */
+void dsk_init(struct disk *d);
+int dsk_write_mfm(
+    struct disk *d, unsigned int tracknr, enum track_type type,
+    struct stream *s);
+
+/* Decode helpers for MFM analysers. */
 extern uint16_t copylock_decode_word(uint32_t);
 extern uint32_t mfm_decode_amigados(void *dat, unsigned int longs);
 
