@@ -36,7 +36,7 @@ Brief Descriptions:
 -------------------
 libdisk/
     A library for converting and manipulating disk images. It can create
-    disk images in an open format from Kryoflux STREAM and SPS/IPF images
+    disk images in a range of formats from Kryoflux STREAM and SPS/IPF images
     (among others), and then allow these to be accessed and modified.
 
 adfbb/
@@ -69,8 +69,7 @@ mfmparse/
     Disk file conversion tool.
     Converts From: Kryoflux STREAM, SPS/IPF, ADF, .DSK,
                    output from Amiga diskread tool.
-    Converts To: ADF, .DSK
-    Auto-detects and rips disk custom formats into an open container format.
+    Converts To: ADF, SPS/IPF, .DSK
 
 e-uae-patches/
     A set of patches to fix and improve vanilla E-UAE-0.8.29-WIP4.
