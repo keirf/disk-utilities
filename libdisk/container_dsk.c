@@ -339,25 +339,22 @@ struct ipf_tbuf {
     struct ipf_block *blk;
 };
 
-static void ipf_tbuf_finalise_block(
+static void ipf_tbuf_finish_chunk(
     struct ipf_tbuf *ibuf, unsigned int new_chunktype)
 {
     unsigned int chunklen, cntlen, i, j;
 
-    if ((int)ibuf->chunktype >= 0) {
-        chunklen = ibuf->len - ibuf->chunkstart;
-        for (i = chunklen, cntlen = 0; i > 0; i >>= 8)
-            cntlen++;
-        memmove(&ibuf->dat[ibuf->chunkstart + 1 + cntlen],
-                &ibuf->dat[ibuf->chunkstart], chunklen);
-        ibuf->dat[ibuf->chunkstart] = ibuf->chunktype | (cntlen << 5);
-        for (i = chunklen, j = 0; i > 0; i >>= 8, j++)
-            ibuf->dat[ibuf->chunkstart + cntlen - j] = (uint8_t)i;
-        ibuf->len += 1 + cntlen;
-    }
+    chunklen = ibuf->len - ibuf->chunkstart;
+    for (i = chunklen, cntlen = 0; i > 0; i >>= 8)
+        cntlen++;
+    memmove(&ibuf->dat[ibuf->chunkstart + 1 + cntlen],
+            &ibuf->dat[ibuf->chunkstart], chunklen);
+    ibuf->dat[ibuf->chunkstart] = ibuf->chunktype | (cntlen << 5);
+    for (i = chunklen, j = 0; i > 0; i >>= 8, j++)
+        ibuf->dat[ibuf->chunkstart + cntlen - j] = (uint8_t)i;
+    ibuf->len += 1 + cntlen;
 
-    if ((new_chunktype == 0) ||
-        ((new_chunktype == 1) && ((int)ibuf->chunktype >= 0))) {
+    if (new_chunktype != 2) {
         struct ipf_block *blk = &ibuf->blk[ibuf->nr_blks++];
         blk->blocksize = ibuf->decoded_len;
         blk->blockbits = blk->blocksize * 8;
@@ -381,7 +378,7 @@ static void ipf_tbuf_byte(
     unsigned int i, j, chunktype = (type == TB_raw) ? 1 : 2;
 
     if (chunktype != ibuf->chunktype)
-        ipf_tbuf_finalise_block(ibuf, chunktype);
+        ipf_tbuf_finish_chunk(ibuf, chunktype);
 
     if ((type == TB_raw) || (type == TB_all)) {
         ibuf->dat[ibuf->len++] = x;
@@ -493,9 +490,12 @@ static void ipf_close(struct disk *d)
             ibuf.tbuf.byte = ipf_tbuf_byte;
             ibuf.dat = dat;
             ibuf.blk = blk;
-            ibuf.chunktype = ~0u;
+            /* Start with 4 bytes of track gap MFM 0xAAAAAAAA */
+            ibuf.chunktype = 1;
+            *(uint32_t *)ibuf.dat = 0xaaaaaaaa;
+            ibuf.len = ibuf.decoded_len = 4;
             handlers[ti->type]->read_mfm(d, i, &ibuf.tbuf);
-            ipf_tbuf_finalise_block(&ibuf, 0);
+            ipf_tbuf_finish_chunk(&ibuf, 0);
 
             for (j = 0; j < ibuf.nr_blks; j++) {
                 img->databits += blk[j].blockbits;
