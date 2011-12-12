@@ -38,7 +38,7 @@ struct ipf_info {
 
 struct ipf_img {
     uint32_t cyl, head;
-    uint32_t dentype;  /* 1 = noise, 2 = auto, 3 = copylock */
+    uint32_t dentype;  /* enum dentype */
     uint32_t sigtype;  /* 1 */
     uint32_t trksize;  /* round_up(trkbits) */
     uint32_t startpos; /* round_up(startbit) */
@@ -52,6 +52,9 @@ struct ipf_img {
     uint32_t dat_chunk; /* id */
     uint32_t reserved[3];
 };
+
+/* Density type codes */
+enum dentype { denNoise=1, denUniform=2, denCopylock=3 };
 
 struct ipf_data {
     uint32_t size;  /* round_up(bsize) */
@@ -71,10 +74,12 @@ struct ipf_block {
     uint32_t gapvalue;   /* 0 */
     uint32_t dataoffset; /* offset of data stream in data area */
     /* Data is a set of chunks */
-    /* Chunk start bytes is count_len[7:5], code[4:0] */
+    /* Chunk start bytes is count_len[7:5], code[4:0] (see below for codes) */
     /* count_len says how many following bytes contain (big endian) count */
-    /* code is 0=end,1=sync,2=data,3=gap,4=raw,5=flakey */
 };
+
+/* Data stream chunk codes. */
+enum chkcode { chkEnd=0, chkSync, chkData, chkGap, chkRaw, chkFlaky };
 
 struct ipf_tbuf {
     struct track_buffer tbuf;
@@ -102,7 +107,7 @@ static void ipf_tbuf_finish_chunk(
         ibuf->dat[ibuf->chunkstart + cntlen - j] = (uint8_t)i;
     ibuf->len += 1 + cntlen;
 
-    if (new_chunktype != 2) {
+    if ((new_chunktype == chkEnd) || (new_chunktype == chkSync)) {
         struct ipf_block *blk = &ibuf->blk[ibuf->nr_blks++];
         blk->blocksize = ibuf->decoded_len;
         blk->blockbits = blk->blocksize * 8;
@@ -123,7 +128,7 @@ static void ipf_tbuf_byte(
     enum tbuf_data_type type, uint8_t x)
 {
     struct ipf_tbuf *ibuf = container_of(tbuf, struct ipf_tbuf, tbuf);
-    unsigned int i, j, chunktype = (type == TB_raw) ? 1 : 2;
+    unsigned int i, j, chunktype = (type == TB_raw) ? chkSync : chkData;
 
     if (chunktype != ibuf->chunktype)
         ipf_tbuf_finish_chunk(ibuf, chunktype);
@@ -225,11 +230,10 @@ static void ipf_close(struct disk *d)
         img->sigtype = 1; /* 2us bitcell */
         idata->dat_chunk = img->dat_chunk = i + 1;
         if ((int)ti->total_bits < 0) {
-            img->dentype = 1; /* noise */
+            img->dentype = denNoise;
         } else {
-            img->dentype = 2; /* auto */
-            if (ti->type == TRKTYP_copylock)
-                img->dentype = 3; /* copylock */
+            img->dentype = (ti->type == TRKTYP_copylock)
+                ? denCopylock : denUniform;
             img->startbit = ti->data_bitoff;
             img->startpos = img->startbit / 8;
             img->trkbits = ti->total_bits;
@@ -238,8 +242,8 @@ static void ipf_close(struct disk *d)
             ibuf.tbuf.byte = ipf_tbuf_byte;
             ibuf.dat = dat;
             ibuf.blk = blk;
-            /* Start with 4 bytes of track gap MFM 0xAAAAAAAA */
-            ibuf.chunktype = 1;
+            /* Start with chkSync so padding merges with first sector mark. */
+            ibuf.chunktype = chkSync;
             *(uint32_t *)ibuf.dat = 0xaaaaaaaa;
             ibuf.len = ibuf.decoded_len = 4;
             handlers[ti->type]->read_mfm(d, i, &ibuf.tbuf);
