@@ -16,6 +16,16 @@
 #include <arpa/inet.h>
 #include <time.h>
 
+/*
+ * crc32("User IPF") -- Arbitrary ID for identifying generated IPFs.
+ * This is stamped into the INFO release, revision, and userid fields.
+ * ** IMPORTANT **
+ * Please respect the SPS and do not change these field values. They are of
+ * no interest to the IPF decoder library, but allow our IPFs to be easily
+ * distinguished from preserved images from the SPS library.
+ */
+#define IPF_ID 0x843265bbu
+
 struct ipf_header {
     uint8_t id[4];
     uint32_t len;
@@ -208,8 +218,7 @@ static void ipf_close(struct disk *d)
     memset(&info, 0, sizeof(info));
     info.type = 1; /* FDD */
     info.encoder = info.encrev = 1; /* CAPS */
-    info.release = 0x6666; /* bogus */
-    info.revision = 1;
+    info.release = info.revision = info.userid = IPF_ID;
     info.maxcyl = di->nr_tracks/2 - 1;
     info.maxhead = 1;
     info.date = (tm.tm_year+1900)*10000 + (tm.tm_mon+1)*100 + tm.tm_mday;
