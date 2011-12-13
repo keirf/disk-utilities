@@ -62,7 +62,6 @@ endef
 
 cc-options-add = $(foreach o,$(3),$(call cc-option-add,$(1),$(2),$(o)))
 
-$(call cc-option-add,CFLAGS,CC,-fvisibility=hidden)
 #$(call cc-option-add,CFLAGS,CC,-Wno-unused-variable)
 #$(call cc-option-add,CFLAGS,CC,-Wno-unused-but-set-variable)
 
@@ -71,8 +70,10 @@ DEPS = .*.d
 %.o: %.c
 	$(CC) $(CFLAGS) -c -o $@ $<
 
+PIC_CFLAGS = $(CFLAGS) -fPIC
+$(call cc-option-add,PIC_CFLAGS,CC,-fvisibility=hidden)
 %.opic: %.c
-	$(CC) $(CFLAGS) -fPIC -c -o $@ $<
+	$(CC) $(PIC_CFLAGS) -c -o $@ $<
 
 .PHONY: all install clean
 

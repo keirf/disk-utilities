@@ -13,8 +13,16 @@ LIBS-$(caps) := -ldl
 LIBS += $(LIBS-y)
 
 all:
-	$(MAKE) -C stream all
+ifneq ($(SHARED_LIB),n)
+	$(MAKE) -C stream streams.opic
 	$(MAKE) libdisk.so
+else
+	$(MAKE) -C stream streams.o
+	$(MAKE) libdisk.a
+endif
+
+libdisk.a: $(OBJS) stream/streams.o
+	$(AR) rc $@ $^
 
 libdisk.so: $(PICOBJS) stream/streams.opic
 	$(CC) -Wl,-h,$(@).$(MAJOR) -shared $(LIBS) -o $(@).$(MAJOR).$(MINOR) $^

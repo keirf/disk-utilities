@@ -10,7 +10,10 @@ endif
 
 PICOBJS := $(patsubst %.o,%.opic,$(OBJS))
 
-all: streams.opic
+all: streams.o streams.opic
+
+streams.o: $(OBJS)
+	$(LD) -r -o $@ $^
 
 streams.opic: $(PICOBJS)
 	$(LD) -r -o $@ $^
