@@ -11,6 +11,18 @@
 #include <errno.h>
 #include <unistd.h>
 
+void __bug(const char *file, int line)
+{
+    warnx("BUG at %s:%d", file, line);
+    abort();
+}
+
+void __warn(const char *file, int line)
+{
+    warnx("WARNING at %s:%d", file, line);
+    abort();
+}
+
 void *memalloc(size_t size)
 {
     void *p = malloc(size);

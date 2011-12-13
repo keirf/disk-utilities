@@ -23,6 +23,14 @@
         (type *)( (char *)__mptr - offsetof(type,member) );})
 #define ARRAY_SIZE(x) (sizeof(x) / sizeof((x)[0]))
 
+void __bug(const char *file, int line) __attribute__((noreturn));
+#define BUG() __bug(__FILE__, __LINE__)
+#define BUG_ON(p) do { if (p) BUG(); } while (0)
+
+void __warn(const char *file, int line);
+#define WARN() __warn(__FILE__, __LINE__)
+#define WARN_ON(p) do { if (p) WARN(); } while (0)
+
 typedef char bool_t;
 
 #pragma GCC visibility push(default)
