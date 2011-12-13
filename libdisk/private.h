@@ -46,8 +46,8 @@ struct track_buffer {
     uint16_t *speed;
     uint32_t start, pos, len;
     uint8_t prev_data_bit;
-    void (*byte)(struct track_buffer *, uint16_t speed,
-                 enum tbuf_data_type type, uint8_t x);
+    void (*bit)(struct track_buffer *, uint16_t speed,
+                enum tbuf_data_type type, uint8_t dat);
 };
 
 /* Append new raw track data into a track buffer. */

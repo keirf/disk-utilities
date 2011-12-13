@@ -107,6 +107,9 @@ static void ipf_tbuf_finish_chunk(
 {
     unsigned int chunklen, cntlen, i, j;
 
+    /* Until we support the newer SPS encoding, chunks must be byte aligned. */
+    BUG_ON(ibuf->bits != 0);
+
     chunklen = ibuf->len - ibuf->chunkstart;
     for (i = chunklen, cntlen = 0; i > 0; i >>= 8)
         cntlen++;
@@ -133,33 +136,22 @@ static void ipf_tbuf_finish_chunk(
     ibuf->bits = 0;
 }
 
-static void ipf_tbuf_byte(
+static void ipf_tbuf_bit(
     struct track_buffer *tbuf, uint16_t speed,
-    enum tbuf_data_type type, uint8_t x)
+    enum tbuf_data_type type, uint8_t dat)
 {
     struct ipf_tbuf *ibuf = container_of(tbuf, struct ipf_tbuf, tbuf);
-    unsigned int i, j, chunktype = (type == TB_raw) ? chkSync : chkData;
+    unsigned int chunktype = (type == TB_raw) ? chkSync : chkData;
 
     if (chunktype != ibuf->chunktype)
         ipf_tbuf_finish_chunk(ibuf, chunktype);
 
-    if ((type == TB_raw) || (type == TB_all)) {
-        ibuf->dat[ibuf->len++] = x;
-        if (type == TB_all)
-            ibuf->decoded_len++;
-    } else {
-        if (type == TB_even)
-            x >>= 1;
-        for (i = 0, j = 0; i < 4; i++)
-            j |= ((x >> (i << 1)) & 1) << i;
-        if (ibuf->bits == 0)
-            ibuf->dat[ibuf->len] = (uint8_t)(j << 4);
-        else
-            ibuf->dat[ibuf->len++] |= (uint8_t)j;
-        ibuf->bits ^= 4;
+    ibuf->dat[ibuf->len] |= dat << (7 - ibuf->bits);
+    if (++ibuf->bits == 8) {
+        ibuf->bits = 0;
+        ibuf->len++;
+        ibuf->decoded_len += (type == TB_raw) ? 1 : 2;
     }
-
-    ibuf->decoded_len++;
 }
 
 static int ipf_open(struct disk *d)
@@ -248,7 +240,7 @@ static void ipf_close(struct disk *d)
             img->trkbits = ti->total_bits;
             img->trksize = img->trkbits / 8;
 
-            ibuf.tbuf.byte = ipf_tbuf_byte;
+            ibuf.tbuf.bit = ipf_tbuf_bit;
             ibuf.dat = dat;
             ibuf.blk = blk;
             /* Start with chkSync so padding merges with first sector mark. */
