@@ -15,7 +15,9 @@
 #include <stdlib.h>
 #include <string.h>
 
+#ifndef offsetof
 #define offsetof(a,b) __builtin_offsetof(a,b)
+#endif
 #define container_of(ptr, type, member) ({                      \
         typeof( ((type *)0)->member ) *__mptr = (ptr);          \
         (type *)( (char *)__mptr - offsetof(type,member) );})

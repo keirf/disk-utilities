@@ -56,12 +56,6 @@ struct amiga_state {
     uint16_t custom[256];
 };
 
-#define offsetof(a,b) __builtin_offsetof(a,b)
-#define container_of(ptr, type, member) ({                      \
-        typeof( ((type *)0)->member ) *__mptr = (ptr);          \
-        (type *)( (char *)__mptr - offsetof(type,member) );})
-#define ARRAY_SIZE(x) (sizeof(x) / sizeof((x)[0]))
-
 void __assert_failed(
     struct amiga_state *s, const char *file, unsigned int line);
 #define ASSERT(p) do {                                          \

@@ -23,12 +23,6 @@
 #include <amiga/amiga.h>
 #include <amiga/custom.h>
 
-#define offsetof(a,b) __builtin_offsetof(a,b)
-#define container_of(ptr, type, member) ({                      \
-        typeof( ((type *)0)->member ) *__mptr = (ptr);          \
-        (type *)( (char *)__mptr - offsetof(type,member) );})
-#define ARRAY_SIZE(x) (sizeof(x) / sizeof((x)[0]))
-
 #define MEM_SIZE (512*1024) /* our system has 512kB RAM */
 
 struct m68k_state {
