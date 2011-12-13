@@ -9,7 +9,7 @@ all:
 	$(MAKE) $(TARGET)
 
 mfmparse: mfmparse.o config.o
-	$(CC) $(CFLAGS) $(LIBS) $^ -o $@
+	$(CC) $(CFLAGS) $^ $(LIBS) -o $@
 
 install: all
 	$(INSTALL_DIR) $(BINDIR)
