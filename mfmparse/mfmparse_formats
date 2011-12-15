@@ -123,6 +123,8 @@ probe
 
 "Overdrive" = rnc_pdos
 
+"Paradroid '90" = amigados_copylock
+
 "Parasol Stars" = amigados_copylock
 
 "Project X" = amigados_copylock
@@ -145,7 +147,11 @@ probe
 
 "Superfrog" = rnc_pdos
 
+"Time Machine" = amigados_copylock
+
 "Tower Of Babel" = amigados
+
+"Voyager" = amigados_copylock
 
 "Walker" = amigados_copylock
 
