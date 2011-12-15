@@ -26,6 +26,27 @@
  */
 #define IPF_ID 0x843265bbu
 
+/*
+ * Encoder types:
+ *  * ENC_SPS is the newer more flexible encoding format, capable of
+ *    representing arbitrary-size and -alignment bitstreams.
+ *  * ENC_CAPS is more widely supported but requires data chunks to be
+ *    byte-sized.
+ * Our strategy is to try the older format, and use the newer encoding only
+ * when we discover it is necessary. Note that the new encoding does not work
+ * with v2 of the IPF decoder library (e.g., libcapsimage.so.2 on Linux).
+ * An upgrade to the latest decoder library (v4.2 or later) is recommended.
+ */
+#define ENC_CAPS 1 /* legacy */
+#define ENC_SPS  2 /* capable of bit-oriented data streams */
+
+/*
+ * Number of MFM cells to pre-pend to first block of each track.
+ * We do this to avoid the write splice interfering with real track data,
+ * when writing an IPF image to disk with Kryoflux.
+ */
+#define PREPEND_BITS 32 /* must be a multiple of two */
+
 struct ipf_header {
     uint8_t id[4];
     uint32_t len;
@@ -76,11 +97,19 @@ struct ipf_data {
 
 struct ipf_block {
     uint32_t blockbits;  /* # raw MFM cells */
-    uint32_t gapbits;    /* # raw MFM cells (0 for us) */
-    uint32_t blocksize;  /* ceil(blockbits/8) */
-    uint32_t gapsize;    /* ceil(gapbits/8) */
+    uint32_t gapbits;    /* # raw MFM cells */
+    union {
+        struct {
+            uint32_t blocksize;  /* ceil(blockbits/8) */
+            uint32_t gapsize;    /* ceil(gapbits/8) */
+        } caps;
+        struct {
+            uint32_t gapoffset;  /* 0 unless there is a gap stream */
+            uint32_t celltype;   /* 1 for 2us MFM */
+        } sps;
+    } u;
     uint32_t enctype;    /* 1 */
-    uint32_t flag;       /* 0 */
+    uint32_t flag;       /* 0 (bit 2 set => chunk counts are in bits) */
     uint32_t gapvalue;   /* 0 */
     uint32_t dataoffset; /* offset of data stream in data area */
     /* Data is a set of chunks */
@@ -95,10 +124,12 @@ struct ipf_tbuf {
     struct track_buffer tbuf;
     uint8_t *dat;
     unsigned int len, bits;
-    unsigned int decoded_len;
+    unsigned int decoded_bits;
     unsigned int blockstart;
     unsigned int chunkstart, chunktype;
     unsigned int nr_blks, nr_sync;
+    uint32_t encoder;
+    bool_t need_sps_encoder;
     struct ipf_block *blk;
 };
 
@@ -108,16 +139,24 @@ struct ipf_tbuf {
 static void ipf_tbuf_finish_chunk(
     struct ipf_tbuf *ibuf, unsigned int new_chunktype)
 {
-    unsigned int chunklen, cntlen, i, j;
+    unsigned int chunklen, chunkbytes, cntlen, i, j;
 
-    /* Until we support the newer SPS encoding, chunks must be byte aligned. */
-    BUG_ON(ibuf->bits != 0);
+    chunklen = chunkbytes = ibuf->len - ibuf->chunkstart;
+    if (ibuf->encoder == ENC_SPS)
+        chunklen = chunkbytes*8 + ibuf->bits;
+    else if (ibuf->bits != 0)
+        ibuf->need_sps_encoder = 1;
 
-    chunklen = ibuf->len - ibuf->chunkstart;
+    if (ibuf->bits != 0) {
+        ibuf->len++;
+        chunkbytes++;
+        ibuf->bits = 0;
+    }
+
     for (i = chunklen, cntlen = 0; i > 0; i >>= 8)
         cntlen++;
     memmove(&ibuf->dat[ibuf->chunkstart + 1 + cntlen],
-            &ibuf->dat[ibuf->chunkstart], chunklen);
+            &ibuf->dat[ibuf->chunkstart], chunkbytes);
     ibuf->dat[ibuf->chunkstart] = ibuf->chunktype | (cntlen << 5);
     for (i = chunklen, j = 0; i > 0; i >>= 8, j++)
         ibuf->dat[ibuf->chunkstart + cntlen - j] = (uint8_t)i;
@@ -126,18 +165,24 @@ static void ipf_tbuf_finish_chunk(
     if ((new_chunktype == chkEnd) ||
         ((new_chunktype == chkSync) && ibuf->nr_sync++)) {
         struct ipf_block *blk = &ibuf->blk[ibuf->nr_blks++];
-        blk->blocksize = ibuf->decoded_len;
-        blk->blockbits = blk->blocksize * 8;
-        blk->enctype = 1;
+        blk->blockbits = ibuf->decoded_bits;
+        blk->enctype = 1; /* MFM */
         blk->dataoffset = ibuf->blockstart;
+        if (ibuf->encoder == ENC_CAPS) {
+            blk->u.caps.blocksize = ceil_bits_to_bytes(blk->blockbits);
+            blk->u.caps.gapsize = ceil_bits_to_bytes(blk->gapbits);
+        } else {
+            blk->u.sps.gapoffset = 0;
+            blk->u.sps.celltype = 1; /* 2us bitcell */
+            blk->flag = 4; /* bit-oriented */
+        }
         ibuf->dat[ibuf->len++] = 0;
-        ibuf->decoded_len = 0;
+        ibuf->decoded_bits = 0;
         ibuf->blockstart = ibuf->len;
     }
 
     ibuf->chunkstart = ibuf->len;
     ibuf->chunktype = new_chunktype;
-    ibuf->bits = 0;
 }
 
 static void ipf_tbuf_bit(
@@ -151,10 +196,10 @@ static void ipf_tbuf_bit(
         ipf_tbuf_finish_chunk(ibuf, chunktype);
 
     ibuf->dat[ibuf->len] |= dat << (7 - ibuf->bits);
+    ibuf->decoded_bits += (type == TB_raw) ? 1 : 2;
     if (++ibuf->bits == 8) {
         ibuf->bits = 0;
         ibuf->len++;
-        ibuf->decoded_len += (type == TB_raw) ? 1 : 2;
     }
 }
 
@@ -199,7 +244,9 @@ static void ipf_close(struct disk *d)
     struct track_info *ti;
     struct ipf_tbuf ibuf;
     unsigned int i, j;
+    uint32_t encoder = ENC_CAPS;
 
+retry:
     lseek(d->fd, 0, SEEK_SET);
     if (ftruncate(d->fd, 0) < 0)
         err(1, NULL);
@@ -213,7 +260,8 @@ static void ipf_close(struct disk *d)
 
     memset(&info, 0, sizeof(info));
     info.type = 1; /* FDD */
-    info.encoder = info.encrev = 1; /* CAPS */
+    info.encoder = encoder;
+    info.encrev = 1;
     info.release = info.revision = info.userid = IPF_ID;
     info.maxcyl = di->nr_tracks/2 - 1;
     info.maxhead = 1;
@@ -230,32 +278,50 @@ static void ipf_close(struct disk *d)
     for (i = 0; i < di->nr_tracks; i++) {
         ti = &di->track[i];
         memset(&ibuf, 0, sizeof(ibuf));
+        ibuf.encoder = encoder;
         img->cyl = i / 2;
         img->head = i & 1;
         img->sigtype = 1; /* 2us bitcell */
         idata->dat_chunk = img->dat_chunk = i + 1;
+
         if ((int)ti->total_bits < 0) {
+            /* Unformatted tracks are handled by the IPF decoder library. */
             img->dentype = denNoise;
         } else {
+            /* Basic track metadata. */
             img->dentype = (ti->type == TRKTYP_copylock)
                 ? denCopylock : denUniform;
-            /* Start offset: account for 32 MFM cells we pre-pend below. */
-            img->startbit = ti->data_bitoff - 32;
+            img->startbit = ti->data_bitoff - PREPEND_BITS;
             if ((int)img->startbit < 0)
                 img->startbit += ti->total_bits;
             img->startpos = floor_bits_to_bytes(img->startbit);
             img->trkbits = ti->total_bits;
             img->trksize = ceil_bits_to_bytes(img->trkbits);
 
+            /* Go get the encoded track data. */
             ibuf.tbuf.bit = ipf_tbuf_bit;
             ibuf.dat = dat;
             ibuf.blk = blk;
-            /* Start with chkSync so padding merges with first sector mark. */
             ibuf.chunktype = chkData;
-            ibuf.decoded_len = 2 * (ibuf.len = 2);
+            ibuf.decoded_bits = PREPEND_BITS;
+            ibuf.len = ibuf.decoded_bits / 16;
+            ibuf.bits = (ibuf.decoded_bits / 2) & 7;
             handlers[ti->type]->read_mfm(d, i, &ibuf.tbuf);
             ipf_tbuf_finish_chunk(&ibuf, 0);
 
+            /*
+             * If data wasn't byte-aligned, we must switch to the newer SPS
+             * encoder, if we're not using it already.
+             */
+            if (ibuf.need_sps_encoder) {
+                BUG_ON(encoder != ENC_CAPS);
+                encoder = ENC_SPS;
+                warnx("IPF: Detected non-byte-aligned data. "
+                      "Switching to SPS encoder.");
+                goto bail;
+            }
+
+            /* Track data bits is sum over all block data bits. */
             for (j = 0; j < ibuf.nr_blks; j++) {
                 img->databits += blk[j].blockbits;
                 blk[j].dataoffset += ibuf.nr_blks * sizeof(*blk);
@@ -263,14 +329,23 @@ static void ipf_close(struct disk *d)
             img->gapbits = img->trkbits - img->databits;
             img->blkcnt = ibuf.nr_blks;
 
+            /* Track gap is appended to final block. */
+            blk[j-1].gapbits = img->gapbits;
+            if (encoder == ENC_CAPS)
+                blk[j-1].u.caps.gapsize = ceil_bits_to_bytes(blk[j-1].gapbits);
+
+            /* Convert endianness of all block descriptors. */
             for (j = 0; j < img->blkcnt * sizeof(*blk) / 4; j++)
                 ((uint32_t *)blk)[j] = htonl(((uint32_t *)blk)[j]);
 
+            /* Finally, compute DATA CRC. */
             idata->size = ibuf.len + ibuf.nr_blks * sizeof(*blk);
             idata->bsize = idata->size * 8;
             idata->dcrc = crc32(blk, ibuf.nr_blks * sizeof(*blk));
             idata->dcrc = crc32_add(dat, ibuf.len, idata->dcrc);
         }
+
+        /* We write the IMGE chunks back-to-back; defer DATA until after. */
         ipf_write_chunk(d, "IMGE", img, sizeof(*img));
 
         dat += ibuf.len;
@@ -291,10 +366,13 @@ static void ipf_close(struct disk *d)
         idata++; img++;
     }
 
+bail:
     memfree(_img);
     memfree(_idata);
     memfree(_blk);
     memfree(_dat);
+    if (ibuf.need_sps_encoder)
+        goto retry;
 }
 
 struct container container_ipf = {
