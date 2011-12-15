@@ -214,7 +214,11 @@ static void decode_dat(void *_dat, unsigned int size)
     if (dat->dcrc != crc)
         errx(1, "Data CRC mismatch");
     if (dat->size) {
-        decode_block(data);
+        unsigned int i;
+        for (i = 0; i < 11; i++) {
+            printf("BLK %u\n", i);
+            decode_block((char *)data + i*32);
+        }
     }
     free(data);
 }
