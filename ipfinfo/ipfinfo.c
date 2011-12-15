@@ -53,8 +53,8 @@ struct ipf_img {
     uint32_t head;     /* 0 or 1 */
     uint32_t dentype;  /* 1 = noise, 2 = auto, 3 = copylock */
     uint32_t sigtype;  /* 1 */
-    uint32_t trksize;  /* track size in raw bytes (trkbits / 8) */
-    uint32_t startpos; /* startbit/8 */
+    uint32_t trksize;  /* ceil(trkbits/8) */
+    uint32_t startpos; /* floor(startbit/8) */
     uint32_t startbit; /* bit offset from index of data start */
     uint32_t databits;
     uint32_t gapbits;
@@ -67,7 +67,7 @@ struct ipf_img {
 };
 
 struct ipf_data {
-    uint32_t size;  /* bsize / 8 */
+    uint32_t size;  /* ceil(bsize/8) */
     uint32_t bsize;
     uint32_t dcrc;  /* data area crc */
     uint32_t dat_chunk;
@@ -77,10 +77,18 @@ struct ipf_data {
 struct ipf_block {
     uint32_t blockbits;  /* decoded block size in bits */
     uint32_t gapbits;    /* decoded gap size in bits */
-    uint32_t blocksize;  /* decoded block size, bits/8 */
-    uint32_t gapsize;    /* decoded gap size, bits/8 */
+    union {
+        struct {
+            uint32_t blocksize;  /* ceil(blockbits/8) */
+            uint32_t gapsize;    /* ceil(gapbits/8) */
+        } caps;
+        struct {
+            uint32_t gapoffset;  /* 0 unless there is a gap stream */
+            uint32_t celltype;   /* 1 for 2us MFM */
+        } sps;
+    } u;
     uint32_t enctype;    /* 1 */
-    uint32_t flag;       /* 0 */
+    uint32_t flag;       /* 0 (bit 2 set means we count stream in bits!) */
     uint32_t gapvalue;   /* 0 */
     uint32_t dataoffset; /* offset of data stream in data area */
     /* Data is a set of chunks */
@@ -89,11 +97,16 @@ struct ipf_block {
     /* code is 0=end,1=sync,2=data,3=gap,4=raw,5=flakey */
 };
 
+static uint32_t encoder;
+
 static void decode_info(const void *_info, unsigned int size)
 {
     const struct ipf_info *info = _info;
     if (size != sizeof(*info))
         errx(1, "INFO size mismatch");
+    encoder = info->encoder;
+    if ((encoder < 1) || (encoder > 2))
+        errx(1, "Unknown encoder type (%u)", encoder);
     printf("Type:      %u\n", info->type);
     printf("Encoder:   %u\n", info->encoder);
     printf("EncRev:    %u\n", info->encrev);
@@ -149,17 +162,39 @@ static void decode_img(const void *_img, unsigned int size)
            img->reserved[2]);
 }
 
+static void decode_data(unsigned char *data, const char *name, uint32_t off)
+{
+    unsigned int i;
+    if (!off)
+        return;
+    printf("%s: ", name);
+    for (i = off; i < (off+16); i++)
+        printf("%02x ", data[i]);
+    printf("\n");
+}
+
 static void decode_block(void *_blk)
 {
     struct ipf_block *blk = _blk;
+    unsigned int i;
+    for (i = 0; i < sizeof(struct ipf_block)/4; i++)
+        ((uint32_t *)blk)[i] = be32toh(((uint32_t *)blk)[i]);
     printf("BlockBits: %u\n", blk->blockbits);
     printf("GapBits:   %u\n", blk->gapbits);
-    printf("BlockSize: %u\n", blk->blocksize);
-    printf("GapSize:   %u\n", blk->gapsize);
+    if (encoder == 1) { /* CAPS */
+        printf("BlockSize: %u\n", blk->u.caps.blocksize);
+        printf("GapSize:   %u\n", blk->u.caps.gapsize);
+    } else { /* SPS */
+        printf("GapOffset: %u\n", blk->u.sps.gapoffset);
+        printf("CellType:  %u\n", blk->u.sps.celltype);
+    }
     printf("EncType:   %u\n", blk->enctype);
     printf("Flag:      %u\n", blk->flag);
     printf("GapValue:  %u\n", blk->gapvalue);
     printf("DataOffs:  %u\n", blk->dataoffset);
+    if (encoder == 2)
+        decode_data(_blk, "GAP", blk->u.sps.gapoffset);
+    decode_data(_blk, "DAT", blk->dataoffset);
 }
 
 static void decode_dat(void *_dat, unsigned int size)
@@ -179,13 +214,7 @@ static void decode_dat(void *_dat, unsigned int size)
     if (dat->dcrc != crc)
         errx(1, "Data CRC mismatch");
     if (dat->size) {
-        unsigned int i;
-        for (i = 0; i < sizeof(struct ipf_block)/4; i++)
-            ((uint32_t *)data)[i] = be32toh(((uint32_t *)data)[i]);
         decode_block(data);
-        for (i = 352; i < (352+16); i++)
-            printf("%02x ", data[i]);
-        printf("\n");
     }
     free(data);
 }
