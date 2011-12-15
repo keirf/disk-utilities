@@ -50,8 +50,8 @@ struct ipf_img {
     uint32_t cyl, head;
     uint32_t dentype;  /* enum dentype */
     uint32_t sigtype;  /* 1 */
-    uint32_t trksize;  /* round_up(trkbits) */
-    uint32_t startpos; /* round_up(startbit) */
+    uint32_t trksize;  /* ceil(trkbits/8) */
+    uint32_t startpos; /* floor(startbit/8) */
     uint32_t startbit; /* bit offset from index of data start */
     uint32_t databits; /* # raw MFM cells */
     uint32_t gapbits;  /* # raw MFM cells */
@@ -67,7 +67,7 @@ struct ipf_img {
 enum dentype { denNoise=1, denUniform=2, denCopylock=3 };
 
 struct ipf_data {
-    uint32_t size;  /* round_up(bsize) */
+    uint32_t size;  /* ceil(bsize/8) */
     uint32_t bsize; /* # bits of encoded stream data */
     uint32_t dcrc;  /* data area crc */
     uint32_t dat_chunk; /* id */
@@ -77,8 +77,8 @@ struct ipf_data {
 struct ipf_block {
     uint32_t blockbits;  /* # raw MFM cells */
     uint32_t gapbits;    /* # raw MFM cells (0 for us) */
-    uint32_t blocksize;  /* round_up(blockbits) */
-    uint32_t gapsize;    /* round_up(gapbits) */
+    uint32_t blocksize;  /* ceil(blockbits/8) */
+    uint32_t gapsize;    /* ceil(gapbits/8) */
     uint32_t enctype;    /* 1 */
     uint32_t flag;       /* 0 */
     uint32_t gapvalue;   /* 0 */
@@ -98,9 +98,12 @@ struct ipf_tbuf {
     unsigned int decoded_len;
     unsigned int blockstart;
     unsigned int chunkstart, chunktype;
-    unsigned int nr_blks;
+    unsigned int nr_blks, nr_sync;
     struct ipf_block *blk;
 };
+
+#define floor_bits_to_bytes(bits) ((bits)/8)
+#define ceil_bits_to_bytes(bits) (((bits)+7)/8)
 
 static void ipf_tbuf_finish_chunk(
     struct ipf_tbuf *ibuf, unsigned int new_chunktype)
@@ -120,7 +123,8 @@ static void ipf_tbuf_finish_chunk(
         ibuf->dat[ibuf->chunkstart + cntlen - j] = (uint8_t)i;
     ibuf->len += 1 + cntlen;
 
-    if ((new_chunktype == chkEnd) || (new_chunktype == chkSync)) {
+    if ((new_chunktype == chkEnd) ||
+        ((new_chunktype == chkSync) && ibuf->nr_sync++)) {
         struct ipf_block *blk = &ibuf->blk[ibuf->nr_blks++];
         blk->blocksize = ibuf->decoded_len;
         blk->blockbits = blk->blocksize * 8;
@@ -235,18 +239,20 @@ static void ipf_close(struct disk *d)
         } else {
             img->dentype = (ti->type == TRKTYP_copylock)
                 ? denCopylock : denUniform;
-            img->startbit = ti->data_bitoff;
-            img->startpos = img->startbit / 8;
+            /* Start offset: account for 32 MFM cells we pre-pend below. */
+            img->startbit = ti->data_bitoff - 32;
+            if ((int)img->startbit < 0)
+                img->startbit += ti->total_bits;
+            img->startpos = floor_bits_to_bytes(img->startbit);
             img->trkbits = ti->total_bits;
-            img->trksize = img->trkbits / 8;
+            img->trksize = ceil_bits_to_bytes(img->trkbits);
 
             ibuf.tbuf.bit = ipf_tbuf_bit;
             ibuf.dat = dat;
             ibuf.blk = blk;
             /* Start with chkSync so padding merges with first sector mark. */
-            ibuf.chunktype = chkSync;
-            *(uint32_t *)ibuf.dat = 0xaaaaaaaa;
-            ibuf.len = ibuf.decoded_len = 4;
+            ibuf.chunktype = chkData;
+            ibuf.decoded_len = 2 * (ibuf.len = 2);
             handlers[ti->type]->read_mfm(d, i, &ibuf.tbuf);
             ipf_tbuf_finish_chunk(&ibuf, 0);
 
