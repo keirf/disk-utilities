@@ -112,11 +112,11 @@ fail:
             / (int)latency[5];
         switch (i) {
         case 4:
-            if (d > -4.8)
+            if (d > -4.5)
                 printf("Copylock: Short sector is only %.2f%% different\n", d);
             break;
         case 6:
-            if (d < 4.8)
+            if (d < 4.5)
                 printf("Copylock: Long sector is only %.2f%% different\n", d);
             break;
         default:
