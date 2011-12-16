@@ -29,10 +29,10 @@ static void *core_write_mfm(
     struct disk *d, unsigned int tracknr, struct stream *s)
 {
     struct track_info *ti = &d->di->track[tracknr];
-    uint32_t mfm[2], csum, *block = NULL;
+    uint32_t mfm[2], csum, *block = memalloc(ti->len);
     unsigned int i;
 
-    while ((stream_next_bit(s) != -1) && !block) {
+    while (stream_next_bit(s) != -1) {
 
         if ((uint16_t)s->word != 0x8915)
             continue;
@@ -40,30 +40,27 @@ static void *core_write_mfm(
         ti->data_bitoff = s->index_offset - 15;
 
         if (stream_next_bytes(s, mfm, sizeof(mfm)) == -1)
-            goto done;
+            goto fail;
         mfm_decode_amigados(mfm, 4/4);
         csum = ntohl(mfm[0]);
 
-        block = memalloc(ti->len);
-
         for (i = 0; i < ti->len/4; i++) {
             if (stream_next_bytes(s, mfm, sizeof(mfm)) == -1)
-                goto done;
+                goto fail;
             mfm_decode_amigados(mfm, 4/4);
             csum -= ntohl(block[i] = mfm[0]);
         }
 
-        if (csum) {
-            memfree(block);
-            block = NULL;
-        }
+        if (csum)
+            continue;
+
+        ti->valid_sectors = (1u << ti->nr_sectors) - 1;
+        return block;
     }
 
-done:
-    if (block != NULL)
-        ti->valid_sectors = (1u << ti->nr_sectors) - 1;
-
-    return block;
+fail:
+    free(block);
+    return NULL;
 }
 
 static void core_read_mfm(

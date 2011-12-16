@@ -31,10 +31,10 @@ static void *gremlin_write_mfm(
     struct disk *d, unsigned int tracknr, struct stream *s)
 {
     struct track_info *ti = &d->di->track[tracknr];
-    uint16_t *block = NULL;
+    uint16_t *block = memalloc(ti->len);
     unsigned int i;
 
-    while ((stream_next_bit(s) != -1) && !block) {
+    while (stream_next_bit(s) != -1) {
 
         uint16_t mfm[2], csum = 0, trk;
         uint32_t idx_off = s->index_offset - 15;
@@ -42,44 +42,41 @@ static void *gremlin_write_mfm(
         if ((uint16_t)s->word != 0x4489)
             continue;
         if (stream_next_bits(s, 32) == -1)
-            goto done;
+            goto fail;
         if (s->word != 0x44894489)
             continue;
         if (stream_next_bits(s, 16) == -1)
-            goto done;
+            goto fail;
         if ((uint16_t)s->word != 0x5555)
             continue;
 
         ti->data_bitoff = idx_off;
 
-        block = memalloc(ti->len);
-
         for (i = 0; i < ti->nr_sectors*ti->bytes_per_sector/2; i++) {
             if (stream_next_bytes(s, mfm, sizeof(mfm)) == -1)
-                goto done;
+                goto fail;
             block[i] = (mfm[0] & 0x5555u) | ((mfm[1] & 0x5555u) << 1);
             csum += ntohs(block[i]);
         }
 
         if (stream_next_bytes(s, mfm, sizeof(mfm)) == -1)
-            goto done;
+            goto fail;
         csum -= ntohs((mfm[0] & 0x5555u) | ((mfm[1] & 0x5555u) << 1));
 
         if (stream_next_bytes(s, mfm, sizeof(mfm)) == -1)
-            goto done;
+            goto fail;
         trk = ntohs((mfm[0] & 0x5555u) | ((mfm[1] & 0x5555u) << 1));
 
-        if ((csum != 0) || (tracknr != (trk^1))) {
-            memfree(block);
-            block = NULL;
-        }
+        if ((csum != 0) || (tracknr != (trk^1)))
+            continue;
+
+        ti->valid_sectors = (1u << ti->nr_sectors) - 1;
+        return block;
     }
 
-done:
-    if (block != NULL)
-        ti->valid_sectors = (1u << ti->nr_sectors) - 1;
-
-    return block;
+fail:
+    free(block);
+    return NULL;
 }
 
 static void gremlin_read_mfm(

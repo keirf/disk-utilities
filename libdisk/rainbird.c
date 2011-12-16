@@ -29,9 +29,9 @@ static void *rainbird_write_mfm(
     struct disk *d, unsigned int tracknr, struct stream *s)
 {
     struct track_info *ti = &d->di->track[tracknr];
-    char *block = NULL;
+    char *block;
 
-    while ((stream_next_bit(s) != -1) && !block) {
+    while (stream_next_bit(s) != -1) {
 
         uint32_t raw_dat[2*ti->len/4], hdr, csum;
 
@@ -41,7 +41,7 @@ static void *rainbird_write_mfm(
         ti->data_bitoff = s->index_offset - 31;
 
         if (stream_next_bytes(s, raw_dat, 16) == -1)
-            goto done;
+            goto fail;
         mfm_decode_amigados(&raw_dat[0], 1);
         mfm_decode_amigados(&raw_dat[2], 1);
         hdr = ntohl(raw_dat[0]);
@@ -51,19 +51,18 @@ static void *rainbird_write_mfm(
             continue;
 
         if (stream_next_bytes(s, raw_dat, sizeof(raw_dat)) == -1)
-            goto done;
+            goto fail;
         if ((csum ^= mfm_decode_amigados(raw_dat, ti->len/4)) != 0)
             continue;
 
         block = memalloc(ti->len);
         memcpy(block, raw_dat, ti->len);
+        ti->valid_sectors = (1u << ti->nr_sectors) - 1;
+        return block;
     }
 
-done:
-    if (block)
-        ti->valid_sectors = 1;
-
-    return block;
+fail:
+    return NULL;
 }
 
 static void rainbird_read_mfm(

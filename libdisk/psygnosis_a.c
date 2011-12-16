@@ -31,9 +31,9 @@ static void *psygnosis_a_write_mfm(
     struct disk *d, unsigned int tracknr, struct stream *s)
 {
     struct track_info *ti = &d->di->track[tracknr];
-    char *block = NULL;
+    char *block;
 
-    while ((stream_next_bit(s) != -1) && !block) {
+    while (stream_next_bit(s) != -1) {
 
         uint32_t raw_dat[2*ti->len/4], hdr, csum;
         uint32_t idx_off = s->index_offset - 15;
@@ -45,7 +45,7 @@ static void *psygnosis_a_write_mfm(
         ti->data_bitoff = idx_off;
 
         if (stream_next_bytes(s, raw_dat, 16) == -1)
-            goto done;
+            goto fail;
         mfm_decode_amigados(&raw_dat[0], 1);
         mfm_decode_amigados(&raw_dat[2], 1);
         hdr = ntohl(raw_dat[0]);
@@ -55,20 +55,20 @@ static void *psygnosis_a_write_mfm(
             continue;
 
         if (stream_next_bytes(s, raw_dat, sizeof(raw_dat)) == -1)
-            goto done;
+            goto fail;
         if ((csum ^= mfm_decode_amigados(raw_dat, ti->len/4)) != 0)
             continue;
 
         block = memalloc(ti->len + 2);
         *(uint16_t *)&block[ti->len] = htons(sync);
         memcpy(block, raw_dat, ti->len);
+        ti->valid_sectors = (1u << ti->nr_sectors) - 1;
+        ti->len += 2; /* for the sync mark */
+        return block;
     }
 
-done:
-    if (block)
-        ti->valid_sectors = 1;
-    ti->len += 2; /* for the sync mark */
-    return block;
+fail:
+    return NULL;
 }
 
 static void psygnosis_a_read_mfm(

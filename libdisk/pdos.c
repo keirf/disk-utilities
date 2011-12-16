@@ -79,7 +79,7 @@ static void *pdos_write_mfm(
                 if ((hdr[0] != i) || (hdr[1] != tracknr) ||
                     (hdr[2] != (uint8_t)(csum>>8)) ||
                     (hdr[3] != (uint8_t)csum))
-                break;
+                    break;
             }
 
             /* Decrypt and stash the data block. */
