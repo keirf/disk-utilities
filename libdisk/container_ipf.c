@@ -30,12 +30,8 @@
  * Encoder types:
  *  * ENC_SPS is the newer more flexible encoding format, capable of
  *    representing arbitrary-size and -alignment bitstreams.
- *  * ENC_CAPS is more widely supported but requires data chunks to be
- *    byte-sized.
- * Our strategy is to try the older format, and use the newer encoding only
- * when we discover it is necessary. Note that the new encoding does not work
- * with v2 of the IPF decoder library (e.g., libcapsimage.so.2 on Linux).
- * An upgrade to the latest decoder library (v4.2 or later) is recommended.
+ *  * ENC_CAPS is more widely supported but requires data to be byte-aligned.
+ *    Supported by v2 of the IPF decoder library (unlike ENC_SPS).
  */
 #define ENC_CAPS 1 /* legacy */
 #define ENC_SPS  2 /* capable of bit-oriented data streams */
@@ -44,8 +40,10 @@
  * Number of MFM cells to pre-pend to first block of each track.
  * We do this to avoid the write splice interfering with real track data,
  * when writing an IPF image to disk with Kryoflux.
+ *  - Must be a multiple of 2, since we are encoding MFM data *and* clock.
+ *  - Must be a multiple of 16 to keep stream byte-aligned for CAPS encoding.
  */
-#define PREPEND_BITS 32 /* must be a multiple of two */
+#define PREPEND_BITS 32
 
 struct ipf_header {
     uint8_t id[4];
@@ -231,7 +229,7 @@ static void ipf_write_chunk(
     memfree(_dat);
 }
 
-static void ipf_close(struct disk *d)
+static bool_t __ipf_close(struct disk *d, uint32_t encoder)
 {
     time_t t;
     struct tm tm;
@@ -244,9 +242,7 @@ static void ipf_close(struct disk *d)
     struct track_info *ti;
     struct ipf_tbuf ibuf;
     unsigned int i, j;
-    uint32_t encoder = ENC_CAPS;
 
-retry:
     lseek(d->fd, 0, SEEK_SET);
     if (ftruncate(d->fd, 0) < 0)
         err(1, NULL);
@@ -308,17 +304,10 @@ retry:
             ibuf.bits = (ibuf.decoded_bits / 2) & 7;
             handlers[ti->type]->read_mfm(d, i, &ibuf.tbuf);
             ipf_tbuf_finish_chunk(&ibuf, 0);
-
-            /*
-             * If data wasn't byte-aligned, we must switch to the newer SPS
-             * encoder, if we're not using it already.
-             */
             if (ibuf.need_sps_encoder) {
                 BUG_ON(encoder != ENC_CAPS);
-                encoder = ENC_SPS;
-                warnx("IPF: Detected non-byte-aligned data. "
-                      "Switching to SPS encoder.");
-                goto bail;
+                warnx("IPF: Switching to SPS encoder.");
+                goto out;
             }
 
             /* Track data bits is sum over all block data bits. */
@@ -366,13 +355,25 @@ retry:
         idata++; img++;
     }
 
-bail:
+out:
     memfree(_img);
     memfree(_idata);
     memfree(_blk);
     memfree(_dat);
-    if (ibuf.need_sps_encoder)
-        goto retry;
+    return i == di->nr_tracks; /* success? */
+}
+
+static void ipf_close(struct disk *d)
+{
+    /*
+     * Try the older CAPS encoding, and use the newer SPS encoding only when we
+     * discover it is necessary. Note that the new encoding does not work with 
+     * v2 of the IPF decoder library (e.g., libcapsimage.so.2 on Linux). An 
+     * upgrade to the latest decoder library (v4.2 or later) is recommended.
+     */
+    if (!__ipf_close(d, ENC_CAPS) &&
+        !__ipf_close(d, ENC_SPS))
+        BUG();
 }
 
 struct container container_ipf = {
