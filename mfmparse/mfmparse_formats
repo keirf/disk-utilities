@@ -91,6 +91,8 @@ probe
 
 "Goal!" = amigados_copylock
 
+"Great Courts" = blue_byte
+
 "Harlequin"
     * amigados gremlin
 
@@ -127,6 +129,8 @@ probe
 
 "Parasol Stars" = amigados_copylock
 
+"Pro Tennis Tour" = blue_byte
+
 "Project X" = amigados_copylock
 "Project X Special Edition 93" = rnc_pdos
 
@@ -151,6 +155,8 @@ probe
 
 "Tower Of Babel" = amigados
 
+"Twinworld" = blue_byte
+
 "Voyager" = amigados_copylock
 
 "Walker" = amigados_copylock
@@ -171,6 +177,8 @@ amigados
     * amigados
 amigados_copylock
     * amigados copylock
+blue_byte
+    * amigados blue_byte
 gremlin_protected
     0-1 amigados
     158-159 longtrack
