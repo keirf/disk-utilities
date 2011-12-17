@@ -121,6 +121,9 @@ probe
 "Lotus III"
     * amigados gremlin
 
+"Midwinter"
+    * amigados rainbird
+
 "New Zealand Story" = amigados_copylock
 
 "Overdrive" = rnc_pdos
