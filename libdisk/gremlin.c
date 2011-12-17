@@ -55,17 +55,19 @@ static void *gremlin_write_mfm(
         for (i = 0; i < ti->nr_sectors*ti->bytes_per_sector/2; i++) {
             if (stream_next_bytes(s, mfm, sizeof(mfm)) == -1)
                 goto fail;
-            block[i] = (mfm[0] & 0x5555u) | ((mfm[1] & 0x5555u) << 1);
+            mfm_decode_bytes(MFM_odd_even, 2, mfm, &block[i]);
             csum += ntohs(block[i]);
         }
 
         if (stream_next_bytes(s, mfm, sizeof(mfm)) == -1)
             goto fail;
-        csum -= ntohs((mfm[0] & 0x5555u) | ((mfm[1] & 0x5555u) << 1));
+        mfm_decode_bytes(MFM_odd_even, 2, mfm, mfm);
+        csum -= ntohs(mfm[0]);
 
         if (stream_next_bytes(s, mfm, sizeof(mfm)) == -1)
             goto fail;
-        trk = ntohs((mfm[0] & 0x5555u) | ((mfm[1] & 0x5555u) << 1));
+        mfm_decode_bytes(MFM_odd_even, 2, mfm, mfm);
+        trk = ntohs(mfm[0]);
 
         if ((csum != 0) || (tracknr != (trk^1)))
             continue;

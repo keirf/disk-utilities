@@ -46,17 +46,18 @@ static void *psygnosis_a_write_mfm(
 
         if (stream_next_bytes(s, raw_dat, 16) == -1)
             goto fail;
-        mfm_decode_amigados(&raw_dat[0], 1);
-        mfm_decode_amigados(&raw_dat[2], 1);
-        hdr = ntohl(raw_dat[0]);
-        csum = ntohl(raw_dat[2]);
+        mfm_decode_bytes(MFM_even_odd, 4, &raw_dat[0], &hdr);
+        mfm_decode_bytes(MFM_even_odd, 4, &raw_dat[2], &csum);
+        hdr = ntohl(hdr);
+        csum = ntohl(csum);
 
         if (hdr != (0xffffff00u | tracknr))
             continue;
 
         if (stream_next_bytes(s, raw_dat, sizeof(raw_dat)) == -1)
             goto fail;
-        if ((csum ^= mfm_decode_amigados(raw_dat, ti->len/4)) != 0)
+        mfm_decode_bytes(MFM_even_odd, ti->len, raw_dat, raw_dat);
+        if (amigados_checksum(raw_dat, ti->len) != csum)
             continue;
 
         block = memalloc(ti->len + 2);
@@ -75,21 +76,17 @@ static void psygnosis_a_read_mfm(
     struct disk *d, unsigned int tracknr, struct track_buffer *tbuf)
 {
     struct track_info *ti = &d->di->track[tracknr];
-    uint32_t track, csum = 0, *dat = (uint32_t *)ti->dat;
+    uint32_t *dat = (uint32_t *)ti->dat;
+    unsigned int dat_len = ti->len - 2;
     uint16_t sync;
-    unsigned int i, dat_len = ti->len - 2;
 
     sync = ntohs(*(uint16_t *)&ti->dat[dat_len]);
     tbuf_bits(tbuf, SPEED_AVG, MFM_raw, 16, sync);
 
-    track = (~0u << 8) | tracknr;
-    tbuf_bits(tbuf, SPEED_AVG, MFM_even_odd, 32, track);
+    tbuf_bits(tbuf, SPEED_AVG, MFM_even_odd, 32, (~0u << 8) | tracknr);
 
-    for (i = 0; i < dat_len/4; i++)
-        csum ^= ntohl(dat[i]);
-    csum ^= csum >> 1;
-    csum &= 0x55555555u;
-    tbuf_bits(tbuf, SPEED_AVG, MFM_even_odd, 32, csum);
+    tbuf_bits(tbuf, SPEED_AVG, MFM_even_odd, 32,
+              amigados_checksum(dat, dat_len));
 
     tbuf_bytes(tbuf, SPEED_AVG, MFM_even_odd, dat_len, dat);
 }

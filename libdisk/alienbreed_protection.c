@@ -41,14 +41,13 @@ static void *alienbreed_protection_write_mfm(
         /* Get the data longs. */
         for (i = 0; i < 3; i++) {
             stream_next_bytes(s, x, sizeof(x));
-            mfm_decode_amigados(x, 1);
-            dat[i] = x[0];
+            mfm_decode_bytes(MFM_even_odd, 4, x, &dat[i]);
         }
 
         /* Check for a long sequence of zeroes */
         for (i = 0; i < 1000; i++) {
             stream_next_bits(s, 32);
-            if (copylock_decode_word(s->word) != 0)
+            if (mfm_decode_bits(MFM_all, s->word) != 0)
                 break;
         }
         if (i == 1000)

@@ -378,6 +378,59 @@ void tbuf_bytes(struct track_buffer *tbuf, uint16_t speed,
         tbuf_bits(tbuf, speed, enc, 8, p[i]);
 }
 
+uint32_t mfm_decode_bits(enum mfm_encoding enc, uint32_t x)
+{
+    if (enc == MFM_all) {
+        uint32_t i, y = 0;
+        for (i = 0; i < 16; i++) {
+            y |= (x & 1) << i;
+            x >>= 2;
+        }
+        return y;
+    } 
+
+    if (enc == MFM_even)
+        return (x & 0x55555555u) << 1;
+
+    if (enc == MFM_odd)
+        return x & 0x55555555u;
+
+    BUG_ON(enc != MFM_raw);
+    return x;
+}
+
+void mfm_decode_bytes(
+    enum mfm_encoding enc, unsigned int bytes, void *in, void *out)
+{
+    uint8_t *in_b = in, *out_b = out;
+    unsigned int i;
+
+    for (i = 0; i < bytes; i++) {
+        if (enc == MFM_all) {
+            out_b[i] = mfm_decode_bits(MFM_all, ntohs(((uint16_t *)in)[i]));
+        } else if (enc == MFM_even_odd) {
+            out_b[i] = (mfm_decode_bits(MFM_even, in_b[i]) |
+                        mfm_decode_bits(MFM_odd, in_b[i + bytes]));
+        } else if (enc == MFM_odd_even) {
+            out_b[i] = (mfm_decode_bits(MFM_odd, in_b[i]) |
+                        mfm_decode_bits(MFM_even, in_b[i + bytes]));
+        } else {
+            BUG();
+        }
+    }
+}
+
+uint32_t amigados_checksum(void *dat, unsigned int bytes)
+{
+    uint32_t *p = dat, csum = 0;
+    unsigned int i;
+    for (i = 0; i < bytes/4; i++)
+        csum ^= ntohl(p[i]);
+    csum ^= csum >> 1;
+    csum &= 0x55555555u;
+    return csum;
+}
+
 /*
  * Local variables:
  * mode: C

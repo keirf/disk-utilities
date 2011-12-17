@@ -62,8 +62,9 @@ static void *pdos_write_mfm(
             if ((stream_next_bytes(s, hdr, 2*4) == -1) ||
                 (stream_next_bytes(s, dat, 2*512) == -1))
                 goto done;
-            mfm_decode_amigados(hdr, 4/4);
-            csum = mfm_decode_amigados(dat, 512/4);
+            mfm_decode_bytes(MFM_even_odd, 4, hdr, hdr);
+            mfm_decode_bytes(MFM_even_odd, 512, dat, dat);
+            csum = amigados_checksum(dat, 512);
             csum = (uint16_t)(csum | (csum >> 15));
 
             if (keytag == NULL) {
@@ -95,7 +96,7 @@ static void *pdos_write_mfm(
             /* Skip the sector gap. */
             if (stream_next_bits(s, 16) == -1)
                 goto done;
-            skip = copylock_decode_word((uint16_t)s->word);
+            skip = mfm_decode_bits(MFM_all, (uint16_t)s->word);
             if (stream_next_bits(s, skip*16) == -1)
                 goto done;
         }
@@ -131,9 +132,8 @@ static void pdos_read_mfm(
 
     for (i = 0; i < ti->nr_sectors; i++) {
 
-        uint32_t csum = 0;
         uint32_t hdr = (i << 24) | (tracknr << 16);
-        uint32_t enc[128];
+        uint32_t csum, enc[128];
 
         /* sync */
         tbuf_bits(tbuf, SPEED_AVG, MFM_raw, 16, 0x4891);
@@ -146,11 +146,9 @@ static void pdos_read_mfm(
         }
 
         /* header */
-        for (j = 0; j < 128; j++)
-            csum ^= ntohl(enc[j]);
+        csum = amigados_checksum(enc, 512);
         if (!(ti->valid_sectors & (1u << i)))
             csum ^= 1; /* bad checksum for an invalid sector */
-        csum ^= csum >> 1;
         hdr |= (csum & 0x5555u) | ((csum >> 15) & 0xaaaau);
         hdr ^= keytag->key ^ (1u<<31);
         tbuf_bits(tbuf, SPEED_AVG, MFM_even_odd, 32, hdr);

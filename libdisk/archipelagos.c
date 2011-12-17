@@ -46,24 +46,24 @@ static void *archipelagos_write_mfm(
 
         if (stream_next_bits(s, 32) == -1)
             goto done;
-        if (copylock_decode_word(s->word) != (0xff00 | tracknr))
+        if (mfm_decode_bits(MFM_all, s->word) != (0xff00 | tracknr))
             continue;
 
         if (stream_next_bits(s, 16) == -1)
             goto done;
-        sec = copylock_decode_word((uint16_t)s->word) - 1;
+        sec = mfm_decode_bits(MFM_all, (uint16_t)s->word) - 1;
         if ((sec >= ti->nr_sectors) || (valid_blocks & (1u<<sec)))
             continue;
 
         if (stream_next_bits(s, 32) == -1)
             goto done;
-        csum = copylock_decode_word(s->word);
+        csum = mfm_decode_bits(MFM_all, s->word);
 
         p = (uint16_t *)(block + sec * ti->bytes_per_sector);
         for (i = 0; i < ti->bytes_per_sector/2; i++) {
             if (stream_next_bits(s, 32) == -1)
                 goto done;
-            csum -= w = copylock_decode_word(s->word);
+            csum -= w = mfm_decode_bits(MFM_all, s->word);
             *p++ = htons(w);
         }
 

@@ -41,14 +41,14 @@ static void *core_write_mfm(
 
         if (stream_next_bytes(s, mfm, sizeof(mfm)) == -1)
             goto fail;
-        mfm_decode_amigados(mfm, 4/4);
+        mfm_decode_bytes(MFM_even_odd, 4, mfm, mfm);
         csum = ntohl(mfm[0]);
 
         for (i = 0; i < ti->len/4; i++) {
             if (stream_next_bytes(s, mfm, sizeof(mfm)) == -1)
                 goto fail;
-            mfm_decode_amigados(mfm, 4/4);
-            csum -= ntohl(block[i] = mfm[0]);
+            mfm_decode_bytes(MFM_even_odd, 4, mfm, &block[i]);
+            csum -= ntohl(block[i]);
         }
 
         if (csum)

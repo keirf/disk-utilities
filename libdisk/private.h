@@ -98,8 +98,10 @@ int dsk_write_mfm(
     struct stream *s);
 
 /* Decode helpers for MFM analysers. */
-extern uint16_t copylock_decode_word(uint32_t);
-extern uint32_t mfm_decode_amigados(void *dat, unsigned int longs);
+uint32_t mfm_decode_bits(enum mfm_encoding enc, uint32_t x);
+void mfm_decode_bytes(
+    enum mfm_encoding enc, unsigned int bytes, void *in, void *out);
+uint32_t amigados_checksum(void *dat, unsigned int bytes);
 
 #endif /* __DISK_PRIVATE_H__ */
 

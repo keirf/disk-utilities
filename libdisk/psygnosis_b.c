@@ -54,12 +54,10 @@ static void *psygnosis_b_write_mfm(
             continue;
 
         for (j = 0; j < sizeof(raw_dat)/2; j++) {
-            uint16_t e, o;
-            if (stream_next_bits(s, 32) == -1)
+            uint32_t dat;
+            if (stream_next_bytes(s, &dat, 4) == -1)
                 goto done;
-            e = s->word >> 16;
-            o = s->word;
-            raw_dat[j] = htons(((e & 0x5555u) << 1) | (o & 0x5555u));
+            mfm_decode_bytes(MFM_even_odd, 2, &dat, &raw_dat[j]);
         }
 
         for (j = 0; j < 6; j++) {

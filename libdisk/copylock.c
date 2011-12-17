@@ -41,17 +41,6 @@ static const uint16_t sec6_sig[] = {
     0x526f, 0x6220, 0x4e6f, 0x7274, /* "Rob Northen Comp" */
     0x6865, 0x6e20, 0x436f, 0x6d70 };
 
-uint16_t copylock_decode_word(uint32_t x)
-{
-    uint16_t y = 0;
-    unsigned int i;
-    for (i = 0; i < 16; i++) {
-        y |= (x & 1) << i;
-        x >>= 2;
-    }
-    return y;
-}
-
 static void *copylock_write_mfm(
     struct disk *d, unsigned int tracknr, struct stream *s)
 {
@@ -73,14 +62,14 @@ static void *copylock_write_mfm(
 
         if (stream_next_bits(s, 16) == -1)
             goto fail;
-        if (copylock_decode_word((uint16_t)s->word) != sync)
+        if (mfm_decode_bits(MFM_all, (uint16_t)s->word) != sync)
             continue;
 
         s->latency = 0;
         for (j = 0; j < 256; j++) {
             if (stream_next_bits(s, 32) == -1)
                 goto fail;
-            x = copylock_decode_word((uint32_t)s->word);
+            x = mfm_decode_bits(MFM_all, (uint32_t)s->word);
             if ((sync == 0) && (j == 0))
                 key = x>>9;
             if ((sync == 6) && (j < ARRAY_SIZE(sec6_sig))) {

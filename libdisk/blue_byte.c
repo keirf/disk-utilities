@@ -51,15 +51,14 @@ static void *blue_byte_write_mfm(
 
         if (stream_next_bytes(s, mfm, sizeof(mfm)) == -1)
             goto fail;
-        mfm_decode_amigados(mfm, 4/4);
+        mfm_decode_bytes(MFM_even_odd, 4, mfm, mfm);
         if (ntohl(mfm[0]) != ((1u << 16) | (trknr(tracknr) << 24)))
             continue;
 
         for (i = 0; i < ti->len/4; i++) {
             if (stream_next_bytes(s, mfm, sizeof(mfm)) == -1)
                 goto fail;
-            mfm_decode_amigados(mfm, 4/4);
-            block[i] = mfm[0];
+            mfm_decode_bytes(MFM_even_odd, 4, mfm, &block[i]);
         }
 
         ti->valid_sectors = (1u << ti->nr_sectors) - 1;
