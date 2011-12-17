@@ -70,11 +70,11 @@ static void alienbreed_protection_read_mfm(
     uint32_t *dat = (uint32_t *)ti->dat;
     unsigned int i;
 
-    tbuf_bits(tbuf, SPEED_AVG, TB_raw, 32, 0x89248924);
+    tbuf_bits(tbuf, SPEED_AVG, MFM_raw, 32, 0x89248924);
     for (i = 0; i < 3; i++)
-        tbuf_bits(tbuf, SPEED_AVG, TB_even_odd, 32, ntohl(dat[i]));
+        tbuf_bits(tbuf, SPEED_AVG, MFM_even_odd, 32, ntohl(dat[i]));
     for (i = 0; i < 1000; i++)
-        tbuf_bits(tbuf, SPEED_AVG, TB_all, 32, 0);
+        tbuf_bits(tbuf, SPEED_AVG, MFM_all, 32, 0);
 }
 
 struct track_handler alienbreed_protection_handler = {

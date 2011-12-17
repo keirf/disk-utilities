@@ -285,9 +285,9 @@ static void append_bit(struct track_buffer *tbuf, uint16_t speed, uint8_t x)
 
 static void mfm_tbuf_bit(
     struct track_buffer *tbuf, uint16_t speed,
-    enum tbuf_data_type type, uint8_t dat)
+    enum mfm_encoding enc, uint8_t dat)
 {
-    if (type == TB_all) {
+    if (enc == MFM_all) {
         /* Clock bit */
         uint8_t clk = !(tbuf->prev_data_bit | dat);
         append_bit(tbuf, speed, clk);
@@ -317,7 +317,7 @@ static void tbuf_finalise(struct track_buffer *tbuf)
     if (tbuf->start == tbuf->pos)
         return; /* handler completely filled the buffer */
 
-    tbuf_bits(tbuf, SPEED_AVG, TB_all, 32, 0);
+    tbuf_bits(tbuf, SPEED_AVG, MFM_all, 32, 0);
 
     pos = tbuf->start;
     for (;;) {
@@ -332,48 +332,50 @@ static void tbuf_finalise(struct track_buffer *tbuf)
 }
 
 void tbuf_bits(struct track_buffer *tbuf, uint16_t speed,
-               enum tbuf_data_type type, unsigned int bits, uint32_t x)
+               enum mfm_encoding enc, unsigned int bits, uint32_t x)
 {
     int i;
 
-    if (type == TB_even_odd) {
-        tbuf_bits(tbuf, speed, TB_even, bits, x);
-        type = TB_odd;
-    } else if (type == TB_odd_even) {
-        tbuf_bits(tbuf, speed, TB_odd, bits, x);
-        type = TB_even;
+    if (enc == MFM_even_odd) {
+        tbuf_bits(tbuf, speed, MFM_even, bits, x);
+        enc = MFM_odd;
+    } else if (enc == MFM_odd_even) {
+        tbuf_bits(tbuf, speed, MFM_odd, bits, x);
+        enc = MFM_even;
     }
 
-    if ((type == TB_even) || (type == TB_odd)) {
+    if ((enc == MFM_even) || (enc == MFM_odd)) {
         uint32_t y = 0;
-        if (type == TB_even)
+        if (enc == MFM_even)
             x >>= 1;
         bits >>= 1;
         for (i = 0; i < bits; i++)
             y |= (x >> i) & (1u << i);
         x = y;
-        type = TB_all;
+        enc = MFM_all;
     }
 
     for (i = bits-1; i >= 0; i--)
-        tbuf->bit(tbuf, speed, type, (x >> i) & 1);
+        tbuf->bit(tbuf, speed, enc, (x >> i) & 1);
 }
 
 void tbuf_bytes(struct track_buffer *tbuf, uint16_t speed,
-                enum tbuf_data_type type, unsigned int bytes, void *data)
+                enum mfm_encoding enc, unsigned int bytes, void *data)
 {
     unsigned int i;
+    uint8_t *p;
 
-    if (type == TB_even_odd) {
-        tbuf_bytes(tbuf, speed, TB_even, bytes, data);
-        type = TB_odd;
-    } else if (type == TB_odd_even) {
-        tbuf_bytes(tbuf, speed, TB_odd, bytes, data);
-        type = TB_even;
+    if (enc == MFM_even_odd) {
+        tbuf_bytes(tbuf, speed, MFM_even, bytes, data);
+        enc = MFM_odd;
+    } else if (enc == MFM_odd_even) {
+        tbuf_bytes(tbuf, speed, MFM_odd, bytes, data);
+        enc = MFM_even;
     }
 
+    p = (uint8_t *)data;
     for (i = 0; i < bytes; i++)
-        tbuf_bits(tbuf, speed, type, 8, ((unsigned char *)data)[i]);
+        tbuf_bits(tbuf, speed, enc, 8, p[i]);
 }
 
 /*

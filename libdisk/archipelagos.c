@@ -101,22 +101,22 @@ static void archipelagos_read_mfm(
     for (i = 0; i < ti->nr_sectors; i++) {
         uint16_t csum = 0;
         /* header */
-        tbuf_bits(tbuf, SPEED_AVG, TB_raw, 32, 0x44894489);
-        tbuf_bits(tbuf, SPEED_AVG, TB_all, 8, 0xff);
-        tbuf_bits(tbuf, SPEED_AVG, TB_all, 8, tracknr);
-        tbuf_bits(tbuf, SPEED_AVG, TB_all, 8, i+1);
+        tbuf_bits(tbuf, SPEED_AVG, MFM_raw, 32, 0x44894489);
+        tbuf_bits(tbuf, SPEED_AVG, MFM_all, 8, 0xff);
+        tbuf_bits(tbuf, SPEED_AVG, MFM_all, 8, tracknr);
+        tbuf_bits(tbuf, SPEED_AVG, MFM_all, 8, i+1);
         /* csum */
         for (j = 0; j < ti->bytes_per_sector/2; j++)
             csum += ntohs(dat[j]);
         if (!(ti->valid_sectors & (1u << i)))
             csum = ~csum; /* bad checksum for an invalid sector */
-        tbuf_bits(tbuf, SPEED_AVG, TB_all, 16, csum);
+        tbuf_bits(tbuf, SPEED_AVG, MFM_all, 16, csum);
         /* data */
         for (j = 0; j < 512; j++, dat++)
-            tbuf_bits(tbuf, SPEED_AVG, TB_all, 16, ntohs(*dat));
+            tbuf_bits(tbuf, SPEED_AVG, MFM_all, 16, ntohs(*dat));
         /* gap */
         for (j = 0; j < 9; j++)
-            tbuf_bits(tbuf, SPEED_AVG, TB_all, 8, 0);
+            tbuf_bits(tbuf, SPEED_AVG, MFM_all, 8, 0);
     }
 }
 

@@ -79,12 +79,12 @@ static void blue_byte_read_mfm(
     uint32_t *dat = (uint32_t *)ti->dat;
     unsigned int i;
 
-    tbuf_bits(tbuf, SPEED_AVG, TB_raw, 32, 0x5542aaaa);
+    tbuf_bits(tbuf, SPEED_AVG, MFM_raw, 32, 0x5542aaaa);
 
-    tbuf_bits(tbuf, SPEED_AVG, TB_even_odd, 32, hdr);
+    tbuf_bits(tbuf, SPEED_AVG, MFM_even_odd, 32, hdr);
 
     for (i = 0; i < ti->len/4; i++)
-        tbuf_bits(tbuf, SPEED_AVG, TB_even_odd, 32, ntohl(dat[i]));
+        tbuf_bits(tbuf, SPEED_AVG, MFM_even_odd, 32, ntohl(dat[i]));
 }
 
 struct track_handler blue_byte_handler = {

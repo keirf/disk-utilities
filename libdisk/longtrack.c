@@ -79,14 +79,14 @@ static void longtrack_read_mfm(
 
     switch (ntohs(*dat)) {
     case 0:
-        tbuf_bits(tbuf, SPEED_AVG, TB_raw, 16, 0x4454);
+        tbuf_bits(tbuf, SPEED_AVG, MFM_raw, 16, 0x4454);
         for (i = 0; i < 6000; i++)
-            tbuf_bits(tbuf, SPEED_AVG, TB_all, 8, 0x33);
+            tbuf_bits(tbuf, SPEED_AVG, MFM_all, 8, 0x33);
         break;
     case 1:
-        tbuf_bits(tbuf, SPEED_AVG, TB_raw, 32, 0x41244124);
+        tbuf_bits(tbuf, SPEED_AVG, MFM_raw, 32, 0x41244124);
         for (i = 0; i < 6000; i++)
-            tbuf_bits(tbuf, SPEED_AVG, TB_all, 8, 0);
+            tbuf_bits(tbuf, SPEED_AVG, MFM_all, 8, 0);
         break;
     }
 }

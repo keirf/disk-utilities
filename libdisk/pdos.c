@@ -127,7 +127,7 @@ static void pdos_read_mfm(
     struct rnc_pdos_key *keytag = (struct rnc_pdos_key *)
         disk_get_tag_by_id(d, DSKTAG_rnc_pdos_key);
 
-    tbuf_bits(tbuf, SPEED_AVG, TB_raw, 16, 0x1448);
+    tbuf_bits(tbuf, SPEED_AVG, MFM_raw, 16, 0x1448);
 
     for (i = 0; i < ti->nr_sectors; i++) {
 
@@ -136,7 +136,7 @@ static void pdos_read_mfm(
         uint32_t enc[128];
 
         /* sync */
-        tbuf_bits(tbuf, SPEED_AVG, TB_raw, 16, 0x4891);
+        tbuf_bits(tbuf, SPEED_AVG, MFM_raw, 16, 0x4891);
 
         /* encrypt data */
         k = keytag->key;
@@ -153,16 +153,16 @@ static void pdos_read_mfm(
         csum ^= csum >> 1;
         hdr |= (csum & 0x5555u) | ((csum >> 15) & 0xaaaau);
         hdr ^= keytag->key ^ (1u<<31);
-        tbuf_bits(tbuf, SPEED_AVG, TB_even_odd, 32, hdr);
+        tbuf_bits(tbuf, SPEED_AVG, MFM_even_odd, 32, hdr);
 
         /* data */
-        tbuf_bytes(tbuf, SPEED_AVG, TB_even_odd, 512, enc);
+        tbuf_bytes(tbuf, SPEED_AVG, MFM_even_odd, 512, enc);
 
         /* gap */
-        tbuf_bits(tbuf, SPEED_AVG, TB_all, 8,
+        tbuf_bits(tbuf, SPEED_AVG, MFM_all, 8,
                   i == (ti->nr_sectors - 1) ? 0 : 28);
         for (j = 0; j < 28; j++)
-            tbuf_bits(tbuf, SPEED_AVG, TB_all, 8, 0);
+            tbuf_bits(tbuf, SPEED_AVG, MFM_all, 8, 0);
     }
 }
 

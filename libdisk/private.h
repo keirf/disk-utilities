@@ -31,13 +31,13 @@ struct disk {
 };
 
 /* How to interpret data being appended to a track buffer. */
-enum tbuf_data_type {
-    TB_raw,        /* emit all bits; do not insert clock bits */
-    TB_all,        /* emit all data bits */
-    TB_even,       /* emit even-numbered data bits only */
-    TB_odd,        /* emit odd-numbered data bits only */
-    TB_even_odd,   /* emit all even-numbered bits; then odd-numbered */
-    TB_odd_even    /* emit all odd-numbered bits; then even-numbered */
+enum mfm_encoding {
+    MFM_raw,       /* emit all bits; do not insert clock bits */
+    MFM_all,       /* emit all data bits, in order */
+    MFM_even,      /* emit even-numbered data bits only */
+    MFM_odd,       /* emit odd-numbered data bits only */
+    MFM_even_odd,  /* emit all even-numbered bits; then odd-numbered */
+    MFM_odd_even   /* emit all odd-numbered bits; then even-numbered */
 };
 
 /* Track buffer: this is opaque to MFM encoders, updated via tbuf_* helpers. */
@@ -47,15 +47,15 @@ struct track_buffer {
     uint32_t start, pos, len;
     uint8_t prev_data_bit;
     void (*bit)(struct track_buffer *, uint16_t speed,
-                enum tbuf_data_type type, uint8_t dat);
+                enum mfm_encoding enc, uint8_t dat);
 };
 
 /* Append new raw track data into a track buffer. */
 void tbuf_init(struct track_buffer *, uint32_t bitstart, uint32_t bitlen);
 void tbuf_bits(struct track_buffer *, uint16_t speed,
-               enum tbuf_data_type type, unsigned int bits, uint32_t x);
+               enum mfm_encoding enc, unsigned int bits, uint32_t x);
 void tbuf_bytes(struct track_buffer *, uint16_t speed,
-                enum tbuf_data_type type, unsigned int bytes, void *data);
+                enum mfm_encoding enc, unsigned int bytes, void *data);
 
 /* MFM track handler -- interface for various MFM analysers/encoders. */
 struct track_handler {
