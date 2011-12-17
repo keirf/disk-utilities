@@ -13,11 +13,13 @@
  *  u8  trknr
  *  u8  1,0,0
  *  u32 data[6032/4]
- *  u32 ??? :: Raw, unknown meaning
+ *  u32 footer :: Raw, probably a duplicator checksum (CRC?)
  * 
  * Track gap is all zeroes.
  * Tracks are enumerated side 1 first, then side 0.
  * Cell timing is 2us as usual (not a long track format)
+ * Blue Byte's track loader does not checksum data, hence we have no way
+ * to check the data we analyse. Unless the footer value is a checksum.
  * 
  * MFM encoding:
  *  Alternating even/odd longs

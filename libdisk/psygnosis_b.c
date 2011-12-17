@@ -9,7 +9,7 @@
  * Written in 2011 by Keir Fraser
  * 
  * RAW TRACK LAYOUT:
- *  u16 0x4489,0x552a,0xaaaaa :: Track header
+ *  u16 0x4489,0x552a,0xaaaaa :: Sync
  *  6 back-to-back sectors (no gaps)
  * Decoded sector:
  *  u16 csum       :: sum of all 16-bit data words

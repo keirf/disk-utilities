@@ -9,8 +9,8 @@
  * Written in 2011 by Keir Fraser
  * 
  * RAW TRACK LAYOUT:
- *  u16 0x4489,0x4489 :: Track header
- *  u32 long
+ *  u32 0x44894489 :: Sync
+ *  u8  0xff,0xff,0xff,trknr
  *  u32 csum
  *  u32 data[10*512/4]
  * MFM encoding of sectors:

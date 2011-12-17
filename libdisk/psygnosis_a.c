@@ -10,7 +10,7 @@
  * Written in 2011 by Keir Fraser
  * 
  * RAW TRACK LAYOUT:
- *  u16 0x4489|0x4429
+ *  u16 0x4489|0x4429 :: Sync
  *  u32 trk
  *  u32 csum
  *  u32 data[12*512/4]
