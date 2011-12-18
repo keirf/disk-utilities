@@ -13,13 +13,11 @@
  *  u8  trknr
  *  u8  1,0,0
  *  u32 data[6032/4]
- *  u32 footer :: Raw, probably a duplicator checksum (CRC?)
+ *  u16 crc_ccitt  :: Over all track contents, in order
  * 
  * Track gap is all zeroes.
  * Tracks are enumerated side 1 first, then side 0.
  * Cell timing is 2us as usual (not a long track format)
- * Blue Byte's track loader does not checksum data, hence we have no way
- * to check the data we analyse. Unless the footer value is a checksum.
  * 
  * MFM encoding:
  *  Alternating even/odd longs
@@ -39,27 +37,33 @@ static void *blue_byte_write_mfm(
     struct disk *d, unsigned int tracknr, struct stream *s)
 {
     struct track_info *ti = &d->di->track[tracknr];
-    uint32_t mfm[2], *block = memalloc(ti->len);
+    uint32_t *block = memalloc(ti->len);
     unsigned int i;
 
     while (stream_next_bit(s) != -1) {
+
+        uint8_t mfm[2*(2+4+6032+2)], dat[2+4+6032+2];
 
         if (s->word != 0x5542aaaa)
             continue;
 
         ti->data_bitoff = s->index_offset - 31;
 
-        if (stream_next_bytes(s, mfm, sizeof(mfm)) == -1)
+        *(uint32_t *)mfm = htonl(s->word);
+        if (stream_next_bytes(s, &mfm[4], sizeof(mfm)-4) == -1)
             goto fail;
-        mfm_decode_bytes(MFM_even_odd, 4, mfm, mfm);
-        if (ntohl(mfm[0]) != ((1u << 16) | (trknr(tracknr) << 24)))
+
+        mfm_decode_bytes(MFM_all, sizeof(dat), mfm, dat);
+        if (crc16_ccitt(dat, sizeof(dat), 0xffff) != 0)
             continue;
 
-        for (i = 0; i < ti->len/4; i++) {
-            if (stream_next_bytes(s, mfm, sizeof(mfm)) == -1)
-                goto fail;
-            mfm_decode_bytes(MFM_even_odd, 4, mfm, &block[i]);
-        }
+        mfm_decode_bytes(MFM_even_odd, 4, &mfm[4], dat);
+        if ((dat[0] != trknr(tracknr)) || (dat[1] != 1) ||
+            (dat[2] != 0) || (dat[3] != 0))
+            continue;
+
+        for (i = 0; i < ti->len/4; i++)
+            mfm_decode_bytes(MFM_even_odd, 4, &mfm[12+8*i], &block[i]);
 
         ti->valid_sectors = (1u << ti->nr_sectors) - 1;
         return block;
@@ -70,20 +74,42 @@ fail:
     return NULL;
 }
 
+static void crc_and_emit_u32(
+    struct track_buffer *tbuf, enum mfm_encoding enc,
+    uint32_t x, uint16_t *crc)
+{
+    tbuf_bits(tbuf, SPEED_AVG, enc, 32, x);
+
+    if (enc == MFM_raw) {
+        uint16_t y = htons(mfm_decode_bits(MFM_all, x));
+        *crc = crc16_ccitt(&y, 2, *crc);
+    } else {
+        uint32_t i, y;
+        for (i = y = 0; i < 32; i++)
+            y |= ((x >> i) & 1) << ((i >> 1) + ((i&1)?16:0));
+        y = htonl(y);
+        *crc = crc16_ccitt(&y, 4, *crc);
+    }
+}
+
+
 static void blue_byte_read_mfm(
     struct disk *d, unsigned int tracknr, struct track_buffer *tbuf)
 {
     struct track_info *ti = &d->di->track[tracknr];
     uint32_t hdr = (1u << 16) | (trknr(tracknr) << 24);
     uint32_t *dat = (uint32_t *)ti->dat;
+    uint16_t crc = 0xffff;
     unsigned int i;
 
-    tbuf_bits(tbuf, SPEED_AVG, MFM_raw, 32, 0x5542aaaa);
+    crc_and_emit_u32(tbuf, MFM_raw, 0x5542aaaa, &crc);
 
-    tbuf_bits(tbuf, SPEED_AVG, MFM_even_odd, 32, hdr);
+    crc_and_emit_u32(tbuf, MFM_even_odd, hdr, &crc);
 
     for (i = 0; i < ti->len/4; i++)
-        tbuf_bits(tbuf, SPEED_AVG, MFM_even_odd, 32, ntohl(dat[i]));
+        crc_and_emit_u32(tbuf, MFM_even_odd, ntohl(dat[i]), &crc);
+
+    tbuf_bits(tbuf, SPEED_AVG, MFM_all, 16, crc);
 }
 
 struct track_handler blue_byte_handler = {
