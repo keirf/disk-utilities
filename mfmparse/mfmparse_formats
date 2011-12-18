@@ -98,6 +98,9 @@ probe
 
 "Hook" = amigados_copylock
 
+"IK+"
+    * amigados ikplus
+
 "Jaguar XJ220"
     * amigados core_design
 
