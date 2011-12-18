@@ -136,6 +136,20 @@ uint32_t crc32(const void *buf, size_t len)
     return crc32_add(buf, len, 0);
 }
 
+uint16_t crc16_ccitt(const void *buf, size_t len, uint16_t crc)
+{
+    unsigned int i;
+    const uint8_t *b = buf;
+    for (i = 0; i < len; i++) {
+        crc  = (uint8_t)(crc >> 8) | (crc << 8);
+        crc ^= *b++;
+        crc ^= (uint8_t)crc >> 4;
+        crc ^= crc << 12;
+        crc ^= (crc & 0xff) << 5;
+    }
+    return crc;
+}
+
 /*
  * Local variables:
  * mode: C

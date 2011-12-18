@@ -44,6 +44,8 @@ void write_exact(int fd, const void *buf, size_t count);
 uint32_t crc32_add(const void *buf, size_t len, uint32_t crc);
 uint32_t crc32(const void *buf, size_t len);
 
+uint16_t crc16_ccitt(const void *buf, size_t len, uint16_t crc);
+
 #pragma GCC visibility pop
 
 #endif /* __LIBDISK_UTIL_H__ */
