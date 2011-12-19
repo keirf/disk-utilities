@@ -197,10 +197,12 @@ static int kfs_next_bit(struct stream *s)
         return 0;
     }
 
+#if 0 /* XXX This actually makes track reading *more* fragile! */
     if ((kfss->clocked_zeros >= 1) && (kfss->clocked_zeros <= 3)) {
         int32_t diff = kfss->flux - kfss->clock;
         kfss->clock += diff/10;
     }
+#endif
 
     s->latency += kfss->flux;
     kfss->flux = 0;
