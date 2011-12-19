@@ -36,6 +36,8 @@ probe
     1 longtrack
     * archipelagos
 
+"Badlands" = amigados_copylock
+
 "Batman" = amigados_copylock
 
 "Beneath A Steel Sky" = amigados
@@ -60,6 +62,8 @@ probe
 "Dennis" = amigados_copylock
 
 "Desert Strike" = amigados
+
+"Exolon" = amigados_copylock
 
 "F17 Challenge" = rnc_pdos
 
@@ -131,6 +135,8 @@ probe
 
 "Overdrive" = rnc_pdos
 
+"Onslaught" = amigados
+
 "Paradroid '90" = amigados_copylock
 
 "Parasol Stars" = amigados_copylock
@@ -144,6 +150,8 @@ probe
 
 # Hit Squad re-release has no copylock
 "Rainbow Islands" = amigados_copylock
+
+"Sleeping Gods Lie" = amigados_copylock
 
 "Speedball 2" = amigados_copylock
 
@@ -166,6 +174,8 @@ probe
 "Voyager" = amigados_copylock
 
 "Walker" = amigados_copylock
+
+"Warlock: The Avenger" = amigados_copylock
 
 "Worms" = amigados
 "Worms: The Director's Cut" = amigados
