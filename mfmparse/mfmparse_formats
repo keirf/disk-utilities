@@ -1,7 +1,7 @@
 default = amigados
 probe
     * amigados copylock psygnosis_a psygnosis_b rnc_pdos core_design \
-      gremlin rainbird
+      gremlin rainbird blue_byte ikplus archipelagos
 
 
 ####################
