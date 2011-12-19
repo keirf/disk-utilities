@@ -123,6 +123,8 @@ probe
     * amigados copylock psygnosis_b
 "Lemmings 2" = amigados_copylock
 
+"Liberation" = amigados
+
 "Lotus Turbo Challenge" = gremlin_protected
 "Lotus II" = gremlin_protected
 "Lotus III"
@@ -136,6 +138,8 @@ probe
 "Overdrive" = rnc_pdos
 
 "Onslaught" = amigados
+
+"P.P. Hammer" = amigados
 
 "Paradroid '90" = amigados_copylock
 
