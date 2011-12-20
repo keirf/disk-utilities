@@ -10,7 +10,7 @@
 #include "private.h"
 
 #define SCAN_SECTOR_BITS 1000
-#define SECTOR_BAD_THRESH (SCAN_SECTOR_BITS/10)
+#define SECTOR_BAD_THRESH (SCAN_SECTOR_BITS/100)
 
 static void *unformatted_write_mfm(
     struct disk *d, unsigned int tracknr, struct stream *s)
