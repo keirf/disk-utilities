@@ -35,6 +35,7 @@ static void usage(int rc)
     printf("  -h, --help    Display this information\n");
     printf("  -q, --quiet   Quiesce normal informational output\n");
     printf("  -v, --verbose Print extra diagnostic info\n");
+    printf("  -a, --align   Align all track starts near index mark\n");
     printf("  -f, --format=FORMAT Name of format descriptor in config file\n");
     printf("  -c, --config=FILE   Config file to parse for format info\n");
     printf("Supported file formats (suffix => type):\n");
@@ -58,13 +59,14 @@ int main(int argc, char **argv)
     const char *prev_name;
     char *config = NULL, *format = NULL;
     unsigned int st = 0, unidentified = 0;
-    int ch;
+    int ch, align = 0;
 
-    const static char sopts[] = "hqvf:c:";
+    const static char sopts[] = "hqvaf:c:";
     const static struct option lopts[] = {
         { "help", 0, NULL, 'h' },
         { "quiet", 0, NULL, 'q' },
         { "verbose", 0, NULL, 'v' },
+        { "align", 0, NULL, 'a' },
         { "format", 1, NULL, 'f' },
         { "config",  1, NULL, 'c' },
         { 0, 0, 0, 0}
@@ -80,6 +82,9 @@ int main(int argc, char **argv)
             break;
         case 'v':
             verbose = 1;
+            break;
+        case 'a':
+            align = 1;
             break;
         case 'f':
             format = optarg;
@@ -126,6 +131,8 @@ int main(int argc, char **argv)
     for (i = 0; i < 160; i++) {
         unsigned int j;
         ti = &di->track[i];
+        if (align)
+            ti->data_bitoff = 1024;
         for (j = 0; j < ti->nr_sectors; j++)
             if (!(ti->valid_sectors & (1u << j)))
                 break;
