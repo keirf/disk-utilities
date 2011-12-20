@@ -39,6 +39,11 @@ struct kfs_stream {
 #define ICK_FREQ (MCK_FREQ / 16)
 #define SCK_PS_PER_TICK (1000000000u/(SCK_FREQ/1000))
 
+#define CLOCK_CENTRE  2000u  /* 2000ns = 2us */
+#define CLOCK_MAX_ADJ 10u    /* +/- 10% adjustment */
+#define CLOCK_MIN     ((CLOCK_CENTRE * (100u - CLOCK_MAX_ADJ)) / 100u)
+#define CLOCK_MAX     ((CLOCK_CENTRE * (100u + CLOCK_MAX_ADJ)) / 100u)
+
 static struct stream *kfs_open(const char *name)
 {
     char track0[strlen(name) + 9];
@@ -98,7 +103,7 @@ static void kfs_reset(struct stream *s, unsigned int tracknr)
 
     kfss->dat_idx = kfss->stream_idx = kfss->flux = kfss->clocked_zeros = 0;
     kfss->index_pos = ~0u;
-    kfss->clock = 2000;
+    kfss->clock = CLOCK_CENTRE;
 }
 
 static uint32_t read_u16(unsigned char *dat)
@@ -197,12 +202,18 @@ static int kfs_next_bit(struct stream *s)
         return 0;
     }
 
-#if 0 /* XXX This actually makes track reading *more* fragile! */
     if ((kfss->clocked_zeros >= 1) && (kfss->clocked_zeros <= 3)) {
+        /* In sync: adjust base clock by 10% of phase mismatch. */
         int32_t diff = kfss->flux - kfss->clock;
-        kfss->clock += diff/10;
+        diff /= (int)(kfss->clocked_zeros + 1);
+        kfss->clock += diff / 10;
+    } else {
+        /* Out of sync: adjust base clock towards centre. */
+        kfss->clock += (CLOCK_CENTRE - kfss->clock) / 10;
     }
-#endif
+
+    /* Clamp the clock's adjustment range. */
+    kfss->clock = max(CLOCK_MIN, min(CLOCK_MAX, kfss->clock));
 
     s->latency += kfss->flux;
     kfss->flux = 0;
