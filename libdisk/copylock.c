@@ -92,6 +92,9 @@ static void *copylock_write_mfm(
 
 fail:
     if (sync != ARRAY_SIZE(sync_list)) {
+        if (sync != 0)
+            printf("** WARNING: T%u: found unrecoverable Copylock track?\n",
+                   tracknr);
         memfree(info);
         return NULL;
     }
