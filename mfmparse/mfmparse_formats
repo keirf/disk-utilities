@@ -1,7 +1,7 @@
 default = amigados
 probe
     * amigados copylock psygnosis_a psygnosis_b rnc_pdos core_design \
-      gremlin rainbird blue_byte ikplus archipelagos
+      gremlin rainbird blue_byte ikplus archipelagos sensible
 
 
 ####################
@@ -48,6 +48,10 @@ probe
 "Brat" = amigados_copylock
 
 "Cadaver" = amigados_copylock
+
+"Cannon Fodder" = sensible
+
+"Cannon Fodder 2" = amigados_copylock
 
 # Original release (SPS 0813) uses Rainbird custom format
 # A subsequent compilation release (SPS 1580) uses AmigaDOS+Copylock
@@ -130,6 +134,10 @@ probe
 "Lotus III"
     * amigados gremlin
 
+# Disk 1, tracks 1 and 80 may be unformatted
+# Disk 2 track 1 should be Copylock; tracks 0 and 80 may be unformatted
+"Mega Lo Mania" = sensible
+
 "Midwinter"
     * amigados rainbird
 
@@ -181,6 +189,10 @@ probe
 
 "Warlock: The Avenger" = amigados_copylock
 
+"Wizball" = amigados
+
+"Wizkid" = sensible
+
 "Worms" = amigados
 "Worms: The Director's Cut" = amigados
 
@@ -209,3 +221,5 @@ rnc_pdos
     * amigados rnc_pdos
 rnc_pdos_copylock
     * amigados rnc_pdos copylock
+sensible
+    * amigados sensible copylock
