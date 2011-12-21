@@ -1,7 +1,7 @@
 default = amigados
 probe
     * amigados copylock psygnosis_a psygnosis_b rnc_pdos core_design \
-      gremlin rainbird blue_byte ikplus archipelagos sensible
+      gremlin rainbird blue_byte ikplus virus archipelagos sensible
 
 
 ####################
@@ -182,6 +182,9 @@ probe
 "Tower Of Babel" = amigados
 
 "Twinworld" = blue_byte
+
+"Virus"
+    * amigados virus
 
 "Voyager" = amigados_copylock
 
