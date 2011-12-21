@@ -10,7 +10,8 @@
 #include "private.h"
 
 #define SCAN_SECTOR_BITS 1000
-#define SECTOR_BAD_THRESH (SCAN_SECTOR_BITS/100)
+#define SECTOR_BAD_THRESH (SCAN_SECTOR_BITS/50)
+#define CLOCK_JITTER_THRESH 20 /* +/- 20% */
 
 static void *unformatted_write_mfm(
     struct disk *d, unsigned int tracknr, struct stream *s)
@@ -18,6 +19,7 @@ static void *unformatted_write_mfm(
     struct disk_info *di = d->di;
     struct track_info *ti = &di->track[tracknr];
     unsigned int bad = 0, nr_zero = 0, i = 0;
+    unsigned int lat = s->latency, clk = 2000;
 
     /*
      * Scan for bit sequences that break the MFM encoding rules.
@@ -25,17 +27,25 @@ static void *unformatted_write_mfm(
      */
     while (stream_next_bit(s) != -1) {
         if (s->word & 1) {
+            unsigned int new_clk = (s->latency - lat) / (nr_zero + 1);
+            int delta = new_clk - clk;
+            if (delta < 0)
+                delta = -delta;
+            if (((delta*100)/clk) > CLOCK_JITTER_THRESH)
+                bad++;
+            clk = new_clk;
+            lat = s->latency;
             if (!nr_zero)
                 bad++;
             nr_zero = 0;
-        }
-        else if (++nr_zero > 3)
+        } else if (++nr_zero > 3) {
             bad++;
+        }
 
         if (++i >= SCAN_SECTOR_BITS) {
             if (bad < SECTOR_BAD_THRESH)
                 return NULL;
-            bad = nr_zero = i = 0;
+            bad = i = 0;
         }
     }
 
