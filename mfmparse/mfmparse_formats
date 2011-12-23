@@ -160,6 +160,10 @@ probe
 
 "Qwak" = amigados
 
+"R-Type"
+    0-9 amigados
+    * rtype
+
 # Hit Squad re-release has no copylock
 "Rainbow Islands" = amigados_copylock
 
