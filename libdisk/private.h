@@ -48,6 +48,7 @@ struct track_buffer {
     uint8_t prev_data_bit;
     void (*bit)(struct track_buffer *, uint16_t speed,
                 enum mfm_encoding enc, uint8_t dat);
+    void (*gap)(struct track_buffer *, uint16_t speed, unsigned int bits);
 };
 
 /* Append new raw track data into a track buffer. */
@@ -56,6 +57,7 @@ void tbuf_bits(struct track_buffer *, uint16_t speed,
                enum mfm_encoding enc, unsigned int bits, uint32_t x);
 void tbuf_bytes(struct track_buffer *, uint16_t speed,
                 enum mfm_encoding enc, unsigned int bytes, void *data);
+void tbuf_gap(struct track_buffer *, uint16_t speed, unsigned int bytes);
 
 /* MFM track handler -- interface for various MFM analysers/encoders. */
 struct track_handler {

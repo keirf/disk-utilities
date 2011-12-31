@@ -307,6 +307,7 @@ void tbuf_init(struct track_buffer *tbuf, uint32_t bitstart, uint32_t bitlen)
     tbuf->speed = memalloc(2*bytes);
     tbuf->prev_data_bit = 0;
     tbuf->bit = mfm_tbuf_bit;
+    tbuf->gap = NULL;
 }
 
 static void tbuf_finalise(struct track_buffer *tbuf)
@@ -376,6 +377,16 @@ void tbuf_bytes(struct track_buffer *tbuf, uint16_t speed,
     p = (uint8_t *)data;
     for (i = 0; i < bytes; i++)
         tbuf_bits(tbuf, speed, enc, 8, p[i]);
+}
+
+void tbuf_gap(struct track_buffer *tbuf, uint16_t speed, unsigned int bits)
+{
+    if (tbuf->gap != NULL) {
+        tbuf->gap(tbuf, speed, bits);
+    } else {
+        while (bits--)
+            tbuf->bit(tbuf, speed, MFM_all, 0);
+    }
 }
 
 uint32_t mfm_decode_bits(enum mfm_encoding enc, uint32_t x)

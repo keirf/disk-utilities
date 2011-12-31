@@ -151,6 +151,12 @@ static void ipf_tbuf_finish_chunk(
         ibuf->bits = 0;
     }
 
+    if (ibuf->chunktype == chkEnd) {
+        /* Previous chunk end was forced by a sector gap. */
+        BUG_ON(chunklen != 0);
+        goto out;
+    }
+
     for (i = chunklen, cntlen = 0; i > 0; i >>= 8)
         cntlen++;
     memmove(&ibuf->dat[ibuf->chunkstart + 1 + cntlen],
@@ -179,6 +185,7 @@ static void ipf_tbuf_finish_chunk(
         ibuf->blockstart = ibuf->len;
     }
 
+out:
     ibuf->chunkstart = ibuf->len;
     ibuf->chunktype = new_chunktype;
 }
@@ -199,6 +206,22 @@ static void ipf_tbuf_bit(
         ibuf->bits = 0;
         ibuf->len++;
     }
+}
+
+static void ipf_tbuf_gap(
+    struct track_buffer *tbuf, uint16_t speed, unsigned int bits)
+{
+    struct ipf_tbuf *ibuf = container_of(tbuf, struct ipf_tbuf, tbuf);
+    struct ipf_block *blk = &ibuf->blk[ibuf->nr_blks];
+
+    /* Store the gap size in block metadata. */
+    blk->gapbits = bits*2;
+
+    /* Prevent next sync mark from creating a new block. */
+    ibuf->nr_sync = 0;
+
+    /* This is both a chunk and a block boundary. */
+    ipf_tbuf_finish_chunk(ibuf, chkEnd);
 }
 
 static int ipf_open(struct disk *d)
@@ -296,6 +319,7 @@ static bool_t __ipf_close(struct disk *d, uint32_t encoder)
 
             /* Go get the encoded track data. */
             ibuf.tbuf.bit = ipf_tbuf_bit;
+            ibuf.tbuf.gap = ipf_tbuf_gap;
             ibuf.dat = dat;
             ibuf.blk = blk;
             ibuf.chunktype = chkData;
@@ -303,25 +327,28 @@ static bool_t __ipf_close(struct disk *d, uint32_t encoder)
             ibuf.len = ibuf.decoded_bits / 16;
             ibuf.bits = (ibuf.decoded_bits / 2) & 7;
             handlers[ti->type]->read_mfm(d, i, &ibuf.tbuf);
-            ipf_tbuf_finish_chunk(&ibuf, 0);
+            ipf_tbuf_finish_chunk(&ibuf, chkEnd);
             if (ibuf.need_sps_encoder) {
                 BUG_ON(encoder != ENC_CAPS);
                 warnx("IPF: Switching to SPS encoder.");
                 goto out;
             }
 
-            /* Track data bits is sum over all block data bits. */
+            /* Sum the per-block data & gap sizes. */
             for (j = 0; j < ibuf.nr_blks; j++) {
                 img->databits += blk[j].blockbits;
+                img->gapbits += blk[j].gapbits;
                 blk[j].dataoffset += ibuf.nr_blks * sizeof(*blk);
             }
-            img->gapbits = img->trkbits - img->databits;
-            img->blkcnt = ibuf.nr_blks;
 
             /* Track gap is appended to final block. */
-            blk[j-1].gapbits = img->gapbits;
+            blk[j-1].gapbits += img->trkbits - img->databits - img->gapbits;
             if (encoder == ENC_CAPS)
                 blk[j-1].u.caps.gapsize = ceil_bits_to_bytes(blk[j-1].gapbits);
+
+            /* Finish the IMGE chunk. */
+            img->gapbits = img->trkbits - img->databits;
+            img->blkcnt = ibuf.nr_blks;
 
             /* Convert endianness of all block descriptors. */
             for (j = 0; j < img->blkcnt * sizeof(*blk) / 4; j++)
