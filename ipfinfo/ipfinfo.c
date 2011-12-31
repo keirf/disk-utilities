@@ -173,7 +173,7 @@ static void decode_data(unsigned char *data, const char *name, uint32_t off)
     printf("\n");
 }
 
-static void decode_block(void *_blk)
+static void decode_block(void *_blk, void *data)
 {
     struct ipf_block *blk = _blk;
     unsigned int i;
@@ -193,8 +193,8 @@ static void decode_block(void *_blk)
     printf("GapValue:  %u\n", blk->gapvalue);
     printf("DataOffs:  %u\n", blk->dataoffset);
     if (encoder == 2)
-        decode_data(_blk, "GAP", blk->u.sps.gapoffset);
-    decode_data(_blk, "DAT", blk->dataoffset);
+        decode_data(data, "GAP", blk->u.sps.gapoffset);
+    decode_data(data, "DAT", blk->dataoffset);
 }
 
 static void decode_dat(void *_dat, unsigned int size)
@@ -217,7 +217,7 @@ static void decode_dat(void *_dat, unsigned int size)
         unsigned int i;
         for (i = 0; i < 11; i++) {
             printf("BLK %u\n", i);
-            decode_block((char *)data + i*32);
+            decode_block((char *)data + i*32, data);
         }
     }
     free(data);
