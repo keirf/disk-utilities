@@ -65,29 +65,6 @@ static int emul_read(uint32_t addr, uint32_t *val, unsigned int bytes,
 static int emul_write(uint32_t addr, uint32_t val, unsigned int bytes,
                       struct m68k_emulate_ctxt *ctxt)
 {
-    struct m68k_state *s = container_of(ctxt, struct m68k_state, ctxt);
-
-    if (((addr >= 0xdff000) && (addr <= 0xdff200)) ||
-        ((addr >= 0xbfd000) && (addr <= 0xbfef01)))
-        return M68KEMUL_OKAY;
-
-    if ((addr > MEM_SIZE) || ((addr+bytes) > MEM_SIZE))
-        return M68KEMUL_UNHANDLEABLE;
-
-    switch (bytes) {
-    case 1:
-        *(uint8_t *)&s->mem[addr] = val;
-        break;
-    case 2:
-        *(uint16_t *)&s->mem[addr] = htons(val);
-        break;
-    case 4:
-        *(uint32_t *)&s->mem[addr] = htonl(val);
-        break;
-    default:
-        return M68KEMUL_UNHANDLEABLE;
-    }
-
     return M68KEMUL_OKAY;
 }
 
