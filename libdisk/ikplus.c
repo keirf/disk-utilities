@@ -10,6 +10,7 @@
  * Written in 2011 by Keir Fraser
  * 
  * RAW TRACK LAYOUT:
+ *  u16 0xf72a (TRKTYP_ikplus only)
  *  u16 0x8944,0x8944,0x8944 :: Sync
  *  u8  0xff (TRKTYP_virus only)
  *  u8  data[12*512]
@@ -65,6 +66,8 @@ static void *ikplus_write_mfm(
             continue;
 
         ti->data_bitoff = idx_off;
+        if (ti->type == TRKTYP_ikplus)
+            ti->data_bitoff -= 2*16; /* IK+ has a pre-sync header */
         ti->valid_sectors = (1u << ti->nr_sectors) - 1;
         return block;
     }
@@ -80,6 +83,8 @@ static void ikplus_read_mfm(
     struct track_info *ti = &d->di->track[tracknr];
     uint16_t crc;
 
+    if (ti->type == TRKTYP_ikplus)
+        tbuf_bits(tbuf, SPEED_AVG, MFM_all, 16, 0xf72a);
     tbuf_bits(tbuf, SPEED_AVG, MFM_raw, 32, 0x89448944);
     tbuf_bits(tbuf, SPEED_AVG, MFM_raw, 16, 0x8944);
     if (ti->type == TRKTYP_virus)
