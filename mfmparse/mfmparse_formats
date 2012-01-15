@@ -63,6 +63,7 @@ probe
 
 "Corporation" = amigados_copylock
 
+# OCS and AGA versions
 "Dennis" = amigados_copylock
 
 "Desert Strike" = amigados
@@ -109,6 +110,10 @@ probe
 "IK+"
     * amigados ikplus
 
+# Tracks 76+ are unused
+"Interphase"
+    * amigados rainbird
+
 "Jaguar XJ220"
     * amigados core_design
 
@@ -146,6 +151,8 @@ probe
 "Overdrive" = rnc_pdos
 
 "Onslaught" = amigados
+
+"Oscar (AGA)" = amigados
 
 "P.P. Hammer" = amigados
 
