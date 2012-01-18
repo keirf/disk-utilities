@@ -23,6 +23,8 @@
 
 static int fd;
 
+static int nr_blocks[256];
+
 struct ipf_header {
     uint8_t id[4];
     uint32_t len;
@@ -160,6 +162,7 @@ static void decode_img(const void *_img, unsigned int size)
            img->reserved[0],
            img->reserved[1],
            img->reserved[2]);
+    nr_blocks[img->dat_chunk] = img->blkcnt;
 }
 
 static void decode_data(unsigned char *data, const char *name, uint32_t off)
@@ -201,6 +204,7 @@ static void decode_dat(void *_dat, unsigned int size)
 {
     uint32_t crc;
     unsigned char *data;
+    unsigned int i;
     struct ipf_data *dat = _dat;
     if (size != sizeof(*dat))
         errx(1, "DATA size mismatch");
@@ -213,12 +217,9 @@ static void decode_dat(void *_dat, unsigned int size)
     crc = crc32(data, dat->size);
     if (dat->dcrc != crc)
         errx(1, "Data CRC mismatch");
-    if (dat->size) {
-        unsigned int i;
-        for (i = 0; i < 11; i++) {
-            printf("BLK %u\n", i);
-            decode_block((char *)data + i*32, data);
-        }
+    for (i = 0; i < nr_blocks[dat->dat_chunk]; i++) {
+        printf("BLK %u\n", i);
+        decode_block((char *)data + i*32, data);
     }
     free(data);
 }
