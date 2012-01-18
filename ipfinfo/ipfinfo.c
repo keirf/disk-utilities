@@ -192,10 +192,10 @@ static void decode_block(void *_blk, void *data)
         printf("CellType:  %u\n", blk->u.sps.celltype);
     }
     printf("EncType:   %u\n", blk->enctype);
-    printf("Flag:      %u\n", blk->flag);
+    printf("BlkFlag:   %u\n", blk->flag);
     printf("GapValue:  %u\n", blk->gapvalue);
     printf("DataOffs:  %u\n", blk->dataoffset);
-    if (encoder == 2)
+    if ((encoder == 2) && (blk->flag & 3))
         decode_data(data, "GAP", blk->u.sps.gapoffset);
     decode_data(data, "DAT", blk->dataoffset);
 }

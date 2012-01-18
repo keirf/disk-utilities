@@ -1,0 +1,163 @@
+Structure of descriptors and data for a track
+=============================================
+
+...
+IMGE("DID=k")
+...
+DATA("DID=k")
+BLOCK (one for each block)
+Gap streams, in block order
+Data streams, in block order
+...
+
+
+Structure of an IPF Block
+=========================
+
+The block descriptors for a track immediately follow back-to-back
+after its DATA descriptor. There must be exactly one descriptor for
+each block in the track -- the total number of blocks is defined by
+the relevant field in the associated IMGE descriptor.
+
+A block is composed of a data stream of length @blockbits, followed by
+a gap stream of length @gapbits. Both streams are optional
+(either/both of @blockbits and @gapbits may be 0). The bit lengths
+indicate length of *encoded raw MFM*.
+
+A flags field specifies whether the block has any associated gap
+streams (bit 0 indicates a forward gap stream, bit 1 indicates a
+backward gap stream), and whether sample lengths in the data stream
+are specified in bytes or bits (bit 2 indicates the latter). The
+flags field is ignored and assumed 0 if the encoder release in the
+INFO descriptor is 1.
+
+
+Data stream
+===========
+
+If @blockbits != 0 then @dataoffset must indicate the offset, from the
+start of the first Block descriptor, at which the data stream begins.
+
+The data stream comprises a sequence of samples, terminated by a nul
+byte. Each sample starts with a type byte, which may take values:
+ 1=sync, 2=data, 3=gap, 4=raw, 5=flakey
+Typically you will only require tyes 1 and 2, to specify that the data
+is raw MFM, or to be subjected to MFM encoding. The m.s. 3 bits of the
+type byte indicates how many following bytes contain the sample
+length. This is then followed by the sample data.
+
+For example, the address mark 448944894489 could be represented by the
+following sample: 21 06 44 89 44 89 44 89
+
+If sample lengths are specified in bits (Block descriptor flags bit 2
+is set) then the sample data section is rounded up to a whole number
+of bytes, so that the next sample begins on a byte boundary in the
+data stream.
+
+
+Gap stream
+==========
+
+If @gapbits != 0 then the IPF decoder will generate the many bits of
+gap information immediately following the block data. This gap info
+can be generated in a number of ways:
+
+1. No gap streams
+-----------------
+If Block flags bits 0 and 1 are both zero (and hence gapoffset also
+must be zero) then the decoder will fill the gap with the gapvalue
+byte specified in the Block descriptor. This byte will be repeated
+(including a final partial repetition, if necessary) as many times as
+necessary to fill the gap. The decoder fills forward and backward in
+the gap at the same time, hence the 'write splice' or 'overlap' occurs
+in the exact middle of the gap area.
+
+2. Gap streams
+--------------
+A forward gap stream fills the gap area forwards from the end of the
+block data to the start of the next block's data. This is specified by
+bit 0 of block flags. A backward stream fills the gap in the reverse
+direction, however the encoded stream is still specified *forwards*;
+the decoder is responsible for (effectively) reverse-filling the gap
+area from the forwards-encoded sample stream.
+
+A gap stream is made of samples encoded similarly to within a data
+stream. However, only two type codes are recognised:
+ 1 = stream_length, 2 = data
+Hence, raw MFM cannot be encoded in a gap stream. Instead typically a
+sample is made up of two components: a stream_length followed by
+data. The decoder then generates stream_length bits of gap data by
+repeating the sample data as many times as necessary. Note that stream
+and sample lengths in a gap stream are *always* specified in bits,
+regardless of the setting of Block flag bit 2.
+
+In a forwards gap stream, the final sample may *optionally* omit the
+stream_length. This final sample is an "explicit loop sample" which is
+then looped by the decoder to fill any remaining gap. If the explicit
+loop sample has length 0, then this forcibly disables looping.
+
+In a backwards gap stream, it is the first sample which may omit
+stream_length. This is because the stream is applied in reverse, and
+hence the 'infinite loop' only makes sense at the start of the stream.
+
+If no explicit loop sample is specified, then the decoder will in most
+cases automatically loop the final sample it comes across. To avoid this
+behaviour you can forcibly disable looping by specifying an explicit
+loop sample with length 0.
+
+2a. Forwards gap stream only
+----------------------------
+The decoder fills the gap with the stream data. If the stream data is
+too long, it is truncated. If the stream data is too short, the final
+sample is looped: in this situation it is an encoding error for the
+final sample to be zero-length. The 'write splice' occurs at the end
+of the gap area.
+
+2b. Backwards gap stream only
+-----------------------------
+The decoder fills the gap with the stream data *in reverse*, from the
+start of the next block's data, to the end of this block's data. It
+does this by effectively interpreting the encoded gap stream in
+reverse (since the gap stream is encoded in the forwards
+direction). As in case 2a, the stream is truncated, or the final
+sample looped, as necessary (and again it is illegal for the final
+sample to be zero-length). The 'write splice' occurs at the start of
+the gap area.
+
+2c. Forward *and* backward gap streams
+--------------------------------------
+In this case the decoder works out the fixed-size portion of each
+stream. This includes all samples (including one instance of the final
+loop sample, if present!).
+
+If the fixed-size portions over-fill the gap,
+then the streams are evenly truncated to fit. If this results in one
+stream reducing to zero length, the one remaining stream continues to
+be truncated to fit.
+
+If the fixed-size portions are insufficient to fill the gap, then loop
+data is generated as follows: If one stream only has an explicit loop
+sample, then that is looped to fill the gap. If both streams have an
+explicit loop sample then they are looped to generate even amounts of
+data and meet in the middle. If neither stream has an explicit loop
+sample, the final sample of both streams is automatically looped;
+again, the write splice occurs in the middle.
+
+Example 1
+---------
+We have a block with gapbits=832 and flag[0]=flag[1]=1 (two gap
+streams). The gap stream data is as follows:
+ 41 01 40 22 08 4e 00 21 60 22 08 00 00
+We can see two streams here, each terminated with a nul byte.
+The forward stream comprises 0x140 bits of 8-bit data 0x4e.
+The backward stream comprises 0x60 bits of 8-bit data 0x00.
+Since the gap stream is insufficient to fill the 832-bit gap, both
+streams will have their final sample looped to fill the gap and 'meet
+in the middle'.
+
+Example 2
+---------
+We have a block with gapbits=2520 and flag[0]=flag[1]=1. Gap data:
+ 22 08 4e 00 22 08 4e 21 60 22 08 00 00
+The forward stream comprises an explicit loop byte 0x4e.
+The backward stream ends with 0x60 bytes of 8-bit 
