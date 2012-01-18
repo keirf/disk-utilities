@@ -151,17 +151,18 @@ streams). The gap stream data is as follows:
 We can see two streams here, each terminated with a nul byte.
 The forward stream comprises 0x140 bits of 8-bit data 0x4e.
 The backward stream comprises 0x60 bits of 8-bit data 0x00.
-Since the gap stream is insufficient to fill the 832-bit gap, both
-streams will have their final sample looped to fill the gap and 'meet
-in the middle'.
+Once encoded into MFM, the fixed-size gap data will fill
+2*(0x140+0x60)=0x340=832 bits. Hence the gap streams exactly fill the
+gap, with no looping required.
 
 Example 2
 ---------
 We have a block with gapbits=2520 and flag[0]=flag[1]=1. Gap data:
  22 08 4e 00 22 08 4e 21 60 22 08 00 00
 The forward stream comprises an explicit loop byte 0x4e.
-The backward stream is 0x60 bit of 8-bit data 0x00, followed by
+The backward stream is 0x60 bits of 8-bit data 0x00, followed by
 explicit loop byte 0x4e.
-Hence the gap will end with 0x60 bytes of encoded nul bytes, then byte
-0x4d will fill the remaining gap both forwards and backwards to 'meet
-in the middle'.
+First the gap will be reverse filled with 0x60 bits of encoded nul
+bytes (i.e., 2*0x60=0xc0=192 bits of raw MFM). The remaining
+2520-192=2328 bits of gap will be filled with byte 0x4e both forwards
+and backwards to 'meet in the middle'.
