@@ -42,6 +42,8 @@
  * when writing an IPF image to disk with Kryoflux.
  *  - Must be a multiple of 2, since we are encoding MFM data *and* clock.
  *  - Must be a multiple of 16 to keep stream byte-aligned for CAPS encoding.
+ * NB. Recent versions of the Kryoflux DTC tool do not have this problem, and
+ * we can set PREPEND_BITS to 0.
  */
 #define PREPEND_BITS 32
 
@@ -151,11 +153,8 @@ static void ipf_tbuf_finish_chunk(
         ibuf->bits = 0;
     }
 
-    if (ibuf->chunktype == chkEnd) {
-        /* Previous chunk end was forced by a sector gap. */
-        BUG_ON(chunklen != 0);
+    if (chunkbytes == 0)
         goto out;
-    }
 
     for (i = chunklen, cntlen = 0; i > 0; i >>= 8)
         cntlen++;
@@ -322,7 +321,7 @@ static bool_t __ipf_close(struct disk *d, uint32_t encoder)
             ibuf.tbuf.gap = ipf_tbuf_gap;
             ibuf.dat = dat;
             ibuf.blk = blk;
-            ibuf.chunktype = chkData;
+            ibuf.chunktype = chkGap;
             ibuf.decoded_bits = PREPEND_BITS;
             ibuf.len = ibuf.decoded_bits / 16;
             ibuf.bits = (ibuf.decoded_bits / 2) & 7;
