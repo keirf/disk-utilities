@@ -58,7 +58,7 @@ data stream.
 Gap stream
 ==========
 
-If @gapbits != 0 then the IPF decoder will generate the many bits of
+If @gapbits != 0 then the IPF decoder will generate that many bits of
 gap information immediately following the block data. This gap info
 can be generated in a number of ways:
 
@@ -92,18 +92,21 @@ and sample lengths in a gap stream are *always* specified in bits,
 regardless of the setting of Block flag bit 2.
 
 In a forwards gap stream, the final sample may *optionally* omit the
-stream_length. This final sample is an "explicit loop sample" which is
-then looped by the decoder to fill any remaining gap. If the explicit
-loop sample has length 0, then this forcibly disables looping.
+stream_length. This final sample is an "explicit loop sample" (aka
+"real loop point") which is then looped by the decoder to fill any
+remaining gap (gap mode 'csiegmResize'). If the explicit loop sample
+has length 0, then this forcibly disables looping (gap mode
+'csiegmFixed').
 
 In a backwards gap stream, it is the first sample which may omit
 stream_length. This is because the stream is applied in reverse, and
 hence the 'infinite loop' only makes sense at the start of the stream.
 
 If no explicit loop sample is specified, then the decoder will in most
-cases automatically loop the final sample it comes across. To avoid this
-behaviour you can forcibly disable looping by specifying an explicit
-loop sample with length 0.
+cases automatically loop the final sample it comes across (gap mode
+'csiegmAuto'). To avoid this behaviour you can forcibly disable
+looping by specifying an explicit loop sample with length 0 (gap mode
+'csiegmFixed').
 
 2a. Forwards gap stream only
 ----------------------------
