@@ -312,24 +312,32 @@ void tbuf_init(struct track_buffer *tbuf, uint32_t bitstart, uint32_t bitlen)
 
 static void tbuf_finalise(struct track_buffer *tbuf)
 {
-    int32_t pos;
+    int32_t pos, nr_bits;
     uint8_t b = 0;
 
     if (tbuf->start == tbuf->pos)
         return; /* handler completely filled the buffer */
 
-    tbuf_bits(tbuf, SPEED_AVG, MFM_all, 32, 0);
+    /* Forward fill half the gap */
+    nr_bits = tbuf->start - tbuf->pos;
+    if (nr_bits < 0)
+        nr_bits += tbuf->len;
+    nr_bits /= 4; /* /2 to halve the gap, /2 to count data bits only */
+    while (nr_bits--)
+        tbuf_bits(tbuf, SPEED_AVG, MFM_all, 1, 0);
 
+    /* Write splice. Write an MFM-illegal string of zeroes. */
+    tbuf_bits(tbuf, SPEED_AVG, MFM_raw, 5, 0);
+
+    /* Reverse fill the remainder */
     pos = tbuf->start;
-    for (;;) {
+    do {
         if (--pos < 0)
             pos += tbuf->len;
-        if (pos == tbuf->pos)
-            break;
         change_bit(tbuf->mfm, pos, b);
         tbuf->speed[pos >> 3] = SPEED_AVG;
         b = !b;
-    }
+    } while (pos != tbuf->pos);
 }
 
 void tbuf_bits(struct track_buffer *tbuf, uint16_t speed,
