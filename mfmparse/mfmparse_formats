@@ -124,9 +124,9 @@ probe
 # OCS and AGA versions
 "Jurassic Park" = rnc_pdos_copylock
 
-# At least SPS 2191 (v1.6e). My own dump has garbage from ~trk 110, but
-# it could be a damaged disk. I haven't got any image to load in UAE yet.
-"Kick Off 2" = amigados
+# Many variants. Only tested 1.4e and 1.6e: both have long tracks 5 & 7.
+"Kick Off 2"
+      * kickoff2
 
 "Lemmings"
     * amigados copylock psygnosis_b
