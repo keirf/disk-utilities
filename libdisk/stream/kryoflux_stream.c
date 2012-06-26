@@ -116,7 +116,7 @@ static uint32_t read_u32(unsigned char *dat)
     return (read_u16(&dat[2]) << 16) | read_u16(&dat[0]);
 }
 
-static uint32_t kfs_next_flux(struct stream *s)
+static bool_t kfs_next_flux(struct stream *s, uint32_t *p_flux)
 {
     struct kfs_stream *kfss = container_of(s, struct kfs_stream, s);
     unsigned int i = kfss->dat_idx;
@@ -181,7 +181,8 @@ static uint32_t kfs_next_flux(struct stream *s)
 
     kfss->dat_idx = i;
 
-    return done ? val : 0;
+    *p_flux = val;
+    return done;
 }
 
 static int kfs_next_bit(struct stream *s)
@@ -189,7 +190,7 @@ static int kfs_next_bit(struct stream *s)
     struct kfs_stream *kfss = container_of(s, struct kfs_stream, s);
 
     if (kfss->flux == 0) {
-        if ((kfss->flux = kfs_next_flux(s)) == 0)
+        if (!kfs_next_flux(s, &kfss->flux))
             return -1;
         kfss->flux = (kfss->flux * SCK_PS_PER_TICK) / 1000;
         kfss->clocked_zeros = 0;
