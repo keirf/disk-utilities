@@ -15,6 +15,12 @@
  *  Rest of track is (MFM-encoded) zeroes
  *  Track is checked to be >= 102400 bits long
  * 
+ * TRKTYP_crystals_of_arborea_longtrack: Crystals Of Arborea
+ *  u16 0xa144 :: sync
+ *  u8[] "ROD0" (encoded MFM_all)
+ *  Rest of track is (MFM-encoded) zeroes
+ *  Track is checked to be >= 104128 bits long (track is ~110000 bits long)
+ * 
  * TRKTYP_* data layout:
  *  No data (all track formats are fixed format with no key/real data)
  */
@@ -94,6 +100,45 @@ static void gremlin_longtrack_read_mfm(
 struct track_handler gremlin_longtrack_handler = {
     .write_mfm = gremlin_longtrack_write_mfm,
     .read_mfm = gremlin_longtrack_read_mfm
+};
+
+static void *crystals_of_arborea_longtrack_write_mfm(
+    struct disk *d, unsigned int tracknr, struct stream *s)
+{
+    struct track_info *ti = &d->di->track[tracknr];
+    uint32_t raw[2];
+
+    while (stream_next_bit(s) != -1) {
+        ti->data_bitoff = s->index_offset - 15;
+        if (s->word != 0xaaaaa144)
+            continue;
+        stream_next_bytes(s, raw, 8);
+        mfm_decode_bytes(MFM_all, 4, raw, raw);
+        if (ntohl(raw[0]) != 0x524f4430) /* "ROD0" */
+            continue;
+        if (!check_sequence(s, 6500, 0x00))
+            continue;
+        ti->total_bits = 110000;
+        return memalloc(0);
+    }
+
+    return NULL;
+}
+
+static void crystals_of_arborea_longtrack_read_mfm(
+    struct disk *d, unsigned int tracknr, struct track_buffer *tbuf)
+{
+    unsigned int i;
+
+    tbuf_bits(tbuf, SPEED_AVG, MFM_raw, 16, 0xa144);
+    tbuf_bits(tbuf, SPEED_AVG, MFM_all, 32, 0x524f4430); /* "ROD0" */
+    for (i = 0; i < 6550; i++)
+        tbuf_bits(tbuf, SPEED_AVG, MFM_all, 8, 0);
+}
+
+struct track_handler crystals_of_arborea_longtrack_handler = {
+    .write_mfm = crystals_of_arborea_longtrack_write_mfm,
+    .read_mfm = crystals_of_arborea_longtrack_read_mfm
 };
 
 /*

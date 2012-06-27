@@ -63,6 +63,10 @@ probe
 
 "Corporation" = amigados_copylock
 
+"Crystals Of Arborea"
+    158-159 crystals_of_arborea_longtrack
+    * amigados
+
 # OCS and AGA versions
 "Dennis" = amigados_copylock
 
