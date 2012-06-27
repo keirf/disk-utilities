@@ -20,12 +20,11 @@ void __bug(const char *file, int line)
 void __warn(const char *file, int line)
 {
     warnx("WARNING at %s:%d", file, line);
-    abort();
 }
 
 void *memalloc(size_t size)
 {
-    void *p = malloc(size);
+    void *p = malloc(size?:1);
     if (p == NULL)
         err(1, NULL);
     memset(p, 0, size);
