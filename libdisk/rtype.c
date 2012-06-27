@@ -208,7 +208,7 @@ static void *rtype_prot_write_mfm(
             continue;
         if (mfm_decode_bits(MFM_all, (uint16_t)s->word) != 0)
             continue;
-        return memalloc(1);
+        return memalloc(0);
     }
 
     return NULL;

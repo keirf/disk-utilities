@@ -51,7 +51,7 @@ static void *unformatted_write_mfm(
 
     ti->total_bits = TRK_WEAK;
 
-    return memalloc(1); /* dummy */
+    return memalloc(0); /* dummy */
 }
 
 static void unformatted_read_mfm(
