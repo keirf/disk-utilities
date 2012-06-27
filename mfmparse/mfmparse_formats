@@ -19,7 +19,7 @@ probe
 
 "Amnios Disk 1"
     0 amigados
-    1 longtrack
+    1 protec_longtrack
     * psygnosis_a
 "Amnios Disk 2"
     * psygnosis_b
@@ -33,7 +33,7 @@ probe
 
 "Archipelagos"
     0 amigados
-    1 longtrack
+    1 protec_longtrack
     * archipelagos
 
 "Badlands" = amigados_copylock
@@ -146,6 +146,8 @@ probe
 "Midwinter"
     * amigados rainbird
 
+"Motorbike Madness" = amigados_copylock
+
 "New Zealand Story" = amigados_copylock
 
 "Overdrive" = rnc_pdos
@@ -188,6 +190,8 @@ probe
 
 "Superfrog" = rnc_pdos
 
+"The Munsters" = amigados_copylock
+
 "Time Machine" = amigados_copylock
 
 "Tower Of Babel" = amigados
@@ -223,13 +227,15 @@ probe
 
 amigados
     * amigados
+# Copylock sometimes later replaced with no protection, or PROTEC
 amigados_copylock
-    * amigados copylock
+    1 amigados copylock protec_longtrack
+    * amigados
 blue_byte
     * amigados blue_byte
 gremlin_protected
     0-1 amigados
-    158-159 longtrack
+    158-159 gremlin_longtrack
     * gremlin
 rnc_pdos
     * amigados rnc_pdos
