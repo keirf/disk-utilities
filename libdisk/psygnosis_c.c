@@ -316,7 +316,7 @@ static void *psygnosis_c_write_mfm(
     struct track_info *ti = &d->di->track[tracknr];
     struct track_metadata mdat;
     uint32_t dat[0x627], raw[2], *block;
-    unsigned int i, nr_bytes;
+    unsigned int i, nr_bytes = 0;
 
     if (tracknr == 0)
         return handlers[TRKTYP_psygnosis_c_track0]->write_mfm(d, tracknr, s);
@@ -328,14 +328,19 @@ static void *psygnosis_c_write_mfm(
         return handlers[TRKTYP_psygnosis_c_custom_rll]
             ->write_mfm(d, tracknr, s);
 
-    /* Default track length */
-    nr_bytes = 0x189a;
+    /* Nitro, Track 2: High-score table. */
+    if (!strncmp(mdat.id, "tb_1", 4) && (tracknr == 2))
+        nr_bytes = 0x189a;
 
-    /* Killing Game Show Disk 2 Track 159 is short (high scores) */
-    if (!strncmp(mdat.id, "KGS", 3)) {
-        if ((mdat.id[3] != '2') || (tracknr != 159))
-            return NULL; /* no other data tracks in kgs */
+    /* Killing Game Show, Disk 2, Track 159: High-score table. */
+    if (!strncmp(mdat.id, "KGS2", 4) && (tracknr == 159))
         nr_bytes = 0x330;
+
+    if (nr_bytes == 0) {
+        /* This is an unformatted, or mastered but redundant, track. */
+        init_track_info(ti, TRKTYP_unformatted);
+        ti->total_bits = TRK_WEAK;
+        return memalloc(0);
     }
 
     while (stream_next_bit(s) != -1) {
