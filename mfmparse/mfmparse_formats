@@ -132,6 +132,10 @@ probe
 "Kick Off 2"
       * kickoff2
 
+"Killing Game Show"
+    1 protec_longtrack
+    * psygnosis_c
+
 "Lemmings"
     * amigados copylock psygnosis_b
 "Lemmings 2" = amigados_copylock
