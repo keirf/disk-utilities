@@ -158,6 +158,10 @@ probe
 
 "New Zealand Story" = amigados_copylock
 
+"Nitro"
+    1 protec_longtrack
+    * psygnosis_c
+
 "Overdrive" = rnc_pdos
 
 "Onslaught" = amigados
