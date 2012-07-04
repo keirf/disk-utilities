@@ -40,6 +40,13 @@ static int check_sequence(struct stream *s, unsigned int nr, uint8_t byte)
     return !nr;
 }
 
+static int check_length(struct stream *s, unsigned int min_bits)
+{
+    stream_next_index(s);
+    stream_next_index(s);
+    return (s->track_bitlen >= min_bits);
+}
+
 static void *protec_longtrack_write_mfm(
     struct disk *d, unsigned int tracknr, struct stream *s)
 {
@@ -49,6 +56,8 @@ static void *protec_longtrack_write_mfm(
         ti->data_bitoff = s->index_offset - 31;
         if ((s->word != 0x4454a525) || !check_sequence(s, 1000, 0x33))
             continue;
+        if (!check_length(s, 107200))
+            break;
         ti->total_bits = 110000; /* long enough */
         return memalloc(0);
     }
@@ -80,6 +89,8 @@ static void *gremlin_longtrack_write_mfm(
         ti->data_bitoff = s->index_offset - 31;
         if ((s->word != 0x41244124) || !check_sequence(s, 1000, 0x00))
             continue;
+        if (!check_length(s, 102400))
+            break;
         ti->total_bits = 105500; /* long enough */
         return memalloc(0);
     }
@@ -118,6 +129,8 @@ static void *crystals_of_arborea_longtrack_write_mfm(
             continue;
         if (!check_sequence(s, 6500, 0x00))
             continue;
+        if (!check_length(s, 104128))
+            break;
         ti->total_bits = 110000;
         return memalloc(0);
     }
