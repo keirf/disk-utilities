@@ -191,8 +191,6 @@ static void *psygnosis_c_custom_rll_write_mfm(
     uint16_t raw[2], csum;
     uint32_t *dat, lsum;
 
-    init_track_info(ti, TRKTYP_psygnosis_c_custom_rll);
-
     if (!track_metadata(d, tracknr, &mdat) ||
         !mdat.valid || !mdat.decoded_len)
         return NULL;
@@ -324,9 +322,11 @@ static void *psygnosis_c_write_mfm(
     if (!track_metadata(d, tracknr, &mdat))
         return NULL;
 
-    if (mdat.valid && mdat.decoded_len)
+    if (mdat.valid && mdat.decoded_len) {
+        init_track_info(ti, TRKTYP_psygnosis_c_custom_rll);
         return handlers[TRKTYP_psygnosis_c_custom_rll]
             ->write_mfm(d, tracknr, s);
+    }
 
     /* Nitro, Track 2: High-score table. */
     if (!strncmp(mdat.id, "tb_1", 4) && (tracknr == 2))
@@ -335,6 +335,12 @@ static void *psygnosis_c_write_mfm(
     /* Killing Game Show, Disk 2, Track 159: High-score table. */
     if (!strncmp(mdat.id, "KGS2", 4) && (tracknr == 159))
         nr_bytes = 0x330;
+
+    /* Obitus, Disk 1, Tracks 2-56: Streaming tunnel intro. */
+    if (!strncmp(mdat.id, "OB01", 4) && (tracknr >= 2) && (tracknr <= 56)) {
+        init_track_info(ti, TRKTYP_psygnosis_a);
+        return handlers[TRKTYP_psygnosis_a]->write_mfm(d, tracknr, s);
+    }
 
     if (nr_bytes == 0) {
         /* This is an unformatted, or mastered but redundant, track. */
