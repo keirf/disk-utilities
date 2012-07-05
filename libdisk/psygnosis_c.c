@@ -339,7 +339,9 @@ static void *psygnosis_c_write_mfm(
     /* Obitus, Disk 1, Tracks 2-56: Streaming tunnel intro. */
     if (!strncmp(mdat.id, "OB01", 4) && (tracknr >= 2) && (tracknr <= 56)) {
         init_track_info(ti, TRKTYP_psygnosis_a);
-        return handlers[TRKTYP_psygnosis_a]->write_mfm(d, tracknr, s);
+        block = handlers[TRKTYP_psygnosis_a]->write_mfm(d, tracknr, s);
+        ti->total_bits = 105500; /* mastered long like all other tracks */
+        return block;
     }
 
     if (nr_bytes == 0) {
