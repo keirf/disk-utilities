@@ -28,6 +28,26 @@ probe
 
 "Arcade Pool" = rnc_pdos
 
+"Armour-Geddon Disk 1"
+    0-1 psygnosis_c
+    2-53 psygnosis_a
+    54-110 armourgeddon_a
+    111-148 psygnosis_c
+    149-158 ignore
+    159 armourgeddon_b
+"Armour-Geddon Disk 2"
+    0 psygnosis_c
+    1 protec_longtrack
+    2-3 ignore
+    4-20 armourgeddon_b
+    21-53 ignore
+    54-151 psygnosis_c
+    152-158 ignore
+    159 armourgeddon_b
+"Armour-Geddon Disk 3"
+    0-114 armourgeddon_b
+    115-159 ignore
+
 "Assassin" = amigados_copylock
 "Assassin Special Edition" = rnc_pdos
 
@@ -162,8 +182,19 @@ probe
     1 protec_longtrack
     * psygnosis_c
 
-"Obitus"
-    * psygnosis_c
+"Obitus Disk 1"
+    0 psygnosis_c
+    2-56 psygnosis_a
+    60-148 psygnosis_c
+    * ignore
+"Obitus Disk 2"
+    0 psygnosis_c
+    2-141 psygnosis_c
+    * ignore
+"Obitus Disk 3"
+    0 psygnosis_c
+    2-126 psygnosis_c
+    * ignore
 
 "Overdrive" = rnc_pdos
 
