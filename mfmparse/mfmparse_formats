@@ -66,6 +66,8 @@ probe
 
 "Beneath A Steel Sky" = amigados
 
+"Bermuda Project" = amigados
+
 "Body Blows" = rnc_pdos
 "Body Blows Galactic" = rnc_pdos
 
@@ -95,6 +97,8 @@ probe
 "Dennis" = amigados_copylock
 
 "Desert Strike" = amigados
+
+"Dragon Spirit" = amigados_copylock
 
 "Exolon" = amigados_copylock
 
@@ -130,10 +134,16 @@ probe
 
 "Goal!" = amigados_copylock
 
+"Gods" = amigados_copylock
+
 "Great Courts" = blue_byte
 
 "Harlequin"
     * amigados gremlin
+
+"Hero Quest"
+    158-159 gremlin_longtrack
+    * amigados
 
 "Hook" = amigados_copylock
 
