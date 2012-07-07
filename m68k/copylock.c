@@ -11,6 +11,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <signal.h>
 #include <err.h>
 #include <errno.h>
 #include <sys/types.h>
@@ -44,6 +45,22 @@ static void dump(const char *fmt, ...)
     va_end(args);
 }
 
+static int ctrl_c;
+static void sigint_handler(int signum)
+{
+    ctrl_c = 1;
+}
+
+static void init_sigint_handler(void)
+{
+    struct sigaction sa;
+    sa.sa_handler = sigint_handler;
+    sigemptyset(&sa.sa_mask);
+    sa.sa_flags = 0;
+    if (sigaction(SIGINT, &sa, NULL))
+        err(1, NULL);
+}
+
 int main(int argc, char **argv)
 {
     struct amiga_state s;
@@ -74,6 +91,8 @@ int main(int argc, char **argv)
         printf("%s ", argv[i]);
     printf("\n");
 
+    init_sigint_handler();
+
     amiga_insert_df0(argv[5]);
     amiga_init(&s, MEM_SIZE);
     regs = s.ctxt.regs;
@@ -90,16 +109,10 @@ int main(int argc, char **argv)
     s.ctxt.disassemble = 1;
     s.ctxt.emulate = 1;
 
-    for (;;) {
-        uint32_t pc = regs->pc;
+    mem_write(regs->a[7], 0xdeadbeee, 4, &s);
 
-        if (pc == 0x76668) {
-            uint32_t v;
-            mem_read(pc, &v, 2, &s);
-            *(uint16_t *)&shadow[pc] = htons(v);
-            set_bit(pc, bmap);
-            break;
-        }
+    while (!ctrl_c && (regs->pc != 0xdeadbeee)) {
+        uint32_t pc = regs->pc;
 
         rc = amiga_emulate(&s);
         if (rc != M68KEMUL_OKAY)
@@ -117,7 +130,7 @@ int main(int argc, char **argv)
     printf("%08x %04x %04x %04x %s\n", regs->pc,
            s.ctxt.op[0], s.ctxt.op[1],s.ctxt.op[2],s.ctxt.dis);
     m68k_dump_regs(regs, dump);
-    m68k_dump_stack(&s.ctxt, stack_super, dump);
+    m68k_dump_stack(&s.ctxt, stack_current, dump);
 
     for (i = 0; i < MEM_SIZE; i++)
         if (test_bit(i, bmap))
@@ -150,18 +163,14 @@ int main(int argc, char **argv)
             for (i = 0; i < s.ctxt.op_words; i++)
                 if (test_bit(pc+i*2, bmap))
                     s.ctxt.op_words = i;
-#if 0
-            /*
-             * If this is unexecuted and looks like crap, skip it and
-             * everything else until we reach executed code.
-             */
-            if (strchr(s.ctxt.dis, '?')) {
-                while (!test_bit(pc, bmap) && (pc < MEM_SIZE-2))
-                    pc += 2;
-                regs->pc = pc;
-                finish_zeroes_run();
-                continue;
-            }
+#if 1
+            /* Skip unexecuted stuff. */
+            while (!test_bit(pc, bmap) && (pc < MEM_SIZE-2))
+                pc += 2;
+            regs->pc = pc;
+            zeroes_run = 0;
+            printf("-------------------------------\n");
+            continue;
 #endif
         }
 
