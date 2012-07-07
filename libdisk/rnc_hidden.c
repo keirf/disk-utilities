@@ -4,6 +4,11 @@
  * Small sectors hidden alongside AmigaDOS track data.
  * 
  * Written in 2012 by Keir Fraser
+ * 
+ * TRKTYP_rnc_hidden data layout:
+ *  u8 amigados_data[11*512]
+ *  u8 rnc_signature[10]  ;; disk key/signature (same across all sectors)
+ *  u8 sector_trailer_map ;; sectors which have an MFM-illegal trailer
  */
 
 #include <libdisk/util.h>
@@ -35,7 +40,7 @@ static void *rnc_hidden_write_mfm(
     struct track_info *ti = &d->di->track[tracknr];
     char *ablk, *block = NULL;
     uint8_t raw[40], sig[10], sigs[4][10], nr_sigs = 0;
-    uint32_t valid_blocks = 0;
+    uint32_t valid_blocks = 0, trailer_map = 0;
     unsigned int i, j, found, sec, nr_ones;
 
     init_track_info(ti, TRKTYP_amigados);
@@ -62,10 +67,10 @@ static void *rnc_hidden_write_mfm(
         if ((sig[0] != 0xa1) || (sig[9] != 0x00))
             continue;
 
-        /* Sector must be followed by MFM-illegal flux transitions. */
+        /* Sector may be followed by MFM-illegal flux transitions. */
         nr_ones = bit_weight(&raw[0x18], 12);
-        if ((nr_ones > 12) && (nr_ones < 84))
-            continue;
+        if ((nr_ones <= 12) || (nr_ones >= 84))
+            trailer_map |= 1u << sec;
 
         memcpy(sigs[nr_sigs], sig, sizeof(sig));
         valid_blocks |= 1u << sec;
@@ -101,13 +106,13 @@ static void *rnc_hidden_write_mfm(
         printf("*** T%u: RNC Hidden Sectors: Found only %u sectors "
                "out of %u\n", tracknr, nr_sigs, NR_SYNCS);
 
-
-    /* Build the track decsriptor. */
+    /* Build the track descriptor. */
     init_track_info(ti, TRKTYP_rnc_hidden);
-    ti->len += sizeof(sig);
+    ti->len += sizeof(sig) + 1;
     block = memalloc(ti->len);
     memcpy(block, ablk, 512*11);
     memcpy(&block[512*11], sig, sizeof(sig));
+    block[512*11+sizeof(sig)] = trailer_map;
 
 out:
     memfree(ablk);
@@ -119,7 +124,7 @@ static void rnc_hidden_read_mfm(
 {
     struct track_info *ti = &d->di->track[tracknr];
     uint8_t *dat = (uint8_t *)ti->dat + 512*11;
-    unsigned int sec, i;
+    unsigned int sec, i, trailer_map = dat[10];
 
     handlers[TRKTYP_amigados]->read_mfm(d, tracknr, tbuf);
 
@@ -133,8 +138,9 @@ static void rnc_hidden_read_mfm(
         for (i = 0; i < 10; i++)
             tbuf_bits(tbuf, SPEED_AVG, MFM_all, 8, dat[i]);
         /* raw zeroes */
-        for (i = 0; i < 64; i++)
-            tbuf_bits(tbuf, SPEED_AVG, MFM_raw, 8, 0x00);
+        if (trailer_map & (1u << sec))
+            for (i = 0; i < 64; i++)
+                tbuf_bits(tbuf, SPEED_AVG, MFM_raw, 8, 0x00);
     }
 }
 
