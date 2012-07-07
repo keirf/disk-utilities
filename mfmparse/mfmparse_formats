@@ -56,9 +56,13 @@ probe
     1 protec_longtrack
     * archipelagos
 
+"Atomic Robo-Kid" = amigados_copylock
+
 "Badlands" = amigados_copylock
 
 "Batman" = amigados_copylock
+
+"Battle Master" = amigados_copylock
 
 "Beneath A Steel Sky" = amigados
 
