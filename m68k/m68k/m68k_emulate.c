@@ -859,15 +859,27 @@ static int misc_insn(struct m68k_emulate_ctxt *c)
         s = c->p->operand.val;
         c->p->operand.val = 0;
         rc = op_sub(c, s);
-        sh_reg(c, sr) &= ~(CC_X|CC_C);
-        if (!(sh_reg(c, sr) & CC_Z))
-            sh_reg(c, sr) |= CC_X|CC_C;
     } else if (((op & 0xff00u) == 0x4000u) &&
                ((c->op_sz = (op>>6)&3) != OPSZ_X)) {
         /* negx */
+        uint32_t s;
+        uint16_t sr;
         dump(c, "negx.%c\t", op_sz_ch[c->op_sz]);
         bail_if(rc = decode_ea(c));
-        rc = M68KEMUL_UNHANDLEABLE;
+        bail_if(rc = read_ea(c));
+        s = c->p->operand.val;
+        c->p->operand.val = 0;
+        sr = sh_reg(c, sr);
+        bail_if(rc = op_sub(c, s));
+        if (sr & CC_X) {
+            uint16_t sr2 = sh_reg(c, sr);
+            bail_if(rc = op_sub(c, 1));
+            /* overflow and carry accumulate across the two subtracts */
+            sh_reg(c, sr) |= sr2 & (CC_X|CC_V|CC_C);
+        }
+        /* CC.Z is never set by this instruction, only cleared */
+        if ((sh_reg(c, sr) & CC_Z) && !(sr & CC_Z))
+            sh_reg(c, sr) &= ~CC_Z;
     } else if (((op & 0xff00u) == 0x4600u) &&
                ((c->op_sz = (op>>6)&3) != OPSZ_X)) {
         /* not */
