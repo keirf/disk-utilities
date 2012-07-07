@@ -637,11 +637,9 @@ static int misc_insn(struct m68k_emulate_ctxt *c)
         bail_if(rc = fetch_insn_sbytes(c, &disp, c->op_sz));
         dump(c, "link.%c\t%s,#",
              op_sz_ch[c->op_sz], areg[op&7]);
-        if (disp < 0) {
+        if (disp < 0)
             dump(c, "-");
-            disp = -disp;
-        }
-        dump(c, "%x", disp);
+        dump(c, "%x", (disp < 0) ? -disp : disp);
         sh_reg(c, a[7]) -= 4;
         bail_if(rc = write(sh_reg(c, a[7]), *reg, 4, c));
         *reg = sh_reg(c, a[7]);
