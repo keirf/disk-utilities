@@ -242,6 +242,10 @@ probe
 
 "The Munsters" = amigados_copylock
 
+"Time"
+    1 rnc_hidden amigados
+    * amigados
+
 "Time Machine" = amigados_copylock
 
 "Tower Of Babel" = amigados
