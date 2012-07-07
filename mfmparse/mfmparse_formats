@@ -17,11 +17,11 @@ probe
 "Alien Breed 3D" = amigados
 "Alien Breed 3D 2" = amigados
 
-"Amnios Disk 1"
+"Amnios Disk 1" # Tracks 155-159 may be empty
     0 amigados
     1 protec_longtrack
     * psygnosis_a
-"Amnios Disk 2"
+"Amnios Disk 2" # Tracks 0-1 may be empty
     * psygnosis_b
 
 "Apache" = rnc_pdos
