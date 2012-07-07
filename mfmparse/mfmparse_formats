@@ -118,7 +118,6 @@ probe
     158-159 ignore
     * rainbird
 
-# RNC track has an odd short sector (sync 8912) and will generate a warning
 "F-29 Retaliator"
     1 rnc_hidden amigados
     * amigados
