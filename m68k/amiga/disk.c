@@ -195,7 +195,7 @@ void disk_cia_changed(struct amiga_state *s)
     if (old_ciabb & (1u << CIAB_DSKSEL0)) {
         if (!(new_ciabb & (1u << CIAB_DSKMOTOR))) {
             if (s->disk.motor == motor_off) {
-                log_info("Disk spinning up %lu");
+                log_info("Disk spinning up");
                 s->disk.motor = motor_spinning_up;
                 event_set_delta(s->disk.motor_delay, MOTORON_DELAY);
             } else if (s->disk.motor == motor_spinning_down) {
