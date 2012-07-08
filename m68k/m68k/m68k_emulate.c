@@ -901,7 +901,14 @@ static int misc_insn(struct m68k_emulate_ctxt *c)
         c->op_sz = OPSZ_B;
         dump(c, "tas.b\t");
         bail_if(rc = decode_ea(c));
-        rc = M68KEMUL_UNHANDLEABLE;
+        bail_if(rc = read_ea(c));
+        sh_reg(c, sr) &= ~(CC_N|CC_Z|CC_V|CC_C);
+        if (c->p->operand.val & 0x80)
+            sh_reg(c, sr) |= CC_N;
+        if (!(c->p->operand.val & 0xff))
+            sh_reg(c, sr) |= CC_Z;
+        c->p->operand.val |= 0x80;
+        bail_if(rc = write_ea(c));
     } else if ((op & 0xfff0u) == 0x4e40u) {
         /* trap */
         uint8_t trap = op & 15;
