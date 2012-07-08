@@ -1110,7 +1110,14 @@ int m68k_emulate(struct m68k_emulate_ctxt *c)
                  op_sz_ch[c->op_sz], val);
             bail_if(rc = decode_ea(c));
             bail_if(rc = read_ea(c));
-            bail_if(rc = ((op & (1u<<8)) ? op_sub : op_add)(c, val));
+            if (((op >> 3) & 7) == 1) {
+                /* adda/suba semantics */
+                uint32_t *reg = c->p->operand.reg;
+                c->op_sz = OPSZ_L;
+                *reg = op & (1u<<14) ? *reg + val : *reg - val;
+            } else {
+                bail_if(rc = ((op & (1u<<8)) ? op_sub : op_add)(c, val));
+            }
         } else if ((op & 0x0038u) == 0x0008u) {
             /* dbcc */
             uint32_t pc = sh_reg(c,pc);
@@ -1307,12 +1314,12 @@ int m68k_emulate(struct m68k_emulate_ctxt *c)
             r = op & (1u<<14) ?
                 c->p->operand.val & *reg : c->p->operand.val | *reg;
             cc_mov(c, r);
-            if (op & (1u<<8)) {
-                c->p->operand.val = r;
-                bail_if(rc = write_ea(c));
-            } else {
-                *reg = r;
+            if (!(op & (1u<<8))) {
+                c->p->operand.type = OP_REG;
+                c->p->operand.reg = reg;
             }
+            c->p->operand.val = r;
+            bail_if(rc = write_ea(c));
         }
         break;
     }
@@ -1336,12 +1343,38 @@ int m68k_emulate(struct m68k_emulate_ctxt *c)
             *reg = op & (1u<<14) ? *reg + r : *reg - r;
         } else if ((op & 0x130u) == 0x100u) {
             /* addx/subx */
+            uint32_t op1;
+            uint16_t sr;
             dump(c, "x.%c\t", op_sz_ch[c->op_sz]);
-            if (op & (1u<<3))
+            if (op & (1u<<3)) {
                 dump(c, "-(%s),-(%s)", areg[op&7], areg[(op>>9)&7]);
-            else
+                c->p->operand.reg = &sh_reg(c, a[op&7]);
+                c->p->operand.mem = *c->p->operand.reg -=
+                    (c->op_sz == OPSZ_B ? 1 : c->op_sz == OPSZ_W ? 2 : 4);
+                bail_if(rc = read_ea(c));
+                op1 = c->p->operand.val;
+                c->p->operand.reg = &sh_reg(c, a[(op>>9)&7]);
+                c->p->operand.mem = *c->p->operand.reg -=
+                    (c->op_sz == OPSZ_B ? 1 : c->op_sz == OPSZ_W ? 2 : 4);
+                bail_if(rc = read_ea(c));
+            } else {
                 dump(c, "%s,%s", dreg[op&7], dreg[(op>>9)&7]);
-            rc = M68KEMUL_UNHANDLEABLE;
+                op1 = sh_reg(c, d[op&7]);
+                c->p->operand.type = OP_REG;
+                c->p->operand.reg = &sh_reg(c, d[(op>>9)&7]);
+                c->p->operand.val = *c->p->operand.reg;
+            }
+            sr = sh_reg(c, sr);
+            bail_if(rc = ((op & (1u<<14)) ? op_add : op_sub)(c, op1));
+            if (sr & CC_X) {
+                uint16_t sr2 = sh_reg(c, sr);
+                bail_if(rc = ((op & (1u<<14)) ? op_add : op_sub)(c, 1));
+                /* overflow and carry accumulate */
+                sh_reg(c, sr) |= sr2 & (CC_X|CC_V|CC_C);
+            }
+            /* CC.Z is never set by this instruction, only cleared */
+            if ((sh_reg(c, sr) & CC_Z) && !(sr & CC_Z))
+                sh_reg(c, sr) &= ~CC_Z;
         } else {
             /* add/sub */
             uint32_t op1, *reg = &sh_reg(c, d[(op>>9)&7]);
