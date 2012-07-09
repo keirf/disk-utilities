@@ -282,6 +282,11 @@ probe
 
 "Superfrog" = rnc_pdos
 
+# Tracks 158/159 may contain corrupted gremlin_longtrack,
+# but these tracks appear not to be checked in game anyway.
+# Track 1 may be empty.
+"Switchblade 2" = gremlin_protected
+
 "The Munsters" = amigados_copylock
 
 "Time"
