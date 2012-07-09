@@ -220,6 +220,8 @@ probe
     2-126 psygnosis_c
     * ignore
 
+"Omnicron Conspiracy" = amigados_copylock
+
 "Overdrive" = rnc_pdos
 
 "Onslaught" = amigados
@@ -237,6 +239,8 @@ probe
 "Project X" = amigados_copylock
 "Project X Special Edition 93" = rnc_pdos
 
+"Putty" = amigados_copylock
+
 "Qwak" = amigados
 
 "R-Type"
@@ -245,6 +249,10 @@ probe
 
 # Hit Squad re-release has no copylock
 "Rainbow Islands" = amigados_copylock
+
+"Rotox" = amigados
+
+"Slayer" = amigados_copylock
 
 "Sleeping Gods Lie" = amigados_copylock
 
