@@ -222,7 +222,6 @@ int dsk_write_mfm(
     struct disk_info *di = d->di;
     struct track_info *ti = &di->track[tracknr];
 
-    memfree(ti->dat);
     memset(ti, 0, sizeof(*ti));
     init_track_info(ti, type);
     ti->total_bits = DEFAULT_BITS_PER_TRACK;
