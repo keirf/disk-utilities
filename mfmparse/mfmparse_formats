@@ -64,7 +64,11 @@ probe
 
 "Badlands" = amigados_copylock
 
-"Batman" = amigados_copylock
+"Batman The Caped Crusader" # Tracks 132+ may be empty
+    0-1 amigados
+    * batman
+
+"Batman The Movie" = amigados_copylock
 
 "Battle Master" = amigados_copylock
 
