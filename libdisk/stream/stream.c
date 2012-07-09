@@ -65,12 +65,22 @@ void stream_close(struct stream *s)
     s->type->close(s);
 }
 
-void stream_reset(struct stream *s, unsigned int tracknr)
+int stream_select_track(struct stream *s, unsigned int tracknr)
+{
+    int rc = s->type->select_track(s, tracknr);
+    if (rc)
+        return rc;
+    stream_reset(s);
+    return 0;
+}
+
+void stream_reset(struct stream *s)
 {
     s->nr_index = 0;
     s->latency = 0;
     s->index_offset = ~0u>>1; /* bad */
-    s->type->reset(s, tracknr);
+    s->type->reset(s);
+    stream_next_index(s);
 }
 
 void stream_next_index(struct stream *s)

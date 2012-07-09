@@ -35,7 +35,8 @@ struct stream *stream_open(const char *name);
 struct stream *stream_soft_open(
     uint8_t *data, uint16_t *speed, uint32_t bitlen);
 void stream_close(struct stream *s);
-void stream_reset(struct stream *s, unsigned int tracknr);
+int stream_select_track(struct stream *s, unsigned int tracknr);
+void stream_reset(struct stream *s);
 void stream_next_index(struct stream *s);
 int stream_next_bit(struct stream *s);
 int stream_next_bits(struct stream *s, unsigned int bits);

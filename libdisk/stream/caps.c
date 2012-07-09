@@ -185,24 +185,36 @@ static void caps_nextrevolution(struct stream *s)
     index_reset(s);
 }
 
-static void caps_reset(struct stream *s, unsigned int tracknr)
+static int caps_select_track(struct stream *s, unsigned int tracknr)
 {
     struct caps_stream *cpss = container_of(s, struct caps_stream, s);
     unsigned int i;
+    int rc;
 
-    if (cpss->track != tracknr) {
-        memfree(cpss->speed);
-        cpss->speed = NULL;
-        memset(&cpss->ti, 0, sizeof(cpss->ti));
-        CAPSLockTrack(&cpss->ti, cpss->container,
-                      tracknr / 2, tracknr & 1, CAPS_FLAGS);
-        cpss->track = tracknr;
-        if (cpss->ti.timelen) {
-            cpss->speed = memalloc(cpss->ti.timelen * sizeof(uint16_t));
-            for (i = 0; i < cpss->ti.timelen; i++)
-                cpss->speed[i] = cpss->ti.timebuf[i];
-        }
+    if (cpss->track == tracknr)
+        return 0;
+
+    cpss->track = ~0u;
+    memfree(cpss->speed);
+    cpss->speed = NULL;
+    memset(&cpss->ti, 0, sizeof(cpss->ti));
+    rc = CAPSLockTrack(&cpss->ti, cpss->container,
+                       tracknr / 2, tracknr & 1, CAPS_FLAGS);
+    if (rc)
+        return -1;
+    cpss->track = tracknr;
+    if (cpss->ti.timelen) {
+        cpss->speed = memalloc(cpss->ti.timelen * sizeof(uint16_t));
+        for (i = 0; i < cpss->ti.timelen; i++)
+            cpss->speed[i] = cpss->ti.timebuf[i];
     }
+
+    return 0;
+}
+
+static void caps_reset(struct stream *s)
+{
+    struct caps_stream *cpss = container_of(s, struct caps_stream, s);
 
     cpss->rev = cpss->ti.trackcnt - 1;
     caps_nextrevolution(s);
@@ -228,6 +240,7 @@ static int caps_next_bit(struct stream *s)
 struct stream_type caps = {
     .open = caps_open,
     .close = caps_close,
+    .select_track = caps_select_track,
     .reset = caps_reset,
     .next_bit = caps_next_bit,
     .suffix = { "ipf", NULL }

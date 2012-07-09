@@ -43,7 +43,6 @@ static int check_sequence(struct stream *s, unsigned int nr, uint8_t byte)
 static int check_length(struct stream *s, unsigned int min_bits)
 {
     stream_next_index(s);
-    stream_next_index(s);
     return (s->track_bitlen >= min_bits);
 }
 

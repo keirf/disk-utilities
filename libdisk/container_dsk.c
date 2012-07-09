@@ -222,12 +222,13 @@ int dsk_write_mfm(
     struct disk_info *di = d->di;
     struct track_info *ti = &di->track[tracknr];
 
+    memfree(ti->dat);
     memset(ti, 0, sizeof(*ti));
     init_track_info(ti, type);
     ti->total_bits = DEFAULT_BITS_PER_TRACK;
-    stream_reset(s, tracknr);
-    stream_next_index(s);
-    ti->dat = handlers[type]->write_mfm(d, tracknr, s);
+
+    if (stream_select_track(s, tracknr) == 0)
+        ti->dat = handlers[type]->write_mfm(d, tracknr, s);
 
     if (ti->dat == NULL) {
         memset(ti, 0, sizeof(*ti));
@@ -238,8 +239,7 @@ int dsk_write_mfm(
     }
 
     if (ti->total_bits == 0) {
-        stream_reset(s, tracknr);
-        stream_next_index(s);
+        stream_reset(s);
         stream_next_index(s);
         ti->total_bits = s->track_bitlen ? : DEFAULT_BITS_PER_TRACK;
     }

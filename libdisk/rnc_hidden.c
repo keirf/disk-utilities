@@ -48,8 +48,7 @@ static void *rnc_hidden_write_mfm(
     if ((ablk == NULL) || (ti->type != TRKTYP_amigados))
         goto out;
 
-    stream_reset(s, tracknr);
-    stream_next_index(s);
+    stream_reset(s);
 
     while ((stream_next_bit(s) != -1) && (nr_sigs < NR_SYNCS)) {
 

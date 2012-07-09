@@ -52,8 +52,7 @@ static void *psygnosis_c_track0_write_mfm(
 
     for (ver = 1; ver <= 2; ver++) {
 
-        stream_reset(s, tracknr);
-        stream_next_index(s);
+        stream_reset(s);
 
         metablk_words = (ver == 1) ? V1_METABLK_WORDS : V2_METABLK_WORDS;
 

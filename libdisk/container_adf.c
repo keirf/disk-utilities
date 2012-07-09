@@ -166,9 +166,11 @@ static int adf_write_mfm(
     if (type != TRKTYP_amigados)
         errx(1, "Only AmigaDOS tracks can be written to ADF files");
 
-    stream_reset(s, tracknr);
-    stream_next_index(s);
-    ti->dat = thnd->write_mfm(d, tracknr, s);    
+    memfree(ti->dat);
+    ti->dat = NULL;
+
+    if (stream_select_track(s, tracknr) == 0)
+        ti->dat = thnd->write_mfm(d, tracknr, s);    
 
     if (ti->type != TRKTYP_amigados) {
         memfree(ti->dat);

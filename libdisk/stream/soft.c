@@ -22,7 +22,12 @@ static void ss_close(struct stream *s)
     memfree(ss);
 }
 
-static void ss_reset(struct stream *s, unsigned int tracknr)
+static int ss_select_track(struct stream *s, unsigned int tracknr)
+{
+    return 0;
+}
+
+static void ss_reset(struct stream *s)
 {
     struct soft_stream *ss = container_of(s, struct soft_stream, s);
     index_reset(s);
@@ -49,6 +54,7 @@ static int ss_next_bit(struct stream *s)
 
 static struct stream_type stream_soft = {
     .close = ss_close,
+    .select_track = ss_select_track,
     .reset = ss_reset,
     .next_bit = ss_next_bit
 };

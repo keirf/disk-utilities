@@ -76,30 +76,38 @@ static void kfs_close(struct stream *s)
     memfree(kfss);
 }
 
-static void kfs_reset(struct stream *s, unsigned int tracknr)
+static int kfs_select_track(struct stream *s, unsigned int tracknr)
 {
     struct kfs_stream *kfss = container_of(s, struct kfs_stream, s);
+    char trackname[strlen(kfss->basename) + 9];
+    off_t sz;
+    int fd;
 
-    if (!kfss->dat || (kfss->track != tracknr)) {
-        char trackname[strlen(kfss->basename) + 9];
-        off_t sz;
-        int fd;
+    if (kfss->dat && (kfss->track == tracknr))
+        return 0;
 
-        memfree(kfss->dat);
-        kfss->dat = NULL;
+    memfree(kfss->dat);
+    kfss->dat = NULL;
 
-        sprintf(trackname, "%s%02u.%u.raw", kfss->basename,
-                tracknr>>1, tracknr&1);
-        if (((fd = open(trackname, O_RDONLY)) == -1) ||
-            ((sz = lseek(fd, 0, SEEK_END)) < 0) ||
-            (lseek(fd, 0, SEEK_SET) < 0))
-            err(1, "%s", trackname);
-        kfss->dat = memalloc(sz);
-        read_exact(fd, kfss->dat, sz);
-        close(fd);
-        kfss->datsz = sz;
-        kfss->track = tracknr;
-    }
+    sprintf(trackname, "%s%02u.%u.raw", kfss->basename,
+            tracknr>>1, tracknr&1);
+    if ((fd = open(trackname, O_RDONLY)) == -1)
+        return -1;
+    if (((sz = lseek(fd, 0, SEEK_END)) < 0) ||
+        (lseek(fd, 0, SEEK_SET) < 0))
+        err(1, "%s", trackname);
+    kfss->dat = memalloc(sz);
+    read_exact(fd, kfss->dat, sz);
+    close(fd);
+    kfss->datsz = sz;
+    kfss->track = tracknr;
+
+    return 0;
+}
+
+static void kfs_reset(struct stream *s)
+{
+    struct kfs_stream *kfss = container_of(s, struct kfs_stream, s);
 
     kfss->dat_idx = kfss->stream_idx = kfss->flux = kfss->clocked_zeros = 0;
     kfss->index_pos = ~0u;
@@ -224,6 +232,7 @@ static int kfs_next_bit(struct stream *s)
 struct stream_type kryoflux_stream = {
     .open = kfs_open,
     .close = kfs_close,
+    .select_track = kfs_select_track,
     .reset = kfs_reset,
     .next_bit = kfs_next_bit
 };

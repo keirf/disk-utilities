@@ -48,16 +48,27 @@ static void di_close(struct stream *s)
     memfree(dis);
 }
 
-static void di_reset(struct stream *s, unsigned int tracknr)
+static int di_select_track(struct stream *s, unsigned int tracknr)
 {
     struct di_stream *dis = container_of(s, struct di_stream, s);
 
-    if (dis->track != tracknr) {
-        track_mfm_put(dis->track_mfm);
-        dis->track_mfm = track_mfm_get(dis->d, tracknr);
-        dis->track = tracknr;
-        dis->ns_per_cell = 200000000u / dis->track_mfm->bitlen;
-    }
+    if (dis->track == tracknr)
+        return 0;
+
+    dis->track = ~0u;
+    track_mfm_put(dis->track_mfm);
+    dis->track_mfm = track_mfm_get(dis->d, tracknr);
+    if (dis->track_mfm == NULL)
+        return -1;
+    dis->track = tracknr;
+    dis->ns_per_cell = 200000000u / dis->track_mfm->bitlen;
+
+    return 0;
+}
+
+static void di_reset(struct stream *s)
+{
+    struct di_stream *dis = container_of(s, struct di_stream, s);
 
     index_reset(s);
     dis->pos = 0;
@@ -83,6 +94,7 @@ static int di_next_bit(struct stream *s)
 struct stream_type disk_image = {
     .open = di_open,
     .close = di_close,
+    .select_track = di_select_track,
     .reset = di_reset,
     .next_bit = di_next_bit,
     .suffix = { "adf", "dsk", NULL }

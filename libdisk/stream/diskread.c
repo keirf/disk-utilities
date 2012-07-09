@@ -30,7 +30,8 @@ struct dr_stream {
 };
 
 #define BYTES_PER_TRACK (128*1024)
-#define BYTES_PER_FILE (BYTES_PER_TRACK*160)
+#define TRACKS_PER_FILE 160
+#define BYTES_PER_FILE (BYTES_PER_TRACK*TRACKS_PER_FILE)
 
 /* PAL Amiga CIA frequency 0.709379 MHz */
 #define CIA_FREQ 709379u
@@ -64,16 +65,27 @@ static void dr_close(struct stream *s)
     memfree(drs);
 }
 
-static void dr_reset(struct stream *s, unsigned int tracknr)
+static int dr_select_track(struct stream *s, unsigned int tracknr)
+{
+    struct dr_stream *drs = container_of(s, struct dr_stream, s);
+
+    if (drs->track == tracknr)
+        return 0;
+
+    if (tracknr >= TRACKS_PER_FILE)
+        return -1;
+
+    lseek(drs->fd, tracknr*BYTES_PER_TRACK, SEEK_SET);
+    read_exact(drs->fd, drs->dat, BYTES_PER_TRACK);
+    drs->track = tracknr;
+
+    return 0;
+}
+
+static void dr_reset(struct stream *s)
 {
     struct dr_stream *drs = container_of(s, struct dr_stream, s);
     unsigned int i;
-
-    if (drs->track != tracknr) {
-        lseek(drs->fd, tracknr*BYTES_PER_TRACK, SEEK_SET);
-        read_exact(drs->fd, drs->dat, BYTES_PER_TRACK);
-        drs->track = tracknr;
-    }
 
     /* Skip garbage start-of-track data. */
     for (i = 16; (i < BYTES_PER_TRACK/2) && (drs->dat[2*i+1] == 0); i++)
@@ -111,6 +123,7 @@ static int dr_next_bit(struct stream *s)
 struct stream_type diskread = {
     .open = dr_open,
     .close = dr_close,
+    .select_track = dr_select_track,
     .reset = dr_reset,
     .next_bit = dr_next_bit,
     .suffix = { "dat", NULL }

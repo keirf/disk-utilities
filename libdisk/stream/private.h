@@ -6,7 +6,8 @@
 struct stream_type {
     struct stream *(*open)(const char *name);
     void (*close)(struct stream *);
-    void (*reset)(struct stream *, unsigned int tracknr);
+    int (*select_track)(struct stream *, unsigned int tracknr);
+    void (*reset)(struct stream *);
     int (*next_bit)(struct stream *);
     const char *suffix[];
 };
