@@ -173,23 +173,23 @@ Stack trace from SP=00002004:
 #
 0001028e  6100 00d8       bsr.w   10368         # release_drive
 00010292  4680            not.l   d0
-00010294  6616            bne.b   102ac         # d0 = magic value?
+00010294  6616            bne.b   102ac         # SUCCESS
 00010296  302e ffea       move.w  -16(a6),d0
 0001029a  5240            addq.w  #1,d0
 0001029c  0240 0003       andi.w  #3,d0
 000102a0  3d40 ffea       move.w  d0,-16(a6)    # next drive...
 000102a4  51cb ff62       dbf.w   d3,10208
 # end for_each_drive
-000102a8  7000            moveq   #0,d0
-000102aa  600e            bra.b   102ba         # cleanup_and_exit
-#
+000102a8  7000            moveq   #0,d0         # d0=0=failure
+000102aa  600e            bra.b   102ba         # FAIL
+
+# SUCCESS:
 000102ac  206e fff2       movea.l -e(a6),a0     # a0 = mfmbuf
 000102b0  7204            moveq   #4,d1
 000102b2  7000            moveq   #0,d0
 000102b4  d098            add.l   (a0)+,d0      # sum 5 longs into d0
 000102b6  51c9 fffc       dbf.w   d1,102b4      # (0x00-0x14)
-
-# cleanup_and_exit:
+# FAIL:
 000102ba  43f9 0000 03d4  lea.l   3d4,a1
 000102c0  41fa 029e       lea.l   10560(pc),a0
 000102c4  6100 005e       bsr.w   10324         # restore mfmbuf area
@@ -222,7 +222,7 @@ Stack trace from SP=00002004:
 00010328  51c9 fffc       dbf.w   d1,10326
 0001032c  4e75            rts
 
-# count_flux_reversals(a0=pt,d1=#bytes):
+# count_flux_reversals(a0=pt,d0=#bytes):
 0001032e  48a7 7000       movem.w d1-d3,-(sp)
 00010332  3200            move.w  d0,d1
 00010334  5341            subq.w  #1,d1
