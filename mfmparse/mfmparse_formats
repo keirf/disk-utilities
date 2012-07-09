@@ -180,6 +180,10 @@ probe
     1 protec_longtrack
     * psygnosis_c
 
+"Leander" # Disks 2 & 3, Track 1 may be empty
+    0-1 amigados protec_longtrack
+    * psygnosis_b
+
 "Lemmings"
     * amigados copylock psygnosis_b
 "Lemmings 2" = amigados_copylock
