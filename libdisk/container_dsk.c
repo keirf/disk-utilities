@@ -81,19 +81,15 @@ void dsk_init(struct disk *d)
 {
     struct track_info *ti;
     struct disk_info *di;
-    unsigned int i, nr_tracks = 160;
+    unsigned int i, nr_tracks = 168;
 
     d->di = di = memalloc(sizeof(*di));
     di->nr_tracks = nr_tracks;
     di->flags = 0;
     di->track = memalloc(nr_tracks * sizeof(*ti));
 
-    for (i = 0; i < nr_tracks; i++) {
-        ti = &di->track[i];
-        memset(ti, 0, sizeof(*ti));
-        init_track_info(ti, TRKTYP_unformatted);
-        ti->total_bits = TRK_WEAK;
-    }
+    for (i = 0; i < nr_tracks; i++)
+        track_mark_unformatted(d, i);
 
     d->tags = memalloc(sizeof(*d->tags));
     d->tags->tag.id = DSKTAG_end;
@@ -230,10 +226,8 @@ int dsk_write_mfm(
         ti->dat = handlers[type]->write_mfm(d, tracknr, s);
 
     if (ti->dat == NULL) {
-        memset(ti, 0, sizeof(*ti));
-        init_track_info(ti, TRKTYP_unformatted);
+        track_mark_unformatted(d, tracknr);
         ti->typename = "Unformatted*";
-        ti->total_bits = TRK_WEAK;
         return -1;
     }
 

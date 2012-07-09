@@ -106,6 +106,9 @@ int track_write_mfm(
     struct disk *, unsigned int tracknr, enum track_type type,
     struct track_mfm *);
 
+void track_mark_unformatted(
+    struct disk *, unsigned int tracknr);
+
 #pragma GCC visibility pop
 
 #endif /* __LIBDISK_DISK_H__ */

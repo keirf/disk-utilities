@@ -18,7 +18,7 @@
 
 #include "common.h"
 
-#define NR_TRACKS 160
+#define NR_TRACKS 200
 
 #define DEF_DIR PREFIX "/share/mfmparse"
 #define DEF_FIL "mfmparse_formats"
@@ -263,7 +263,7 @@ found:
         if ((t.type == CHR) && (t.u.ch == '*')) {
             t.type = NUM;
             t.u.num.start = 0;
-            t.u.num.end = 159;
+            t.u.num.end = NR_TRACKS-1;
             t.u.num.step = 1;
         }
         if (t.type != NUM)

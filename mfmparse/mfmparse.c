@@ -111,7 +111,7 @@ int main(int argc, char **argv)
 
     di = disk_get_info(d);
 
-    for (i = 0; i < 160; i++) {
+    for (i = 0; i < di->nr_tracks; i++) {
         struct format_list *list = format_lists[i];
         unsigned int j;
         if (list == NULL)
@@ -124,11 +124,16 @@ int main(int argc, char **argv)
                 list->pos = 0;
         }
         if ((j == list->nr) &&
-            (track_write_mfm_from_stream(d, i, TRKTYP_unformatted, s) != 0))
-            unidentified++;
+            (track_write_mfm_from_stream(d, i, TRKTYP_unformatted, s) != 0)) {
+            /* Tracks 160+ are expected to be unused. Don't warn about them. */
+            if (i < 160)
+                unidentified++;
+            else
+                track_mark_unformatted(d, i);
+        }
     }
 
-    for (i = 0; i < 160; i++) {
+    for (i = 0; i < di->nr_tracks; i++) {
         unsigned int j;
         ti = &di->track[i];
         if (align)
@@ -150,9 +155,9 @@ int main(int argc, char **argv)
         goto out;
 
     prev_name = di->track[0].typename;
-    for (i = 1; i <= 160; i++) {
+    for (i = 1; i <= di->nr_tracks; i++) {
         ti = &di->track[i];
-        if ((ti->typename == prev_name) && (i != 160))
+        if ((ti->typename == prev_name) && (i != di->nr_tracks))
             continue;
         if (st == i-1)
             printf("T");

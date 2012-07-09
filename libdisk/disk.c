@@ -192,6 +192,18 @@ int track_write_mfm(
     return rc;
 }
 
+void track_mark_unformatted(
+    struct disk *d, unsigned int tracknr)
+{
+    struct disk_info *di = d->di;
+    struct track_info *ti = &di->track[tracknr];
+
+    memfree(ti->dat);
+    memset(ti, 0, sizeof(*ti));
+    init_track_info(ti, TRKTYP_unformatted);
+    ti->total_bits = TRK_WEAK;
+}
+
 struct disk_tag *disk_get_tag_by_id(struct disk *d, uint16_t id)
 {
     struct disk_list_tag *dltag;
