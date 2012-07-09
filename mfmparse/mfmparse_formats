@@ -58,6 +58,10 @@ probe
 
 "Atomic Robo-Kid" = amigados_copylock
 
+"B.A.T."
+    98-99 bat_longtrack
+    * amigados bat
+
 "Badlands" = amigados_copylock
 
 "Batman" = amigados_copylock
