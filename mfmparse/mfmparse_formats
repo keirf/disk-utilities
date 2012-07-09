@@ -191,6 +191,16 @@ probe
 "Lotus III"
     * amigados gremlin
 
+"Matrix Marauders"
+    0 amigados
+    1 protec_longtrack
+    34-38/2 ignore
+    97-99/2 ignore
+    124-140/2 ignore
+    142-157 ignore
+    159 ignore
+    * psygnosis_a
+
 # Disk 1, tracks 1 and 80 may be unformatted
 # Disk 2 track 1 should be Copylock; tracks 0 and 80 may be unformatted
 "Mega Lo Mania" = sensible
