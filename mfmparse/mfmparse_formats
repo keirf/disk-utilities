@@ -58,7 +58,7 @@ probe
 
 "Atomic Robo-Kid" = amigados_copylock
 
-"B.A.T."
+"B.A.T." # Disk 1, Tracks 100+, and Disk 2, Tracks 1 & 96, may be empty
     98-99 bat_longtrack
     * amigados bat
 
