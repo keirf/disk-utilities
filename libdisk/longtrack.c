@@ -73,8 +73,10 @@ struct track_handler protec_longtrack_handler = {
 /*
  * TRKTYP_gremlin_longtrack: Lotus I/II
  *  u16 0x4124,0x4124
- *  Rest of track is (MFM-encoded) zeroes
- *  Track is checked to be >= 102400 bits long
+ *  Rest of track is (MFM-encoded) zeroes, and/or unformatted garbage.
+ *  The contents are never checked, only the sync mark is scanned for.
+ *  Track length check is usually for >= 102400 bits, but there are variants
+ *  (e.g., Strider II checks for normal length track!).
  */
 
 static void *gremlin_longtrack_write_mfm(
@@ -85,30 +87,8 @@ static void *gremlin_longtrack_write_mfm(
     while (stream_next_bit(s) != -1) {
         ti->data_bitoff = s->index_offset - 31;
 
-        if (s->word != 0x41244124)
+        if ((s->word != 0x41244124) || !check_sequence(s, 8, 0x00))
             continue;
-
-#if 0
-        /* This is what we check for a "genuine" Gremlin long track. */
-        if (!check_sequence(s, 1000, 0x00))
-            continue;
-        if (!check_length(s, 102400))
-            break;
-        ti->total_bits = 105500; /* long enough */
-#else
-        /*
-         * Some releases have unformatted data in the middle of the long track,
-         * and the track may not be long enough to pass the length test. Some 
-         * games do not check the track at all (Switchblade 2), others will 
-         * perform the check but not test for failure (Venus The Flytrap).
-         * These games don't really need the full protection track, needing the 
-         * 4124 sync mark at most, but we detect as a full long track for 
-         * safety's sake. Gremlin long tracks are always 158-159, and no other 
-         * data is ever mastered there, so we can afford to be fast and loose.
-         */
-        if (!check_sequence(s, 1000, 0x00) || !check_length(s, 102400))
-            printf("*** T%u: Weak Gremlin Copy Protection detected "
-                   "and accepted\n", tracknr);
 
         /*
          * Some games (e.g., Strider II) explicitly check for a *normal*
@@ -116,7 +96,6 @@ static void *gremlin_longtrack_write_mfm(
          * the only useful information the track contains beyond the sync mark!
          */
         ti->total_bits = 0;
-#endif
 
         return memalloc(0);
     }
