@@ -1,8 +1,8 @@
 default = amigados
 probe
     * amigados copylock psygnosis_a psygnosis_b rnc_pdos core_design \
-      gremlin rainbird blue_byte ikplus virus archipelagos sensible
-
+      gremlin rainbird blue_byte ikplus virus archipelagos sensible \
+      bat batman menace protec_longtrack gremlin_longtrack
 
 ####################
 # Game List - every checked game is listed here
