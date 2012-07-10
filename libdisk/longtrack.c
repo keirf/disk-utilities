@@ -88,6 +88,14 @@ static void *gremlin_longtrack_write_mfm(
         if (s->word != 0x41244124)
             continue;
 
+#if 0
+        /* This is what we check for a "genuine" Gremlin long track. */
+        if (!check_sequence(s, 1000, 0x00))
+            continue;
+        if (!check_length(s, 102400))
+            break;
+        ti->total_bits = 105500; /* long enough */
+#else
         /*
          * Some releases have unformatted data in the middle of the long track,
          * and the track may not be long enough to pass the length test. Some 
@@ -98,18 +106,18 @@ static void *gremlin_longtrack_write_mfm(
          * safety's sake. Gremlin long tracks are always 158-159, and no other 
          * data is ever mastered there, so we can afford to be fast and loose.
          */
-#if 0
-        if (!check_sequence(s, 1000, 0x00))
-            continue;
-        if (!check_length(s, 102400))
-            break;
-#else
         if (!check_sequence(s, 1000, 0x00) || !check_length(s, 102400))
             printf("*** T%u: Weak Gremlin Copy Protection detected "
                    "and accepted\n", tracknr);
+
+        /*
+         * Some games (e.g., Strider II) explicitly check for a *normal*
+         * length track! Simply use the original track's length -- it's about
+         * the only useful information the track contains beyond the sync mark!
+         */
+        ti->total_bits = 0;
 #endif
 
-        ti->total_bits = 105500; /* long enough */
         return memalloc(0);
     }
 
@@ -119,10 +127,11 @@ static void *gremlin_longtrack_write_mfm(
 static void gremlin_longtrack_read_mfm(
     struct disk *d, unsigned int tracknr, struct track_buffer *tbuf)
 {
+    struct track_info *ti = &d->di->track[tracknr];
     unsigned int i;
 
     tbuf_bits(tbuf, SPEED_AVG, MFM_raw, 32, 0x41244124);
-    for (i = 0; i < 6000; i++)
+    for (i = 0; i < (ti->total_bits/16)-250; i++)
         tbuf_bits(tbuf, SPEED_AVG, MFM_all, 8, 0);
 }
 

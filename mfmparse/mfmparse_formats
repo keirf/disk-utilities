@@ -274,6 +274,10 @@ probe
 
 "Speris Legacy" = amigados
 
+"Strider II"
+    158-159 gremlin_longtrack
+    * amigados
+
 "Super Cars Disk 1" = gremlin_protected
 "Super Cars Disk 2"
     * gremlin
