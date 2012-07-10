@@ -84,10 +84,31 @@ static void *gremlin_longtrack_write_mfm(
 
     while (stream_next_bit(s) != -1) {
         ti->data_bitoff = s->index_offset - 31;
-        if ((s->word != 0x41244124) || !check_sequence(s, 1000, 0x00))
+
+        if (s->word != 0x41244124)
+            continue;
+
+        /*
+         * Some releases have unformatted data in the middle of the long track,
+         * and the track may not be long enough to pass the length test. Some 
+         * games do not check the track at all (Switchblade 2), others will 
+         * perform the check but not test for failure (Venus The Flytrap).
+         * These games don't really need the full protection track, needing the 
+         * 4124 sync mark at most, but we detect as a full long track for 
+         * safety's sake. Gremlin long tracks are always 158-159, and no other 
+         * data is ever mastered there, so we can afford to be fast and loose.
+         */
+#if 0
+        if (!check_sequence(s, 1000, 0x00))
             continue;
         if (!check_length(s, 102400))
             break;
+#else
+        if (!check_sequence(s, 1000, 0x00) || !check_length(s, 102400))
+            printf("*** T%u: Weak Gremlin Copy Protection detected "
+                   "and accepted\n", tracknr);
+#endif
+
         ti->total_bits = 105500; /* long enough */
         return memalloc(0);
     }
