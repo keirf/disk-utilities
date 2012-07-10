@@ -62,6 +62,8 @@ probe
     98-99 bat_longtrack
     * amigados bat
 
+"B.S.S. Jane Seymour" = amigados_gremlin_longtrack
+
 "Badlands" = amigados_copylock
 
 "Batman The Caped Crusader" # Tracks 132+ may be empty
@@ -149,9 +151,8 @@ probe
 "Harlequin"
     * amigados gremlin
 
-"Hero Quest" # Tracks 154-157 may be empty
-    158-159 gremlin_longtrack
-    * amigados
+# Tracks 154-157 may be empty
+"Hero Quest" = amigados_gremlin_longtrack
 
 "Hook" = amigados_copylock
 
@@ -282,9 +283,7 @@ probe
 
 "Speris Legacy" = amigados
 
-"Strider II"
-    158-159 gremlin_longtrack
-    * amigados
+"Strider II" = amigados_gremlin_longtrack
 
 "Super Cars Disk 1" = gremlin_protected
 "Super Cars Disk 2"
@@ -349,6 +348,9 @@ gremlin_protected
     0-1 amigados gremlin
     158-159 gremlin_longtrack
     * gremlin
+amigados_gremlin_longtrack
+    158-159 amigados gremlin_longtrack
+    * amigados
 rnc_pdos
     * amigados rnc_pdos
 rnc_pdos_copylock
