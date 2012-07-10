@@ -209,6 +209,10 @@ probe
 # Disk 2 track 1 should be Copylock; tracks 0 and 80 may be unformatted
 "Mega Lo Mania" = sensible
 
+"Menace"
+    159 protec_longtrack
+    * amigados menace
+
 "Midwinter"
     * amigados rainbird
 
