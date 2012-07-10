@@ -186,8 +186,10 @@ struct format_list *realloc_format_list(struct format_list *old)
     struct format_list *list;
     unsigned int max = old ? old->max*2 : 4;
     list = memalloc(sizeof(*list) + (max-1)*2);
-    if (old)
+    if (old) {
         memcpy(list, old, sizeof(*list) + (old->max-1)*2);
+        memfree(old);
+    }
     list->max = max;
     return list;
 }
