@@ -234,6 +234,10 @@ probe
     2-126 psygnosis_c
     * ignore
 
+"Obliterator" # Odd tracks 135+, and track 158, may be empty
+    156 protec_longtrack
+    * amigados
+
 "Omnicron Conspiracy" = amigados_copylock
 
 "Overdrive" = rnc_pdos
