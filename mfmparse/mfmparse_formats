@@ -78,6 +78,8 @@ probe
 
 "Bermuda Project" = amigados
 
+"Bionic Commando" = amigados
+
 "Body Blows" = rnc_pdos
 "Body Blows Galactic" = rnc_pdos
 
@@ -140,6 +142,9 @@ probe
 
 "First Samurai" = amigados_copylock
 
+# Budget re-release
+"Foundation's Waste" = amigados
+
 "Frontier: Elite II" = amigados
 
 "Goal!" = amigados_copylock
@@ -167,6 +172,9 @@ probe
     * amigados core_design
 
 "Jimmy White's Whirlwind Snooker" = amigados_copylock
+
+# Budget re-release
+"Journey To The Center Of The Earth" = amigados
 
 "Jumping Jack Son"
     2-3 amigados jumping_jack_son_longtrack
