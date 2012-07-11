@@ -168,6 +168,10 @@ probe
 
 "Jimmy White's Whirlwind Snooker" = amigados_copylock
 
+"Jumping Jack Son"
+    2-3 amigados jumping_jack_son_longtrack
+    * amigados
+
 "Jungle Strike" = amigados_copylock
 
 # OCS and AGA versions
