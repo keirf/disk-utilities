@@ -281,7 +281,7 @@ probe
 
 "Qwak" = amigados
 
-"R-Type"
+"R-Type" # Track 159 may be empty
     0-9 amigados
     10-62 rtype_a
     68 factor5_hiscore
@@ -322,7 +322,7 @@ probe
 
 "Tower Of Babel" = amigados
 
-"Turrican"
+"Turrican" # Tracks 158-159 may be empty
     27 factor5_hiscore
     * amigados turrican
 

@@ -135,7 +135,7 @@ static void *factor5_hiscore_write_mfm(
         }
         sum &= 0x55555555;
         if (sum != csum) {
-            printf("***T%u: No saved high-score data found. "
+            printf("*** T%u: No saved high-score data found. "
                    "Creating empty track.\n", tracknr);
             ti->nr_sectors = ti->bytes_per_sector = ti->len = 0;
         } else {
