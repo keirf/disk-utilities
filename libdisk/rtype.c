@@ -37,10 +37,6 @@ static void *rtype_a_write_mfm(
 {
     struct track_info *ti = &d->di->track[tracknr];
 
-    ti->bytes_per_sector = 5968;
-    ti->nr_sectors = 1;
-    ti->len = ti->bytes_per_sector * ti->nr_sectors;
-
     while (stream_next_bit(s) != -1) {
 
         uint8_t raw_dat[2*ti->len];
@@ -93,6 +89,12 @@ static void rtype_a_read_mfm(
     tbuf_bytes(tbuf, SPEED_AVG, MFM_even_odd, ti->len, ti->dat);
 }
 
+struct track_handler rtype_a_handler = {
+    .bytes_per_sector = 5968,
+    .nr_sectors = 1,
+    .write_mfm = rtype_a_write_mfm,
+    .read_mfm = rtype_a_read_mfm
+};
 
 /*
  * R-Type (variant B): T63-67, T69-158
@@ -108,10 +110,6 @@ static void *rtype_b_write_mfm(
     struct disk *d, unsigned int tracknr, struct stream *s)
 {
     struct track_info *ti = &d->di->track[tracknr];
-
-    ti->bytes_per_sector = 6552;
-    ti->nr_sectors = 1;
-    ti->len = ti->bytes_per_sector * ti->nr_sectors;
 
     while (stream_next_bit(s) != -1) {
 
@@ -176,79 +174,11 @@ static void rtype_b_read_mfm(
     tbuf_bits(tbuf, SPEED_AVG, MFM_even_odd, 32, csum);
 }
 
-
-/*
- * R-Type Protection Track: T68
- *  u16 0x4489 :: Sync
- *  u8  0      :: MFM_all
- *  u32 csum   :: MFM_even_odd
- *  u32 data[0xc8] :: 0xc8 longs, XORed together == csum ^ 0x12345678?
- * TRKTYP_rtype data layout:
- *  No data for protection track.
- * This is all pretty sketchy, since the protection 'check' at the game intro
- * screen fails even with a known good disk image. So here we only check for
- * sync plus an encoded nul byte, and that is also all we generate for this
- * track. If we find a real protection check later in the game, we can deal
- * with that here.
- */
-
-static void *rtype_prot_write_mfm(
-    struct disk *d, unsigned int tracknr, struct stream *s)
-{
-    struct track_info *ti = &d->di->track[tracknr];
-
-    ti->bytes_per_sector = 0;
-    ti->nr_sectors = 0;
-    ti->len = ti->bytes_per_sector * ti->nr_sectors;
-
-    while (stream_next_bit(s) != -1) {
-        if ((uint16_t)s->word != 0x4489)
-            continue;
-        if (stream_next_bits(s, 16) == -1)
-            continue;
-        if (mfm_decode_bits(MFM_all, (uint16_t)s->word) != 0)
-            continue;
-        return memalloc(0);
-    }
-
-    return NULL;
-}
-
-static void rtype_prot_read_mfm(
-    struct disk *d, unsigned int tracknr, struct track_buffer *tbuf)
-{
-    tbuf_bits(tbuf, SPEED_AVG, MFM_raw, 16, 0x4489);
-}
-
-
-/*
- * R-Type track dispatcher
- */
-
-static void *rtype_write_mfm(
-    struct disk *d, unsigned int tracknr, struct stream *s)
-{
-    if (tracknr == 68)
-        return rtype_prot_write_mfm(d, tracknr, s);
-    if (tracknr >= 63)
-        return rtype_b_write_mfm(d, tracknr, s);
-    return rtype_a_write_mfm(d, tracknr, s);
-}
-
-static void rtype_read_mfm(
-    struct disk *d, unsigned int tracknr, struct track_buffer *tbuf)
-{
-    struct track_info *ti = &d->di->track[tracknr];
-    if (ti->len == 5968)
-        return rtype_a_read_mfm(d, tracknr, tbuf);
-    if (ti->len == 6552)
-        return rtype_b_read_mfm(d, tracknr, tbuf);
-    return rtype_prot_read_mfm(d, tracknr, tbuf);
-}
-
-struct track_handler rtype_handler = {
-    .write_mfm = rtype_write_mfm,
-    .read_mfm = rtype_read_mfm
+struct track_handler rtype_b_handler = {
+    .bytes_per_sector = 6552,
+    .nr_sectors = 1,
+    .write_mfm = rtype_b_write_mfm,
+    .read_mfm = rtype_b_read_mfm
 };
 
 /*

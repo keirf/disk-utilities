@@ -283,7 +283,9 @@ probe
 
 "R-Type"
     0-9 amigados
-    * rtype
+    10-62 rtype_a
+    68 factor5_hiscore
+    * rtype_b
 
 # Hit Squad re-release has no copylock
 "Rainbow Islands" = amigados_copylock
@@ -319,6 +321,10 @@ probe
 "Time Machine" = amigados_copylock
 
 "Tower Of Babel" = amigados
+
+"Turrican"
+    27 factor5_hiscore
+    * amigados turrican
 
 "Twinworld" = blue_byte
 
