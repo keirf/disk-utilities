@@ -99,6 +99,9 @@ probe
 "Chaos Engine (OCS)" = amigados_copylock
 "Chaos Engine (AGA)" = rnc_pdos
 
+"Commando" # Tracks 98+ may be empty
+    * amigados commando
+
 "Corporation" = amigados_copylock
 
 "Crystals Of Arborea"
