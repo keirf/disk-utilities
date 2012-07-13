@@ -77,8 +77,16 @@ struct track_handler protec_longtrack_handler = {
  *  u16 0x4124,0x4124
  *  Rest of track is (MFM-encoded) zeroes, and/or unformatted garbage.
  *  The contents are never checked, only successive sync marks are scanned for.
- *  Track length check is usually for >= 102400 bits, but there are variants
- *  (e.g., Strider II checks for normal length track!).
+ * 
+ *  Track is checked to be >= 102400 bits long.
+ *  Specifically, protection checks for >= 6400 mfm words gap between
+ *  successive sync marks. Track contents are not otherwise checked or tested.
+ * 
+ *  A variant, Strider II by Tiertex, checks 99328 <= x <= 103680 bits long.
+ *  Specifically, the variant checks 6208 <= x <= 6480 mfm words gap between
+ *  successive sync marks. Track contents are not otherwise checked or tested.
+ * 
+ *  We successfully handle both schemes by creating a track 103000 bits long.
  */
 
 static void *gremlin_longtrack_write_mfm(
@@ -88,17 +96,9 @@ static void *gremlin_longtrack_write_mfm(
 
     while (stream_next_bit(s) != -1) {
         ti->data_bitoff = s->index_offset - 31;
-
         if ((s->word != 0x41244124) || !check_sequence(s, 8, 0x00))
             continue;
-
-        /*
-         * Some games (e.g., Strider II) explicitly check for a *normal*
-         * length track! Simply use the original track's length -- it's about
-         * the only useful information the track contains beyond the sync mark!
-         */
-        ti->total_bits = 0;
-
+        ti->total_bits = 103000;
         return memalloc(0);
     }
 
