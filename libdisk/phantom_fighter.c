@@ -9,7 +9,7 @@
  *  u16 0x4489,0x4489 :: Sync
  *  u16 0x5555
  *  struct {
- *    u16 dat[0x2ec] :: Interleaved even/odd words
+ *    u16 dat[0x2ec]
  *    u32 0x????5555 :: Filler
  *  } [8]
  * The 8 data sections are compacted into a single 5984-word region.
