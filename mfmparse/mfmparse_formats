@@ -277,7 +277,7 @@ probe
 
 "Parasol Stars" = amigados_copylock
 
-"Phantom Fighter"
+"Phantom Fighter" # Track 1 may be empty
     * amigados phantom_fighter
 
 "Pro Tennis Tour" = blue_byte
