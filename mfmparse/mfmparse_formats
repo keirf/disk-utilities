@@ -300,6 +300,10 @@ probe
 
 "Rotox" = amigados
 
+"Side Arms"
+    2-12/2 ignore
+    * amigados
+
 "Slayer" = amigados_copylock
 
 "Sleeping Gods Lie" = amigados_copylock
