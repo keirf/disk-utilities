@@ -277,6 +277,9 @@ probe
 
 "Parasol Stars" = amigados_copylock
 
+"Phantom Fighter"
+    * amigados phantom_fighter
+
 "Pro Tennis Tour" = blue_byte
 
 "Project X" = amigados_copylock
