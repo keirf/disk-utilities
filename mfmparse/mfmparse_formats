@@ -141,6 +141,11 @@ probe
     1 rnc_hidden amigados
     * amigados
 
+"Federation Of Free Traders" # Track 1 may be empty
+    0-1 amigados
+    158-159 gremlin_longtrack
+    * federation_of_free_traders
+
 "Fire & Ice" = amigados_copylock
 
 "First Samurai" = amigados_copylock
