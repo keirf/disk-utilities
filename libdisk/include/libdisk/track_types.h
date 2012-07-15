@@ -1,5 +1,6 @@
 X(unformatted, "Unformatted")
 X(amigados, "AmigaDOS")
+X(amigados_longtrack, "AmigaDOS Long Track")
 X(amigados_extended, "AmigaDOS Extended")
 X(copylock, "Copylock")
 X(psygnosis_a, "Psygnosis A")

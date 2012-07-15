@@ -71,7 +71,7 @@ static void *ados_write_mfm(
 {
     struct track_info *ti = &d->di->track[tracknr];
     char *block, *p;
-    unsigned int i, valid_blocks = 0, extended_blocks = 0;
+    unsigned int i, basic_type, valid_blocks = 0, extended_blocks = 0;
 
     block = memalloc(EXT_SEC * ti->nr_sectors);
     for (i = 0; i < EXT_SEC * ti->nr_sectors / 4; i++)
@@ -142,8 +142,14 @@ static void *ados_write_mfm(
                     block + i * EXT_SEC + (EXT_SEC - STD_SEC),
                     STD_SEC);
 
+    basic_type = TRKTYP_amigados;
+    if (ti->type == TRKTYP_amigados_longtrack) {
+        ti->total_bits = 105500;
+        basic_type = TRKTYP_amigados_longtrack;
+    }
+
     init_track_info(
-        ti, extended_blocks ? TRKTYP_amigados_extended : TRKTYP_amigados);
+        ti, extended_blocks ? TRKTYP_amigados_extended : basic_type);
 
     ti->valid_sectors = valid_blocks;
 
@@ -202,6 +208,13 @@ static void ados_read_mfm(
 }
 
 struct track_handler amigados_handler = {
+    .bytes_per_sector = STD_SEC,
+    .nr_sectors = 11,
+    .write_mfm = ados_write_mfm,
+    .read_mfm = ados_read_mfm
+};
+
+struct track_handler amigados_longtrack_handler = {
     .bytes_per_sector = STD_SEC,
     .nr_sectors = 11,
     .write_mfm = ados_write_mfm,

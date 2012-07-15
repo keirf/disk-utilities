@@ -329,6 +329,10 @@ probe
 
 "Switchblade 2" = gremlin_protected
 
+"Targhan"
+    158-159 amigados_longtrack
+    * amigados
+
 "The Munsters" = amigados_copylock
 
 "Time"

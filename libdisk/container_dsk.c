@@ -231,10 +231,17 @@ int dsk_write_mfm(
         return -1;
     }
 
+    stream_reset(s);
+    stream_next_index(s);
+
     if (ti->total_bits == 0) {
-        stream_reset(s);
-        stream_next_index(s);
         ti->total_bits = s->track_bitlen ? : DEFAULT_BITS_PER_TRACK;
+    } else if (ti->total_bits == TRK_WEAK) {
+        /* nothing */
+    } else if (((s->track_bitlen - (s->track_bitlen/50)) > ti->total_bits) ||
+               ((s->track_bitlen + (s->track_bitlen/50)) < ti->total_bits)) {
+        printf("*** T%u: Unexpected track length (seen %u, "
+               "expected %u)\n", tracknr, s->track_bitlen, ti->total_bits);
     }
 
     ti->data_bitoff = (int32_t)ti->data_bitoff % (int32_t)ti->total_bits;
