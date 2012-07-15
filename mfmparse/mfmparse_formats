@@ -68,6 +68,11 @@ probe
 
 "Badlands" = amigados_copylock
 
+"Barbarian / Psygnosis"
+    153-155/2 ignore
+    157-159 ignore
+    * amigados
+
 "Batman The Caped Crusader" # Tracks 132+ may be empty
     0-1 amigados
     * batman
@@ -118,6 +123,8 @@ probe
 "Dennis" = amigados_copylock
 
 "Desert Strike" = amigados
+
+"Dizzy's Excellent Adventures" = amigados_copylock
 
 "Dragon Spirit" = amigados_copylock
 
