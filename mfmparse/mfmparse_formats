@@ -85,6 +85,10 @@ probe
 "Body Blows" = rnc_pdos
 "Body Blows Galactic" = rnc_pdos
 
+"Bombuzal"
+    1 bombuzal
+    * amigados
+
 "Brat" = amigados_copylock
 
 "Cadaver" = amigados_copylock
