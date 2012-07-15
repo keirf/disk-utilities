@@ -2,7 +2,9 @@ default = amigados
 probe
     * amigados copylock psygnosis_a psygnosis_b rnc_pdos core_design \
       gremlin rainbird blue_byte ikplus virus archipelagos sensible \
-      bat batman menace protec_longtrack gremlin_longtrack
+      bat batman menace commando turrican federation_of_free_traders \
+      phantom_fighter supremacy_a supremacy_b \
+      protec_longtrack gremlin_longtrack
 
 ####################
 # Game List - every checked game is listed here
@@ -321,6 +323,9 @@ probe
 "Super Cars II" = gremlin_protected
 
 "Superfrog" = rnc_pdos
+
+"Supremacy" # Disk 1 Tracks 138,140,142,144+, Disk 2 Tracks 130+, may be empty
+    * amigados supremacy_a supremacy_b
 
 "Switchblade 2" = gremlin_protected
 
