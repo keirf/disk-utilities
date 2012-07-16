@@ -81,6 +81,11 @@ int main(int argc, char **argv)
     len = strtol(argv[3], NULL, 16);
     base = strtol(argv[4], NULL, 16);
 
+    if (len == 0) {
+        off_t sz = lseek(fd, 0, SEEK_END);
+        len = sz - off;
+    }
+
     if ((base+len) > MEM_SIZE)
         errx(1, "Image cannot be loaded into %ukB RAM\n", MEM_SIZE>>10);
 
