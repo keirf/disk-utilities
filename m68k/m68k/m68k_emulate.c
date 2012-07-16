@@ -293,12 +293,16 @@ static int decode_ea(struct m68k_emulate_ctxt *c)
         op->reg = &sh_reg(c, a[reg]);
         op->mem = *op->reg;
         *op->reg += (c->op_sz == OPSZ_B ? 1 : c->op_sz == OPSZ_W ? 2 : 4);
+        if ((reg == 7) && (c->op_sz == OPSZ_B))
+            (*op->reg)++; /* keep sp word-aligned */
         dump(c, "(%s)+", areg[reg]);
         break;
     case 4:
         op->reg = &sh_reg(c, a[reg]);
         op->mem = *op->reg -=
             (c->op_sz == OPSZ_B ? 1 : c->op_sz == OPSZ_W ? 2 : 4);
+        if ((reg == 7) && (c->op_sz == OPSZ_B))
+            op->mem = --(*op->reg); /* keep sp word-aligned */
         dump(c, "-(%s)", areg[reg]);
         break;
     case 5: {
