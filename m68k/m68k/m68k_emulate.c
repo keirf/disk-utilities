@@ -109,11 +109,42 @@ static int fetch(
     uint32_t *val, unsigned int bytes,
     struct m68k_emulate_ctxt *c)
 {
+    uint32_t b, v;
     int rc;
+
     bail_if(rc = check_addr_align(c, sh_reg(c, pc), bytes, access_fetch));
-    bail_if(rc = c->ops->read(sh_reg(c, pc), val, bytes, c));
+
+    /* Invalidate prefetch queue if it is fetched from wrong address. */
+    if (sh_reg(c, pc) != c->prefetch_addr)
+        c->prefetch_valid = 0;
+
+    /* Take as many words from the prefetch queue as possible. */
+    for (b = v = 0; (b < bytes) && c->prefetch_valid; b += 2) {
+        v = (v << 16) | c->prefetch_dat[0];
+        c->prefetch_dat[0] = c->prefetch_dat[1];
+        c->prefetch_addr += 2;
+        c->prefetch_valid--;
+    }
+
+    /* Read remaining words from memory. */
+    *val = 0;
+    if (b != bytes)
+        bail_if(rc = c->ops->read(sh_reg(c, pc) + b, val, bytes - b, c));
+
+    /* Merge the result and do accounting. */
+    *val |= v << (8 * (bytes - b));
     acct_cycles_for_mem_access(c, bytes);
     sh_reg(c, pc) += bytes;
+
+    /* Re-fill the prefetch queue. */
+    if (c->prefetch_valid == 0)
+        c->prefetch_addr = sh_reg(c, pc);
+    while (c->prefetch_valid != 2) {
+        if (c->ops->read(c->prefetch_addr + c->prefetch_valid*2, &v, 2, c))
+            break;
+        c->prefetch_dat[c->prefetch_valid++] = (uint16_t)v;
+    }
+
 bail:
     return rc;
 }
@@ -1101,6 +1132,12 @@ int m68k_emulate(struct m68k_emulate_ctxt *c)
             bail_if(rc = write_ea(c));
             cc_mov(c, dst.val);
         }
+        /*
+         * Most move instructions perform the second prefetch after writeback.
+         * We simulate this by discarding our second word of prefetch.
+         */
+        if (c->prefetch_valid > 1)
+            c->prefetch_valid = 1;
         break;
     }
     case 0x4: { /* COMPLETE */

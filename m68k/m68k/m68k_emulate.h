@@ -116,6 +116,10 @@ struct m68k_emulate_ctxt
     /* OUT: Number of cycles to execute on an M68000. */
     uint16_t cycles;
 
+    /* PRIVATE: Prefetch data. */
+    uint32_t prefetch_addr, prefetch_valid;
+    uint16_t prefetch_dat[2];
+
     /* PRIVATE */
     struct m68k_emulate_priv_ctxt *p;
 };
