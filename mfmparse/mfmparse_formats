@@ -126,6 +126,10 @@ probe
 
 "Dizzy's Excellent Adventures" = amigados_copylock
 
+"Dragon's Breath"
+    158 amigados speedlock
+    * amigados
+
 "Dragon Spirit" = amigados_copylock
 
 "Exolon" = amigados_copylock
@@ -251,6 +255,10 @@ probe
     * amigados rainbird
 
 "Motorbike Madness" = amigados_copylock
+
+"New York Warriors"
+    1 amigados speedlock
+    * amigados
 
 "New Zealand Story" = amigados_copylock
 
