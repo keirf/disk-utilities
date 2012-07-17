@@ -602,7 +602,9 @@ static int misc_insn(struct m68k_emulate_ctxt *c)
         uint16_t data;
         bail_if(rc = fetch_insn_word(c, &data));
         dump(c, "stop\t#%x", data);
-        rc = M68KEMUL_UNHANDLEABLE;
+        raise_exception_if(!(sh_reg(c, sr) & SR_S), M68KVEC_priv_violation);
+        update_sr(c, data);
+        /* should wait for an interrupt/exception... */
     } else if (op == 0x4e73u) {
         /* rte */
         uint32_t new_pc, new_sr;
