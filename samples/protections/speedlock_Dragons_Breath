@@ -7,6 +7,8 @@
 # Here, the long/short sequences should each be ~120 bytes (960 bits), and the
 # long sequence should begin ~9756 bytes (78048 bits) after the disk index.
 
+m68k/copylock a.dump 260ea 3a6 260ea a.dsk 
+
 000260ea  48e7 3f3e       movem.l d2-d7/a2-a6,-(sp)
 000260ee  95ca            suba.l  a2,a2
 000260f0  41fa 0018       lea.l   2610a(pc),a0
