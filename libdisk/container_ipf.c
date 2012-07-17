@@ -85,7 +85,7 @@ struct ipf_img {
 };
 
 /* Density type codes */
-enum dentype { denNoise=1, denUniform=2, denCopylock=3 };
+enum dentype { denNoise=1, denUniform=2, denCopylock=3, denSpeedlock=6 };
 
 struct ipf_data {
     uint32_t size;  /* ceil(bsize/8) */
@@ -307,8 +307,10 @@ static bool_t __ipf_close(struct disk *d, uint32_t encoder)
             img->dentype = denNoise;
         } else {
             /* Basic track metadata. */
-            img->dentype = (ti->type == TRKTYP_copylock)
-                ? denCopylock : denUniform;
+            img->dentype = 
+                (ti->type == TRKTYP_copylock) ? denCopylock :
+                (ti->type == TRKTYP_speedlock) ? denSpeedlock :
+                denUniform;
             img->startbit = ti->data_bitoff - PREPEND_BITS;
             if ((int)img->startbit < 0)
                 img->startbit += ti->total_bits;
