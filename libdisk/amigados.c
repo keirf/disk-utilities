@@ -176,14 +176,15 @@ static void ados_read_mfm(
         memset(&ados_hdr, 0, sizeof(ados_hdr));
         ados_hdr.format = 0xffu;
         ados_hdr.track = tracknr;
-        ados_hdr.sector = i;
-        ados_hdr.sectors_to_gap = 11 - i;
 
         if (ti->type == TRKTYP_amigados_extended) {
             sync = ntohl(*(uint32_t *)&dat[0]);
             memcpy(&ados_hdr, &dat[4], 20);
             dat += 24;
         }
+
+        ados_hdr.sector = i;
+        ados_hdr.sectors_to_gap = 11 - i;
 
         /* sync mark */
         tbuf_bits(tbuf, SPEED_AVG, MFM_raw, 32, sync);
