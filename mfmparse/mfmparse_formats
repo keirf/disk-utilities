@@ -102,6 +102,12 @@ probe
 
 "Cannon Fodder 2" = amigados_copylock
 
+"Captive" # Tracks 155+ may be empty
+    0 amigados
+    1 copylock
+    80 amigados
+    * ratt_dos_1800
+
 # Original release (SPS 0813) uses Rainbird custom format
 # A subsequent compilation release (SPS 1580) uses AmigaDOS+Copylock
 "Carrier Command"
@@ -217,6 +223,12 @@ probe
 "Killing Game Show"
     1 protec_longtrack
     * psygnosis_c
+
+"Knightmare" # Disk 1, Tracks 141+, Disk 2, Tracks 150+, may be empty
+    0 amigados
+    1 copylock
+    80 amigados
+    * ratt_dos_1810
 
 "Leander" # Disks 2 & 3, Track 1 may be empty
     0-1 amigados protec_longtrack
