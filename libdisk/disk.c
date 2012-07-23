@@ -376,8 +376,12 @@ void tbuf_bits(struct track_buffer *tbuf, uint16_t speed,
         enc = MFM_all;
     }
 
-    for (i = bits-1; i >= 0; i--)
-        tbuf->bit(tbuf, speed, enc, (x >> i) & 1);
+    for (i = bits-1; i >= 0; i--) {
+        uint8_t b = (x >> i) & 1;
+        if ((enc != MFM_raw) || !(i & 1))
+            tbuf->crc16_ccitt = crc16_ccitt_bit(b, tbuf->crc16_ccitt);
+        tbuf->bit(tbuf, speed, enc, b);
+    }
 }
 
 void tbuf_bytes(struct track_buffer *tbuf, uint16_t speed,
@@ -407,6 +411,16 @@ void tbuf_gap(struct track_buffer *tbuf, uint16_t speed, unsigned int bits)
         while (bits--)
             tbuf->bit(tbuf, speed, MFM_all, 0);
     }
+}
+
+void tbuf_start_crc(struct track_buffer *tbuf)
+{
+    tbuf->crc16_ccitt = 0xffff;
+}
+
+void tbuf_emit_crc16_ccitt(struct track_buffer *tbuf, uint16_t speed)
+{
+    tbuf_bits(tbuf, speed, MFM_all, 16, tbuf->crc16_ccitt);
 }
 
 uint32_t mfm_decode_bits(enum mfm_encoding enc, uint32_t x)

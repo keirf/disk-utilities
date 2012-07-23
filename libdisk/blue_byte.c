@@ -72,42 +72,25 @@ fail:
     return NULL;
 }
 
-static void crc_and_emit_u32(
-    struct track_buffer *tbuf, enum mfm_encoding enc,
-    uint32_t x, uint16_t *crc)
-{
-    tbuf_bits(tbuf, SPEED_AVG, enc, 32, x);
-
-    if (enc == MFM_raw) {
-        uint16_t y = htons(mfm_decode_bits(MFM_all, x));
-        *crc = crc16_ccitt(&y, 2, *crc);
-    } else {
-        uint32_t i, y;
-        for (i = y = 0; i < 32; i++)
-            y |= ((x >> i) & 1) << ((i >> 1) + ((i&1)?16:0));
-        y = htonl(y);
-        *crc = crc16_ccitt(&y, 4, *crc);
-    }
-}
-
-
 static void blue_byte_read_mfm(
     struct disk *d, unsigned int tracknr, struct track_buffer *tbuf)
 {
     struct track_info *ti = &d->di->track[tracknr];
     uint32_t hdr = (1u << 16) | (trknr(tracknr) << 24);
     uint32_t *dat = (uint32_t *)ti->dat;
-    uint16_t crc = 0xffff;
     unsigned int i;
 
-    crc_and_emit_u32(tbuf, MFM_raw, 0x5542aaaa, &crc);
+    tbuf_start_crc(tbuf);
 
-    crc_and_emit_u32(tbuf, MFM_even_odd, hdr, &crc);
+    tbuf_bits(tbuf, SPEED_AVG, MFM_raw, 16, 0x5542);
+    tbuf_bits(tbuf, SPEED_AVG, MFM_all, 8, 0);
+
+    tbuf_bits(tbuf, SPEED_AVG, MFM_even_odd, 32, hdr);
 
     for (i = 0; i < ti->len/4; i++)
-        crc_and_emit_u32(tbuf, MFM_even_odd, ntohl(dat[i]), &crc);
+        tbuf_bits(tbuf, SPEED_AVG, MFM_even_odd, 32, ntohl(dat[i]));
 
-    tbuf_bits(tbuf, SPEED_AVG, MFM_all, 16, crc);
+    tbuf_emit_crc16_ccitt(tbuf, SPEED_AVG);
 }
 
 struct track_handler blue_byte_handler = {

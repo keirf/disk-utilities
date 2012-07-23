@@ -149,6 +149,15 @@ uint16_t crc16_ccitt(const void *buf, size_t len, uint16_t crc)
     return crc;
 }
 
+uint16_t crc16_ccitt_bit(uint8_t b, uint16_t crc)
+{
+    if (!!b ^ (crc >> 15))
+        crc = (crc << 1) ^ 0x1021;
+    else
+        crc <<= 1;
+    return crc;
+}
+
 /*
  * Local variables:
  * mode: C
