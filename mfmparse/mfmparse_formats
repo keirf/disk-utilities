@@ -87,6 +87,8 @@ probe
 
 "Bionic Commando" = amigados
 
+"Blade Of Destiny" = amigados
+
 "Body Blows" = rnc_pdos
 "Body Blows Galactic" = rnc_pdos
 
@@ -95,6 +97,8 @@ probe
     * amigados
 
 "Brat" = amigados_copylock
+
+"Buck Rogers: Countdown To Doomsday" = amigados
 
 "Cadaver" = amigados_copylock
 
@@ -125,6 +129,8 @@ probe
     158-159 crystals_of_arborea_longtrack
     * amigados
 
+"Death Knights Of Krynn" = amigados
+
 # OCS and AGA versions
 "Dennis" = amigados_copylock
 
@@ -137,6 +143,8 @@ probe
     * amigados
 
 "Dragon Spirit" = amigados_copylock
+
+"Dragon Wars" = amigados
 
 "Exolon" = amigados_copylock
 
@@ -177,6 +185,8 @@ probe
 "Foundation's Waste" = amigados
 
 "Frontier: Elite II" = amigados
+
+"Gateway To The Savage Frontier" = amigados
 
 "Goal!" = amigados_copylock
 
@@ -224,6 +234,8 @@ probe
     1 protec_longtrack
     * psygnosis_c
 
+"King's Quest V" = amigados
+
 "Knightmare" # Disk 1, Tracks 141+, Disk 2, Tracks 150+, may be empty
     0 amigados
     1 copylock
@@ -233,6 +245,8 @@ probe
 "Leander" # Disks 2 & 3, Track 1 may be empty
     0-1 amigados protec_longtrack
     * psygnosis_b
+
+"Legend Of Djel" = amigados
 
 "Lemmings"
     * amigados copylock psygnosis_b
@@ -265,6 +279,8 @@ probe
 
 "Midwinter"
     * amigados rainbird
+
+"Might And Magic III" = amigados
 
 "Motorbike Madness" = amigados_copylock
 
@@ -302,6 +318,8 @@ probe
 
 "Onslaught" = amigados
 
+"Operation Stealth" = amigados
+
 "Oscar (AGA)" = amigados
 
 "P.P. Hammer" = amigados
@@ -312,6 +330,8 @@ probe
 
 "Phantom Fighter" # Track 1 may be empty
     * amigados phantom_fighter
+
+"Pools Of Darkness" = amigados
 
 "Pro Tennis Tour" = blue_byte
 
@@ -341,6 +361,9 @@ probe
 
 "Sleeping Gods Lie" = amigados_copylock
 
+# KIXX XL Budget Label (Sierra)
+"Space Quest IV" = amigados
+
 "Speedball 2" = amigados_copylock
 
 "Speris Legacy" = amigados
@@ -363,6 +386,8 @@ probe
 "Targhan"
     158-159 amigados_longtrack
     * amigados
+
+"The Magnetic Scrolls Collection" = amigados
 
 "The Munsters" = amigados_copylock
 
