@@ -26,8 +26,12 @@ struct stream {
     /* Number of index pulses seen so far. */
     uint32_t nr_index;
 
-    /* Most recent 32 bits read from the stream */
+    /* Most recent 32 bits read from the stream. */
     uint32_t word;
+
+    /* Rolling CRC-CCITT of incoming data. */
+    uint16_t crc16_ccitt;
+    uint8_t  crc_bitoff;
 };
 
 #pragma GCC visibility push(default)
@@ -41,6 +45,7 @@ void stream_next_index(struct stream *s);
 int stream_next_bit(struct stream *s);
 int stream_next_bits(struct stream *s, unsigned int bits);
 int stream_next_bytes(struct stream *s, void *p, unsigned int bytes);
+void stream_start_crc(struct stream *s);
 #pragma GCC visibility pop
 
 #endif /* __LIBDISK_STREAM_H__ */

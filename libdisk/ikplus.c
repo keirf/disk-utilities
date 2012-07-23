@@ -38,12 +38,13 @@ static void *ikplus_write_mfm(
 
     while (stream_next_bit(s) != -1) {
 
-        uint32_t idx_off = s->index_offset - 15;
-        uint16_t crc, mfm[ti->len+2];
+        uint32_t idx_off = s->index_offset - 31;
+        uint16_t mfm[ti->len+2];
 
-        if ((uint16_t)s->word != 0x8944)
+        if (s->word != 0x89448944)
             continue;
-        if (stream_next_bits(s, 32) == -1)
+        stream_start_crc(s);
+        if (stream_next_bits(s, 16) == -1)
             goto fail;
         if (s->word != 0x89448944)
             continue;
@@ -57,14 +58,10 @@ static void *ikplus_write_mfm(
 
         if (stream_next_bytes(s, mfm, sizeof(mfm)) == -1)
             goto fail;
-        mfm_decode_bytes(MFM_all, ti->len, mfm, block);
-
-        crc = crc16_ccitt(sync, sync_len(ti), 0xffff);
-        crc = crc16_ccitt(block, ti->len, crc);
-        mfm_decode_bytes(MFM_all, 2, &mfm[ti->len], mfm);
-        if (ntohs(mfm[0]) != crc)
+        if (s->crc16_ccitt != 0)
             continue;
 
+        mfm_decode_bytes(MFM_all, ti->len, mfm, block);
         ti->data_bitoff = idx_off;
         if (ti->type == TRKTYP_ikplus)
             ti->data_bitoff -= 2*16; /* IK+ has a pre-sync header */

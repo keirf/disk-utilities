@@ -11,8 +11,11 @@
 #include <string.h>
 #include <sys/types.h>
 #include <sys/stat.h>
+#include <arpa/inet.h>
 #include <unistd.h>
+#include <libdisk/util.h>
 #include "private.h"
+#include "../private.h"
 
 extern struct stream_type kryoflux_stream;
 extern struct stream_type diskread;
@@ -91,15 +94,27 @@ void stream_next_index(struct stream *s)
     } while (s->index_offset != 0);
 }
 
+void stream_start_crc(struct stream *s)
+{
+    uint16_t x = htons(mfm_decode_bits(MFM_all, s->word));
+    s->crc16_ccitt = crc16_ccitt(&x, 2, 0xffff);
+    s->crc_bitoff = 0;
+}
+
 int stream_next_bit(struct stream *s)
 {
     int b;
     if (s->nr_index >= 5)
         return -1;
     s->index_offset++;
-    b = s->type->next_bit(s);
-    if (b != -1)
-        s->word = (s->word << 1) | b;
+    if ((b = s->type->next_bit(s)) == -1)
+        return -1;
+    s->word = (s->word << 1) | b;
+    if (++s->crc_bitoff == 16) {
+        uint8_t b = mfm_decode_bits(MFM_all, s->word);
+        s->crc16_ccitt = crc16_ccitt(&b, 1, s->crc16_ccitt);
+        s->crc_bitoff = 0;
+    }
     return b;
 }
 

@@ -42,28 +42,26 @@ static void *blue_byte_write_mfm(
 
     while (stream_next_bit(s) != -1) {
 
-        uint8_t mfm[2*(2+4+6032+2)], dat[2+4+6032+2];
+        uint8_t dat[2*(4+6032+2)];
 
         if (s->word != 0x5542aaaa)
             continue;
 
         ti->data_bitoff = s->index_offset - 31;
 
-        *(uint32_t *)mfm = htonl(s->word);
-        if (stream_next_bytes(s, &mfm[4], sizeof(mfm)-4) == -1)
+        stream_start_crc(s);
+        if (stream_next_bytes(s, dat, sizeof(dat)) == -1)
             goto fail;
-
-        mfm_decode_bytes(MFM_all, sizeof(dat), mfm, dat);
-        if (crc16_ccitt(dat, sizeof(dat), 0xffff) != 0)
+        if (s->crc16_ccitt != 0)
             continue;
 
-        mfm_decode_bytes(MFM_even_odd, 4, &mfm[4], dat);
+        mfm_decode_bytes(MFM_even_odd, 4, dat, dat);
         if ((dat[0] != trknr(tracknr)) || (dat[1] != 1) ||
             (dat[2] != 0) || (dat[3] != 0))
             continue;
 
         for (i = 0; i < ti->len/4; i++)
-            mfm_decode_bytes(MFM_even_odd, 4, &mfm[12+8*i], &block[i]);
+            mfm_decode_bytes(MFM_even_odd, 4, &dat[8+8*i], &block[i]);
 
         ti->valid_sectors = (1u << ti->nr_sectors) - 1;
         return block;
