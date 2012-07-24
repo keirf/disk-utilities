@@ -331,6 +331,9 @@ probe
 "Phantom Fighter" # Track 1 may be empty
     * amigados phantom_fighter
 
+"Pinball Dreams" # Tracks 1, 66-155, 158+ may be empty on either disk
+    * amigados pinball_dreams
+
 "Pools Of Darkness" = amigados
 
 "Pro Tennis Tour" = blue_byte
