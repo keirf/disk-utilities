@@ -9,6 +9,8 @@ probe
 ####################
 # Game List - every checked game is listed here
 
+"A-10 Tank Killer" = amigados
+
 # Alien Breed: Disk 2 Track 0 is a custom protection track
 "Alien Breed"
     0 amigados alienbreed_protection
@@ -89,6 +91,8 @@ probe
 
 "Blade Of Destiny" = amigados
 
+"Blue Max" = amigados
+
 "Body Blows" = rnc_pdos
 "Body Blows Galactic" = rnc_pdos
 
@@ -148,6 +152,8 @@ probe
 
 "Exolon" = amigados_copylock
 
+"F-15 Strike Eagle II" = amigados
+
 "F17 Challenge" = rnc_pdos
 
 "F/A-18 Interceptor" = amigados
@@ -193,6 +199,8 @@ probe
 "Gods" = amigados_copylock
 
 "Great Courts" = blue_byte
+
+"Gunship 2000" = amigados
 
 "Harlequin"
     * amigados gremlin
@@ -254,6 +262,9 @@ probe
 
 "Liberation" = amigados
 
+# Tracks may be mastered long, casuing harmless warnings
+"Lombard RAC Rally" = amigados
+
 "Lotus Turbo Challenge" = gremlin_protected
 "Lotus II" = gremlin_protected
 "Lotus III"
@@ -281,6 +292,11 @@ probe
     * amigados rainbird
 
 "Might And Magic III" = amigados
+
+"Monopoly" = amigados
+
+"Mortal Kombat" = rnc_pdos_copylock
+"Mortal Kombat II" = rnc_pdos_copylock
 
 "Motorbike Madness" = amigados_copylock
 
@@ -354,11 +370,17 @@ probe
 # Hit Squad re-release has no copylock
 "Rainbow Islands" = amigados_copylock
 
+"Reach For The Skies" = amigados
+
 "Rotox" = amigados
+
+"Sensible Soccer" = sensible
 
 "Side Arms"
     2-12/2 ignore
     * amigados
+
+"Skyfox" = amigados
 
 "Slayer" = amigados_copylock
 
@@ -399,6 +421,8 @@ probe
     * amigados
 
 "Time Machine" = amigados_copylock
+
+"Titanic Blinky" = amigados_copylock
 
 "Tower Of Babel" = amigados
 
