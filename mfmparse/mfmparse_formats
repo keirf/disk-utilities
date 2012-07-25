@@ -381,7 +381,7 @@ probe
     * amigados
 
 "Skyfox"
-    1 amigados_longtrack
+    1 amigados_longtrack # ~110000 bits
     * amigados
 
 "Slayer" = amigados_copylock
@@ -411,7 +411,7 @@ probe
 "Switchblade 2" = gremlin_protected
 
 "Targhan"
-    158-159 amigados_longtrack
+    158-159 amigados_longtrack  # ~105500 bits
     * amigados
 
 "The Magnetic Scrolls Collection" = amigados
