@@ -70,6 +70,13 @@ static void di_reset(struct stream *s)
 {
     struct di_stream *dis = container_of(s, struct di_stream, s);
 
+    if (dis->track_mfm->has_weak_bits) {
+        unsigned int tracknr = dis->track;
+        dis->track = ~0u;
+        if (di_select_track(s, tracknr))
+            BUG();
+    }
+
     index_reset(s);
     dis->pos = 0;
 }
@@ -79,10 +86,8 @@ static int di_next_bit(struct stream *s)
     struct di_stream *dis = container_of(s, struct di_stream, s);
     uint8_t dat;
 
-    if (++dis->pos >= dis->track_mfm->bitlen) {
-        dis->pos = 0;
-        index_reset(s);
-    }
+    if (++dis->pos >= dis->track_mfm->bitlen)
+        di_reset(s);
 
     dat = !!(dis->track_mfm->mfm[dis->pos >> 3] & (0x80u >> (dis->pos & 7)));
     s->latency += (dis->ns_per_cell *

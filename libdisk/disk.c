@@ -157,6 +157,7 @@ struct track_mfm *track_mfm_get(struct disk *d, unsigned int tracknr)
     track_mfm->mfm = tbuf.mfm;
     track_mfm->speed = tbuf.speed;
     track_mfm->bitlen = tbuf.len;
+    track_mfm->has_weak_bits = tbuf.has_weak_bits;
     return track_mfm;
 }
 
@@ -320,6 +321,7 @@ void tbuf_init(struct track_buffer *tbuf, uint32_t bitstart, uint32_t bitlen)
     tbuf->prev_data_bit = 0;
     tbuf->bit = mfm_tbuf_bit;
     tbuf->gap = NULL;
+    tbuf->weak = NULL;
 }
 
 static void tbuf_finalise(struct track_buffer *tbuf)
@@ -410,6 +412,18 @@ void tbuf_gap(struct track_buffer *tbuf, uint16_t speed, unsigned int bits)
     } else {
         while (bits--)
             tbuf->bit(tbuf, speed, MFM_all, 0);
+    }
+}
+
+void tbuf_weak(struct track_buffer *tbuf, uint16_t speed, unsigned int bits)
+{
+    tbuf->has_weak_bits = 1;
+    if (tbuf->weak != NULL) {
+        tbuf->weak(tbuf, speed, bits);
+    } else {
+        static unsigned int seed = 0;
+        while (bits--)
+            tbuf->bit(tbuf, speed, MFM_all, rand_r(&seed) & 1);
     }
 }
 

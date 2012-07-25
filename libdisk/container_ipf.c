@@ -79,10 +79,13 @@ struct ipf_img {
     uint32_t trkbits;  /* databits + gapbits */
     uint32_t blkcnt;   /* e.g., 11 for DOS */
     uint32_t process;  /* 0 */
-    uint32_t flag;     /* 0 (unless weak bits) */
+    uint32_t flags;    /* 0 (unless weak bits) */
     uint32_t dat_chunk; /* id */
     uint32_t reserved[3];
 };
+
+/* ipf_img.flags */
+#define IMGF_FLAKEY (1u<<0)
 
 /* Density type codes */
 enum dentype { denNoise=1, denUniform=2, denCopylock=3, denSpeedlock=6 };
@@ -139,27 +142,29 @@ struct ipf_tbuf {
 static void ipf_tbuf_finish_chunk(
     struct ipf_tbuf *ibuf, unsigned int new_chunktype)
 {
-    unsigned int chunklen, chunkbytes, cntlen, i, j;
+    unsigned int chunklen, cntlen, i, j;
 
-    chunklen = chunkbytes = ibuf->len - ibuf->chunkstart;
+    chunklen = ibuf->len - ibuf->chunkstart;
     if (ibuf->encoder == ENC_SPS)
-        chunklen = chunkbytes*8 + ibuf->bits;
+        chunklen = chunklen*8 + ibuf->bits;
     else if (ibuf->bits != 0)
         ibuf->need_sps_encoder = 1;
 
     if (ibuf->bits != 0) {
         ibuf->len++;
-        chunkbytes++;
         ibuf->bits = 0;
     }
 
-    if (chunkbytes == 0)
+    if (chunklen == 0)
         goto out;
+
+    if (ibuf->chunktype == chkFlaky)
+        ibuf->len = ibuf->chunkstart;
 
     for (i = chunklen, cntlen = 0; i > 0; i >>= 8)
         cntlen++;
     memmove(&ibuf->dat[ibuf->chunkstart + 1 + cntlen],
-            &ibuf->dat[ibuf->chunkstart], chunkbytes);
+            &ibuf->dat[ibuf->chunkstart], ibuf->len - ibuf->chunkstart);
     ibuf->dat[ibuf->chunkstart] = ibuf->chunktype | (cntlen << 5);
     for (i = chunklen, j = 0; i > 0; i >>= 8, j++)
         ibuf->dat[ibuf->chunkstart + cntlen - j] = (uint8_t)i;
@@ -221,6 +226,17 @@ static void ipf_tbuf_gap(
 
     /* This is both a chunk and a block boundary. */
     ipf_tbuf_finish_chunk(ibuf, chkEnd);
+}
+
+static void ipf_tbuf_weak(
+    struct track_buffer *tbuf, uint16_t speed, unsigned int bits)
+{
+    struct ipf_tbuf *ibuf = container_of(tbuf, struct ipf_tbuf, tbuf);
+
+    ipf_tbuf_finish_chunk(ibuf, chkFlaky);
+    ibuf->decoded_bits += 2*bits;
+    ibuf->len += bits/8;
+    ibuf->bits = bits&7;
 }
 
 static int ipf_open(struct disk *d)
@@ -321,6 +337,7 @@ static bool_t __ipf_close(struct disk *d, uint32_t encoder)
             /* Go get the encoded track data. */
             ibuf.tbuf.bit = ipf_tbuf_bit;
             ibuf.tbuf.gap = ipf_tbuf_gap;
+            ibuf.tbuf.weak = ipf_tbuf_weak;
             ibuf.dat = dat;
             ibuf.blk = blk;
             ibuf.chunktype = chkGap;
@@ -350,6 +367,8 @@ static bool_t __ipf_close(struct disk *d, uint32_t encoder)
             /* Finish the IMGE chunk. */
             img->gapbits = img->trkbits - img->databits;
             img->blkcnt = ibuf.nr_blks;
+            if (ibuf.tbuf.has_weak_bits)
+                img->flags |= IMGF_FLAKEY;
 
             /* Convert endianness of all block descriptors. */
             for (j = 0; j < img->blkcnt * sizeof(*blk) / 4; j++)

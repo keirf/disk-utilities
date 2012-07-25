@@ -95,6 +95,7 @@ struct track_mfm {
     uint8_t *mfm;
     uint16_t *speed;
     uint32_t bitlen;
+    uint8_t has_weak_bits;
 };
 struct track_mfm *track_mfm_get(struct disk *d, unsigned int tracknr);
 void track_mfm_put(struct track_mfm *);
