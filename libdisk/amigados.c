@@ -144,7 +144,8 @@ static void *ados_write_mfm(
 
     basic_type = TRKTYP_amigados;
     if (ti->type == TRKTYP_amigados_longtrack) {
-        ti->total_bits = 105500;
+        stream_next_index(s);
+        ti->total_bits = (s->track_bitlen > 107000) ? 110000: 105500;
         basic_type = TRKTYP_amigados_longtrack;
     }
 

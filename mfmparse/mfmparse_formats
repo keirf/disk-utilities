@@ -380,7 +380,9 @@ probe
     2-12/2 ignore
     * amigados
 
-"Skyfox" = amigados
+"Skyfox"
+    1 amigados_longtrack
+    * amigados
 
 "Slayer" = amigados_copylock
 
