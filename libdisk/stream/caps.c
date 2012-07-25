@@ -22,11 +22,11 @@ struct caps_stream {
     CapsLong container;
 
     /* Current track info */
-    unsigned int track, rev;
+    unsigned int track;
     uint8_t *mfm;
     uint16_t *speed;
     uint32_t pos, bitlen, ns_per_cell;
-    struct CapsTrackInfo ti;
+    struct CapsTrackInfoT1 ti;
 };
 
 static struct {
@@ -173,18 +173,6 @@ static void caps_close(struct stream *s)
     put_capslib();
 }
 
-static void caps_nextrevolution(struct stream *s)
-{
-    struct caps_stream *cpss = container_of(s, struct caps_stream, s);
-
-    cpss->rev = (cpss->rev + 1) % cpss->ti.trackcnt;
-    cpss->mfm = cpss->ti.trackdata[cpss->rev];
-    cpss->bitlen = cpss->ti.tracksize[cpss->rev] * 8;
-    cpss->pos = 0;
-    cpss->ns_per_cell = 200000000u / cpss->bitlen;
-    index_reset(s);
-}
-
 static int caps_select_track(struct stream *s, unsigned int tracknr)
 {
     struct caps_stream *cpss = container_of(s, struct caps_stream, s);
@@ -197,11 +185,14 @@ static int caps_select_track(struct stream *s, unsigned int tracknr)
     cpss->track = ~0u;
     memfree(cpss->speed);
     cpss->speed = NULL;
+
     memset(&cpss->ti, 0, sizeof(cpss->ti));
-    rc = CAPSLockTrack(&cpss->ti, cpss->container,
+    cpss->ti.type = 1;
+    rc = CAPSLockTrack((struct CapsTrackInfo *)&cpss->ti, cpss->container,
                        tracknr / 2, tracknr & 1, CAPS_FLAGS);
     if (rc)
         return -1;
+
     cpss->track = tracknr;
     if (cpss->ti.timelen) {
         cpss->speed = memalloc(cpss->ti.timelen * sizeof(uint16_t));
@@ -215,9 +206,22 @@ static int caps_select_track(struct stream *s, unsigned int tracknr)
 static void caps_reset(struct stream *s)
 {
     struct caps_stream *cpss = container_of(s, struct caps_stream, s);
+    int rc;
 
-    cpss->rev = cpss->ti.trackcnt - 1;
-    caps_nextrevolution(s);
+    if (cpss->ti.type & CTIT_FLAG_FLAKEY) {
+        memset(&cpss->ti, 0, sizeof(cpss->ti));
+        cpss->ti.type = 1;
+        rc = CAPSLockTrack((struct CapsTrackInfo *)&cpss->ti, cpss->container,
+                           cpss->track / 2, cpss->track & 1, CAPS_FLAGS);
+        BUG_ON(rc);
+    }
+
+    cpss->mfm = cpss->ti.trackbuf;
+    cpss->bitlen = cpss->ti.tracklen * 8;
+    cpss->pos = 0;
+    cpss->ns_per_cell = 200000000u / cpss->bitlen;
+
+    index_reset(s);
 }
 
 static int caps_next_bit(struct stream *s)
@@ -227,7 +231,7 @@ static int caps_next_bit(struct stream *s)
     uint8_t dat;
 
     if (++cpss->pos >= cpss->bitlen)
-        caps_nextrevolution(s);
+        caps_reset(s);
 
     dat = !!(cpss->mfm[cpss->pos >> 3] & (0x80u >> (cpss->pos & 7)));
     speed = ((cpss->pos >> 3) < cpss->ti.timelen)
