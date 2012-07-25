@@ -40,10 +40,8 @@ static int ss_next_bit(struct stream *s)
     uint16_t speed;
     uint8_t dat;
 
-    if (++ss->pos >= ss->bitlen) {
-        ss->pos = 0;
-        index_reset(s);
-    }
+    if (++ss->pos >= ss->bitlen)
+        ss_reset(s);
 
     dat = !!(ss->dat[ss->pos >> 3] & (0x80u >> (ss->pos & 7)));
     speed = ss->speed ? ss->speed[ss->pos >> 3] : 1000u;

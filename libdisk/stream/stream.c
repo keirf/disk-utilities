@@ -83,7 +83,8 @@ void stream_reset(struct stream *s)
     s->latency = 0;
     s->index_offset = ~0u>>1; /* bad */
     s->type->reset(s);
-    stream_next_index(s);
+    if (s->nr_index == 0)
+        stream_next_index(s);
 }
 
 void stream_next_index(struct stream *s)
