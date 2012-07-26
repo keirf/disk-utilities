@@ -46,6 +46,8 @@ static struct container *container_from_filename(
     p++;
     if (!strcmp(p, "adf"))
         return &container_adf;
+    if (!strcmp(p, "eadf"))
+        return &container_eadf;
     if (!strcmp(p, "dsk"))
         return &container_dsk;
     if (!strcmp(p, "ipf"))
@@ -83,7 +85,7 @@ struct disk *disk_open(const char *name, int read_only)
 {
     struct disk *d;
     struct container *c;
-    int fd, rc;
+    int fd;
 
     if ((c = container_from_filename(name)) == NULL)
         return NULL;
@@ -96,10 +98,9 @@ struct disk *disk_open(const char *name, int read_only)
     d = memalloc(sizeof(*d));
     d->fd = fd;
     d->read_only = read_only;
-    d->container = c;
+    d->container = c->open(d);
 
-    rc = c->open(d);
-    if (!rc) {
+    if (!d->container) {
         warnx("%s: Bad disk image", name);
         memfree(d);
         return NULL;
@@ -314,14 +315,12 @@ static void mfm_tbuf_bit(
 void tbuf_init(struct track_buffer *tbuf, uint32_t bitstart, uint32_t bitlen)
 {
     unsigned int bytes = bitlen + 7 / 8;
+    memset(tbuf, 0, sizeof(*tbuf));
     tbuf->start = tbuf->pos = bitstart;
     tbuf->len = bitlen;
     tbuf->mfm = memalloc(bytes);
     tbuf->speed = memalloc(2*bytes);
-    tbuf->prev_data_bit = 0;
     tbuf->bit = mfm_tbuf_bit;
-    tbuf->gap = NULL;
-    tbuf->weak = NULL;
 }
 
 static void tbuf_finalise(struct track_buffer *tbuf)

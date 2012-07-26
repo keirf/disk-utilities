@@ -95,7 +95,7 @@ void dsk_init(struct disk *d)
     d->tags->tag.id = DSKTAG_end;
 }
 
-static int dsk_open(struct disk *d)
+static struct container *dsk_open(struct disk *d)
 {
     struct disk_header dh;
     struct track_header th;
@@ -110,7 +110,7 @@ static int dsk_open(struct disk *d)
     read_exact(d->fd, &dh, sizeof(dh));
     if (strncmp(dh.signature, "DSK\0", 4) ||
         (ntohs(dh.version) != 0))
-        return 0;
+        return NULL;
 
     di = memalloc(sizeof(*di));
     di->nr_tracks = ntohs(dh.nr_tracks);
@@ -152,7 +152,7 @@ static int dsk_open(struct disk *d)
     *pprevtag = NULL;
 
     d->di = di;
-    return 1;
+    return &container_dsk;
 }
 
 static void dsk_close(struct disk *d)

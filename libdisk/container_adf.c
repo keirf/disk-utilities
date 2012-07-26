@@ -44,66 +44,7 @@ static void adf_init(struct disk *d)
         adf_init_track(&di->track[i]);
 }
 
-static int ext_adf_open(struct disk *d)
-{
-    struct {
-        uint16_t rsvd, nr_tracks;
-    } dhdr;
-    struct {
-        uint16_t rsvd, type;
-        uint32_t len, bitlen;
-    } thdr;
-    struct disk_info *di;
-    struct track_info *ti;
-    unsigned int i;
-
-    if (!d->read_only) {
-        warnx("Can only open Extended ADF files for reading");
-        return 0;
-    }
-
-    read_exact(d->fd, &dhdr, sizeof(dhdr));
-
-    d->di = di = memalloc(sizeof(*di));
-    di->nr_tracks = ntohs(dhdr.nr_tracks);
-    di->track = memalloc(di->nr_tracks * sizeof(struct track_info));
-
-    for (i = 0; i < di->nr_tracks; i++) {
-        ti = &di->track[i];
-        read_exact(d->fd, &thdr, sizeof(thdr));
-        thdr.type = ntohs(thdr.type);
-        if (thdr.type != 1) {
-            warnx("Bad track type %u in Ext-ADF", thdr.type);
-            goto cleanup_error;
-        }
-        init_track_info(ti, TRKTYP_raw);
-        ti->len = ntohl(thdr.len);
-        if (ti->len == 0) {
-            init_track_info(ti, TRKTYP_unformatted);
-            ti->total_bits = TRK_WEAK;
-        } else {
-            ti->dat = memalloc(ti->len);
-            ti->total_bits = ntohl(thdr.bitlen);
-        }
-    }
-
-    for (i = 0; i < di->nr_tracks; i++) {
-        ti = &di->track[i];
-        read_exact(d->fd, ti->dat, ti->len);
-    }
-
-    return 1;
-
-cleanup_error:
-    for (i = 0; i < di->nr_tracks; i++)
-        memfree(di->track[i].dat);
-    memfree(di->track);
-    memfree(di);
-    d->di = NULL;
-    return 0;
-}
-
-static int adf_open(struct disk *d)
+static struct container *adf_open(struct disk *d)
 {
     struct track_info *ti;
     struct disk_info *di;
@@ -113,12 +54,12 @@ static int adf_open(struct disk *d)
 
     read_exact(d->fd, sig, sizeof(sig));
     if (!strncmp(sig, "UAE-1ADF", sizeof(sig)))
-        return ext_adf_open(d);
+        return container_eadf.open(d);
 
     sz = lseek(d->fd, 0, SEEK_END);
     if (sz != 160*512*11) {
         warnx("ADF file bad size: %lu bytes", (unsigned long)sz);
-        return 0;
+        return NULL;
     }
     lseek(d->fd, 0, SEEK_SET);
 
@@ -139,7 +80,7 @@ static int adf_open(struct disk *d)
         }
     }
 
-    return 1;
+    return &container_adf;
 }
 
 static void adf_close(struct disk *d)

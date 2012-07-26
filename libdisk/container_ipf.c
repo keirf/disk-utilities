@@ -239,10 +239,10 @@ static void ipf_tbuf_weak(
     ibuf->bits = bits&7;
 }
 
-static int ipf_open(struct disk *d)
+static struct container *ipf_open(struct disk *d)
 {
     /* not supported */
-    return 0;
+    return NULL;
 }
 
 static void ipf_write_chunk(

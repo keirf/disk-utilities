@@ -86,7 +86,7 @@ struct container {
     /* Create a brand new empty container. */
     void (*init)(struct disk *);
     /* Open an existing container file. */
-    int (*open)(struct disk *);
+    struct container *(*open)(struct disk *);
     /* Close, writing back any pending changes. */
     void (*close)(struct disk *);
     /* Analyse and write an MFM stream to given track in container. */
@@ -96,6 +96,7 @@ struct container {
 
 /* Supported container formats. */
 extern struct container container_adf;
+extern struct container container_eadf;
 extern struct container container_dsk;
 extern struct container container_ipf;
 

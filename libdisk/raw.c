@@ -26,7 +26,7 @@ static void raw_read_mfm(
         tbuf_bytes(tbuf, SPEED_AVG, MFM_raw, ti->total_bits/8, ti->dat);
     if (ti->total_bits%8)
         tbuf_bits(tbuf, SPEED_AVG, MFM_raw, ti->total_bits%8,
-                  ti->dat[ti->total_bits/8]);
+                  ti->dat[ti->total_bits/8] >> (8 - ti->total_bits%8));
 }
 
 struct track_handler raw_handler = {
