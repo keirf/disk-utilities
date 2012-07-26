@@ -418,6 +418,9 @@ probe
     158-159 amigados_longtrack  # ~105500 bits
     * amigados
 
+"Tecnoball"
+    * amigados tlk_dos
+
 "The Magnetic Scrolls Collection" = amigados
 
 "The Munsters" = amigados_copylock

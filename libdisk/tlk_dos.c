@@ -1,0 +1,146 @@
+/*
+ * disk/tlk_dos.c
+ * 
+ * TLK-DOS Custom format used on TLK releases such as Tecnoball.
+ * 
+ * Written in 2012 by Keir Fraser
+ * 
+ * RAW TRACK LAYOUT:
+ *  u16 <sync>,<sync>
+ *  u16 ff54
+ *  u16 ~tracknr
+ *  u16 csum_lo, csum_hi
+ *  u16 dat[6292/2]
+ * Checksum is ADD.L over all words in dat[].
+ * Encoding is odd/even MFM blocks. Block size and sync varies by track:
+ * found via lookup in a table indexed by tracknr/4.
+ * 
+ * TRKTYP_tlk_dos data layout:
+ *  u8 sector_data[6292]
+ */
+
+#include <libdisk/util.h>
+#include "private.h"
+
+#include <arpa/inet.h>
+
+/* Sync and encoding-block-size for each group of 4 tracks. */
+static struct track_param {
+    uint16_t sync, blksz;
+} track_param[] = {
+    { 0x4489, 0x189c }, { 0x4489, 0x0032 },
+    { 0x2a4d, 0x0064 }, { 0x2a8b, 0x0032 },
+    { 0x4489, 0x0024 }, { 0x4489, 0x04ec },
+    { 0x4489, 0x000a }, { 0x2a8b, 0x000a },
+    { 0x4489, 0x001c }, { 0x2a8b, 0x0046 },
+    { 0x2aad, 0x01c2 }, { 0x4489, 0x00d2 },
+    { 0x2a8b, 0x00fc }, { 0x2aad, 0x0096 },
+    { 0x4489, 0x00b4 }, { 0x4489, 0x002a },
+    { 0x4489, 0x0046 }, { 0x2a8b, 0x007e },
+    { 0x2aad, 0x0276 }, { 0x2aad, 0x012c },
+    { 0x4489, 0x0014 }, { 0x4489, 0x0006 },
+    { 0x2aad, 0x001e }, { 0x4489, 0x007e },
+    { 0x2a4d, 0x0834 }, { 0x2a8b, 0x00b4 },
+    { 0x2a8b, 0x0012 }, { 0x2aad, 0x04ec },
+    { 0x2a8b, 0x0834 }, { 0x4489, 0x189c },
+    { 0x4489, 0x189c }, { 0x4489, 0x189c },
+    { 0x4489, 0x189c }, { 0x4489, 0x189c },
+    { 0x4489, 0x189c }, { 0x4489, 0x189c },
+    { 0x4489, 0x189c }, { 0x4489, 0x189c },
+    { 0x4489, 0x189c }, { 0x4489, 0x189c }
+};
+
+static void *tlk_dos_write_mfm(
+    struct disk *d, unsigned int tracknr, struct stream *s)
+{
+    struct track_info *ti = &d->di->track[tracknr];
+    struct track_param *param = &track_param[tracknr/4];
+    uint32_t sync = ((uint32_t)param->sync << 16) | param->sync;
+
+    while (stream_next_bit(s) != -1) {
+
+        uint32_t csum, sum;
+        uint16_t dat[6300];
+        unsigned int i;
+        char *block;
+
+        if (s->word != sync)
+            continue;
+
+        ti->data_bitoff = s->index_offset - 31;
+
+        if (stream_next_bytes(s, dat, sizeof(dat)) == -1)
+            goto fail;
+        for (i = 0; i < (6300/param->blksz); i++)
+            mfm_decode_bytes(MFM_odd_even, param->blksz,
+                             &dat[i*param->blksz], &dat[(i*param->blksz)/2]);
+
+        /* TLK-ID */
+        if (ntohs(dat[0]) != 0xff54)
+            continue;
+
+        /* Track no. */
+        if ((uint16_t)~ntohs(dat[1]) != tracknr)
+            continue;
+
+        /* Checksum */
+        csum = 0;
+        for (i = 4; i < 6300/2; i++)
+            csum += ntohs(dat[i]);
+        sum = ntohs(dat[2]) | ((uint32_t)ntohs(dat[3]) << 16);
+        if (sum != csum)
+            continue;
+
+        block = memalloc(ti->len);
+        memcpy(block, &dat[4], ti->len);
+        ti->valid_sectors = (1u << ti->nr_sectors) - 1;
+        ti->total_bits = 101500;
+        return block;
+    }
+
+fail:
+    return NULL;
+}
+
+static void tlk_dos_read_mfm(
+    struct disk *d, unsigned int tracknr, struct track_buffer *tbuf)
+{
+    struct track_info *ti = &d->di->track[tracknr];
+    struct track_param *param = &track_param[tracknr/4];
+    uint16_t dat[6300/2];
+    uint32_t csum = 0;
+    unsigned int i;
+
+    memcpy(&dat[4], ti->dat, ti->len);
+    for (i = 4; i < 6300/2; i++)
+        csum += ntohs(dat[i]);
+
+    dat[0] = htons(0xff54);
+    dat[1] = htons(~tracknr);
+    dat[2] = htons(csum);
+    dat[3] = htons(csum >> 16);
+
+    tbuf_bits(tbuf, SPEED_AVG, MFM_raw, 16, param->sync);
+    tbuf_bits(tbuf, SPEED_AVG, MFM_raw, 16, param->sync);
+
+    for (i = 0; i < (6300/param->blksz); i++)
+        tbuf_bytes(tbuf, SPEED_AVG, MFM_odd_even, param->blksz,
+                   &dat[(i*param->blksz)/2]);
+}
+
+struct track_handler tlk_dos_handler = {
+    .bytes_per_sector = 6292,
+    .nr_sectors = 1,
+    .write_mfm = tlk_dos_write_mfm,
+    .read_mfm = tlk_dos_read_mfm
+};
+
+/*
+ * Local variables:
+ * mode: C
+ * c-file-style: "Linux"
+ * c-basic-offset: 4
+ * tab-width: 4
+ * indent-tabs-mode: nil
+ * End:
+ */
