@@ -25,37 +25,20 @@
 #include <arpa/inet.h>
 
 /* Sync and encoding-block-size for each group of 4 tracks. */
-static struct track_param {
+struct track_param {
     uint16_t sync, blksz;
-} track_param[] = {
-    { 0x4489, 0x189c }, { 0x4489, 0x0032 },
-    { 0x2a4d, 0x0064 }, { 0x2a8b, 0x0032 },
-    { 0x4489, 0x0024 }, { 0x4489, 0x04ec },
-    { 0x4489, 0x000a }, { 0x2a8b, 0x000a },
-    { 0x4489, 0x001c }, { 0x2a8b, 0x0046 },
-    { 0x2aad, 0x01c2 }, { 0x4489, 0x00d2 },
-    { 0x2a8b, 0x00fc }, { 0x2aad, 0x0096 },
-    { 0x4489, 0x00b4 }, { 0x4489, 0x002a },
-    { 0x4489, 0x0046 }, { 0x2a8b, 0x007e },
-    { 0x2aad, 0x0276 }, { 0x2aad, 0x012c },
-    { 0x4489, 0x0014 }, { 0x4489, 0x0006 },
-    { 0x2aad, 0x001e }, { 0x4489, 0x007e },
-    { 0x2a4d, 0x0834 }, { 0x2a8b, 0x00b4 },
-    { 0x2a8b, 0x0012 }, { 0x2aad, 0x04ec },
-    { 0x2a8b, 0x0834 }, { 0x4489, 0x189c },
-    { 0x4489, 0x189c }, { 0x4489, 0x189c },
-    { 0x4489, 0x189c }, { 0x4489, 0x189c },
-    { 0x4489, 0x189c }, { 0x4489, 0x189c },
-    { 0x4489, 0x189c }, { 0x4489, 0x189c },
-    { 0x4489, 0x189c }, { 0x4489, 0x189c }
 };
 
 static void *tlk_dos_write_mfm(
-    struct disk *d, unsigned int tracknr, struct stream *s)
+    struct disk *d, unsigned int tracknr, struct stream *s,
+    uint16_t tlk_id, const struct track_param *track_param)
 {
     struct track_info *ti = &d->di->track[tracknr];
-    struct track_param *param = &track_param[tracknr/4];
+    const struct track_param *param = &track_param[tracknr/4];
     uint32_t sync = ((uint32_t)param->sync << 16) | param->sync;
+
+    if (tracknr >= 160)
+        return NULL;
 
     while (stream_next_bit(s) != -1) {
 
@@ -76,7 +59,7 @@ static void *tlk_dos_write_mfm(
                              &dat[i*param->blksz], &dat[(i*param->blksz)/2]);
 
         /* TLK-ID */
-        if (ntohs(dat[0]) != 0xff54)
+        if (ntohs(dat[0]) != tlk_id)
             continue;
 
         /* Track no. */
@@ -103,10 +86,11 @@ fail:
 }
 
 static void tlk_dos_read_mfm(
-    struct disk *d, unsigned int tracknr, struct track_buffer *tbuf)
+    struct disk *d, unsigned int tracknr, struct track_buffer *tbuf,
+    uint16_t tlk_id, const struct track_param *track_param)
 {
     struct track_info *ti = &d->di->track[tracknr];
-    struct track_param *param = &track_param[tracknr/4];
+    const struct track_param *param = &track_param[tracknr/4];
     uint16_t dat[6300/2];
     uint32_t csum = 0;
     unsigned int i;
@@ -115,7 +99,7 @@ static void tlk_dos_read_mfm(
     for (i = 4; i < 6300/2; i++)
         csum += ntohs(dat[i]);
 
-    dat[0] = htons(0xff54);
+    dat[0] = htons(tlk_id);
     dat[1] = htons(~tracknr);
     dat[2] = htons(csum);
     dat[3] = htons(csum >> 16);
@@ -128,11 +112,88 @@ static void tlk_dos_read_mfm(
                    &dat[(i*param->blksz)/2]);
 }
 
-struct track_handler tlk_dos_handler = {
+const static struct track_param tlk1_param[] = {
+    { 0x4489, 0x189c }, { 0x4489, 0x0032 },
+    { 0x2a4d, 0x0064 }, { 0x2a8b, 0x0032 },
+    { 0x4489, 0x0024 }, { 0x4489, 0x04ec },
+    { 0x4489, 0x000a }, { 0x2a8b, 0x000a },
+    { 0x4489, 0x001c }, { 0x2a8b, 0x0046 },
+    { 0x2aad, 0x01c2 }, { 0x4489, 0x00d2 },
+    { 0x2a8b, 0x00fc }, { 0x2aad, 0x0096 },
+    { 0x4489, 0x00b4 }, { 0x4489, 0x002a },
+    { 0x4489, 0x0046 }, { 0x2a8b, 0x007e },
+    { 0x2aad, 0x0276 }, { 0x2aad, 0x012c },
+    { 0x4489, 0x0014 }, { 0x4489, 0x0006 },
+    { 0x2aad, 0x001e }, { 0x4489, 0x007e },
+    { 0x2a4d, 0x0834 }, { 0x2a8b, 0x00b4 },
+    { 0x2a8b, 0x0012 }, { 0x2aad, 0x04ec },
+    { 0x2a8b, 0x0834 }, { 0x4489, 0x189c },
+    { 0x4489, 0x189c }, { 0x4489, 0x189c },
+    { 0x4489, 0x189c }, { 0x4489, 0x189c },
+    { 0x4489, 0x189c }, { 0x4489, 0x189c },
+    { 0x4489, 0x189c }, { 0x4489, 0x189c },
+    { 0x4489, 0x189c }, { 0x4489, 0x189c }
+};
+
+static void *tlk_dos_1_write_mfm(
+    struct disk *d, unsigned int tracknr, struct stream *s)
+{
+    return tlk_dos_write_mfm(d, tracknr, s, 0xff54, tlk1_param);
+}
+
+static void tlk_dos_1_read_mfm(
+    struct disk *d, unsigned int tracknr, struct track_buffer *tbuf)
+{
+    tlk_dos_read_mfm(d, tracknr, tbuf, 0xff54, tlk1_param);
+}
+
+struct track_handler tlk_dos_1_handler = {
     .bytes_per_sector = 6292,
     .nr_sectors = 1,
-    .write_mfm = tlk_dos_write_mfm,
-    .read_mfm = tlk_dos_read_mfm
+    .write_mfm = tlk_dos_1_write_mfm,
+    .read_mfm = tlk_dos_1_read_mfm
+};
+
+const static struct track_param tlk2_param[] = {
+    { 0x4489, 0x189c }, { 0x4489, 0x189c }, 
+    { 0x4489, 0x0064 }, { 0x2a8b, 0x0032 }, 
+    { 0x4489, 0x0024 }, { 0x4489, 0x04ec }, 
+    { 0x4489, 0x000a }, { 0x2a8b, 0x000a }, 
+    { 0x4489, 0x001c }, { 0x2a8b, 0x0046 }, 
+    { 0x2a8b, 0x0834 }, { 0x2aad, 0x01c2 }, 
+    { 0x4489, 0x00d2 }, { 0x2a8b, 0x00fc }, 
+    { 0x2aad, 0x0096 }, { 0x4489, 0x00b4 }, 
+    { 0x4489, 0x002a }, { 0x4489, 0x0046 }, 
+    { 0x2a8b, 0x007e }, { 0x2aad, 0x0276 }, 
+    { 0x2aad, 0x012c }, { 0x4489, 0x0014 }, 
+    { 0x4489, 0x0006 }, { 0x2aad, 0x001e }, 
+    { 0x4489, 0x007e }, { 0x2a4d, 0x0834 }, 
+    { 0x2a8b, 0x00b4 }, { 0x2a8b, 0x0012 }, 
+    { 0x2aad, 0x04ec }, { 0x2aad, 0x189c }, 
+    { 0x2aad, 0x189c }, { 0x2aad, 0x189c }, 
+    { 0x2aad, 0x189c }, { 0x2aad, 0x189c }, 
+    { 0x2aad, 0x189c }, { 0x2aad, 0x189c }, 
+    { 0x2aad, 0x189c }, { 0x2aad, 0x189c }, 
+    { 0x2aad, 0x189c }, { 0x2aad, 0x189c }
+};
+
+static void *tlk_dos_2_write_mfm(
+    struct disk *d, unsigned int tracknr, struct stream *s)
+{
+    return tlk_dos_write_mfm(d, tracknr, s, 0xff56, tlk2_param);
+}
+
+static void tlk_dos_2_read_mfm(
+    struct disk *d, unsigned int tracknr, struct track_buffer *tbuf)
+{
+    tlk_dos_read_mfm(d, tracknr, tbuf, 0xff56, tlk2_param);
+}
+
+struct track_handler tlk_dos_2_handler = {
+    .bytes_per_sector = 6292,
+    .nr_sectors = 1,
+    .write_mfm = tlk_dos_2_write_mfm,
+    .read_mfm = tlk_dos_2_read_mfm
 };
 
 /*

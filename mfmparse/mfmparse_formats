@@ -417,7 +417,10 @@ probe
     * amigados
 
 "Tecnoball"
-    * amigados tlk_dos
+    * amigados tlk_dos_1
+
+"Tecnoball.Z"
+    * amigados tlk_dos_2
 
 "The Magnetic Scrolls Collection" = amigados
 
