@@ -150,6 +150,10 @@ probe
 
 "Dragon Wars" = amigados
 
+"Dungeon Master"
+    1 amigados dungeon_master_weak
+    * amigados
+
 "Exolon" = amigados_copylock
 
 "F-15 Strike Eagle II" = amigados
