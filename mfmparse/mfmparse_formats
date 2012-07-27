@@ -442,6 +442,9 @@ probe
 
 "Twinworld" = blue_byte
 
+"Vade Retro Alienas"
+    * amigados vade_retro_alienas
+
 "Venus The Flytrap" = gremlin_protected
 
 "Virus"
