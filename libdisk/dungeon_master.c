@@ -168,7 +168,20 @@ static void dungeon_master_weak_read_mfm(
         tbuf_start_crc(tbuf);
         tbuf_bits(tbuf, SPEED_AVG, MFM_raw, 32, 0x44894489);
         tbuf_bits(tbuf, SPEED_AVG, MFM_raw, 32, 0x44895545);
-        tbuf_bytes(tbuf, SPEED_AVG, MFM_all, 512, &dat[sec*512]);
+        if (sec == 0) {
+            uint16_t crc = crc16_ccitt(dat, 512, tbuf->crc16_ccitt);
+            static unsigned int seed = 0;
+            tbuf_bytes(tbuf, SPEED_AVG, MFM_all, 32, &dat[0]);
+            /* Protection sector: randomise MSB of each byte in weak area. */
+            for (i = 0; i < 512-64; i++)
+                tbuf_bits(tbuf, SPEED_AVG, MFM_all, 8,
+                          (rand_r(&seed) & 1) ? 0x68 : 0xe8);
+            tbuf_bytes(tbuf, SPEED_AVG, MFM_all, 32, &dat[512-32]);
+            /* CRC is generated pre-randomisation. Restore it now. */
+            tbuf->crc16_ccitt = crc;
+        } else {
+            tbuf_bytes(tbuf, SPEED_AVG, MFM_all, 512, &dat[sec*512]);
+        }
         tbuf_emit_crc16_ccitt(tbuf, SPEED_AVG);
         for (i = 0; i < 40; i++)
             tbuf_bits(tbuf, SPEED_AVG, MFM_all, 8, 0x4e);
