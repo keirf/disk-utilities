@@ -211,6 +211,7 @@ static int kfs_next_bit(struct stream *s)
         return 0;
     }
 
+#if 0
     if ((kfss->clocked_zeros >= 1) && (kfss->clocked_zeros <= 3)) {
         /* In sync: adjust base clock by 10% of phase mismatch. */
         int32_t diff = kfss->flux - kfss->clock;
@@ -223,6 +224,7 @@ static int kfs_next_bit(struct stream *s)
 
     /* Clamp the clock's adjustment range. */
     kfss->clock = max(CLOCK_MIN, min(CLOCK_MAX, kfss->clock));
+#endif
 
     s->latency += kfss->flux;
     kfss->flux = 0;
