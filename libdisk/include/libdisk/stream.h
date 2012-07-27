@@ -10,6 +10,7 @@
 #define __LIBDISK_STREAM_H__
 
 #include <stdint.h>
+#include <libdisk/util.h>
 
 struct stream {
     const struct stream_type *type;
@@ -32,6 +33,9 @@ struct stream {
     /* Rolling CRC-CCITT of incoming data. */
     uint16_t crc16_ccitt;
     uint8_t  crc_bitoff;
+
+    /* Authentic emulation of FDC PLL behaviour? */
+    bool_t authentic_pll;
 };
 
 #pragma GCC visibility push(default)
@@ -46,6 +50,7 @@ int stream_next_bit(struct stream *s);
 int stream_next_bits(struct stream *s, unsigned int bits);
 int stream_next_bytes(struct stream *s, void *p, unsigned int bytes);
 void stream_start_crc(struct stream *s);
+void stream_authentic_pll(struct stream *s, bool_t authentic_pll);
 #pragma GCC visibility pop
 
 #endif /* __LIBDISK_STREAM_H__ */

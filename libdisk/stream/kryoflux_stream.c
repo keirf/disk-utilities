@@ -29,8 +29,8 @@ struct kfs_stream {
     unsigned int stream_idx; /* current index into non-OOB data in dat[] */
     unsigned int index_pos;  /* stream_idx position of next index pulse */
 
-    unsigned int flux;       /* Nanoseconds to next flux reversal */
-    unsigned int clock;      /* Clock base value in nanoseconds */
+    int flux;                /* Nanoseconds to next flux reversal */
+    int clock;               /* Clock base value in nanoseconds */
     unsigned int clocked_zeros;
 };
 
@@ -41,8 +41,8 @@ struct kfs_stream {
 
 #define CLOCK_CENTRE  2000u  /* 2000ns = 2us */
 #define CLOCK_MAX_ADJ 10u    /* +/- 10% adjustment */
-#define CLOCK_MIN     ((CLOCK_CENTRE * (100u - CLOCK_MAX_ADJ)) / 100u)
-#define CLOCK_MAX     ((CLOCK_CENTRE * (100u + CLOCK_MAX_ADJ)) / 100u)
+#define CLOCK_MIN     (int)((CLOCK_CENTRE * (100u - CLOCK_MAX_ADJ)) / 100u)
+#define CLOCK_MAX     (int)((CLOCK_CENTRE * (100u + CLOCK_MAX_ADJ)) / 100u)
 
 static struct stream *kfs_open(const char *name)
 {
@@ -196,17 +196,20 @@ static bool_t kfs_next_flux(struct stream *s, uint32_t *p_flux)
 static int kfs_next_bit(struct stream *s)
 {
     struct kfs_stream *kfss = container_of(s, struct kfs_stream, s);
+    int new_flux;
 
-    if (kfss->flux == 0) {
-        if (!kfs_next_flux(s, &kfss->flux))
+    while (kfss->flux < (kfss->clock/2)) {
+        uint32_t flux;
+        if (!kfs_next_flux(s, &flux))
             return -1;
-        kfss->flux = (kfss->flux * SCK_PS_PER_TICK) / 1000;
+        kfss->flux += (flux * SCK_PS_PER_TICK) / 1000;
         kfss->clocked_zeros = 0;
     }
 
-    if (kfss->flux >= (kfss->clock + (kfss->clock>>1))) {
-        s->latency += kfss->clock;
-        kfss->flux -= kfss->clock;
+    s->latency += kfss->clock;
+    kfss->flux -= kfss->clock;
+
+    if (kfss->flux >= (kfss->clock/2)) {
         kfss->clocked_zeros++;
         return 0;
     }
@@ -214,7 +217,7 @@ static int kfs_next_bit(struct stream *s)
 #if 0
     if ((kfss->clocked_zeros >= 1) && (kfss->clocked_zeros <= 3)) {
         /* In sync: adjust base clock by 10% of phase mismatch. */
-        int32_t diff = kfss->flux - kfss->clock;
+        int32_t diff = kfss->flux;
         diff /= (int)(kfss->clocked_zeros + 1);
         kfss->clock += diff / 10;
     } else {
@@ -226,8 +229,10 @@ static int kfs_next_bit(struct stream *s)
     kfss->clock = max(CLOCK_MIN, min(CLOCK_MAX, kfss->clock));
 #endif
 
-    s->latency += kfss->flux;
-    kfss->flux = 0;
+    new_flux = s->authentic_pll ? kfss->flux/2 : 0;
+    s->latency += kfss->flux - new_flux;
+    kfss->flux = new_flux;
+
     return 1;
 }
 

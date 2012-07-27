@@ -142,6 +142,11 @@ int stream_next_bytes(struct stream *s, void *p, unsigned int bytes)
     return 0;
 }
 
+void stream_authentic_pll(struct stream *s, bool_t authentic_pll)
+{
+    s->authentic_pll = authentic_pll;
+}
+
 void index_reset(struct stream *s)
 {
     s->track_bitlen = s->index_offset;
