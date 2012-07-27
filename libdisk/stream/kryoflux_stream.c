@@ -34,15 +34,15 @@ struct kfs_stream {
     unsigned int clocked_zeros;
 };
 
-#define MCK_FREQ (((18432000u * 73) / 14) / 2)
+#define MCK_FREQ (((18432000 * 73) / 14) / 2)
 #define SCK_FREQ (MCK_FREQ / 2)
 #define ICK_FREQ (MCK_FREQ / 16)
-#define SCK_PS_PER_TICK (1000000000u/(SCK_FREQ/1000))
+#define SCK_PS_PER_TICK (1000000000/(SCK_FREQ/1000))
 
-#define CLOCK_CENTRE  2000u  /* 2000ns = 2us */
-#define CLOCK_MAX_ADJ 10u    /* +/- 10% adjustment */
-#define CLOCK_MIN     (int)((CLOCK_CENTRE * (100u - CLOCK_MAX_ADJ)) / 100u)
-#define CLOCK_MAX     (int)((CLOCK_CENTRE * (100u + CLOCK_MAX_ADJ)) / 100u)
+#define CLOCK_CENTRE  2000   /* 2000ns = 2us */
+#define CLOCK_MAX_ADJ 10     /* +/- 10% adjustment */
+#define CLOCK_MIN     ((CLOCK_CENTRE * (100 - CLOCK_MAX_ADJ)) / 100)
+#define CLOCK_MAX     ((CLOCK_CENTRE * (100 + CLOCK_MAX_ADJ)) / 100)
 
 static struct stream *kfs_open(const char *name)
 {
@@ -202,7 +202,7 @@ static int kfs_next_bit(struct stream *s)
         uint32_t flux;
         if (!kfs_next_flux(s, &flux))
             return -1;
-        kfss->flux += (flux * SCK_PS_PER_TICK) / 1000;
+        kfss->flux += (flux * (uint32_t)SCK_PS_PER_TICK) / 1000u;
         kfss->clocked_zeros = 0;
     }
 
@@ -217,8 +217,7 @@ static int kfs_next_bit(struct stream *s)
 #if 0
     if ((kfss->clocked_zeros >= 1) && (kfss->clocked_zeros <= 3)) {
         /* In sync: adjust base clock by 10% of phase mismatch. */
-        int32_t diff = kfss->flux;
-        diff /= (int)(kfss->clocked_zeros + 1);
+        int diff = kfss->flux / (int)(kfss->clocked_zeros + 1);
         kfss->clock += diff / 10;
     } else {
         /* Out of sync: adjust base clock towards centre. */
