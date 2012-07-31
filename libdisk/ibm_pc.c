@@ -36,22 +36,19 @@ static void *ibm_pc_write_mfm(
     struct disk *d, unsigned int tracknr, struct stream *s)
 {
     struct track_info *ti = &d->di->track[tracknr];
-    char *block = memalloc(ti->bytes_per_sector * ti->nr_sectors);
+    char *block = memalloc(ti->len + 1);
     unsigned int valid_blocks = 0;
+    bool_t iam = 0;
 
     /* IAM */
-    while (stream_next_bit(s) != -1) {
+    while (!iam && (stream_next_bit(s) != -1)) {
         if (s->word != 0x52245224)
             continue;
         if (stream_next_bits(s, 32) == -1)
-            goto out;
-        if (s->word == 0x52245552) {
-            printf("*** T%u: IAM detected - not yet handled!\n", tracknr);
-            goto out;
-        }
+            break;
+        iam = (s->word == 0x52245552);
     }
 
-    ti->data_bitoff = s->index_offset - 63;
     stream_reset(s);
 
     while ((stream_next_bit(s) != -1) &&
@@ -117,7 +114,8 @@ out:
         return NULL;
     }
 
-    ti->data_bitoff = 2240;
+    block[ti->len++] = iam;
+    ti->data_bitoff = (iam ? 80 : 140) * 16;
     ti->valid_sectors = valid_blocks;
 
     return block;
@@ -129,15 +127,20 @@ static void ibm_pc_read_mfm(
     struct track_info *ti = &d->di->track[tracknr];
     uint8_t *dat = (uint8_t *)ti->dat;
     uint8_t cyl = tracknr/2, hd = tracknr&1, no = 2;
+    bool_t iam = dat[ti->len-1];
     unsigned int sec, i, gap4;
 
     gap4 = (ti->type == TRKTYP_ibm_pc_dd) ? 80 : 108;
 
-#if 0
     /* IAM */
-    tbuf_bits(tbuf, SPEED_AVG, MFM_raw, 32, 0x52245224);
-    tbuf_bits(tbuf, SPEED_AVG, MFM_raw, 32, 0x52245552);
-#endif
+    if (iam) {
+        for (i = 0; i < 12; i++)
+            tbuf_bits(tbuf, SPEED_AVG, MFM_all, 8, 0x00);
+        tbuf_bits(tbuf, SPEED_AVG, MFM_raw, 32, 0x52245224);
+        tbuf_bits(tbuf, SPEED_AVG, MFM_raw, 32, 0x52245552);
+        for (i = 0; i < gap4; i++)
+            tbuf_bits(tbuf, SPEED_AVG, MFM_all, 8, 0x4e);
+    }
 
     for (sec = 0; sec < ti->nr_sectors; sec++) {
         /* IDAM */
