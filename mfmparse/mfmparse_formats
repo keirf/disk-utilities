@@ -495,3 +495,12 @@ rnc_pdos_copylock
     * amigados rnc_pdos copylock
 sensible
     * amigados sensible copylock
+
+####################
+# IBM PC Formats
+
+ibm_pc_dd
+    * ibm_pc_dd
+
+ibm_pc_hd
+    * ibm_pc_hd
