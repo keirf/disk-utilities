@@ -147,6 +147,12 @@ void stream_authentic_pll(struct stream *s, bool_t authentic_pll)
     s->authentic_pll = authentic_pll;
 }
 
+void stream_set_density(struct stream *s, unsigned int ns_per_cell)
+{
+    if (s->type->set_density)
+        s->type->set_density(s, ns_per_cell);
+}
+
 void index_reset(struct stream *s)
 {
     s->track_bitlen = s->index_offset;

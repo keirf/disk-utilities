@@ -51,6 +51,7 @@ int stream_next_bits(struct stream *s, unsigned int bits);
 int stream_next_bytes(struct stream *s, void *p, unsigned int bytes);
 void stream_start_crc(struct stream *s);
 void stream_authentic_pll(struct stream *s, bool_t authentic_pll);
+void stream_set_density(struct stream *s, unsigned int ns_per_cell);
 #pragma GCC visibility pop
 
 #endif /* __LIBDISK_STREAM_H__ */

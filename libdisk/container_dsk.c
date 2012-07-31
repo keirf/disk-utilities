@@ -217,10 +217,20 @@ int dsk_write_mfm(
 {
     struct disk_info *di = d->di;
     struct track_info *ti = &di->track[tracknr];
+    unsigned int ns_per_cell = 0, default_len;
 
     memset(ti, 0, sizeof(*ti));
     init_track_info(ti, type);
-    ti->total_bits = DEFAULT_BITS_PER_TRACK;
+
+    switch (handlers[type]->density) {
+    case TRKDEN_mfm_single: ns_per_cell = 4000u; break;
+    case TRKDEN_mfm_double: ns_per_cell = 2000u; break;
+    case TRKDEN_mfm_high: ns_per_cell = 1000u; break;
+    default: BUG();
+    }
+    stream_set_density(s, ns_per_cell);
+    default_len = (DEFAULT_BITS_PER_TRACK * 2000u) / ns_per_cell;
+    ti->total_bits = default_len;
 
     if (stream_select_track(s, tracknr) == 0)
         ti->dat = handlers[type]->write_mfm(d, tracknr, s);
@@ -235,7 +245,7 @@ int dsk_write_mfm(
     stream_next_index(s);
 
     if (ti->total_bits == 0) {
-        ti->total_bits = s->track_bitlen ? : DEFAULT_BITS_PER_TRACK;
+        ti->total_bits = s->track_bitlen ? : default_len;
     } else if (ti->total_bits == TRK_WEAK) {
         /* nothing */
     } else if (((s->track_bitlen - (s->track_bitlen/50)) > ti->total_bits) ||

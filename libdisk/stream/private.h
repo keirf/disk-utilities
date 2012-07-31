@@ -7,6 +7,7 @@ struct stream_type {
     struct stream *(*open)(const char *name);
     void (*close)(struct stream *);
     int (*select_track)(struct stream *, unsigned int tracknr);
+    void (*set_density)(struct stream *, unsigned int ns_per_cell);
     void (*reset)(struct stream *);
     int (*next_bit)(struct stream *);
     const char *suffix[];

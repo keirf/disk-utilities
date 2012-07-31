@@ -30,7 +30,7 @@ struct kfs_stream {
     unsigned int index_pos;  /* stream_idx position of next index pulse */
 
     int flux;                /* Nanoseconds to next flux reversal */
-    int clock;               /* Clock base value in nanoseconds */
+    int clock, clock_centre; /* Clock base value in nanoseconds */
     unsigned int clocked_zeros;
 };
 
@@ -41,8 +41,8 @@ struct kfs_stream {
 
 #define CLOCK_CENTRE  2000   /* 2000ns = 2us */
 #define CLOCK_MAX_ADJ 10     /* +/- 10% adjustment */
-#define CLOCK_MIN     ((CLOCK_CENTRE * (100 - CLOCK_MAX_ADJ)) / 100)
-#define CLOCK_MAX     ((CLOCK_CENTRE * (100 + CLOCK_MAX_ADJ)) / 100)
+#define CLOCK_MIN(_c) (((_c) * (100 - CLOCK_MAX_ADJ)) / 100)
+#define CLOCK_MAX(_c) (((_c) * (100 + CLOCK_MAX_ADJ)) / 100)
 
 static struct stream *kfs_open(const char *name)
 {
@@ -64,6 +64,7 @@ static struct stream *kfs_open(const char *name)
 
     kfss = memalloc(sizeof(*kfss));
     kfss->basename = basename;
+    kfss->clock = kfss->clock_centre = CLOCK_CENTRE;
 
     return &kfss->s;
 }
@@ -74,6 +75,12 @@ static void kfs_close(struct stream *s)
     memfree(kfss->dat);
     memfree(kfss->basename);
     memfree(kfss);
+}
+
+static void kfs_set_density(struct stream *s, unsigned int ns_per_cell)
+{
+    struct kfs_stream *kfss = container_of(s, struct kfs_stream, s);
+    kfss->clock = kfss->clock_centre = ns_per_cell;
 }
 
 static int kfs_select_track(struct stream *s, unsigned int tracknr)
@@ -111,7 +118,7 @@ static void kfs_reset(struct stream *s)
 
     kfss->dat_idx = kfss->stream_idx = kfss->flux = kfss->clocked_zeros = 0;
     kfss->index_pos = ~0u;
-    kfss->clock = CLOCK_CENTRE;
+    kfss->clock = kfss->clock_centre;
 }
 
 static uint32_t read_u16(unsigned char *dat)
@@ -221,11 +228,12 @@ static int kfs_next_bit(struct stream *s)
         kfss->clock += diff / 10;
     } else {
         /* Out of sync: adjust base clock towards centre. */
-        kfss->clock += (CLOCK_CENTRE - kfss->clock) / 10;
+        kfss->clock += (kfss->clock_centre - kfss->clock) / 10;
     }
 
     /* Clamp the clock's adjustment range. */
-    kfss->clock = max(CLOCK_MIN, min(CLOCK_MAX, kfss->clock));
+    kfss->clock = max(CLOCK_MIN(kfss->clock_centre),
+                      min(CLOCK_MAX(kfss->clock_centre), kfss->clock));
 #endif
 
     new_flux = s->authentic_pll ? kfss->flux/2 : 0;
@@ -238,6 +246,7 @@ static int kfs_next_bit(struct stream *s)
 struct stream_type kryoflux_stream = {
     .open = kfs_open,
     .close = kfs_close,
+    .set_density = kfs_set_density,
     .select_track = kfs_select_track,
     .reset = kfs_reset,
     .next_bit = kfs_next_bit

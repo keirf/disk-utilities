@@ -306,8 +306,8 @@ static bool_t __ipf_close(struct disk *d, uint32_t encoder)
 
     _img = img = memalloc(di->nr_tracks * sizeof(*img));
     _idata = idata = memalloc(di->nr_tracks * sizeof(*idata));
-    _blk = blk = memalloc(di->nr_tracks * 20 * sizeof(*blk));
-    _dat = dat = memalloc(di->nr_tracks * 20 * 1024);
+    _blk = blk = memalloc(di->nr_tracks * 40 * sizeof(*blk));
+    _dat = dat = memalloc(di->nr_tracks * 40 * 1024);
 
     for (i = 0; i < di->nr_tracks; i++) {
         ti = &di->track[i];

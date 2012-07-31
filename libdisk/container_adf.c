@@ -100,15 +100,13 @@ static int adf_write_mfm(
     struct disk *d, unsigned int tracknr, enum track_type type,
     struct stream *s)
 {
-    const struct track_handler *thnd = handlers[TRKTYP_amigados];
     struct disk_info *di = d->di;
     struct track_info *ti = &di->track[tracknr];
 
     if (type != TRKTYP_amigados)
         errx(1, "Only AmigaDOS tracks can be written to ADF files");
 
-    if (stream_select_track(s, tracknr) == 0)
-        ti->dat = thnd->write_mfm(d, tracknr, s);    
+    dsk_write_mfm(d, tracknr, type, s);
 
     if (ti->type != TRKTYP_amigados) {
         memfree(ti->dat);

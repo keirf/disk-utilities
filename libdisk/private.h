@@ -65,8 +65,15 @@ void tbuf_weak(struct track_buffer *, uint16_t speed, unsigned int bits);
 void tbuf_start_crc(struct track_buffer *tbuf);
 void tbuf_emit_crc16_ccitt(struct track_buffer *tbuf, uint16_t speed);
 
+enum track_density {
+    TRKDEN_mfm_double, /* default */
+    TRKDEN_mfm_high,
+    TRKDEN_mfm_single
+};
+
 /* MFM track handler -- interface for various MFM analysers/encoders. */
 struct track_handler {
+    enum track_density density;
     unsigned int bytes_per_sector;
     unsigned int nr_sectors;
     void *(*write_mfm)(
