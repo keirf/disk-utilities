@@ -39,11 +39,14 @@ static void usage(int rc)
     printf("  -f, --format=FORMAT Name of format descriptor in config file\n");
     printf("  -c, --config=FILE   Config file to parse for format info\n");
     printf("Supported file formats (suffix => type):\n");
-    printf("  .adf => ADF\n");
-    printf("  .ipf => SPS/IPF\n");
-    printf("  .dat => Diskread (read-only)\n");
-    printf("  .dsk => Libdisk\n");
-    printf("  .raw => Kryoflux STREAM (read-only)\n");
+    printf("  .adf  => ADF\n");
+    printf("  .eadf => Extended-ADF\n");
+    printf("  .img  => IBM-MFM Sector Dump\n");
+    printf("  .ipf  => SPS/IPF\n");
+    printf("  .dsk  => Libdisk\n");
+    printf("Read-only support:\n");
+    printf("  .dat  => Diskread\n");
+    printf("  .raw  => Kryoflux STREAM\n");
 
     exit(rc);
 }

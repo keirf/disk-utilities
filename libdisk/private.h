@@ -105,6 +105,7 @@ struct container {
 extern struct container container_adf;
 extern struct container container_eadf;
 extern struct container container_dsk;
+extern struct container container_img;
 extern struct container container_ipf;
 
 /* Helpers for container implementations: defaults for init() & write_mfm(). */

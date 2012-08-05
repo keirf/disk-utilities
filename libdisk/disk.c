@@ -50,6 +50,8 @@ static struct container *container_from_filename(
         return &container_eadf;
     if (!strcmp(p, "dsk"))
         return &container_dsk;
+    if (!strcmp(p, "img"))
+        return &container_img;
     if (!strcmp(p, "ipf"))
         return &container_ipf;
 fail:
@@ -141,10 +143,14 @@ struct disk_info *disk_get_info(struct disk *d)
 struct track_mfm *track_mfm_get(struct disk *d, unsigned int tracknr)
 {
     struct disk_info *di = d->di;
-    struct track_info *ti = &di->track[tracknr];
+    struct track_info *ti;
     const struct track_handler *thnd;
     struct track_mfm *track_mfm;
     struct track_buffer tbuf;
+
+    if (tracknr >= di->nr_tracks)
+        return NULL;
+    ti = &di->track[tracknr];
 
     if ((int32_t)ti->total_bits > 0)
         tbuf_init(&tbuf, ti->data_bitoff, ti->total_bits);
