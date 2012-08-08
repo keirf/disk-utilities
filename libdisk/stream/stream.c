@@ -142,15 +142,11 @@ int stream_next_bytes(struct stream *s, void *p, unsigned int bytes)
     return 0;
 }
 
-void stream_authentic_pll_start(struct stream *s)
+enum pll_mode stream_pll_mode(struct stream *s, enum pll_mode pll_mode)
 {
-    s->authentic_pll++;
-}
-
-void stream_authentic_pll_end(struct stream *s)
-{
-    BUG_ON(s->authentic_pll == 0);
-    s->authentic_pll--;
+    enum pll_mode old_mode = s->pll_mode;
+    s->pll_mode = pll_mode;
+    return old_mode;
 }
 
 void stream_set_density(struct stream *s, unsigned int ns_per_cell)

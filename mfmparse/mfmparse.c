@@ -36,7 +36,7 @@ static void usage(int rc)
     printf("  -q, --quiet   Quiesce normal informational output\n");
     printf("  -v, --verbose Print extra diagnostic info\n");
     printf("  -i, --index-align   Align all track starts near index mark\n");
-    printf("  -a, --authentic-pll Process flux transitions like a real FDC\n");
+    printf("  -p, --pll=MODE      MODE={fixed,variable,authentic}\n");
     printf("  -f, --format=FORMAT Name of format descriptor in config file\n");
     printf("  -c, --config=FILE   Config file to parse for format info\n");
     printf("Supported file formats (suffix => type):\n");
@@ -63,15 +63,16 @@ int main(int argc, char **argv)
     const char *prev_name;
     char *config = NULL, *format = NULL;
     unsigned int st = 0, unidentified = 0;
-    int ch, index_align = 0, authentic_pll = 0;
+    int ch, index_align = 0;
+    enum pll_mode pll_mode = PLL_authentic;
 
-    const static char sopts[] = "hqviaf:c:";
+    const static char sopts[] = "hqvip:f:c:";
     const static struct option lopts[] = {
         { "help", 0, NULL, 'h' },
         { "quiet", 0, NULL, 'q' },
         { "verbose", 0, NULL, 'v' },
         { "index-align", 0, NULL, 'i' },
-        { "authentic-pll", 0, NULL, 'a' },
+        { "pll", 1, NULL, 'p' },
         { "format", 1, NULL, 'f' },
         { "config",  1, NULL, 'c' },
         { 0, 0, 0, 0}
@@ -91,8 +92,17 @@ int main(int argc, char **argv)
         case 'i':
             index_align = 1;
             break;
-        case 'a':
-            authentic_pll = 1;
+        case 'p':
+            if (!strcmp(optarg, "fixed"))
+                pll_mode = PLL_fixed_clock;
+            else if (!strcmp(optarg, "variable"))
+                pll_mode = PLL_variable_clock;
+            else if (!strcmp(optarg, "authentic"))
+                pll_mode = PLL_authentic;
+            else {
+                warnx("Unrecognised PLL mode '%s'", optarg);
+                usage(1);
+            }
             break;
         case 'f':
             format = optarg;
@@ -114,8 +124,7 @@ int main(int argc, char **argv)
     if ((s = stream_open(argv[optind])) == NULL)
         errx(1, "Failed to probe input file: %s", argv[optind]);
 
-    if (authentic_pll)
-        stream_authentic_pll_start(s);
+    stream_pll_mode(s, pll_mode);
 
     if ((d = disk_create(argv[optind+1])) == NULL)
         errx(1, "Unable to create new disk file: %s", argv[optind+1]);

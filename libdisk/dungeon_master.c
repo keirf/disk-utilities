@@ -85,10 +85,10 @@ static void *dungeon_master_weak_write_mfm(
              * FDC PLL to respond slowly to marginal bits at edge of inspection
              * window.
              */
-            stream_authentic_pll_start(s);
+            enum pll_mode old_mode = stream_pll_mode(s, PLL_authentic);
             if (stream_next_bytes(s, dat, sizeof(dat)) == -1)
                 break;
-            stream_authentic_pll_end(s);
+            stream_pll_mode(s, old_mode);
             mfm_decode_bytes(MFM_all, 514, dat, dat);
 
             /*

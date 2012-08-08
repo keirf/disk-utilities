@@ -221,13 +221,8 @@ static int kfs_next_bit(struct stream *s)
         return 0;
     }
 
-    new_flux = 0;
-
-    /*
-     * Authentic PLL: Adjust frequency according to phase mismatch. Do not
-     * fully synchronise the next timing window to this flux transition.
-     */
-    if (s->authentic_pll) {
+    if (s->pll_mode != PLL_fixed_clock) {
+        /* PLL: Adjust clock frequency according to phase mismatch. */
         if ((kfss->clocked_zeros >= 1) && (kfss->clocked_zeros <= 3)) {
             /* In sync: adjust base clock by 10% of phase mismatch. */
             int diff = kfss->flux / (int)(kfss->clocked_zeros + 1);
@@ -240,10 +235,12 @@ static int kfs_next_bit(struct stream *s)
         /* Clamp the clock's adjustment range. */
         kfss->clock = max(CLOCK_MIN(kfss->clock_centre),
                           min(CLOCK_MAX(kfss->clock_centre), kfss->clock));
-
-        new_flux = kfss->flux / 2;
+    } else {
+        kfss->clock = kfss->clock_centre;
     }
 
+    /* Authentic PLL: Do not snap the timing window to each flux transition. */
+    new_flux = (s->pll_mode == PLL_authentic) ? kfss->flux / 2 : 0;
     s->latency += kfss->flux - new_flux;
     kfss->flux = new_flux;
 

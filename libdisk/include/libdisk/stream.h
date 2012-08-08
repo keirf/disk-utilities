@@ -12,6 +12,12 @@
 #include <stdint.h>
 #include <libdisk/util.h>
 
+enum pll_mode {
+    PLL_fixed_clock, /* Fixed clock, snap phase to flux transitions. */
+    PLL_variable_clock, /* Variable clock, snap phase to flux transitions. */
+    PLL_authentic /* Variable clock, do not snap phase to flux transition. */
+};
+
 struct stream {
     const struct stream_type *type;
 
@@ -35,7 +41,7 @@ struct stream {
     uint8_t  crc_bitoff;
 
     /* Authentic emulation of FDC PLL behaviour? */
-    unsigned int authentic_pll;
+    enum pll_mode pll_mode;
 };
 
 #pragma GCC visibility push(default)
@@ -50,8 +56,7 @@ int stream_next_bit(struct stream *s);
 int stream_next_bits(struct stream *s, unsigned int bits);
 int stream_next_bytes(struct stream *s, void *p, unsigned int bytes);
 void stream_start_crc(struct stream *s);
-void stream_authentic_pll_start(struct stream *s);
-void stream_authentic_pll_end(struct stream *s);
+enum pll_mode stream_pll_mode(struct stream *s, enum pll_mode pll_mode);
 void stream_set_density(struct stream *s, unsigned int ns_per_cell);
 #pragma GCC visibility pop
 
