@@ -216,10 +216,18 @@ struct track_handler amigados_extended_handler = {
     .read_mfm = ados_read_mfm
 };
 
+/*
+ * AmigaDOS Long Tracks:
+ * Dummy types and write handler which increase track gap by a defined amount.
+ * These are used where the protection routine does not check for any data
+ * in the track gap, or expects only (MFM-encoded) zeros.
+ */
+
 static void *ados_longtrack_write_mfm(
     struct disk *d, unsigned int tracknr, struct stream *s)
 {
     struct track_info *ti = &d->di->track[tracknr];
+    /* handler.bytes_per_sector is overloaded to contain track bit length */
     unsigned int total_bits = handlers[ti->type]->bytes_per_sector;
     const char *typename = ti->typename;
     char *ablk;
