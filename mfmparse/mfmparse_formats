@@ -374,6 +374,12 @@ probe
 
 "Reach For The Skies" = amigados
 
+# Protection checks for track length between 110080 and 112128 bits
+# Actual length is ~111500 bits
+"Road Raider"
+    1 amigados_longtrack # ~111500 bits
+    * amigados
+
 "Rotox" = amigados
 
 "Sensible Soccer" = sensible

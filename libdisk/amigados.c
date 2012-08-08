@@ -145,7 +145,10 @@ static void *ados_write_mfm(
     basic_type = TRKTYP_amigados;
     if (ti->type == TRKTYP_amigados_longtrack) {
         stream_next_index(s);
-        ti->total_bits = (s->track_bitlen > 107000) ? 110000: 105500;
+        ti->total_bits = 
+            (s->track_bitlen > 111000) ? 111500 : /* Road Raider */
+            (s->track_bitlen > 107000) ? 110000 : /* Skyfox */
+            105500; /* Targhan */
         basic_type = TRKTYP_amigados_longtrack;
     }
 
