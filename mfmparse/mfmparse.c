@@ -35,7 +35,8 @@ static void usage(int rc)
     printf("  -h, --help    Display this information\n");
     printf("  -q, --quiet   Quiesce normal informational output\n");
     printf("  -v, --verbose Print extra diagnostic info\n");
-    printf("  -a, --align   Align all track starts near index mark\n");
+    printf("  -i, --index-align   Align all track starts near index mark\n");
+    printf("  -a, --authentic-pll Process flux transitions like a real FDC\n");
     printf("  -f, --format=FORMAT Name of format descriptor in config file\n");
     printf("  -c, --config=FILE   Config file to parse for format info\n");
     printf("Supported file formats (suffix => type):\n");
@@ -62,14 +63,15 @@ int main(int argc, char **argv)
     const char *prev_name;
     char *config = NULL, *format = NULL;
     unsigned int st = 0, unidentified = 0;
-    int ch, align = 0;
+    int ch, index_align = 0, authentic_pll = 0;
 
-    const static char sopts[] = "hqvaf:c:";
+    const static char sopts[] = "hqviaf:c:";
     const static struct option lopts[] = {
         { "help", 0, NULL, 'h' },
         { "quiet", 0, NULL, 'q' },
         { "verbose", 0, NULL, 'v' },
-        { "align", 0, NULL, 'a' },
+        { "index-align", 0, NULL, 'i' },
+        { "authentic-pll", 0, NULL, 'a' },
         { "format", 1, NULL, 'f' },
         { "config",  1, NULL, 'c' },
         { 0, 0, 0, 0}
@@ -86,8 +88,11 @@ int main(int argc, char **argv)
         case 'v':
             verbose = 1;
             break;
+        case 'i':
+            index_align = 1;
+            break;
         case 'a':
-            align = 1;
+            authentic_pll = 1;
             break;
         case 'f':
             format = optarg;
@@ -108,6 +113,9 @@ int main(int argc, char **argv)
 
     if ((s = stream_open(argv[optind])) == NULL)
         errx(1, "Failed to probe input file: %s", argv[optind]);
+
+    if (authentic_pll)
+        stream_authentic_pll_start(s);
 
     if ((d = disk_create(argv[optind+1])) == NULL)
         errx(1, "Unable to create new disk file: %s", argv[optind+1]);
@@ -139,7 +147,7 @@ int main(int argc, char **argv)
     for (i = 0; i < di->nr_tracks; i++) {
         unsigned int j;
         ti = &di->track[i];
-        if (align)
+        if (index_align)
             ti->data_bitoff = 1024;
         for (j = 0; j < ti->nr_sectors; j++)
             if (!(ti->valid_sectors & (1u << j)))

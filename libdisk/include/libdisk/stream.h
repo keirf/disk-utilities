@@ -35,7 +35,7 @@ struct stream {
     uint8_t  crc_bitoff;
 
     /* Authentic emulation of FDC PLL behaviour? */
-    bool_t authentic_pll;
+    unsigned int authentic_pll;
 };
 
 #pragma GCC visibility push(default)
@@ -50,7 +50,8 @@ int stream_next_bit(struct stream *s);
 int stream_next_bits(struct stream *s, unsigned int bits);
 int stream_next_bytes(struct stream *s, void *p, unsigned int bytes);
 void stream_start_crc(struct stream *s);
-void stream_authentic_pll(struct stream *s, bool_t authentic_pll);
+void stream_authentic_pll_start(struct stream *s);
+void stream_authentic_pll_end(struct stream *s);
 void stream_set_density(struct stream *s, unsigned int ns_per_cell);
 #pragma GCC visibility pop
 

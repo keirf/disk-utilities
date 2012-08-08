@@ -79,27 +79,35 @@ static void *dungeon_master_weak_write_mfm(
             continue;
         crc = s->crc16_ccitt;
 
-        /*
-         * Sector 0 weak-bit protection relies on authentic behaviour of FDC 
-         * PLL to respond slowly to marginal bits at edge of inspection window.
-         */
-        stream_authentic_pll(s, (sec == 0));
-        if (stream_next_bytes(s, dat, sizeof(dat)) == -1)
-            break;
-        stream_authentic_pll(s, 0);
-        mfm_decode_bytes(MFM_all, 514, dat, dat);
-
         if (sec == 0) {
+            /*
+             * Sector 0 weak-bit protection relies on authentic behaviour of
+             * FDC PLL to respond slowly to marginal bits at edge of inspection
+             * window.
+             */
+            stream_authentic_pll_start(s);
+            if (stream_next_bytes(s, dat, sizeof(dat)) == -1)
+                break;
+            stream_authentic_pll_end(s);
+            mfm_decode_bytes(MFM_all, 514, dat, dat);
+
             /*
              * Check each flakey byte is read as 0x68 or 0xE8. Rewrite as
              * originally mastered (always 0x68, with timing variation).
-             * Any mismatching bytes will cause us to fail the CRC check.
              */
-            for (i = 20; i < 509; i++)
-                if ((dat[i]&0x7f) == 0x68)
-                    dat[i] = 0x68;
+            for (i = 20; i < 509; i++) {
+                dat[i] &= 0x7f;
+                if (dat[i] != 0x68)
+                    break;
+            }
+            if (i != 509)
+                continue;
             /* Re-compute the CRC on fixed-up data. */
             s->crc16_ccitt = crc16_ccitt(dat, 514, crc);
+        } else {
+            if (stream_next_bytes(s, dat, sizeof(dat)) == -1)
+                break;
+            mfm_decode_bytes(MFM_all, 514, dat, dat);
         }
 
         if (s->crc16_ccitt != 0)

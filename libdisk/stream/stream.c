@@ -142,9 +142,15 @@ int stream_next_bytes(struct stream *s, void *p, unsigned int bytes)
     return 0;
 }
 
-void stream_authentic_pll(struct stream *s, bool_t authentic_pll)
+void stream_authentic_pll_start(struct stream *s)
 {
-    s->authentic_pll = authentic_pll;
+    s->authentic_pll++;
+}
+
+void stream_authentic_pll_end(struct stream *s)
+{
+    BUG_ON(s->authentic_pll == 0);
+    s->authentic_pll--;
 }
 
 void stream_set_density(struct stream *s, unsigned int ns_per_cell)
