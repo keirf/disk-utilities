@@ -64,7 +64,7 @@ int main(int argc, char **argv)
     char *config = NULL, *format = NULL;
     unsigned int st = 0, unidentified = 0;
     int ch, index_align = 0;
-    enum pll_mode pll_mode = PLL_authentic;
+    enum pll_mode pll_mode = PLL_default;
 
     const static char sopts[] = "hqvip:f:c:";
     const static struct option lopts[] = {

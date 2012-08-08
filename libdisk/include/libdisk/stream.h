@@ -18,6 +18,9 @@ enum pll_mode {
     PLL_authentic /* Variable clock, do not snap phase to flux transition. */
 };
 
+/* Default mode: seems to work well for most things. */
+#define PLL_default PLL_authentic
+
 struct stream {
     const struct stream_type *type;
 

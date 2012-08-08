@@ -58,8 +58,10 @@ struct stream *stream_open(const char *name)
     return NULL;
 
 found:
-    if ((s = st->open(name)) != NULL)
-        s->type = st;
+    if ((s = st->open(name)) == NULL)
+        return NULL;
+    s->type = st;
+    s->pll_mode = PLL_default;
     return s;
 }
 
