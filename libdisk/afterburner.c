@@ -2,6 +2,7 @@
  * disk/afterburner.c
  * 
  * Custom format as used on After Burner by Sega / Activision.
+ * Also a variant used on Out Run by Sega / US Gold.
  * 
  * Written in 2012 by Keir Fraser
  */
@@ -18,6 +19,10 @@
  *  u32 0xaaaaaaaa
  *  u32 csum[2]      :: Even/odd longs, SUB.L sum of all decoded data longs
  *  u32 dat[1500][2] :: Even/odd longs
+ * 
+ * TRKTYP_outrun:
+ *  u16 0x4489,0x4489 :: Sync
+ *  ...as afterburner_boot...
  */
 
 static void *afterburner_boot_write_mfm(
@@ -31,10 +36,15 @@ static void *afterburner_boot_write_mfm(
         unsigned int i;
         char *block;
 
-        if ((uint16_t)s->word != 0xa245)
-            continue;
-
-        ti->data_bitoff = s->index_offset - 15;
+        if (ti->type == TRKTYP_afterburner_boot) {
+            if ((uint16_t)s->word != 0xa245)
+                continue;
+            ti->data_bitoff = s->index_offset - 15;
+        } else /* TRKTYP_outrun */ {
+            if (s->word != 0x44894489)
+                continue;
+            ti->data_bitoff = s->index_offset - 31;
+        }
 
         if (stream_next_bits(s, 32) == -1)
             goto fail;
@@ -72,7 +82,12 @@ static void afterburner_boot_read_mfm(
     uint32_t csum, *dat = (uint32_t *)ti->dat;
     unsigned int i;
 
-    tbuf_bits(tbuf, SPEED_AVG, MFM_raw, 16, 0xa245);
+    if (ti->type == TRKTYP_afterburner_boot) {
+        tbuf_bits(tbuf, SPEED_AVG, MFM_raw, 16, 0xa245);
+    } else /* TRKTYP_outrun */ {
+        tbuf_bits(tbuf, SPEED_AVG, MFM_raw, 32, 0x44894489);
+    }
+
     tbuf_bits(tbuf, SPEED_AVG, MFM_raw, 32, 0x55555555);
     tbuf_bits(tbuf, SPEED_AVG, MFM_raw, 32, 0xaaaaaaaa);
 
@@ -85,6 +100,13 @@ static void afterburner_boot_read_mfm(
 }
 
 struct track_handler afterburner_boot_handler = {
+    .bytes_per_sector = 6000,
+    .nr_sectors = 1,
+    .write_mfm = afterburner_boot_write_mfm,
+    .read_mfm = afterburner_boot_read_mfm
+};
+
+struct track_handler outrun_handler = {
     .bytes_per_sector = 6000,
     .nr_sectors = 1,
     .write_mfm = afterburner_boot_write_mfm,

@@ -350,6 +350,9 @@ probe
 
 "Oscar (AGA)" = amigados
 
+"Out Run" # Teacks 126 and 128+ may be empty
+    * amigados outrun
+
 "P.P. Hammer" = amigados
 
 "Paradroid '90" = amigados_copylock
