@@ -2,6 +2,7 @@
  * disk/dungeon_master.c
  * 
  * An Atari ST (i.e., IBM-compatible) MFM track with weak bits in sector 1.
+ * Also support Chaos Strikes Back, featuring weak bits in sector 2.
  * 
  * The protection relies on an ambiguous flux transition at the edge of the
  * FDC's inspection window, which may be interpreted as clock or as data.
@@ -21,12 +22,14 @@
 
 #include <arpa/inet.h>
 
+#define weak_sec(_type) (((_type) == TRKTYP_chaos_strikes_back_weak) ? 1 : 0)
+
 static void *dungeon_master_weak_write_mfm(
     struct disk *d, unsigned int tracknr, struct stream *s)
 {
     struct track_info *ti = &d->di->track[tracknr];
     char *block = memalloc(ti->bytes_per_sector * ti->nr_sectors);
-    unsigned int valid_blocks = 0;
+    unsigned int weak_sec = weak_sec(ti->type), valid_blocks = 0;
 
     /* Fill value for all sectors seems to be 0xe5. */
     memset(block, 0xe5, ti->bytes_per_sector * ti->nr_sectors);
@@ -79,11 +82,10 @@ static void *dungeon_master_weak_write_mfm(
             continue;
         crc = s->crc16_ccitt;
 
-        if (sec == 0) {
+        if (sec == weak_sec) {
             /*
-             * Sector 0 weak-bit protection relies on authentic behaviour of
-             * FDC PLL to respond slowly to marginal bits at edge of inspection
-             * window.
+             * Weak-bit protection relies on authentic behaviour of FDC PLL
+             * to respond slowly to marginal bits at edge of inspection window.
              */
             enum pll_mode old_mode = stream_pll_mode(s, PLL_authentic);
             if (stream_next_bytes(s, dat, sizeof(dat)) == -1)
@@ -119,8 +121,8 @@ static void *dungeon_master_weak_write_mfm(
             ti->data_bitoff = idx_off;
     }
 
-    /* Must have found valid sector 0 */
-    if (!(valid_blocks & 1u)) {
+    /* Must have found valid weak sector. */
+    if (!(valid_blocks & (1u<<weak_sec))) {
         memfree(block);
         return NULL;
     }
@@ -136,7 +138,7 @@ static void dungeon_master_weak_read_mfm(
     struct track_info *ti = &d->di->track[tracknr];
     uint8_t *dat = (uint8_t *)ti->dat;
     uint8_t cyl = 0, hd = 1, no = 2;
-    unsigned int sec, i;
+    unsigned int sec, weak_sec = weak_sec(ti->type), i;
 
     for (sec = 0; sec < ti->nr_sectors; sec++) {
         /* IDAM */
@@ -157,15 +159,15 @@ static void dungeon_master_weak_read_mfm(
         tbuf_start_crc(tbuf);
         tbuf_bits(tbuf, SPEED_AVG, MFM_raw, 32, 0x44894489);
         tbuf_bits(tbuf, SPEED_AVG, MFM_raw, 32, 0x44895545);
-        if (sec == 0) {
-            uint16_t crc = crc16_ccitt(dat, 512, tbuf->crc16_ccitt);
+        if (sec == weak_sec) {
+            uint16_t crc = crc16_ccitt(&dat[sec*512], 512, tbuf->crc16_ccitt);
             static unsigned int seed = 0;
-            tbuf_bytes(tbuf, SPEED_AVG, MFM_all, 32, &dat[0]);
+            tbuf_bytes(tbuf, SPEED_AVG, MFM_all, 32, &dat[sec*512]);
             /* Protection sector: randomise MSB of each byte in weak area. */
             for (i = 0; i < 512-64; i++)
                 tbuf_bits(tbuf, SPEED_AVG, MFM_all, 8,
                           (rand_r(&seed) & 1) ? 0x68 : 0xe8);
-            tbuf_bytes(tbuf, SPEED_AVG, MFM_all, 32, &dat[512-32]);
+            tbuf_bytes(tbuf, SPEED_AVG, MFM_all, 32, &dat[(sec+1)*512-32]);
             /* CRC is generated pre-randomisation. Restore it now. */
             tbuf->crc16_ccitt = crc;
         } else {
@@ -180,6 +182,13 @@ static void dungeon_master_weak_read_mfm(
 }
 
 struct track_handler dungeon_master_weak_handler = {
+    .bytes_per_sector = 512,
+    .nr_sectors = 10,
+    .write_mfm = dungeon_master_weak_write_mfm,
+    .read_mfm = dungeon_master_weak_read_mfm
+};
+
+struct track_handler chaos_strikes_back_weak_handler = {
     .bytes_per_sector = 512,
     .nr_sectors = 10,
     .write_mfm = dungeon_master_weak_write_mfm,
