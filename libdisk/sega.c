@@ -1,8 +1,9 @@
 /*
- * disk/afterburner.c
+ * disk/sega.c
  * 
- * Custom format as used on After Burner by Sega / Activision.
- * Also a variant used on Out Run by Sega / US Gold.
+ * Custom formats as used on:
+ *  After Burner (Sega / Activision)
+ *  Out Run (Sega / US Gold)
  * 
  * Written in 2012 by Keir Fraser
  */
