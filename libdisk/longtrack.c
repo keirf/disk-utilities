@@ -73,7 +73,7 @@ struct track_handler protec_longtrack_handler = {
 };
 
 /*
- * TRKTYP_gremlin_longtrack: Lotus I/II
+ * TRKTYP_gremlin_longtrack: Lotus I/II, + many others
  *  u16 0x4124,0x4124
  *  Rest of track is (MFM-encoded) zeroes, and/or unformatted garbage.
  *  The contents are never checked, only successive sync marks are scanned for.
@@ -82,11 +82,7 @@ struct track_handler protec_longtrack_handler = {
  *  Specifically, protection checks for >= 6400 mfm words gap between
  *  successive sync marks. Track contents are not otherwise checked or tested.
  * 
- *  A variant, Strider II by Tiertex, checks 99328 <= x <= 103680 bits long.
- *  Specifically, the variant checks 6208 <= x <= 6480 mfm words gap between
- *  successive sync marks. Track contents are not otherwise checked or tested.
- * 
- *  We successfully handle both schemes by creating a track 103000 bits long.
+ *  Track is typically ~105500 bits long.
  */
 
 static void *gremlin_longtrack_write_mfm(
@@ -98,7 +94,8 @@ static void *gremlin_longtrack_write_mfm(
         ti->data_bitoff = s->index_offset - 31;
         if ((s->word != 0x41244124) || !check_sequence(s, 8, 0x00))
             continue;
-        ti->total_bits = 103000;
+        if (ti->type != TRKTYP_tiertex_longtrack)
+            ti->total_bits = 105500;
         return memalloc(0);
     }
 
@@ -117,6 +114,20 @@ static void gremlin_longtrack_read_mfm(
 }
 
 struct track_handler gremlin_longtrack_handler = {
+    .write_mfm = gremlin_longtrack_write_mfm,
+    .read_mfm = gremlin_longtrack_read_mfm
+};
+
+/*
+ * TRKTYP_tiertex_longtrack: Strider II
+ *  A variant of the Gremlin long track, checks 99328 <= x <= 103680 bits long.
+ *  Specifically, the variant checks 6208 <= x <= 6480 mfm words gap between
+ *  successive sync marks. Track contents are not otherwise checked or tested.
+ * 
+ *  Track is actually ~100150 bits long (normal length!).
+ */
+
+struct track_handler tiertex_longtrack_handler = {
     .write_mfm = gremlin_longtrack_write_mfm,
     .read_mfm = gremlin_longtrack_read_mfm
 };
