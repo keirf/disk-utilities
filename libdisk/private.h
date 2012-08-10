@@ -118,6 +118,7 @@ int dsk_write_mfm(
 uint32_t mfm_decode_bits(enum mfm_encoding enc, uint32_t x);
 void mfm_decode_bytes(
     enum mfm_encoding enc, unsigned int bytes, void *in, void *out);
+uint32_t mfm_encode_word(uint32_t w);
 uint32_t amigados_checksum(void *dat, unsigned int bytes);
 
 #endif /* __DISK_PRIVATE_H__ */

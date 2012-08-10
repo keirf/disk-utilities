@@ -17,6 +17,7 @@
  *  u8 gap[13]
  * MFM encoding:
  *  No even/odd split
+ * Checksum is over encoded MFM words, *including* clock bits.
  * 
  * TRKTYP_federation_of_free_traders data layout:
  *  u8 sector_data[5][1024]
@@ -87,22 +88,6 @@ done:
     ti->data_bitoff -= i * 0xfc8;
 
     return block;
-}
-
-/*
- * Checksum is over encoded MFM words, *including* clock bits. We manufacture
- * the appropriate clock bits here.
- */
-static uint32_t mfm_encode_word(uint16_t w)
-{
-    uint32_t i, d, p = 0, x = 0;
-    for (i = 0; i < 16; i++) {
-        d = !!(w & 0x8000u);
-        x = (x << 2) | (!(d|p) << 1) | d;
-        p = d;
-        w <<= 1;
-    }
-    return x;
 }
 
 static void federation_of_free_traders_read_mfm(

@@ -484,6 +484,18 @@ void mfm_decode_bytes(
     }
 }
 
+uint32_t mfm_encode_word(uint32_t w)
+{
+    uint32_t i, d, p = (w >> 16) & 1, x = 0;
+    for (i = 0; i < 16; i++) {
+        d = !!(w & 0x8000u);
+        x = (x << 2) | (!(d|p) << 1) | d;
+        p = d;
+        w <<= 1;
+    }
+    return x;
+}
+
 uint32_t amigados_checksum(void *dat, unsigned int bytes)
 {
     uint32_t *p = dat, csum = 0;

@@ -11,6 +11,12 @@ probe
 
 "A-10 Tank Killer" = amigados
 
+"After Burner"
+    0-1 amigados
+    2-3 afterburner_boot
+    4-146 afterburner
+    * ignore
+
 # Alien Breed: Disk 2 Track 0 is a custom protection track
 "Alien Breed"
     0 amigados alienbreed_protection
