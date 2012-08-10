@@ -457,6 +457,11 @@ probe
 
 "Tower Of Babel" = amigados
 
+"Tracker"
+    0 amigados
+    2-118/2 tracker
+    * ignore
+
 "Turrican" # Tracks 158-159 may be empty
     27 factor5_hiscore
     * amigados turrican
