@@ -4,6 +4,7 @@
  * Custom formats as used on:
  *  After Burner (Sega / Activision)
  *  Out Run (Sega / US Gold)
+ *  Thunder Blade (Sega / US Gold / Tiertex)
  * 
  * Written in 2012 by Keir Fraser
  */
@@ -14,7 +15,7 @@
 #include <arpa/inet.h>
 
 /*
- * TRKTYP_afterburner_boot:
+ * TRKTYP_sega_boot:
  *  u16 0xa245 :: Sync
  *  u32 0x55555555
  *  u32 0xaaaaaaaa
@@ -23,10 +24,14 @@
  * 
  * TRKTYP_outrun:
  *  u16 0x4489,0x4489 :: Sync
- *  ...as afterburner_boot...
+ *  ...as sega_boot...
+ * 
+ * TRKTYP_thunderblade:
+ *  u16 0x4891 :: Sync
+ *  ...as sega_boot...
  */
 
-static void *afterburner_boot_write_mfm(
+static void *sega_boot_write_mfm(
     struct disk *d, unsigned int tracknr, struct stream *s)
 {
     struct track_info *ti = &d->di->track[tracknr];
@@ -37,14 +42,20 @@ static void *afterburner_boot_write_mfm(
         unsigned int i;
         char *block;
 
-        if (ti->type == TRKTYP_afterburner_boot) {
+        if (ti->type == TRKTYP_sega_boot) {
             if ((uint16_t)s->word != 0xa245)
                 continue;
             ti->data_bitoff = s->index_offset - 15;
-        } else /* TRKTYP_outrun */ {
+        } else if (ti->type == TRKTYP_outrun) {
             if (s->word != 0x44894489)
                 continue;
             ti->data_bitoff = s->index_offset - 31;
+        } else if (ti->type == TRKTYP_thunderblade) {
+            if ((uint16_t)s->word != 0x4891)
+                continue;
+            ti->data_bitoff = s->index_offset - 15;
+        } else {
+            BUG();
         }
 
         if (stream_next_bits(s, 32) == -1)
@@ -76,17 +87,21 @@ fail:
     return NULL;
 }
 
-static void afterburner_boot_read_mfm(
+static void sega_boot_read_mfm(
     struct disk *d, unsigned int tracknr, struct track_buffer *tbuf)
 {
     struct track_info *ti = &d->di->track[tracknr];
     uint32_t csum, *dat = (uint32_t *)ti->dat;
     unsigned int i;
 
-    if (ti->type == TRKTYP_afterburner_boot) {
+    if (ti->type == TRKTYP_sega_boot) {
         tbuf_bits(tbuf, SPEED_AVG, MFM_raw, 16, 0xa245);
-    } else /* TRKTYP_outrun */ {
+    } else if (ti->type == TRKTYP_outrun) {
         tbuf_bits(tbuf, SPEED_AVG, MFM_raw, 32, 0x44894489);
+    } else if (ti->type == TRKTYP_thunderblade) {
+        tbuf_bits(tbuf, SPEED_AVG, MFM_raw, 16, 0x4891);
+    } else {
+        BUG();
     }
 
     tbuf_bits(tbuf, SPEED_AVG, MFM_raw, 32, 0x55555555);
@@ -100,18 +115,25 @@ static void afterburner_boot_read_mfm(
         tbuf_bits(tbuf, SPEED_AVG, MFM_even_odd, 32, ntohl(dat[i]));
 }
 
-struct track_handler afterburner_boot_handler = {
+struct track_handler sega_boot_handler = {
     .bytes_per_sector = 6000,
     .nr_sectors = 1,
-    .write_mfm = afterburner_boot_write_mfm,
-    .read_mfm = afterburner_boot_read_mfm
+    .write_mfm = sega_boot_write_mfm,
+    .read_mfm = sega_boot_read_mfm
 };
 
 struct track_handler outrun_handler = {
     .bytes_per_sector = 6000,
     .nr_sectors = 1,
-    .write_mfm = afterburner_boot_write_mfm,
-    .read_mfm = afterburner_boot_read_mfm
+    .write_mfm = sega_boot_write_mfm,
+    .read_mfm = sega_boot_read_mfm
+};
+
+struct track_handler thunderblade_handler = {
+    .bytes_per_sector = 6000,
+    .nr_sectors = 1,
+    .write_mfm = sega_boot_write_mfm,
+    .read_mfm = sega_boot_read_mfm
 };
 
 /*

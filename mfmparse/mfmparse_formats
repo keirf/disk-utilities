@@ -13,7 +13,7 @@ probe
 
 "After Burner"
     0-1 amigados
-    2-3 afterburner_boot
+    2-3 sega_boot
     4-146 afterburner
     * ignore
 
@@ -449,6 +449,13 @@ probe
 "The Magnetic Scrolls Collection" = amigados
 
 "The Munsters" = amigados_copylock
+
+"Thunder Blade"
+    0-1 amigados
+    2-3 sega_boot
+    80-81 amigados
+    4-133 thunderblade
+    * ignore
 
 "Time"
     1 rnc_hidden amigados
