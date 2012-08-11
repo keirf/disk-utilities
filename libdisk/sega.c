@@ -1,8 +1,8 @@
 /*
  * disk/sega.c
  * 
- * Custom formats as used on:
- *  After Burner (Sega / Activision)
+ * Custom formats used in the "Sega Arcade Smash Hits" collection, including:
+ *  After Burner (Sega / Weebee Games)
  *  Out Run (Sega / US Gold)
  *  Thunder Blade (Sega / US Gold / Tiertex)
  * 
