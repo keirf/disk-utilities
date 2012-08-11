@@ -1,7 +1,8 @@
 default = amigados
 probe
     * amigados copylock psygnosis_a psygnosis_b rnc_pdos core_design \
-      gremlin rainbird blue_byte ikplus virus archipelagos sensible \
+      gremlin rainbird blue_byte software_studios_a software_studios_b \
+      archipelagos sensible \
       bat batman menace commando turrican federation_of_free_traders \
       phantom_fighter supremacy_a supremacy_b \
       protec_longtrack gremlin_longtrack
@@ -11,7 +12,14 @@ probe
 
 "A-10 Tank Killer" = amigados
 
-"After Burner"
+"After Burner Disk A (Activision)"
+    * amigados software_studios_b
+
+"After Burner Disk B (Activision)"
+    0-158/2 software_studios_c
+   * ignore
+
+"After Burner (Sega)"
     0-1 amigados
     2-3 sega_boot
     4-146 afterburner
@@ -223,7 +231,7 @@ probe
 "Hook" = amigados_copylock
 
 "IK+"
-    * amigados ikplus
+    * amigados software_studios_a
 
 # Tracks 76+ are unused
 "Interphase"
@@ -350,7 +358,9 @@ probe
 
 "Oscar (AGA)" = amigados
 
-"Out Run" # Teacks 126 and 128+ may be empty
+# Sega: (Sega-style tracks): Tracks 126 and 128+ may be empty
+# US Gold: (AmigaDOS-style tracks): Tracks 86/88/90 may be empty
+"Out Run"
     * amigados outrun
 
 "P.P. Hammer" = amigados
@@ -450,12 +460,10 @@ probe
 
 "The Munsters" = amigados_copylock
 
+# Sega: (Sega-style tracks): Tracks 134+ may be empty
+# US Gold: (Commando-style tracks): Tracks 135+ may be empty
 "Thunder Blade"
-    0-1 amigados
-    2-3 sega_boot
-    80-81 amigados
-    4-133 thunderblade
-    * ignore
+    * amigados sega_boot thunderblade commando
 
 "Time"
     1 rnc_hidden amigados
@@ -484,7 +492,7 @@ probe
 "Venus The Flytrap" = gremlin_protected
 
 "Virus"
-    * amigados virus
+    * amigados software_studios_b
 
 "Voyager" = amigados_copylock
 

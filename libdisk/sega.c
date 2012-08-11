@@ -21,44 +21,51 @@
  *  u32 0xaaaaaaaa
  *  u32 csum[2]      :: Even/odd longs, SUB.L sum of all decoded data longs
  *  u32 dat[1500][2] :: Even/odd longs
+ * TRKTYP_outrun: 0x4489 sync
+ * TRKTYP_thunderblade: 0x4891 sync
  * 
- * TRKTYP_outrun:
- *  u16 0x4489,0x4489 :: Sync
- *  ...as sega_boot...
- * 
- * TRKTYP_thunderblade:
- *  u16 0x4891 :: Sync
- *  ...as sega_boot...
+ * Data layout:
+ *  u8 data[6000]
+ *  u8 nr_sync_marks
  */
 
-static void *sega_boot_write_mfm(
+static uint16_t sega_sync(uint16_t type)
+{
+    switch (type) {
+    case TRKTYP_sega_boot:    return 0xa245;
+    case TRKTYP_outrun:       return 0x4489;
+    case TRKTYP_thunderblade: return 0x4891;
+    }
+    BUG();
+}
+
+static void *sega_write_mfm(
     struct disk *d, unsigned int tracknr, struct stream *s)
 {
     struct track_info *ti = &d->di->track[tracknr];
+    uint16_t sync = sega_sync(ti->type);
 
     while (stream_next_bit(s) != -1) {
 
         uint32_t raw[2], dat[1501], csum;
-        unsigned int i;
+        unsigned int i, nr_sync = 1;
         char *block;
 
-        if (ti->type == TRKTYP_sega_boot) {
-            if ((uint16_t)s->word != 0xa245)
-                continue;
-            ti->data_bitoff = s->index_offset - 15;
-        } else if (ti->type == TRKTYP_outrun) {
-            if (s->word != 0x44894489)
-                continue;
-            ti->data_bitoff = s->index_offset - 31;
-        } else if (ti->type == TRKTYP_thunderblade) {
-            if ((uint16_t)s->word != 0x4891)
-                continue;
-            ti->data_bitoff = s->index_offset - 15;
-        } else {
-            BUG();
+        /* Check for sync mark */
+        if ((uint16_t)s->word != sync)
+            continue;
+        ti->data_bitoff = s->index_offset - 15;
+
+        /* Check for optional second sync mark */
+        if (stream_next_bits(s, 16) == -1)
+            goto fail;
+        if ((uint16_t)s->word == sync) {
+            nr_sync++;
+            if (stream_next_bits(s, 16) == -1)
+                goto fail;
         }
 
-        if (stream_next_bits(s, 32) == -1)
+        if (stream_next_bits(s, 16) == -1)
             goto fail;
         if (s->word != 0x55555555)
             continue;
@@ -77,9 +84,11 @@ static void *sega_boot_write_mfm(
         if (csum != 0)
             continue;
 
-        block = memalloc(ti->len);
+        block = memalloc(ti->len+1);
         memcpy(block, &dat[1], ti->len);
         ti->valid_sectors = (1u << ti->nr_sectors) - 1;
+        block[ti->len] = nr_sync;
+        ti->len++;
         return block;
     }
 
@@ -87,22 +96,15 @@ fail:
     return NULL;
 }
 
-static void sega_boot_read_mfm(
+static void sega_read_mfm(
     struct disk *d, unsigned int tracknr, struct track_buffer *tbuf)
 {
     struct track_info *ti = &d->di->track[tracknr];
     uint32_t csum, *dat = (uint32_t *)ti->dat;
-    unsigned int i;
+    unsigned int i, nr_sync = ti->dat[ti->len-1];
 
-    if (ti->type == TRKTYP_sega_boot) {
-        tbuf_bits(tbuf, SPEED_AVG, MFM_raw, 16, 0xa245);
-    } else if (ti->type == TRKTYP_outrun) {
-        tbuf_bits(tbuf, SPEED_AVG, MFM_raw, 32, 0x44894489);
-    } else if (ti->type == TRKTYP_thunderblade) {
-        tbuf_bits(tbuf, SPEED_AVG, MFM_raw, 16, 0x4891);
-    } else {
-        BUG();
-    }
+    for (i = 0; i < nr_sync; i++)
+        tbuf_bits(tbuf, SPEED_AVG, MFM_raw, 16, sega_sync(ti->type));
 
     tbuf_bits(tbuf, SPEED_AVG, MFM_raw, 32, 0x55555555);
     tbuf_bits(tbuf, SPEED_AVG, MFM_raw, 32, 0xaaaaaaaa);
@@ -118,22 +120,22 @@ static void sega_boot_read_mfm(
 struct track_handler sega_boot_handler = {
     .bytes_per_sector = 6000,
     .nr_sectors = 1,
-    .write_mfm = sega_boot_write_mfm,
-    .read_mfm = sega_boot_read_mfm
+    .write_mfm = sega_write_mfm,
+    .read_mfm = sega_read_mfm
 };
 
 struct track_handler outrun_handler = {
     .bytes_per_sector = 6000,
     .nr_sectors = 1,
-    .write_mfm = sega_boot_write_mfm,
-    .read_mfm = sega_boot_read_mfm
+    .write_mfm = sega_write_mfm,
+    .read_mfm = sega_read_mfm
 };
 
 struct track_handler thunderblade_handler = {
     .bytes_per_sector = 6000,
     .nr_sectors = 1,
-    .write_mfm = sega_boot_write_mfm,
-    .read_mfm = sega_boot_read_mfm
+    .write_mfm = sega_write_mfm,
+    .read_mfm = sega_read_mfm
 };
 
 /*
