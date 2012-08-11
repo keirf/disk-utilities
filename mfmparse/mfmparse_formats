@@ -1,7 +1,7 @@
 default = amigados
 probe
     * amigados copylock psygnosis_a psygnosis_b rnc_pdos core_design \
-      gremlin rainbird blue_byte software_studios_a software_studios_b \
+      gremlin rainbird blue_byte ikplus software_studios \
       archipelagos sensible \
       bat batman menace commando turrican federation_of_free_traders \
       phantom_fighter supremacy_a supremacy_b \
@@ -13,16 +13,16 @@ probe
 "A-10 Tank Killer" = amigados
 
 "After Burner Disk A (Activision)"
-    * amigados software_studios_b
+    * amigados software_studios
 
 "After Burner Disk B (Activision)"
-    0-158/2 software_studios_c
+    0-158/2 afterburner_data
    * ignore
 
 "After Burner (Sega)"
     0-1 amigados
     2-3 sega_boot
-    4-146 afterburner
+    4-146 afterburner_sega
     * ignore
 
 # Alien Breed: Disk 2 Track 0 is a custom protection track
@@ -231,7 +231,7 @@ probe
 "Hook" = amigados_copylock
 
 "IK+"
-    * amigados software_studios_a
+    * amigados ikplus
 
 # Tracks 76+ are unused
 "Interphase"
@@ -361,7 +361,7 @@ probe
 # Sega: (Sega-style tracks): Tracks 126 and 128+ may be empty
 # US Gold: (AmigaDOS-style tracks): Tracks 86/88/90 may be empty
 "Out Run"
-    * amigados outrun
+    * amigados outrun_sega
 
 "P.P. Hammer" = amigados
 
@@ -463,7 +463,7 @@ probe
 # Sega: (Sega-style tracks): Tracks 134+ may be empty
 # US Gold: (Commando-style tracks): Tracks 135+ may be empty
 "Thunder Blade"
-    * amigados sega_boot thunderblade commando
+    * amigados sega_boot thunderblade_sega commando
 
 "Time"
     1 rnc_hidden amigados
@@ -492,7 +492,7 @@ probe
 "Venus The Flytrap" = gremlin_protected
 
 "Virus"
-    * amigados software_studios_b
+    * amigados software_studios
 
 "Voyager" = amigados_copylock
 

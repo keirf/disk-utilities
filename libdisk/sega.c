@@ -21,8 +21,8 @@
  *  u32 0xaaaaaaaa
  *  u32 csum[2]      :: Even/odd longs, SUB.L sum of all decoded data longs
  *  u32 dat[1500][2] :: Even/odd longs
- * TRKTYP_outrun: 0x4489 sync
- * TRKTYP_thunderblade: 0x4891 sync
+ * TRKTYP_outrun_sega: 0x4489 sync
+ * TRKTYP_thunderblade_sega: 0x4891 sync
  * 
  * Data layout:
  *  u8 data[6000]
@@ -32,9 +32,9 @@
 static uint16_t sega_sync(uint16_t type)
 {
     switch (type) {
-    case TRKTYP_sega_boot:    return 0xa245;
-    case TRKTYP_outrun:       return 0x4489;
-    case TRKTYP_thunderblade: return 0x4891;
+    case TRKTYP_sega_boot: return 0xa245;
+    case TRKTYP_outrun_sega: return 0x4489;
+    case TRKTYP_thunderblade_sega: return 0x4891;
     }
     BUG();
 }
@@ -124,14 +124,14 @@ struct track_handler sega_boot_handler = {
     .read_mfm = sega_read_mfm
 };
 
-struct track_handler outrun_handler = {
+struct track_handler outrun_sega_handler = {
     .bytes_per_sector = 6000,
     .nr_sectors = 1,
     .write_mfm = sega_write_mfm,
     .read_mfm = sega_read_mfm
 };
 
-struct track_handler thunderblade_handler = {
+struct track_handler thunderblade_sega_handler = {
     .bytes_per_sector = 6000,
     .nr_sectors = 1,
     .write_mfm = sega_write_mfm,
@@ -139,7 +139,7 @@ struct track_handler thunderblade_handler = {
 };
 
 /*
- * TRKTYP_afterburner:
+ * TRKTYP_afterburner_sega:
  *  u16 0xa245a245 :: Sync
  *  u32 hdr[2]
  *  u32 dat[1550][2] :: Even/odd longs
@@ -149,7 +149,7 @@ struct track_handler thunderblade_handler = {
  * the header in the output data.
  */
 
-static void *afterburner_write_mfm(
+static void *afterburner_sega_write_mfm(
     struct disk *d, unsigned int tracknr, struct stream *s)
 {
     struct track_info *ti = &d->di->track[tracknr];
@@ -209,7 +209,7 @@ static uint32_t csum_long(uint32_t w_prev, uint32_t w)
     return csum;
 }
 
-static void afterburner_read_mfm(
+static void afterburner_sega_read_mfm(
     struct disk *d, unsigned int tracknr, struct track_buffer *tbuf)
 {
     struct track_info *ti = &d->di->track[tracknr];
@@ -228,11 +228,11 @@ static void afterburner_read_mfm(
     tbuf_bits(tbuf, SPEED_AVG, MFM_even_odd, 32, csum);
 }
 
-struct track_handler afterburner_handler = {
+struct track_handler afterburner_sega_handler = {
     .bytes_per_sector = 6204,
     .nr_sectors = 1,
-    .write_mfm = afterburner_write_mfm,
-    .read_mfm = afterburner_read_mfm
+    .write_mfm = afterburner_sega_write_mfm,
+    .read_mfm = afterburner_sega_read_mfm
 };
 
 /*

@@ -9,10 +9,10 @@
  * Written in 2011 by Keir Fraser
  * 
  * RAW TRACK LAYOUT:
- *  u16 0xf72a (TRKTYP_software_studios_a only)
+ *  u16 0xf72a (TRKTYP_ikplus only)
  *  u16 0x8944,0x8944,0x8944 :: Sync
- *  u8  0xff (TRKTYP_software_studios_b only)
- *  u8  0x41,0x42,cyl (TRKTYP_software_studios_c only)
+ *  u8  0xff (TRKTYP_software_studios only)
+ *  u8  0x41,0x42,cyl (TRKTYP_afterburner_data only)
  *  u8  data[12*512]
  *  u16 crc_ccitt :: Over all track contents, in order
  * MFM encoding:
@@ -46,12 +46,12 @@ static void *software_studios_write_mfm(
         if (s->word != 0x89448944)
             continue;
 
-        if (ti->type == TRKTYP_software_studios_b) {
+        if (ti->type == TRKTYP_software_studios) {
             if (stream_next_bits(s, 16) == -1)
                 goto fail;
             if (mfm_decode_bits(MFM_all, (uint16_t)s->word) != 0xff)
                 continue;
-        } else if (ti->type == TRKTYP_software_studios_c) {
+        } else if (ti->type == TRKTYP_afterburner_data) {
             if (stream_next_bytes(s, dat, 6) == -1)
                 goto fail;
             mfm_decode_bytes(MFM_all, 3, dat, dat);
@@ -67,8 +67,8 @@ static void *software_studios_write_mfm(
 
         mfm_decode_bytes(MFM_all, ti->len, dat, block);
         ti->data_bitoff = idx_off;
-        if (ti->type == TRKTYP_software_studios_a)
-            ti->data_bitoff -= 2*16; /* Type A has a pre-sync header */
+        if (ti->type == TRKTYP_ikplus)
+            ti->data_bitoff -= 2*16; /* IK+ has a pre-sync header */
         ti->valid_sectors = (1u << ti->nr_sectors) - 1;
         return block;
     }
@@ -83,7 +83,7 @@ static void software_studios_read_mfm(
 {
     struct track_info *ti = &d->di->track[tracknr];
 
-    if (ti->type == TRKTYP_software_studios_a)
+    if (ti->type == TRKTYP_ikplus)
         tbuf_bits(tbuf, SPEED_AVG, MFM_all, 16, 0xf72a);
 
     tbuf_start_crc(tbuf);
@@ -91,9 +91,9 @@ static void software_studios_read_mfm(
     tbuf_bits(tbuf, SPEED_AVG, MFM_raw, 32, 0x89448944);
     tbuf_bits(tbuf, SPEED_AVG, MFM_raw, 16, 0x8944);
 
-    if (ti->type == TRKTYP_software_studios_b) {
+    if (ti->type == TRKTYP_software_studios) {
         tbuf_bits(tbuf, SPEED_AVG, MFM_all, 8, 0xff);
-    } else if (ti->type == TRKTYP_software_studios_c) {
+    } else if (ti->type == TRKTYP_afterburner_data) {
         tbuf_bits(tbuf, SPEED_AVG, MFM_all, 16, 0x4142);
         tbuf_bits(tbuf, SPEED_AVG, MFM_all, 8, tracknr/2);
     }
@@ -103,21 +103,21 @@ static void software_studios_read_mfm(
     tbuf_emit_crc16_ccitt(tbuf, SPEED_AVG);
 }
 
-struct track_handler software_studios_a_handler = {
+struct track_handler software_studios_handler = {
     .bytes_per_sector = 12*512,
     .nr_sectors = 1,
     .write_mfm = software_studios_write_mfm,
     .read_mfm = software_studios_read_mfm
 };
 
-struct track_handler software_studios_b_handler = {
+struct track_handler ikplus_handler = {
     .bytes_per_sector = 12*512,
     .nr_sectors = 1,
     .write_mfm = software_studios_write_mfm,
     .read_mfm = software_studios_read_mfm
 };
 
-struct track_handler software_studios_c_handler = {
+struct track_handler afterburner_data_handler = {
     .bytes_per_sector = 12*512,
     .nr_sectors = 1,
     .write_mfm = software_studios_write_mfm,
