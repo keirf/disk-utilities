@@ -426,6 +426,12 @@ probe
 
 "Speris Legacy" = amigados
 
+# Track 158 may be empty.
+# Tracks 3/15/21/25/53/85 may possibly be missing sector 5 -- hard to test
+# as these are only used when running on Atari ST.
+"Starglider 2"
+    * amigados software_studios adls
+
 "Strider II"
     158 amigados tiertex_longtrack
     159 amigados gremlin_longtrack
