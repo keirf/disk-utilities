@@ -208,9 +208,9 @@ probe
     158-159 ignore
     * rainbird
 
-"F-29 Retaliator"
-    1 rnc_hidden amigados
-    * amigados
+"F-29 Retaliator" = rnc_hidden
+
+"Faery Tale Adventure" = amigados # novella protection
 
 "Federation Of Free Traders" # Track 1 may be empty
     0-1 amigados
@@ -237,6 +237,8 @@ probe
 "Great Courts" = blue_byte
 
 "Gunship 2000" = amigados
+
+"Hard Drivin'" = rnc_hidden
 
 "Harlequin"
     * amigados gremlin
@@ -393,6 +395,8 @@ probe
 
 "Pools Of Darkness" = amigados
 
+"Populous II" = amigados # novella protection
+
 "Pro Tennis Tour" = blue_byte
 
 "Project X" = amigados_copylock
@@ -496,9 +500,7 @@ probe
 "Thunder Blade"
     * amigados sega_boot thunderblade_sega commando
 
-"Time"
-    1 rnc_hidden amigados
-    * amigados
+"Time" = rnc_hidden
 
 "Time Machine" = amigados_copylock
 
@@ -554,6 +556,9 @@ amigados
 # Copylock sometimes later replaced with no protection, or PROTEC
 amigados_copylock
     1 amigados copylock protec_longtrack
+    * amigados
+rnc_hidden
+    1 rnc_hidden amigados
     * amigados
 blue_byte
     * amigados blue_byte
