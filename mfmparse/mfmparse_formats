@@ -166,6 +166,9 @@ probe
 
 "Dragon Wars" = amigados
 
+"Dugger" # No empty tracks
+    * amigados dugger
+
 "Dungeon Master"
     1 amigados dungeon_master_weak
     * amigados
