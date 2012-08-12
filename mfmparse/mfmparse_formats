@@ -233,6 +233,10 @@ probe
 
 "Hook" = amigados_copylock
 
+"Hostages"
+    2-3 amigados infogrames_longtrack
+    * amigados
+
 "IK+"
     * amigados ikplus
 
@@ -249,7 +253,7 @@ probe
 "Journey To The Center Of The Earth" = amigados
 
 "Jumping Jack Son"
-    2-3 amigados jumping_jack_son_longtrack
+    2-3 amigados infogrames_longtrack
     * amigados
 
 "Jungle Strike" = amigados_copylock

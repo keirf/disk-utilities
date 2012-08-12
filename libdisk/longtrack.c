@@ -184,7 +184,7 @@ struct track_handler crystals_of_arborea_longtrack_handler = {
 };
 
 /*
- * TRKTYP_jumping_jack_son_longtrack: Jumping Jack Son
+ * TRKTYP_infogrames_longtrack: Hostages, Jumping Jack Son, ...
  *  u16 0xa144 :: sync
  *  Rest of track is (MFM-encoded) zeroes
  *  Track is checked to be >= 104160 bits long (track is ~105500 bits long)
@@ -192,7 +192,7 @@ struct track_handler crystals_of_arborea_longtrack_handler = {
  *  the first 0xaa byte in the DMA buffer (i.e., first 0xaa following sync).
  */
 
-static void *jumping_jack_son_longtrack_write_mfm(
+static void *infogrames_longtrack_write_mfm(
     struct disk *d, unsigned int tracknr, struct stream *s)
 {
     struct track_info *ti = &d->di->track[tracknr];
@@ -212,7 +212,7 @@ static void *jumping_jack_son_longtrack_write_mfm(
     return NULL;
 }
 
-static void jumping_jack_son_longtrack_read_mfm(
+static void infogrames_longtrack_read_mfm(
     struct disk *d, unsigned int tracknr, struct track_buffer *tbuf)
 {
     unsigned int i;
@@ -222,9 +222,9 @@ static void jumping_jack_son_longtrack_read_mfm(
         tbuf_bits(tbuf, SPEED_AVG, MFM_all, 8, 0);
 }
 
-struct track_handler jumping_jack_son_longtrack_handler = {
-    .write_mfm = jumping_jack_son_longtrack_write_mfm,
-    .read_mfm = jumping_jack_son_longtrack_read_mfm
+struct track_handler infogrames_longtrack_handler = {
+    .write_mfm = infogrames_longtrack_write_mfm,
+    .read_mfm = infogrames_longtrack_read_mfm
 };
 
 /*
