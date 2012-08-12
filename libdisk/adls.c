@@ -29,18 +29,13 @@ static void *adls_write_mfm(
     while ((stream_next_bit(s) != -1) &&
            (valid_blocks != ((1u<<ti->nr_sectors)-1))) {
 
-        uint32_t sz, idx_off = s->index_offset - 31;
+        int idx_off;
+        unsigned int sz;
         uint8_t dat[2*(1024+2)], cyl, head, sec, no;
 
         /* IDAM */
-        if (s->word != 0x44894489)
+        if ((idx_off = ibm_scan_idam(s)) < 0)
             continue;
-        stream_start_crc(s);
-        if (stream_next_bits(s, 32) == -1)
-            goto out;
-        if (s->word != 0x44895554)
-            continue;
-
         if (stream_next_bits(s, 32) == -1)
             goto out;
         cyl = mfm_decode_bits(MFM_all, s->word >> 16);
@@ -70,15 +65,7 @@ static void *adls_write_mfm(
         }
 
         /* DAM */
-        while (stream_next_bit(s) != -1)
-            if (s->word == 0x44894489)
-                break;
-        if (s->word != 0x44894489)
-            continue;
-        stream_start_crc(s);
-        if (stream_next_bits(s, 32) == -1)
-            goto out;
-        if (s->word != 0x44895545)
+        if (ibm_scan_dam(s) < 0)
             continue;
         if (stream_next_bytes(s, dat, 2*(sz+2)) == -1)
             goto out;
@@ -146,7 +133,7 @@ static void adls_read_mfm(
         tbuf_bytes(tbuf, SPEED_AVG, MFM_all, (sec == 5) ? 512 : 1024,
                    &dat[sec*1024]);
         tbuf_emit_crc16_ccitt(tbuf, SPEED_AVG);
-        for (i = 0; i < 40; i++)
+        for (i = 0; i < 24; i++)
             tbuf_bits(tbuf, SPEED_AVG, MFM_all, 8, 0x4e);
     }
 }

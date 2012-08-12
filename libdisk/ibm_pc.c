@@ -32,6 +32,35 @@
 
 #include <arpa/inet.h>
 
+int ibm_scan_mark(struct stream *s, uint16_t mark, unsigned int max_scan)
+{
+    int idx_off = -1;
+
+    do {
+        if (s->word != 0x44894489)
+            continue;
+        stream_start_crc(s);
+        if ((stream_next_bits(s, 32) == -1) || (s->word != (0x44890000|mark)))
+            break;
+        idx_off = s->index_offset - 63;
+        if (idx_off < 0)
+            idx_off += s->track_bitlen;
+        break;
+    } while ((stream_next_bit(s) != -1) && --max_scan);
+
+    return idx_off;
+}
+
+int ibm_scan_idam(struct stream *s)
+{
+    return ibm_scan_mark(s, 0x5554, ~0u);
+}
+
+int ibm_scan_dam(struct stream *s)
+{
+    return ibm_scan_mark(s, 0x5545, 1000);
+}
+
 static void *ibm_pc_write_mfm(
     struct disk *d, unsigned int tracknr, struct stream *s)
 {
@@ -54,18 +83,13 @@ static void *ibm_pc_write_mfm(
     while ((stream_next_bit(s) != -1) &&
            (valid_blocks != ((1u<<ti->nr_sectors)-1))) {
 
-        uint32_t sz, idx_off = s->index_offset - 31;
+        int idx_off;
+        unsigned int sz;
         uint8_t dat[2*514], cyl, head, sec, no;
 
         /* IDAM */
-        if (s->word != 0x44894489)
+        if ((idx_off = ibm_scan_idam(s)) < 0)
             continue;
-        stream_start_crc(s);
-        if (stream_next_bits(s, 32) == -1)
-            goto out;
-        if (s->word != 0x44895554)
-            continue;
-
         if (stream_next_bits(s, 32) == -1)
             goto out;
         cyl = mfm_decode_bits(MFM_all, s->word >> 16);
@@ -86,15 +110,7 @@ static void *ibm_pc_write_mfm(
             continue;
 
         /* DAM */
-        while (stream_next_bit(s) != -1)
-            if (s->word == 0x44894489)
-                break;
-        if (s->word != 0x44894489)
-            continue;
-        stream_start_crc(s);
-        if (stream_next_bits(s, 32) == -1)
-            goto out;
-        if (s->word != 0x44895545)
+        if (ibm_scan_dam(s) < 0)
             continue;
         if (stream_next_bytes(s, dat, sizeof(dat)) == -1)
             goto out;

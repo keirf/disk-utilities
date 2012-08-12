@@ -37,20 +37,14 @@ static void *dungeon_master_weak_write_mfm(
     while ((stream_next_bit(s) != -1) &&
            (valid_blocks != ((1u<<ti->nr_sectors)-1))) {
 
-        uint32_t sz, idx_off = s->index_offset - 31;
+        int idx_off;
         uint8_t dat[2*514], cyl, head, sec, no;
         uint16_t crc;
-        unsigned int i;
+        unsigned int i, sz;
 
         /* IDAM */
-        if (s->word != 0x44894489)
+        if ((idx_off = ibm_scan_idam(s)) < 0)
             continue;
-        stream_start_crc(s);
-        if (stream_next_bits(s, 32) == -1)
-            break;
-        if (s->word != 0x44895554)
-            continue;
-
         if (stream_next_bits(s, 32) == -1)
             break;
         cyl = mfm_decode_bits(MFM_all, s->word >> 16);
@@ -70,15 +64,7 @@ static void *dungeon_master_weak_write_mfm(
             continue;
 
         /* DAM */
-        while (stream_next_bit(s) != -1)
-            if (s->word == 0x44894489)
-                break;
-        if (s->word != 0x44894489)
-            continue;
-        stream_start_crc(s);
-        if (stream_next_bits(s, 32) == -1)
-            break;
-        if (s->word != 0x44895545)
+        if (ibm_scan_dam(s) < 0)
             continue;
         crc = s->crc16_ccitt;
 
