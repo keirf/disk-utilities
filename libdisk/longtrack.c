@@ -184,7 +184,7 @@ struct track_handler crystals_of_arborea_longtrack_handler = {
 };
 
 /*
- * TRKTYP_infogrames_longtrack: Hostages, Jumping Jack Son, ...
+ * TRKTYP_infogrames_longtrack: Hostages, Jumping Jack Son, and others
  *  u16 0xa144 :: sync
  *  Rest of track is (MFM-encoded) zeroes
  *  Track is checked to be >= 104160 bits long (track is ~105500 bits long)

@@ -215,6 +215,8 @@ probe
 
 "Frontier: Elite II" = amigados
 
+"Full Metal Planete" = infogrames_protected
+
 "Gateway To The Savage Frontier" = amigados
 
 "Goal!" = amigados_copylock
@@ -233,9 +235,7 @@ probe
 
 "Hook" = amigados_copylock
 
-"Hostages"
-    2-3 amigados infogrames_longtrack
-    * amigados
+"Hostages" = infogrames_protected
 
 "IK+"
     * amigados ikplus
@@ -252,9 +252,7 @@ probe
 # Budget re-release
 "Journey To The Center Of The Earth" = amigados
 
-"Jumping Jack Son"
-    2-3 amigados infogrames_longtrack
-    * amigados
+"Jumping Jack Son" = infogrames_protected
 
 "Jungle Strike" = amigados_copylock
 
@@ -545,6 +543,9 @@ gremlin_protected
     * gremlin
 amigados_gremlin_longtrack
     158-159 amigados gremlin_longtrack
+    * amigados
+infogrames_protected # All tracks mastered
+    2-3 amigados infogrames_longtrack
     * amigados
 rnc_pdos
     * amigados rnc_pdos
