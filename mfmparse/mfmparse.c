@@ -175,18 +175,23 @@ int main(int argc, char **argv)
         goto out;
 
     prev_name = di->track[0].typename;
-    for (i = 1; i <= di->nr_tracks; i++) {
+    for (i = 1; i < di->nr_tracks; i++) {
         ti = &di->track[i];
-        if ((ti->typename == prev_name) && (i != di->nr_tracks))
+        if (ti->typename == prev_name)
             continue;
         if (st == i-1)
             printf("T");
         else
             printf("T%u-", st);
-        printf("%u: %s\n", i-1, di->track[i-1].typename);
+        printf("%u: %s\n", i-1, prev_name);
         st = i;
-        prev_name = di->track[i].typename;
+        prev_name = ti->typename;
     }
+    if (st == i-1)
+        printf("T");
+    else
+        printf("T%u-", st);
+    printf("%u: %s\n", i-1, prev_name);
 
 out:
     if (unidentified)
