@@ -133,6 +133,8 @@ probe
 
 "Cannon Fodder 2" = amigados_copylock
 
+"Captain Blood" = amigados_copylock
+
 "Captive" # Tracks 155+ may be empty
     0 amigados
     1 copylock
@@ -183,6 +185,8 @@ probe
 "Dungeon Master"
     1 amigados dungeon_master_weak
     * amigados
+
+"Emerald Mine II" = amigados
 
 "Exolon" = amigados_copylock
 
