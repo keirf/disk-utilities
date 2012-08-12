@@ -402,6 +402,11 @@ probe
 
 "Reach For The Skies" = amigados
 
+# No empty tracks on any disk.
+# All disks are SmartDOS except install disk (AmigaDOS).
+"Rise Of The Robots"
+    * amigados smartdos
+
 # Protection checks for track length of at least 110164 bits, and does not
 # care about gap contents. Actual track length is just over 111000 bits.
 "Road Raider"
