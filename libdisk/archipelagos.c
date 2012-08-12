@@ -88,6 +88,10 @@ done:
             break;
     ti->data_bitoff -= i * 0x820;
 
+    /* Some releases use long tracks (for no good reason). */
+    stream_next_index(s);
+    ti->total_bits = (s->track_bitlen > 102000) ? 105500 : 100150;
+
     return block;
 }
 

@@ -46,6 +46,19 @@ probe
 
 "Arcade Pool" = rnc_pdos
 
+# One release has PROTEC longtrack and (unnecessarily) long data tracks
+# Another release skips the PROTEC track and has normal length data tracks
+# The ignore catch-all here does catch some genuinely empty tracks
+"Archipelagos"
+    0 amigados
+    1 protec_longtrack # may be unformatted
+    2-22 archipelagos
+    26-48 archipelagos
+    51-67 archipelagos
+    75-76 archipelagos
+    100 archipelagos
+    * ignore
+
 "Armour-Geddon Disk 1"
     0-1 psygnosis_c
     2-53 psygnosis_a
@@ -66,11 +79,6 @@ probe
 
 "Assassin" = amigados_copylock
 "Assassin Special Edition" = rnc_pdos
-
-"Archipelagos"
-    0 amigados
-    1 protec_longtrack
-    * archipelagos
 
 "Atomic Robo-Kid" = amigados_copylock
 
