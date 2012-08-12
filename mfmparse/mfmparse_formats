@@ -1,7 +1,7 @@
 default = amigados
 probe
     * amigados copylock psygnosis_a psygnosis_b rnc_pdos core_design \
-      gremlin rainbird blue_byte ikplus software_studios \
+      gremlin rainbird blue_byte ikplus firebird \
       archipelagos sensible \
       bat batman menace commando turrican federation_of_free_traders \
       phantom_fighter supremacy_a supremacy_b \
@@ -13,7 +13,7 @@ probe
 "A-10 Tank Killer" = amigados
 
 "After Burner Disk A (Activision)"
-    * amigados software_studios
+    * amigados firebird
 
 "After Burner Disk B (Activision)"
     0-158/2 afterburner_data
@@ -463,7 +463,7 @@ probe
 # Tracks 3/15/21/25/53/85 may possibly be missing sector 5 -- hard to test
 # as these are only used when running on Atari ST.
 "Starglider 2"
-    * amigados software_studios adls
+    * amigados firebird adls
 
 "Strider II"
     158 amigados tiertex_longtrack
@@ -529,7 +529,7 @@ probe
 "Venus The Flytrap" = gremlin_protected
 
 "Virus"
-    * amigados software_studios
+    * amigados firebird
 
 "Voyager" = amigados_copylock
 

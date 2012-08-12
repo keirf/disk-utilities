@@ -1,5 +1,5 @@
 /*
- * disk/software_studios.c
+ * disk/firebird.c
  * 
  * Custom formats as used by:
  *   After Burner (Software Studios / Argonaut)
@@ -11,14 +11,14 @@
  * RAW TRACK LAYOUT:
  *  u16 0xf72a (TRKTYP_ikplus only)
  *  u16 0x8944,0x8944,0x8944 :: Sync
- *  u8  0xff (TRKTYP_software_studios only)
+ *  u8  0xff (TRKTYP_firebird only)
  *  u8  0x41,0x42,cyl (TRKTYP_afterburner_data only)
  *  u8  data[12*512]
  *  u16 crc_ccitt :: Over all track contents, in order
  * MFM encoding:
  *  Continuous, no even/odd split
  * 
- * TRKTYP_software_studios_* data layout:
+ * TRKTYP_* data layout:
  *  u8 sector_data[12*512]
  */
 
@@ -27,7 +27,7 @@
 
 #include <arpa/inet.h>
 
-static void *software_studios_write_mfm(
+static void *firebird_write_mfm(
     struct disk *d, unsigned int tracknr, struct stream *s)
 {
     struct track_info *ti = &d->di->track[tracknr];
@@ -46,7 +46,7 @@ static void *software_studios_write_mfm(
         if (s->word != 0x89448944)
             continue;
 
-        if (ti->type == TRKTYP_software_studios) {
+        if (ti->type == TRKTYP_firebird) {
             if (stream_next_bits(s, 16) == -1)
                 goto fail;
             if (mfm_decode_bits(MFM_all, (uint16_t)s->word) != 0xff)
@@ -78,7 +78,7 @@ fail:
     return NULL;
 }
 
-static void software_studios_read_mfm(
+static void firebird_read_mfm(
     struct disk *d, unsigned int tracknr, struct track_buffer *tbuf)
 {
     struct track_info *ti = &d->di->track[tracknr];
@@ -91,7 +91,7 @@ static void software_studios_read_mfm(
     tbuf_bits(tbuf, SPEED_AVG, MFM_raw, 32, 0x89448944);
     tbuf_bits(tbuf, SPEED_AVG, MFM_raw, 16, 0x8944);
 
-    if (ti->type == TRKTYP_software_studios) {
+    if (ti->type == TRKTYP_firebird) {
         tbuf_bits(tbuf, SPEED_AVG, MFM_all, 8, 0xff);
     } else if (ti->type == TRKTYP_afterburner_data) {
         tbuf_bits(tbuf, SPEED_AVG, MFM_all, 16, 0x4142);
@@ -103,25 +103,25 @@ static void software_studios_read_mfm(
     tbuf_emit_crc16_ccitt(tbuf, SPEED_AVG);
 }
 
-struct track_handler software_studios_handler = {
+struct track_handler firebird_handler = {
     .bytes_per_sector = 12*512,
     .nr_sectors = 1,
-    .write_mfm = software_studios_write_mfm,
-    .read_mfm = software_studios_read_mfm
+    .write_mfm = firebird_write_mfm,
+    .read_mfm = firebird_read_mfm
 };
 
 struct track_handler ikplus_handler = {
     .bytes_per_sector = 12*512,
     .nr_sectors = 1,
-    .write_mfm = software_studios_write_mfm,
-    .read_mfm = software_studios_read_mfm
+    .write_mfm = firebird_write_mfm,
+    .read_mfm = firebird_read_mfm
 };
 
 struct track_handler afterburner_data_handler = {
     .bytes_per_sector = 12*512,
     .nr_sectors = 1,
-    .write_mfm = software_studios_write_mfm,
-    .read_mfm = software_studios_read_mfm
+    .write_mfm = firebird_write_mfm,
+    .read_mfm = firebird_read_mfm
 };
 
 /*
