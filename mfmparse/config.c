@@ -241,7 +241,7 @@ struct format_list **parse_config(char *config, char *specifier)
                 if (verbose)
                     printf("Format \"%s\"->\"%s\"\n", spec, t.u.str);
                 memfree(spec);
-                spec = memalloc(strlen(t.u.str+1));
+                spec = memalloc(strlen(t.u.str)+1);
                 strcpy(spec, t.u.str);
             } else {
                 goto found;
