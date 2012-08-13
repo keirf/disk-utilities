@@ -18,8 +18,9 @@ static void *unformatted_write_mfm(
 {
     struct disk_info *di = d->di;
     struct track_info *ti = &di->track[tracknr];
-    unsigned int bad = 0, nr_zero = 0, i = 0;
+    unsigned int scan_bits = 0, bad = 0, nr_zero = 0;
     unsigned int lat = s->latency, clk = 2000;
+    unsigned int bad_sectors = 0, nr_sectors = 0;
 
     /*
      * Scan for bit sequences that break the MFM encoding rules.
@@ -42,11 +43,20 @@ static void *unformatted_write_mfm(
             bad++;
         }
 
-        if (++i >= SCAN_SECTOR_BITS) {
-            if (bad < SECTOR_BAD_THRESH)
-                return NULL;
-            bad = i = 0;
+        if (++scan_bits >= SCAN_SECTOR_BITS) {
+            if (bad >= SECTOR_BAD_THRESH)
+                bad_sectors++;
+            nr_sectors++;
+            bad = scan_bits = 0;
         }
+    }
+
+    if (bad_sectors < nr_sectors) {
+        unsigned int pc = (bad_sectors*1000)/nr_sectors;
+        if ((pc/10) <= 90)
+            return NULL;
+        printf("*** T%u: Almost certainly unformatted/empty (%u.%u%%)\n",
+               tracknr, pc/10, pc%10);
     }
 
     ti->total_bits = TRK_WEAK;

@@ -49,9 +49,15 @@ static void *pinball_dreams_write_mfm(
             continue;
 
         stream_next_bits(s, 32);
-        if (s->word != 0x44894489)
-            printf("*** T%u: did not find expected 44894489 signature "
-                   "(saw %08x)\n", tracknr, s->word);
+        if (s->word == 0x44894488) { /* Pinball Dreams, Disk 2, Track 157 */
+            ti->total_bits = 101200;
+        } else if (s->word == 0x44894489) { /* All other tracks */
+            ti->total_bits = 105500;
+        } else {
+            printf("*** T%u: Pinball Dreams: did not find expected 44894489 "
+                   "signature (saw %08x)\n", tracknr, s->word);
+            goto fail;
+        }
 
         block = memalloc(ti->len);
         p = (uint16_t *)dat;
@@ -60,7 +66,6 @@ static void *pinball_dreams_write_mfm(
             block[i] = (x >> 4) | (x << 4);
         }
         ti->valid_sectors = (1u << ti->nr_sectors) - 1;
-        ti->total_bits = 105500;
         return block;
     }
 
@@ -90,7 +95,8 @@ static void pinball_dreams_read_mfm(
         tbuf_bits(tbuf, SPEED_AVG, MFM_all, 8, x);
     }
 
-    tbuf_bits(tbuf, SPEED_AVG, MFM_raw, 32, 0x44894489);
+    tbuf_bits(tbuf, SPEED_AVG, MFM_raw, 32,
+              (ti->total_bits == 105500) ? 0x44894489 : 0x44894488);
 }
 
 struct track_handler pinball_dreams_handler = {
