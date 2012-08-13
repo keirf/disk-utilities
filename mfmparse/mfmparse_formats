@@ -49,9 +49,11 @@ probe
 
 "Arcade Pool" = rnc_pdos
 
-# One release has PROTEC longtrack and (unnecessarily) long data tracks
-# Another release skips the PROTEC track and has normal length data tracks
-# The ignore catch-all here does catch some genuinely empty tracks
+# One release has PROTEC longtrack and (unnecessarily) long data tracks.
+# Another release skips the PROTEC track and has normal length data tracks.
+# The PROTEC track is tested in all cases, but the result never seems to be
+# used (game relies on novella protection instead).
+# The ignore catch-all here does catch some genuinely empty tracks.
 "Archipelagos"
     0 amigados
     1 protec_longtrack # may be unformatted
