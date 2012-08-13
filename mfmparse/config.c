@@ -239,7 +239,7 @@ struct format_list **parse_config(char *config, char *specifier)
                 if (t.type != STR)
                     parse_err("expected string after =");
                 if (verbose)
-                    printf("Format \"%s\"->\"%s\"\n", spec, t.u.str);
+                    printf("Format \"%s\" -> \"%s\"\n", spec, t.u.str);
                 memfree(spec);
                 spec = memalloc(strlen(t.u.str)+1);
                 strcpy(spec, t.u.str);
