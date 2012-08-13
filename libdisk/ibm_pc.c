@@ -51,9 +51,31 @@ int ibm_scan_mark(struct stream *s, uint16_t mark, unsigned int max_scan)
     return idx_off;
 }
 
-int ibm_scan_idam(struct stream *s)
+int ibm_scan_idam(struct stream *s, struct ibm_idam *idam)
 {
-    return ibm_scan_mark(s, 0x5554, ~0u);
+    int idx_off = ibm_scan_mark(s, 0x5554, ~0u);
+    if (idx_off < 0)
+        goto fail;
+
+    /* cyl,head */
+    if (stream_next_bits(s, 32) == -1)
+        goto fail;
+    idam->cyl = mfm_decode_bits(MFM_all, s->word >> 16);
+    idam->head = mfm_decode_bits(MFM_all, s->word);
+
+    /* sec,no */
+    if (stream_next_bits(s, 32) == -1)
+        goto fail;
+    idam->sec = mfm_decode_bits(MFM_all, s->word >> 16);
+    idam->no = mfm_decode_bits(MFM_all, s->word);
+
+    /* crc */
+    if (stream_next_bits(s, 32) == -1)
+        goto fail;
+
+    return idx_off;
+fail:
+    return -1;
 }
 
 int ibm_scan_dam(struct stream *s)
@@ -84,29 +106,19 @@ static void *ibm_pc_write_mfm(
            (valid_blocks != ((1u<<ti->nr_sectors)-1))) {
 
         int idx_off;
-        unsigned int sz;
-        uint8_t dat[2*514], cyl, head, sec, no;
+        uint8_t dat[2*514];
+        struct ibm_idam idam;
 
         /* IDAM */
-        if ((idx_off = ibm_scan_idam(s)) < 0)
+        if ((idx_off = ibm_scan_idam(s, &idam)) < 0)
             continue;
-        if (stream_next_bits(s, 32) == -1)
-            goto out;
-        cyl = mfm_decode_bits(MFM_all, s->word >> 16);
-        head = mfm_decode_bits(MFM_all, s->word);
-        if (stream_next_bits(s, 32) == -1)
-            goto out;
-        sec = mfm_decode_bits(MFM_all, s->word >> 16);
-        no = mfm_decode_bits(MFM_all, s->word);
-        if (stream_next_bits(s, 32) == -1)
-            goto out;
-        sz = 128 << no;
-        if ((cyl != (tracknr/2)) || (head != (tracknr&1)) ||
-            (sz != 512) || (s->crc16_ccitt != 0))
+        
+        if ((idam.cyl != (tracknr/2)) || (idam.head != (tracknr&1)) ||
+            (idam.no != 2) || (s->crc16_ccitt != 0))
             continue;
 
-        sec--;
-        if ((sec >= ti->nr_sectors) || (valid_blocks & (1u<<sec)))
+        idam.sec--;
+        if ((idam.sec >= ti->nr_sectors) || (valid_blocks & (1u<<idam.sec)))
             continue;
 
         /* DAM */
@@ -118,9 +130,9 @@ static void *ibm_pc_write_mfm(
             continue;
 
         mfm_decode_bytes(MFM_all, 512, dat, dat);
-        memcpy(&block[sec*512], dat, 512);
-        valid_blocks |= 1u << sec;
-        if (sec == 0)
+        memcpy(&block[idam.sec*512], dat, 512);
+        valid_blocks |= 1u << idam.sec;
+        if (idam.sec == 0)
             ti->data_bitoff = idx_off;
     }
 

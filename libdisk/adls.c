@@ -31,36 +31,27 @@ static void *adls_write_mfm(
 
         int idx_off;
         unsigned int sz;
-        uint8_t dat[2*(1024+2)], cyl, head, sec, no;
+        uint8_t dat[2*(1024+2)];
+        struct ibm_idam idam;
 
         /* IDAM */
-        if ((idx_off = ibm_scan_idam(s)) < 0)
+        if ((idx_off = ibm_scan_idam(s, &idam)) < 0)
             continue;
-        if (stream_next_bits(s, 32) == -1)
-            goto out;
-        cyl = mfm_decode_bits(MFM_all, s->word >> 16);
-        head = mfm_decode_bits(MFM_all, s->word);
-        if (stream_next_bits(s, 32) == -1)
-            goto out;
-        sec = mfm_decode_bits(MFM_all, s->word >> 16);
-        no = mfm_decode_bits(MFM_all, s->word);
-        if (stream_next_bits(s, 32) == -1)
-            goto out;
         if (s->crc16_ccitt != 0)
             continue;
 
-        sec -= 0xf5;
-        if ((sec >= ti->nr_sectors) || (valid_blocks & (1u<<sec)))
+        idam.sec -= 0xf5;
+        if ((idam.sec >= ti->nr_sectors) || (valid_blocks & (1u<<idam.sec)))
             continue;
-        sz = (sec == 5) ? 512 : 1024;
+        sz = (idam.sec == 5) ? 512 : 1024;
 
         if (tracknr & 1) {
-            if ((cyl != (tracknr/2)) || (head != (tracknr&1)) ||
-                (no != ((sec == 5) ? 2 : 3)))
+            if ((idam.cyl != (tracknr/2)) || (idam.head != (tracknr&1)) ||
+                (idam.no != ((idam.sec == 5) ? 2 : 3)))
                 continue;
         } else {
-            if ((cyl != 0xf7) || (head != 0xf7) ||
-                (no != ((sec == 5) ? 0xf6 : 0xf7)))
+            if ((idam.cyl != 0xf7) || (idam.head != 0xf7) ||
+                (idam.no != ((idam.sec == 5) ? 0xf6 : 0xf7)))
                 continue;
         }
 
@@ -73,9 +64,9 @@ static void *adls_write_mfm(
             continue;
 
         mfm_decode_bytes(MFM_all, sz, dat, dat);
-        memcpy(&block[sec*1024], dat, sz);
-        valid_blocks |= 1u << sec;
-        if (sec == 0)
+        memcpy(&block[idam.sec*1024], dat, sz);
+        valid_blocks |= 1u << idam.sec;
+        if (idam.sec == 0)
             ti->data_bitoff = idx_off;
     }
 

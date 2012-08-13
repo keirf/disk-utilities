@@ -38,29 +38,20 @@ static void *dungeon_master_weak_write_mfm(
            (valid_blocks != ((1u<<ti->nr_sectors)-1))) {
 
         int idx_off;
-        uint8_t dat[2*514], cyl, head, sec, no;
+        uint8_t dat[2*514];
         uint16_t crc;
-        unsigned int i, sz;
+        unsigned int i;
+        struct ibm_idam idam;
 
         /* IDAM */
-        if ((idx_off = ibm_scan_idam(s)) < 0)
+        if ((idx_off = ibm_scan_idam(s, &idam)) < 0)
             continue;
-        if (stream_next_bits(s, 32) == -1)
-            break;
-        cyl = mfm_decode_bits(MFM_all, s->word >> 16);
-        head = mfm_decode_bits(MFM_all, s->word);
-        if (stream_next_bits(s, 32) == -1)
-            break;
-        sec = mfm_decode_bits(MFM_all, s->word >> 16);
-        no = mfm_decode_bits(MFM_all, s->word);
-        if (stream_next_bits(s, 32) == -1)
-            break;
-        sz = 128 << no;
-        if ((cyl != 0) || (head != 1) || (sz != 512) || (s->crc16_ccitt != 0))
+        if ((idam.cyl != 0) || (idam.head != 1) ||
+            (idam.no != 2) || (s->crc16_ccitt != 0))
             continue;
 
-        sec--;
-        if ((sec >= ti->nr_sectors) || (valid_blocks & (1u<<sec)))
+        idam.sec--;
+        if ((idam.sec >= ti->nr_sectors) || (valid_blocks & (1u<<idam.sec)))
             continue;
 
         /* DAM */
@@ -68,7 +59,7 @@ static void *dungeon_master_weak_write_mfm(
             continue;
         crc = s->crc16_ccitt;
 
-        if (sec == weak_sec) {
+        if (idam.sec == weak_sec) {
             /*
              * Weak-bit protection relies on authentic behaviour of FDC PLL
              * to respond slowly to marginal bits at edge of inspection window.
@@ -101,9 +92,9 @@ static void *dungeon_master_weak_write_mfm(
         if (s->crc16_ccitt != 0)
             continue;
 
-        memcpy(&block[sec*512], dat, 512);
-        valid_blocks |= 1u << sec;
-        if (sec == 0)
+        memcpy(&block[idam.sec*512], dat, 512);
+        valid_blocks |= 1u << idam.sec;
+        if (idam.sec == 0)
             ti->data_bitoff = idx_off;
     }
 
