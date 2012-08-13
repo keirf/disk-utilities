@@ -82,6 +82,8 @@ probe
     0-114 armourgeddon_b
     * ignore
 
+"Aspar Master Grand Prix" = "Grand Prix Master"
+
 "Assassin" = amigados_copylock
 "Assassin Special Edition" = rnc_pdos
 
@@ -188,6 +190,10 @@ probe
     1 amigados dungeon_master_weak
     * amigados
 
+"Dyna Blaster" = amigados
+
+"Ebonstar" = amigados
+
 "Emerald Mine II" = amigados
 
 "Exolon" = amigados_copylock
@@ -239,6 +245,8 @@ probe
 "Goal!" = amigados_copylock
 
 "Gods" = amigados_copylock
+
+"Grand Prix Master" = amigados
 
 "Great Courts" = blue_byte
 
@@ -422,6 +430,8 @@ probe
 "Rainbow Islands" = amigados_copylock
 
 "Reach For The Skies" = amigados
+
+"Rick Dangerous" = amigados_copylock
 
 # No empty tracks on any disk.
 # All disks are SmartDOS except install disk (AmigaDOS).
