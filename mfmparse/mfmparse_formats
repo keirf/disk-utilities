@@ -114,6 +114,8 @@ probe
 
 "Bermuda Project" = amigados
 
+"Bio Challenge" = rnc_hidden
+
 "Bionic Commando" = amigados
 
 "Blade Of Destiny" = amigados
@@ -308,6 +310,8 @@ probe
 
 "Legend Of Djel" = amigados
 
+"Legend Of The Lost" = amigados
+
 "Lemmings"
     * amigados copylock psygnosis_b
 "Lemmings 2" = amigados_copylock
@@ -411,6 +415,8 @@ probe
 
 "Populous II" = amigados # novella protection
 
+"Powermonger" = amigados
+
 "Pro Tennis Tour" = blue_byte
 
 "Project X" = amigados_copylock
@@ -428,6 +434,8 @@ probe
 
 # Hit Squad re-release has no copylock
 "Rainbow Islands" = amigados_copylock
+
+"Rampage" = amigados
 
 "Reach For The Skies" = amigados
 
@@ -476,6 +484,8 @@ probe
 # as these are only used when running on Atari ST.
 "Starglider 2"
     * amigados firebird adls
+
+"Steel Empire" = amigados
 
 "Strider II"
     158 amigados tiertex_longtrack
