@@ -40,8 +40,8 @@ static void *sega_system_24_write_mfm(
         idam.sec--;
         if (idam.sec >= ti->nr_sectors) {
         unexpected_idam:
-            printf("*** T%u: Sega System 24: Bad IDAM %02x:%02x:%02x:%02x\n",
-                   tracknr, idam.sec+1, idam.cyl, idam.head, idam.no);
+            trk_warn(ti, tracknr, "Bad IDAM sec=%02x cyl=%02x hd=%02x no=%02x",
+                     idam.sec+1, idam.cyl, idam.head, idam.no);
             valid_blocks = 0;
             goto out;
         }

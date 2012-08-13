@@ -169,18 +169,18 @@ static void *copylock_write_mfm(
         switch (sec) {
         case 4:
             if (d > -4.5)
-                printf("*** T%u: Copylock: Short sector is only "
-                       "%.2f%% different\n", tracknr, d);
+                trk_warn(ti, tracknr, "Short sector is only "
+                         "%.2f%% different", d);
             break;
         case 6:
             if (d < 4.5)
-                printf("*** T%u: Copylock: Long sector is only "
-                       "%.2f%% different\n", tracknr, d);
+                trk_warn(ti, tracknr, "Long sector is only "
+                         "%.2f%% different", d);
             break;
         default:
             if ((d < -2.0) || (d > 2.0))
-                printf("*** T%u: Copylock: Normal sector is "
-                       "%.2f%% different\n", tracknr, d);
+                trk_warn(ti, tracknr, "Normal sector is only "
+                         "%.2f%% different", d);
             break;
         }
     }
@@ -196,7 +196,7 @@ static void *copylock_write_mfm(
 
     /* Magic: We can reconstruct the entire track from the LFSR seed! */
     if (valid_blocks != ((1u << ti->nr_sectors) - 1)) {
-        printf("*** T%u: Reconstructed damaged Copylock track!\n", tracknr);
+        trk_warn(ti, tracknr, "Reconstructed damaged track");
         valid_blocks = (1u << ti->nr_sectors) - 1;
     }
 

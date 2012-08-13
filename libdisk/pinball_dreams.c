@@ -54,8 +54,8 @@ static void *pinball_dreams_write_mfm(
         } else if (s->word == 0x44894489) { /* All other tracks */
             ti->total_bits = 105500;
         } else {
-            printf("*** T%u: Pinball Dreams: did not find expected 44894489 "
-                   "signature (saw %08x)\n", tracknr, s->word);
+            trk_warn(ti, tracknr, "Did not find expected 44894489 "
+                     "signature (saw %08x)", s->word);
             goto fail;
         }
 

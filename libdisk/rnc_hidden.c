@@ -87,8 +87,8 @@ static void *rnc_hidden_write_mfm(
                 found = j;
     /* If we find no matching pairs, we fail. */
     if (!found) {
-        printf("*** T%u: RNC Hidden Sectors: Found no matching signatures "
-               "in %u sectors!\n", tracknr, nr_sigs);
+        trk_warn(ti, tracknr, "Found no matching signatures "
+                 "in %u sectors!", nr_sigs);
         goto out;
     }
     /* Otherwise, that's the signature we keep. */
@@ -99,11 +99,11 @@ static void *rnc_hidden_write_mfm(
         if (!memcmp(sigs[i], sig, sizeof(sig)))
             found++;
     if (found != nr_sigs)
-        printf("*** T%u: RNC Hidden Sectors: Found only %u matching "
-               "signatures out of %u\n", tracknr, found, nr_sigs);
+        trk_warn(ti, tracknr, "Found only %u matching "
+                 "signatures out of %u", found, nr_sigs);
     if (nr_sigs != NR_SYNCS)
-        printf("*** T%u: RNC Hidden Sectors: Found only %u sectors "
-               "out of %u\n", tracknr, nr_sigs, NR_SYNCS);
+        trk_warn(ti, tracknr, "Found only %u sectors "
+               "out of %u", nr_sigs, NR_SYNCS);
 
     /* Build the track descriptor. */
     init_track_info(ti, TRKTYP_rnc_hidden);

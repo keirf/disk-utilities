@@ -128,6 +128,9 @@ int ibm_scan_mark(struct stream *s, uint16_t mark, unsigned int max_scan);
 int ibm_scan_idam(struct stream *s, struct ibm_idam *idam);
 int ibm_scan_dam(struct stream *s);
 
+#define trk_warn(ti,trk,msg,a...) \
+    printf("*** T%u: %s: " msg "\n", trk, (ti)->typename, ## a)
+
 #endif /* __DISK_PRIVATE_H__ */
 
 /*
