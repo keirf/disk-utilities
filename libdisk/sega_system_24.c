@@ -38,17 +38,14 @@ static void *sega_system_24_write_mfm(
             continue;
 
         idam.sec--;
-        if (idam.sec >= ti->nr_sectors) {
-        unexpected_idam:
-            trk_warn(ti, tracknr, "Bad IDAM sec=%02x cyl=%02x hd=%02x no=%02x",
-                     idam.sec+1, idam.cyl, idam.head, idam.no);
-            valid_blocks = 0;
-            goto out;
+        if ((idam.sec >= ti->nr_sectors) ||
+            (idam.cyl != (tracknr/2)) ||
+            (idam.head != (tracknr&1)) ||
+            (idam.no != sec_no(idam.sec))) {
+            trk_warn(ti, tracknr, "Unexpected IDAM sec=%02x cyl=%02x hd=%02x "
+                     "no=%02x", idam.sec+1, idam.cyl, idam.head, idam.no);
+            continue;
         }
-
-        if ((idam.cyl != (tracknr/2)) || (idam.head != (tracknr&1)) ||
-            (idam.no != sec_no(idam.sec)))
-            goto unexpected_idam;
 
         if (valid_blocks & (1u<<idam.sec))
             continue;
@@ -66,7 +63,6 @@ static void *sega_system_24_write_mfm(
             ti->data_bitoff = idx_off;
     }
 
-out:
     if (!valid_blocks) {
         memfree(block);
         return NULL;

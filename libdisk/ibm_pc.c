@@ -106,27 +106,30 @@ static void *ibm_pc_write_mfm(
            (valid_blocks != ((1u<<ti->nr_sectors)-1))) {
 
         int idx_off;
-        uint8_t dat[2*514];
+        uint8_t dat[2*512];
         struct ibm_idam idam;
 
         /* IDAM */
-        if ((idx_off = ibm_scan_idam(s, &idam)) < 0)
+        if (((idx_off = ibm_scan_idam(s, &idam)) < 0) || s->crc16_ccitt)
             continue;
         
-        if ((idam.cyl != (tracknr/2)) || (idam.head != (tracknr&1)) ||
-            (idam.no != 2) || (s->crc16_ccitt != 0))
-            continue;
-
         idam.sec--;
-        if ((idam.sec >= ti->nr_sectors) || (valid_blocks & (1u<<idam.sec)))
+        if ((idam.sec >= ti->nr_sectors) ||
+            (idam.cyl != (tracknr/2)) ||
+            (idam.head != (tracknr&1)) ||
+            (idam.no != 2)) {
+            trk_warn(ti, tracknr, "Unexpected IDAM sec=%02x cyl=%02x hd=%02x "
+                     "no=%02x", idam.sec+1, idam.cyl, idam.head, idam.no);
+            continue;
+        }
+
+        if (valid_blocks & (1u<<idam.sec))
             continue;
 
         /* DAM */
-        if (ibm_scan_dam(s) < 0)
-            continue;
-        if (stream_next_bytes(s, dat, sizeof(dat)) == -1)
-            goto out;
-        if (s->crc16_ccitt != 0)
+        if ((ibm_scan_dam(s) < 0) ||
+            (stream_next_bytes(s, dat, 2*512) == -1) ||
+            (stream_next_bits(s, 32) == -1) || s->crc16_ccitt)
             continue;
 
         mfm_decode_bytes(MFM_all, 512, dat, dat);
@@ -136,7 +139,6 @@ static void *ibm_pc_write_mfm(
             ti->data_bitoff = idx_off;
     }
 
-out:
     if (!valid_blocks) {
         memfree(block);
         return NULL;
