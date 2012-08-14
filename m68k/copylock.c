@@ -106,8 +106,59 @@ int main(int argc, char **argv)
         err(1, NULL);
     read_exact(fd, shadow, len);
     close(fd);
-    for (i = 0; i < len; i++)
-        mem_write(base + i, shadow[i], 1, &s);
+
+    /* Poison low-memory vectors. */
+    for (i = 0; i < 0x100; i += 4)
+        mem_write(i, 0xdeadbe00u | i, 4, &s);
+
+    if (*argv[2] == '-') {
+        /* Treat file as a loadable executable. Perform LoadSeg on it. */
+        uint32_t *p = (uint32_t *)shadow;
+        unsigned int i, j, k, nr_chunks, nr_longs, type, mem_off = base-4;
+        unsigned int bptr = 0;
+        if (ntohl(p[0]) != 0x3f3)
+            errx(1, "Unexpected image signature %08x", ntohl(p[0]));
+        printf("Loadable image: ");
+        for (i = 1; p[i] != 0; i++)
+            continue;
+        nr_chunks = ntohl(p[i+1]);        
+        printf("%u chunks\n", nr_chunks);
+        i += 1 + 1 + 2 + nr_chunks;
+        for (j = 0; j < nr_chunks; j++) {
+            type = ntohl(p[i]);
+            nr_longs = ntohl(p[i+1]) & 0x3fffffffu;
+            printf("Chunk %u: %08x, %u longwords\n", j, type, nr_longs);
+            i += 2;
+            bptr = mem_off;
+            mem_off += 4;
+            if ((type == 0x3e9) || (type == 0x3ea)) {
+                /* code/data */
+                for (k = 0; k < nr_longs; k++) {
+                    mem_write(mem_off, ntohl(p[i]), 4, &s);
+                    i++;
+                    mem_off += 4;
+                }
+            } else if (type == 0x3eb) {
+                /* bss */
+                for (k = 0; k < nr_longs; k++) {
+                    mem_write(mem_off, 0, 4, &s);
+                    mem_off += 4;
+                }
+            } else {
+                errx(1, "Unexpected chunk type %08x", type);
+            }
+            if (ntohl(p[i]) != 0x3f2)
+                errx(1, "Unexpected chunk end %08x", ntohl(p[i]));
+            i++;
+            mem_write(bptr, mem_off/4, 4, &s);
+        }
+        mem_write(bptr, 0, 4, &s);
+    } else {
+        /* Raw file. Load a portion of it into memory. */
+        for (i = 0; i < len; i++)
+            mem_write(base + i, shadow[i], 1, &s);
+    }
+
     memset(shadow, 0, MEM_SIZE);
 
     regs->pc = base;
