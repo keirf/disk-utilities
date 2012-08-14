@@ -442,6 +442,11 @@ void tbuf_emit_crc16_ccitt(struct track_buffer *tbuf, uint16_t speed)
     tbuf_bits(tbuf, speed, MFM_all, 16, tbuf->crc16_ccitt);
 }
 
+void tbuf_disable_auto_sector_split(struct track_buffer *tbuf)
+{
+    tbuf->disable_auto_sector_split = 1;
+}
+
 uint32_t mfm_decode_bits(enum mfm_encoding enc, uint32_t x)
 {
     if (enc == MFM_all) {

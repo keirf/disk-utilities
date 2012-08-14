@@ -413,6 +413,9 @@ probe
 
 "Pools Of Darkness" = amigados
 
+# Old Copylock on original release
+"Populous" = amigados_copylock
+
 "Populous II" = amigados # novella protection
 
 "Powermonger" = amigados
@@ -581,7 +584,7 @@ amigados
     * amigados
 # Copylock sometimes later replaced with no protection, or PROTEC
 amigados_copylock
-    1 amigados copylock protec_longtrack
+    1 amigados copylock protec_longtrack copylock_old
     * amigados
 rnc_hidden
     1 rnc_hidden amigados

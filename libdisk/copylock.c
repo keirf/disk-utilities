@@ -9,7 +9,7 @@
  *  518 decoded bytes per sector (excluding sector gap)
  *  Inter-sector gap of ~44 decoded zero bytes (44 MFM words).
  * Decoded Sector:
- *  u8 0xa0+index,0,0
+ *  u8 0xa0+index,0,0 :: First byte is MFM-illegal for TRKTYP_copylock_old
  *  <sync word>   :: Per-sector sync marker, see code for list
  *  u8 index      :: 0-11, must correspond to appropriate sync marker
  *  u8 data[512]
@@ -21,6 +21,8 @@
  * Sector 6:
  *  First 16 bytes interrupt random stream with signature "Rob Northen Comp"
  *  The LFSR-generated data then continues uninterrupted at 17th byte.
+ *  (NB. Old-style Copylock with sifferent sync marks does interrupt the
+ *       LFSR stream for the "Rob Northen Comp" signature").
  * MFM encoding:
  *  In place, no even/odd split.
  * Timings:
@@ -63,7 +65,8 @@ static uint8_t lfsr_state_byte(uint32_t x)
 }
 
 /* Take LFSR state from start of one sector, to another. */
-static uint32_t lfsr_seek(uint32_t x, unsigned int from, unsigned int to)
+static uint32_t lfsr_seek(
+    struct track_info *ti, uint32_t x, unsigned int from, unsigned int to)
 {
     unsigned int sz;
 
@@ -73,6 +76,8 @@ static uint32_t lfsr_seek(uint32_t x, unsigned int from, unsigned int to)
         sz = 512;
         if (from == 6)
             sz -= sizeof(sec6_sig);
+        if ((ti->type == TRKTYP_copylock_old) && (from == 5))
+            sz += sizeof(sec6_sig);
         while (sz--)
             x = (from < to) ? lfsr_next_state(x) : lfsr_prev_state(x);
         if (from < to)
@@ -96,10 +101,18 @@ static void *copylock_write_mfm(
         uint32_t lfsr, lfsr_sec, idx_off = s->index_offset - 15;
 
         /* Are we at the start of a sector we have not yet analysed? */
-        for (sec = 0; sec < ARRAY_SIZE(sync_list); sec++)
-            if ((uint16_t)s->word == sync_list[sec])
-                break;
-        if ((sec == ARRAY_SIZE(sync_list)) || (valid_blocks & (1u<<sec)))
+        if (ti->type == TRKTYP_copylock) {
+            for (sec = 0; sec < ti->nr_sectors; sec++)
+                if ((uint16_t)s->word == sync_list[sec])
+                    break;
+        } else /* TRKTYP_copylock_old */ {
+            if (((uint16_t)s->word & 0xff00u) != 0x6500u)
+                continue;
+            sec = mfm_decode_bits(MFM_all, s->word) & 0xfu;
+            if (s->word != (mfm_encode_word(0xb0+sec) | (1u<<13)))
+                continue;
+        }
+        if ((sec >= ti->nr_sectors) || (valid_blocks & (1u<<sec)))
             continue;
 
         /* Check the sector header. */
@@ -128,7 +141,7 @@ static void *copylock_write_mfm(
          */
         lfsr = lfsr_sec =
             (lfsr_seed != 0)
-            ? lfsr_seek(lfsr_seed, 0, sec)
+            ? lfsr_seek(ti, lfsr_seed, 0, sec)
             : (dat[i] << 15) | (dat[i+8] << 7) | (dat[i+16] >> 1);
 
         /* Check that the data matches the LFSR-generated stream. */
@@ -142,7 +155,7 @@ static void *copylock_write_mfm(
 
         /* All good. Finally, stash the LFSR seed if we didn't know it. */
         if (lfsr_seed == 0) {
-            lfsr_seed = lfsr_seek(lfsr_sec, sec, 0);
+            lfsr_seed = lfsr_seek(ti, lfsr_sec, sec, 0);
             /* Paranoia: Reject the degenerate case of endless zero bytes. */
             if (lfsr_seed == 0)
                 continue;
@@ -168,18 +181,18 @@ static void *copylock_write_mfm(
             continue;
         switch (sec) {
         case 4:
-            if (d > -4.5)
+            if (d > -4.0)
                 trk_warn(ti, tracknr, "Short sector is only "
                          "%.2f%% different", d);
             break;
         case 6:
-            if (d < 4.5)
+            if (d < 4.0)
                 trk_warn(ti, tracknr, "Long sector is only "
                          "%.2f%% different", d);
             break;
         default:
             if ((d < -2.0) || (d > 2.0))
-                trk_warn(ti, tracknr, "Normal sector is only "
+                trk_warn(ti, tracknr, "Normal sector is "
                          "%.2f%% different", d);
             break;
         }
@@ -196,7 +209,8 @@ static void *copylock_write_mfm(
 
     /* Magic: We can reconstruct the entire track from the LFSR seed! */
     if (valid_blocks != ((1u << ti->nr_sectors) - 1)) {
-        trk_warn(ti, tracknr, "Reconstructed damaged track");
+        trk_warn(ti, tracknr, "Reconstructed damaged track (%03x)",
+                 valid_blocks);
         valid_blocks = (1u << ti->nr_sectors) - 1;
     }
 
@@ -211,17 +225,28 @@ static void copylock_read_mfm(
     struct disk *d, unsigned int tracknr, struct track_buffer *tbuf)
 {
     struct track_info *ti = &d->di->track[tracknr];
-    uint32_t lfsr = ntohl(*(uint32_t *)ti->dat);
+    uint32_t lfsr, lfsr_seed = ntohl(*(uint32_t *)ti->dat);
     unsigned int i, sec = 0;
     uint16_t speed = SPEED_AVG;
 
-    while (sec < ARRAY_SIZE(sync_list)) {
+    tbuf_disable_auto_sector_split(tbuf);
+
+    while (sec < ti->nr_sectors) {
         /* Header */
-        tbuf_bits(tbuf, speed, MFM_all, 8, 0xa0 + sec);
-        tbuf_bits(tbuf, speed, MFM_all, 16, 0);
-        tbuf_bits(tbuf, speed, MFM_raw, 16, sync_list[sec]);
+        if (ti->type == TRKTYP_copylock) {
+            tbuf_bits(tbuf, speed, MFM_all, 8, 0xa0 + sec);
+            tbuf_bits(tbuf, speed, MFM_all, 16, 0);
+            tbuf_bits(tbuf, speed, MFM_raw, 16, sync_list[sec]);
+        } else /* TRKTYP_copylock_old */ {
+            tbuf_bits(tbuf, speed, MFM_raw, 16,
+                      mfm_encode_word(0xa0 + sec) | (1u<<13));
+            tbuf_bits(tbuf, speed, MFM_all, 16, 0);
+            tbuf_bits(tbuf, speed, MFM_raw, 16,
+                      mfm_encode_word(0xb0 + sec) | (1u<<13));
+        }
         tbuf_bits(tbuf, speed, MFM_all, 8, sec);
         /* Data */
+        lfsr = lfsr_seek(ti, lfsr_seed, 0, sec);
         for (i = 0; i < 512; i++) {
             if ((sec == 6) && (i == 0))
                 for (i = 0; i < sizeof(sec6_sig); i++)
@@ -234,14 +259,21 @@ static void copylock_read_mfm(
 
         /* Move to next sector's speed to encode track gap. */
         sec++;
-        speed = (sec == 4 ? (SPEED_AVG * 94) / 100 :
-                 sec == 6 ? (SPEED_AVG * 106) / 100 :
+        speed = (sec == 4 ? (SPEED_AVG * 95) / 100 :
+                 sec == 6 ? (SPEED_AVG * 105) / 100 :
                  SPEED_AVG);
         tbuf_gap(tbuf, speed, 44*8);
     }
 }
 
 struct track_handler copylock_handler = {
+    .bytes_per_sector = 512,
+    .nr_sectors = 11,
+    .write_mfm = copylock_write_mfm,
+    .read_mfm = copylock_read_mfm
+};
+
+struct track_handler copylock_old_handler = {
     .bytes_per_sector = 512,
     .nr_sectors = 11,
     .write_mfm = copylock_write_mfm,

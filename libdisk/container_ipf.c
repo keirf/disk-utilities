@@ -171,7 +171,8 @@ static void ipf_tbuf_finish_chunk(
     ibuf->len += 1 + cntlen;
 
     if ((new_chunktype == chkEnd) ||
-        ((new_chunktype == chkSync) && ibuf->nr_sync++)) {
+        ((new_chunktype == chkSync) && ibuf->nr_sync++ &&
+         !ibuf->tbuf.disable_auto_sector_split)) {
         struct ipf_block *blk = &ibuf->blk[ibuf->nr_blks++];
         blk->blockbits = ibuf->decoded_bits;
         blk->enctype = 1; /* MFM */
@@ -325,6 +326,7 @@ static bool_t __ipf_close(struct disk *d, uint32_t encoder)
             /* Basic track metadata. */
             img->dentype = 
                 (ti->type == TRKTYP_copylock) ? denCopylock :
+                (ti->type == TRKTYP_copylock_old) ? denCopylock :
                 (ti->type == TRKTYP_speedlock) ? denSpeedlock :
                 denUniform;
             img->startbit = ti->data_bitoff - PREPEND_BITS;

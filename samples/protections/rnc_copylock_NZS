@@ -499,10 +499,10 @@ Stack trace from SSP=0007ffbe:
 # 60552 = check_sector_time(d0=long_sec,d1=short_sec) ; d0=0 on success
 00060552  9081            sub.l   d1,d0             # delta = long_s - short_s
 00060554  6b10            bmi.b   60566             # -ve? failure branch
-00060556  c0fc 0064       mulu.w  #64,d0            # delta *= 64
+00060556  c0fc 0064       mulu.w  #64,d0            # delta *= 100
 0006055a  80c1            divu.w  d1,d0             # delta /= short
 0006055c  b03c 0003       cmp.b   #3,d0             # is the longer track less
-00060560  6d04            blt.b   60566             # than ~5% slower? Fail.
+00060560  6d04            blt.b   60566             # than 3% slower? Fail.
 00060562  7000            moveq   #0,d0             # d0==0 CC.Z==1 success
 00060564  4e75            rts
 

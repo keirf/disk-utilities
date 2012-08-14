@@ -48,6 +48,7 @@ struct track_buffer {
     uint8_t prev_data_bit;
     uint16_t crc16_ccitt;
     bool_t has_weak_bits;
+    bool_t disable_auto_sector_split;
     void (*bit)(struct track_buffer *, uint16_t speed,
                 enum mfm_encoding enc, uint8_t dat);
     void (*gap)(struct track_buffer *, uint16_t speed, unsigned int bits);
@@ -64,6 +65,7 @@ void tbuf_gap(struct track_buffer *, uint16_t speed, unsigned int bits);
 void tbuf_weak(struct track_buffer *, uint16_t speed, unsigned int bits);
 void tbuf_start_crc(struct track_buffer *tbuf);
 void tbuf_emit_crc16_ccitt(struct track_buffer *tbuf, uint16_t speed);
+void tbuf_disable_auto_sector_split(struct track_buffer *tbuf);
 
 enum track_density {
     TRKDEN_mfm_double, /* default */
@@ -120,7 +122,6 @@ void mfm_decode_bytes(
     enum mfm_encoding enc, unsigned int bytes, void *in, void *out);
 uint32_t mfm_encode_word(uint32_t w);
 uint32_t amigados_checksum(void *dat, unsigned int bytes);
-
 
 /* IBM format decode helpers. */
 struct ibm_idam { uint8_t cyl, head, sec, no; };
