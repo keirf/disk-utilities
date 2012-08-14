@@ -1,18 +1,40 @@
-m68k/copylock Populous/populous.prg 28 - 10000 a.dsk 
+m68k/copylock Populous/populous.prg - - 10000 a.dsk 
 Region list: 0-7ffff, 
 Region list: 2000-7ffff, 
-000105fa 0800 0004 000c btst.l	#4,d0
-D0: 00000000 D1: 00000000 D2: 00000031 D3: 000003cd
-D4: 00000000 D5: 00000000 D6: 622da70b D7: 46b7d7f7
-A0: 00dff000 A1: 00010004 A2: 00002f5e A3: 0001028d
-A4: 000103a4 A5: 00000000 A6: 00010094 A7: 00000fca
-PC: 000105fa SR: 2704 USP: 00010910 SSP: 00000fca
-S=1 T=0 I=7 X=0 N=0 Z=1 V=0 C=0
-Stack trace from SP=00000fca:
- 00000fca: 0001 05da aaaa 6511 aaaa aa91 0000 0000 
- 00000fda: 0001 0004 0001 0094 0001 052c 0000 11b6 
- 00000fea: ffff ff77 0000 0000 0001 0094 0001 04c2 
+Loadable image: 3 chunks
+Chunk 0: 000003e9, 20722 longwords
+Chunk 1: 000003ea, 1534 longwords
+Chunk 2: 000003eb, 1 longwords
+03fe0000 0000 00d8 0000 
+D0: 000000d8 D1: 00000000 D2: 00000000 D3: 00000000
+D4: 00000000 D5: 00000000 D6: 00000000 D7: 00000000
+A0: 00000000 A1: 00000000 A2: 00000000 A3: 00000000
+A4: 00000000 A5: 00000000 A6: 00000000 A7: 00001022
+PC: 03fe0000 SR: 2008 USP: 0000206c SSP: 00001022
+S=1 T=0 I=0 X=0 N=1 Z=0 V=0 C=0
+Stack trace from SP=00001022:
+ 00001022: 0016 0000 00ff 00ff 2008 0000 0101 2008 
+ 00001032: 0000 000c 0000 0000 03fe 0000 0000 0000 
+ 00001042: 0000 0000 0000 0000 0000 0000 0000 0000 
+
+# Copy loop:
+000003e6  22d8            move.l  (a0)+,(a1)+
+000003e8  b3ca            cmpa.l  a2,a1
+000003ea  6dfa            blt.b   03e6
+000003ec  4299            clr.l   (a1)+
+000003ee  b3c8            cmpa.l  a0,a1
+000003f0  6dfa            blt.b   03ec
+000003f2  48f9 00ff 0000  movem.l d0-d7,8
+000003f8  0008 
+000003fa  4cdf 7fff       movem.l (sp)+,d0-d7/a0-a6
+000003fe  4e73            rte                       # -> 10000
 -------------------------------
+
+# After copy loop:
+00010000  4ef9 0002 2770  jmp     22770
+-------------------------------
+
+
 00010000  6000 00c4       bra.w   100c6
 -------------------------------
 000100c6  2f0e            move.l  a6,-(sp)          # push a6 on stack
@@ -644,8 +666,7 @@ Stack trace from SP=00000fca:
 00010908  5888            addq.l  #4,a0         # a0 = pointer to next chunk
 0001090a  201a            move.l  (a2)+,d0      # d0 = #longs to decode in next
 0001090c  66d0            bne.b   108de
--------------------------------
-
+0001090e  60ec            bra.b   108fc
 00010910  6000 8af1       bra.w   9403
 -------------------------------
 
@@ -752,6 +773,7 @@ Stack trace from SP=00000fca:
 00010a6e  66f6            bne.b   10a66
 00010a70  4afc            illegal
 00010a72  60e2            bra.b   10a56
+00010a74  6000 fb13       bra.w   10589
 -------------------------------
 
 # 10a80 = get_nth_chunk(d0=n)
@@ -765,4 +787,132 @@ Stack trace from SP=00000fca:
 00010a90  66f6            bne.b   10a88
 00010a92  5888            addq.l  #4,a0
 00010a94  4e75            rts
+-------------------------------
+
+00010aae  0a7c 2000       eori.w  #2000,sr      # SR.S = 0
+00010ab2  4ffa 0010       lea.l   10ac4(pc),sp
+00010ab6  303c 00ae       move.w  #ae,d0
+00010aba  3217            move.w  (sp),d1
+00010abc  4441            neg.w   d1
+00010abe  3ec1            move.w  d1,(sp)+
+00010ac0  51c8 fff8       dbf.w   d0,10aba
+00010ac4  4ffa 0010       lea.l   10ad6(pc),sp
+00010ac8  303c 00a5       move.w  #a5,d0
+00010acc  323c 9d33       move.w  #9d33,d1
+00010ad0  b35f            eor.w   d1,(sp)+
+00010ad2  51c8 fffc       dbf.w   d0,10ad0
+00010ad6  4ffa 0010       lea.l   10ae8(pc),sp
+00010ada  303c 009c       move.w  #9c,d0
+00010ade  323c 274c       move.w  #274c,d1
+00010ae2  935f            sub.w   d1,(sp)+
+00010ae4  51c8 fffc       dbf.w   d0,10ae2
+00010ae8  4ffa 0010       lea.l   10afa(pc),sp
+00010aec  303c 0093       move.w  #93,d0
+00010af0  323c 9274       move.w  #9274,d1
+00010af4  d35f            add.w   d1,(sp)+
+00010af6  51c8 fffc       dbf.w   d0,10af4
+00010afa  4ffa 0018       lea.l   10b14(pc),sp
+00010afe  303c 0020       move.w  #20,d0
+00010b02  4c9f 0f00       movem.w (sp)+,a0-a3
+00010b06  c748            exg.l   a3,a0
+00010b08  c549            exg.l   a2,a1
+00010b0a  48a7 00f0       movem.w a0-a3,-(sp)
+00010b0e  508f            addq.l  #8,sp
+00010b10  51c8 fff0       dbf.w   d0,10b02
+00010b14  4ffa 0010       lea.l   10b26(pc),sp
+00010b18  303c 007d       move.w  #7d,d0
+00010b1c  323c 924e       move.w  #924e,d1
+00010b20  935f            sub.w   d1,(sp)+
+00010b22  51c8 fffc       dbf.w   d0,10b20
+00010b26  4ffa 0010       lea.l   10b38(pc),sp
+00010b2a  303c 0074       move.w  #74,d0
+00010b2e  3217            move.w  (sp),d1
+00010b30  4441            neg.w   d1
+00010b32  3ec1            move.w  d1,(sp)+
+00010b34  51c8 fff8       dbf.w   d0,10b2e
+00010b38  4ffa 0010       lea.l   10b4a(pc),sp
+00010b3c  303c 006b       move.w  #6b,d0
+00010b40  3217            move.w  (sp),d1
+00010b42  e859            ror.w   #4,d1
+00010b44  3ec1            move.w  d1,(sp)+
+00010b46  51c8 fff8       dbf.w   d0,10b40
+00010b4a  4ffa 001c       lea.l   10b68(pc),sp
+00010b4e  303c 002d       move.w  #2d,d0
+00010b52  030f 0000       movep.w 0(sp),d1
+00010b56  050f 0001       movep.w 1(sp),d2
+00010b5a  038f 0001       movep.w d1,1(sp)
+00010b5e  058f 0000       movep.w d2,0(sp)
+00010b62  588f            addq.l  #4,sp
+00010b64  51c8 ffec       dbf.w   d0,10b52
+00010b68  4ffa 0010       lea.l   10b7a(pc),sp
+00010b6c  303c 0053       move.w  #53,d0
+00010b70  323c aa49       move.w  #aa49,d1
+00010b74  b35f            eor.w   d1,(sp)+
+00010b76  51c8 fffc       dbf.w   d0,10b74
+00010b7a  4ffa 0010       lea.l   10b8c(pc),sp
+00010b7e  303c 004a       move.w  #4a,d0
+00010b82  3217            move.w  (sp),d1
+00010b84  4441            neg.w   d1
+00010b86  3ec1            move.w  d1,(sp)+
+00010b88  51c8 fff8       dbf.w   d0,10b82
+00010b8c  4ffa ff10       lea.l   10a9e(pc),sp
+00010b90  303c 0060       move.w  #60,d0
+00010b94  da9f            add.l   (sp)+,d5
+00010b96  51c8 fffc       dbf.w   d0,10b94
+
+00010b9a  0a7c 2000       eori.w  #2000,sr      # SR.S = 1
+00010b9e  0897 0007       bclr.b  #7,(sp)       # clear SR.T in saved SR
+00010ba2  41fa f45c       lea.l   10000(pc),a0
+00010ba6  303a 007a       move.w  10c22(pc),d0
+00010baa  6704            beq.b   10bb0
+-------------------------------
+00010bb0  2f48 0002       move.l  a0,2(sp)      # return address = 10000
+00010bb4  4cfa 7fff f494  movem.l 1004c(pc),d0-d7/a0-a6
+00010bba  48e7 fffe       movem.l d0-d7/a0-a6,-(sp)
+00010bbe  207a f4d0       movea.l 10090(pc),a0
+00010bc2  4e60            move.l  a0,usp
+00010bc4  41fa 0042       lea.l   10c08(pc),a0
+00010bc8  45f9 0000 03e6  lea.l   3e6,a2
+00010bce  303c 000c       move.w  #c,d0
+00010bd2  34d8            move.w  (a0)+,(a2)+   # move copy loop -> 3e6
+00010bd4  51c8 fffc       dbf.w   d0,10bd2
+00010bd8  41fa f426       lea.l   10000(pc),a0
+00010bdc  d1fa fd3e       adda.l  1091c(pc),a0
+00010be0  43fa f41e       lea.l   10000(pc),a1
+00010be4  2449            movea.l a1,a2
+00010be6  203a 003c       move.l  10c24(pc),d0
+00010bea  e588            lsl.l   #2,d0
+00010bec  d5c0            adda.l  d0,a2
+00010bee  4cfa 00ff f4a2  movem.l 10094(pc),d0-d7 # Vecs 2-9 -> d0-d7
+00010bf4  2039 0000 0004  move.l  4,d0
+00010bfa  2200            move.l  d0,d1
+00010bfc  2e01            move.l  d1,d7
+00010bfe  4879 0000 03e6  pea.l   3e6           # jump out to 3e6
+00010c04  4afc            illegal
+00010c06  4e75            rts                   # To copy loop...
+-------------------------------
+
+# Executead after copy loop:
+00022770  6170            bsr.b   227e2
+00022772  43ec 97fa       lea.l   -6806(a4),a1
+00022776  45ec 97fa       lea.l   -6806(a4),a2
+0002277a  b5c9            cmpa.l  a1,a2
+0002277c  660e            bne.b   2278c
+0002277e  323c 274e       move.w  #274e,d1
+00022782  6b08            bmi.b   2278c
+00022784  7400            moveq   #0,d2
+00022786  22c2            move.l  d2,(a1)+
+00022788  51c9 fffc       dbf.w   d1,22786
+0002278c  294f 34e8       move.l  sp,34e8(a4)
+00022790  2c78 0004       movea.l 4,a6
+00022794  294e 34ec       move.l  a6,34ec(a4)
+00022798  48e7 8080       movem.l d0/a0,-(sp)
+0002279c  082e 0004 0129  btst.b  #4,129(a6)
+000227a2  6710            beq.b   227b4
+-------------------------------
+000227b4  43fa 0020       lea.l   227d6(pc),a1
+000227b8  4eae fe68       jsr     -198(a6)
+-------------------------------
+000227e2  49f9 0002 c3ca  lea.l   2c3ca,a4
+000227e8  4e75            rts
 -------------------------------
