@@ -69,15 +69,26 @@ static void img_close(struct disk *d)
 {
     struct disk_info *di = d->di;
     enum track_type type;
-    unsigned int i;
+    unsigned int i, trklen = 0;
 
     if (di->nr_tracks != IMG_TRACKS)
         errx(1, "Incorrect number of tracks to write to IMG file (%u)",
             di->nr_tracks);
 
     type = di->track[0].type;
-    if ((type != TRKTYP_ibm_pc_dd) && (type != TRKTYP_ibm_pc_hd))
+    switch (type) {
+    case TRKTYP_ibm_pc_dd:
+        trklen = 9*512;
+        break;
+    case TRKTYP_ibm_pc_hd:
+        trklen = 18*512;
+        break;
+    case TRKTYP_sega_system_24:
+        trklen = 5*2048 + 1024 + 256;
+        break;
+    default:
         errx(1, "Track 0: Unsupported track format for IMG file");
+    }
 
     for (i = 0; i < di->nr_tracks; i++)
         if (di->track[i].type != type)
@@ -88,7 +99,7 @@ static void img_close(struct disk *d)
         err(1, NULL);
 
     for (i = 0; i < di->nr_tracks; i++)
-        write_exact(d->fd, di->track[i].dat, di->track[i].len-1);
+        write_exact(d->fd, di->track[i].dat, trklen);
 }
 
 struct container container_img = {
