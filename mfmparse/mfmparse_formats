@@ -487,6 +487,9 @@ probe
 
 "Speris Legacy" = amigados
 
+"Spherical" # Tracks 145+ may be empty
+    * amigados spherical
+
 # Track 158 may be empty.
 # Tracks 3/15/21/25/53/85 may possibly be missing sector 5 -- hard to test
 # as these are only used when running on Atari ST.
