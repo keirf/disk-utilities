@@ -425,6 +425,11 @@ probe
 "Project X" = amigados_copylock
 "Project X Special Edition 93" = rnc_pdos
 
+# TODO: Protection on tracks 140-141. Same as on RanX and Iron Lord, also
+# by Ubisoft (but on tracks 180-181 on those titles).
+"Puffy's Saga"
+    * amigados puffys_saga
+
 "Putty" = amigados_copylock
 
 "Qwak" = amigados
