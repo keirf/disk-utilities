@@ -521,7 +521,15 @@ Stack trace from SSP=0007ffbe:
 00060580  303a 0162       move.w  606e4(pc),d0      # d0=sync=8a91
 00060584  6100 00a8       bsr.w   6062e             # get_track(8a91,60004)
 00060588  6622            bne.b   605ac             # success branch
- <unexecuted encrypted code>
+0006058a  51ca fff4       dbf.w   d2,60580          # retry 3 times
+0006058e  343a fb38       move.w  600c8(pc),d2
+00060592  6100 01b2       bsr.w   60746             # seek_to_track(orig)
+00060596  6100 017c       bsr.w   60714             # motor_off
+0006059a  41fa fb28       lea.l   600c4(pc),a0
+0006059e  0650 0001       addi.w  #1,(a0)           # try next drive
+000605a2  0250 0003       andi.w  #3,(a0)
+000605a6  51cb ffc4       dbf.w   d3,6056c          # retry for all 4 drives
+000605aa  7000            moveq   #0,d0
 000605ac  4e75            rts
 
 # 605ae = get_sector(d0=sync_idx, a0=dskpt): returns #iters in d0
@@ -667,7 +675,8 @@ Stack trace from SSP=0007ffbe:
 00060730  203c 0000 061a  move.l  #61a,d0
 00060736  0810 0005       btst.b  #5,(a0)
 0006073a  6706            beq.b   60742       # dskrdy?
- <unexecuted encrypted code>
+0006073c  5380            subq.l  #1,d0
+0006073e  6af6            bpl.b   60736
 00060742  7000            moveq   #0,d0       # return d0=0 if so (CC_Z=1)
 00060744  4e75            rts
 
