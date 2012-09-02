@@ -158,7 +158,7 @@ static int dfe2_select_track(struct stream *s, unsigned int tracknr)
 {
     struct dfe2_stream *dfss = container_of(s, struct dfe2_stream, s);
 
-    unsigned char header[10]; // track header
+    unsigned char header[10]; /* track header */
     unsigned int curtrack;
 
     uint16_t cyl = 0;
@@ -230,11 +230,15 @@ static bool_t dfe2_next_flux(struct stream *s, uint32_t *p_flux)
 
     while (!done && (i < dfss->datsz)) {
         
+        if (dat[i] == 0xFF) {
+            errx(1, "DFI stream contained a 0xFF at track %d, position %d, THIS SHOULD NEVER HAPPEN! Bailing out!\n", dfss->track, i);
+        }
+        
         if((dat[i] & 0x7f) == 0x7f) { /* carry */
             carry += 127;
             abspos += 127;
         }
-        else if((dat[i] & 0x80) != 0) {
+        else if(dat[i] & 0x80) {
             carry += (dat[i] & 0x7f);
             abspos += (dat[i] & 0x7f);
             dfss->index_pos = abspos;
