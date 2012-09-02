@@ -179,11 +179,7 @@ static int dfe2_select_track(struct stream *s, unsigned int tracknr)
     }
     if(tracknr != (cyl*2)+head)
         printf("DFI track number doesn't match!\n");
-    /*
-    printf("cyl: %d, head: %d, sector: %d, length: %d;; ", cyl, head, sector, data_length);
-    printf("Track: %d; calc track: %d\n", tracknr, (cyl*2)+head);
-    */
-    
+
     dfss->datsz = data_length;
     dfss->dat = memalloc(data_length);
     read_exact(dfss->fd, dfss->dat, data_length);
@@ -251,7 +247,7 @@ static bool_t dfe2_next_flux(struct stream *s, uint32_t *p_flux)
         }
         i++;
     }
-    if(i == dfss->datsz) {
+    if(i == dfss->datsz && (abspos - dfss->index_pos > 5 )) {
         dfss->index_pos = abspos;
     }
     
