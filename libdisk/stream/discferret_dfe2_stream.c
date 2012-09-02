@@ -186,6 +186,8 @@ static int dfe2_select_track(struct stream *s, unsigned int tracknr)
     }
     if(tracknr != (cyl*2)+head)
         printf("DFI track number doesn't match!\n");
+    if(sector != 1)
+        errx(1, "Hard sectored disks are not supported!\n");
 
     dfss->datsz = data_length;
     dfss->dat = memalloc(data_length);
