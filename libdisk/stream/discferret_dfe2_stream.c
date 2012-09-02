@@ -166,6 +166,13 @@ static int dfe2_select_track(struct stream *s, unsigned int tracknr)
     uint16_t sector = 0;
     uint32_t data_length = 0;
     off_t cur_offst;
+    
+    if (dfss->dat && (dfss->track == tracknr))
+        return 0;
+
+    memfree(dfss->dat);
+    dfss->dat = NULL;
+    
     lseek(dfss->fd, 4, SEEK_SET);
     for(curtrack = 0; curtrack <= tracknr; curtrack++) {
         if(lseek(dfss->fd, data_length, SEEK_CUR) == -1)
@@ -184,6 +191,7 @@ static int dfe2_select_track(struct stream *s, unsigned int tracknr)
     dfss->dat = memalloc(data_length);
     read_exact(dfss->fd, dfss->dat, data_length);
 
+    dfss->track = tracknr;
     dfss->acq_freq = dfe2_find_acq_freq(&dfss->s);
 
     return 0;
