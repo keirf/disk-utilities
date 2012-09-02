@@ -238,7 +238,7 @@ static bool_t dfe2_next_flux(struct stream *s, uint32_t *p_flux)
     uint32_t val = 0;
     bool_t done = 0;
 
-    if (dfss->stream_idx >= dfss->index_pos) {
+    if (dfss->stream_idx >= dfss->index_pos || i == 0) {
         dfss->index_pos = ~0u;
         index_reset(s);
     }
