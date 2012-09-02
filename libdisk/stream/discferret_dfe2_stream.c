@@ -27,6 +27,7 @@ struct dfe2_stream {
     /* Raw track data. */
     unsigned char *dat;      /* track data */
     unsigned int datsz;      /* track size */
+    unsigned int filesz;     /* file size */
 
     unsigned int dat_idx;    /* current index into dat[] */
     unsigned int stream_idx; /* current index into non-OOB data in dat[] */
@@ -61,6 +62,7 @@ static struct stream *dfe2_open(const char *name)
     char magic[4] = {'D','F','E','2'};
     char oldmagic[4] = {'D', 'F', 'E', 'R'};
     int fd;
+    int filesz;
 
     if(stat(name, &sbuf) < 0) {
         return NULL;
@@ -70,6 +72,8 @@ static struct stream *dfe2_open(const char *name)
         err(1, "%s", name);
         
     read_exact(fd, magicbuf, 4);
+    
+    filesz = lseek(fd, 0, SEEK_END);
     lseek(fd, 0, SEEK_SET);
     
     if(memcmp(magicbuf, oldmagic, 4) == 0) {
@@ -80,6 +84,7 @@ static struct stream *dfe2_open(const char *name)
     
     dfss = memalloc(sizeof(*dfss));
     dfss->fd = fd;
+    dfss->filesz = filesz;
     
     dfss->clock = dfss->clock_centre = CLOCK_CENTRE;
     
@@ -175,7 +180,7 @@ static int dfe2_select_track(struct stream *s, unsigned int tracknr)
     
     lseek(dfss->fd, 4, SEEK_SET);
     for(curtrack = 0; curtrack <= tracknr; curtrack++) {
-        if(lseek(dfss->fd, data_length, SEEK_CUR) == -1)
+        if(lseek(dfss->fd, data_length, SEEK_CUR) >= dfss->filesz)
             return -1;
         read_exact(dfss->fd, header, 10);
         cur_offst += data_length + 10;
