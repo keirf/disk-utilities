@@ -248,6 +248,9 @@ probe
 
 "Gods" = amigados_copylock
 
+"Grand Monster Slam"
+    * amigados grand_monster_slam
+
 "Grand Prix Master" = amigados
 
 "Great Courts" = blue_byte
