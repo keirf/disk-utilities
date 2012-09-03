@@ -2,6 +2,7 @@ ROOT := ../..
 include $(ROOT)/Rules.mk
 
 OBJS := stream.o kryoflux_stream.o diskread.o disk_image.o soft.o
+OBJS += discferret_dfe2.o
 ifeq ($(caps),y)
 OBJS += caps.o
 else

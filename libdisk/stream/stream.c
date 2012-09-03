@@ -21,12 +21,14 @@ extern struct stream_type kryoflux_stream;
 extern struct stream_type diskread;
 extern struct stream_type disk_image;
 extern struct stream_type caps;
+extern struct stream_type discferret_dfe2;
 
 const static struct stream_type *stream_type[] = {
     &kryoflux_stream,
     &diskread,
     &disk_image,
     &caps,
+    &discferret_dfe2,
     NULL
 };
 

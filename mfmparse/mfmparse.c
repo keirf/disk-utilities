@@ -47,6 +47,7 @@ static void usage(int rc)
     printf("  .dsk  => Libdisk\n");
     printf("Read-only support:\n");
     printf("  .dat  => Diskread\n");
+    printf("  .dfi  => DiscFerret DFE2\n");
     printf("  .raw  => Kryoflux STREAM\n");
 
     exit(rc);
