@@ -67,7 +67,7 @@ m68k/
 
 mfmparse/
     Disk file conversion tool.
-    Converts From: Kryoflux STREAM, SPS/IPF, ADF, .DSK,
+    Converts From: Kryoflux STREAM, SPS/IPF, ADF, .DSK, .DFI,
                    output from Amiga diskread tool.
     Converts To: ADF, SPS/IPF, .DSK
 
