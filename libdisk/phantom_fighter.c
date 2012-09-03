@@ -61,12 +61,10 @@ static void *phantom_fighter_write_mfm(
         block = memalloc(ti->len);
         memcpy(block, dat, ti->len);
         ti->valid_sectors = (1u << ti->nr_sectors) - 1;
-        stream_next_index(s);
         return block;
     }
 
 fail:
-    stream_next_index(s);
     return NULL;
 }
 

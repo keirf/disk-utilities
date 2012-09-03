@@ -49,7 +49,6 @@ static void *spherical_write_mfm(
         memcpy(block, dat, ti->len);
         ti->valid_sectors = (1u << ti->nr_sectors) - 1;
         ti->total_bits = 101200;
-        stream_next_index(s);
         return block;
     }
 
