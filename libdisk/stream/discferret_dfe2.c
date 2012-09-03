@@ -14,9 +14,6 @@
 #include <fcntl.h>
 #include <unistd.h>
 
-static uint32_t read_u16_be(unsigned char *dat);
-static uint32_t read_u32_be(unsigned char *dat);
-
 struct dfe2_stream {
     struct stream s;
     int fd;
@@ -37,22 +34,24 @@ struct dfe2_stream {
 };
 
 #define DRIVE_SPEED_UNCERTAINTY 0.05
+#define MHZ(x) ((x) * 1000000)
+#define SCK_PS_PER_TICK (1000000000/(dfss->acq_freq/1000))
 
-#define FIFTY_MHZ 50000000
-#define ONE_HUNDRED_MHZ 100000000
-#define TWENTY_FIVE_MHZ 25000000
+static uint32_t read_u16_be(unsigned char *dat)
+{
+    return ((uint32_t)dat[0] << 8) | (uint32_t)dat[1];
+}
 
-#define ACQ_FREQ (dfss->acq_freq)
-
-#define SCK_PS_PER_TICK (1000000000/(ACQ_FREQ/1000))
+static uint32_t read_u32_be(unsigned char *dat)
+{
+    return (read_u16_be(&dat[0]) << 16) | read_u16_be(&dat[2]);
+}
 
 static struct stream *dfe2_open(const char *name)
 {
     struct stat sbuf;
     struct dfe2_stream *dfss;
-    char magicbuf[4];
-    char magic[4] = {'D','F','E','2'};
-    char oldmagic[4] = {'D', 'F', 'E', 'R'};
+    char magic[4];
     int fd, filesz;
 
     if (stat(name, &sbuf) < 0)
@@ -61,15 +60,15 @@ static struct stream *dfe2_open(const char *name)
     if ((fd = open(name, O_RDONLY)) == -1)
         err(1, "%s", name);
 
-    read_exact(fd, magicbuf, 4);
+    read_exact(fd, magic, sizeof(magic));
 
     if (((filesz = lseek(fd, 0, SEEK_END)) < 0) ||
         (lseek(fd, 0, SEEK_SET) < 0))
         err(1, "%s", name);
 
-    if (memcmp(magicbuf, oldmagic, 4) == 0)
+    if (memcmp(magic, "DFER", sizeof(magic)) == 0)
         errx(1, "Old-style DFI not supported!");
-    if (memcmp(magicbuf, magic, 4) != 0)
+    if (memcmp(magic, "DFE2", sizeof(magic)) != 0)
         errx(1, "%s is not a DFI file!", name);
 
     dfss = memalloc(sizeof(*dfss));
@@ -109,7 +108,7 @@ static unsigned int dfe2_find_acq_freq(struct stream *s)
             carry += (dat[i] & 0x7f);
             abspos += (dat[i] & 0x7f);
             index_pos = abspos;
-            if(index_pos != 0)
+            if (index_pos != 0)
                 done = 1;
         } else {
             abspos = abspos + (dat[i] & 0x7f);
@@ -120,22 +119,27 @@ static unsigned int dfe2_find_acq_freq(struct stream *s)
     if (index_pos == 0)
         index_pos = abspos;
     
-    if (abs((index_pos * 5) - TWENTY_FIVE_MHZ) < (TWENTY_FIVE_MHZ * DRIVE_SPEED_UNCERTAINTY))
-        return TWENTY_FIVE_MHZ;
-    else if (abs((index_pos * 6) - TWENTY_FIVE_MHZ) < (TWENTY_FIVE_MHZ * DRIVE_SPEED_UNCERTAINTY))
-        return TWENTY_FIVE_MHZ;
-    else if (abs((index_pos * 5) - FIFTY_MHZ) < (FIFTY_MHZ * DRIVE_SPEED_UNCERTAINTY))
-        return FIFTY_MHZ;
-    else if (abs((index_pos * 6) - FIFTY_MHZ) < (FIFTY_MHZ * DRIVE_SPEED_UNCERTAINTY))
-        return FIFTY_MHZ;
-    else if (abs((index_pos * 5) - ONE_HUNDRED_MHZ) < (ONE_HUNDRED_MHZ * DRIVE_SPEED_UNCERTAINTY))
-        return ONE_HUNDRED_MHZ;
-    else if (abs((index_pos * 6) - ONE_HUNDRED_MHZ) < (ONE_HUNDRED_MHZ * DRIVE_SPEED_UNCERTAINTY))
-        return ONE_HUNDRED_MHZ;
-    else {
-        printf("Cannot determine acq frequency! Maybe you used a nonstandard drive! Using default of 50MHz.\n");
-        return FIFTY_MHZ;
-    }
+    /* 25MHz, 300RPM or 360RPM? */
+    if (abs((index_pos * 5) - MHZ(25)) < (MHZ(25) * DRIVE_SPEED_UNCERTAINTY))
+        return MHZ(25);
+    if (abs((index_pos * 6) - MHZ(25)) < (MHZ(25) * DRIVE_SPEED_UNCERTAINTY))
+        return MHZ(25);
+
+    /* 50MHz, 300RPM or 360RPM? */
+    if (abs((index_pos * 5) - MHZ(50)) < (MHZ(50) * DRIVE_SPEED_UNCERTAINTY))
+        return MHZ(50);
+    if (abs((index_pos * 6) - MHZ(50)) < (MHZ(50) * DRIVE_SPEED_UNCERTAINTY))
+        return MHZ(50);
+
+    /* 100MHz, 300RPM or 360RPM? */
+    if (abs((index_pos * 5) - MHZ(100)) < (MHZ(100) * DRIVE_SPEED_UNCERTAINTY))
+        return MHZ(100);
+    if (abs((index_pos * 6) - MHZ(100)) < (MHZ(100) * DRIVE_SPEED_UNCERTAINTY))
+        return MHZ(100);
+
+    printf("Cannot determine acq frequency! Maybe you used a "
+           "nonstandard drive! Using default of 50MHz.\n");
+    return MHZ(50);
 }
 
 static int dfe2_select_track(struct stream *s, unsigned int tracknr)
@@ -192,17 +196,6 @@ static void dfe2_reset(struct stream *s)
     lseek(dfss->fd, 0, SEEK_SET);
 }
 
-static uint32_t read_u16_be(unsigned char *dat)
-{
-    return ((uint32_t)dat[0] << 8) | (uint32_t)dat[1];
-}
-
-static uint32_t read_u32_be(unsigned char *dat)
-{
-    return (read_u16_be(&dat[0]) << 16) | read_u16_be(&dat[2]);
-}
-
-
 static int dfe2_next_flux(struct stream *s)
 {
     struct dfe2_stream *dfss = container_of(s, struct dfe2_stream, s);
@@ -212,7 +205,7 @@ static int dfe2_next_flux(struct stream *s)
 
     uint32_t carry = 0;
     uint32_t abspos = dfss->stream_idx;
-    
+
     uint32_t val = 0, flux;
     bool_t done = 0;
 
@@ -222,12 +215,10 @@ static int dfe2_next_flux(struct stream *s)
     }
 
     while (!done && (i < dfss->datsz)) {
-        
-        if ( dat[i] == 0xFF ) {
-            errx(1, "DFI stream contained a 0xFF at track %d, position %d, THIS SHOULD NEVER HAPPEN! Bailing out!\n", dfss->track, i);
-        }
-        
-        if ((dat[i] & 0x7f) == 0x7f) { /* carry */
+        if (dat[i] == 0xff) {
+            errx(1, "DFI stream contained a 0xFF at track %d, position %d, "
+                 "THIS SHOULD NEVER HAPPEN! Bailing out!\n", dfss->track, i);
+        } else if ((dat[i] & 0x7f) == 0x7f) { /* carry */
             carry += 127;
             abspos += 127;
         } else if (dat[i] & 0x80) {
