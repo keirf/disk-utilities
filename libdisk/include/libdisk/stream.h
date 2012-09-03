@@ -43,8 +43,13 @@ struct stream {
     uint16_t crc16_ccitt;
     uint8_t  crc_bitoff;
 
-    /* Authentic emulation of FDC PLL behaviour? */
+    /* Flux-based streams: Authentic emulation of FDC PLL behaviour? */
     enum pll_mode pll_mode;
+
+    /* Flux-based streams. */
+    int flux;                /* Nanoseconds to next flux reversal */
+    int clock, clock_centre; /* Clock base value in nanoseconds */
+    unsigned int clocked_zeros;
 };
 
 #pragma GCC visibility push(default)

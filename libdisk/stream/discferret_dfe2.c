@@ -33,9 +33,6 @@ struct dfe2_stream {
     unsigned int stream_idx; /* current index into non-OOB data in dat[] */
     unsigned int index_pos;  /* stream_idx position of next index pulse */
 
-    int flux;                /* Nanoseconds to next flux reversal */
-    int clock, clock_centre; /* Clock base value in nanoseconds */
-    unsigned int clocked_zeros;
     unsigned int acq_freq;
 };
 
@@ -48,11 +45,6 @@ struct dfe2_stream {
 #define ACQ_FREQ (dfss->acq_freq)
 
 #define SCK_PS_PER_TICK (1000000000/(ACQ_FREQ/1000))
-
-#define CLOCK_CENTRE  2000   /* 2000ns = 2us */
-#define CLOCK_MAX_ADJ 10     /* +/- 10% adjustment */
-#define CLOCK_MIN(_c) (((_c) * (100 - CLOCK_MAX_ADJ)) / 100)
-#define CLOCK_MAX(_c) (((_c) * (100 + CLOCK_MAX_ADJ)) / 100)
 
 static struct stream *dfe2_open(const char *name)
 {
@@ -84,8 +76,6 @@ static struct stream *dfe2_open(const char *name)
     dfss->fd = fd;
     dfss->filesz = filesz;
 
-    dfss->clock = dfss->clock_centre = CLOCK_CENTRE;
-
     return &dfss->s;
 }
 
@@ -95,12 +85,6 @@ static void dfe2_close(struct stream *s)
     close(dfss->fd);
     memfree(dfss->dat);
     memfree(dfss);
-}
-
-static void dfe2_set_density(struct stream *s, unsigned int ns_per_cell)
-{
-    struct dfe2_stream *dfss = container_of(s, struct dfe2_stream, s);
-    dfss->clock = dfss->clock_centre = ns_per_cell;
 }
 
 /* Ugly heuristic to guess acq frequency */
@@ -203,9 +187,8 @@ static void dfe2_reset(struct stream *s)
 {
     struct dfe2_stream *dfss = container_of(s, struct dfe2_stream, s);
 
-    dfss->dat_idx = dfss->stream_idx = dfss->flux = dfss->clocked_zeros = 0;
+    dfss->dat_idx = dfss->stream_idx = 0;
     dfss->index_pos = ~0u;
-    dfss->clock = dfss->clock_centre;
     lseek(dfss->fd, 0, SEEK_SET);
 }
 
@@ -220,7 +203,7 @@ static uint32_t read_u32_be(unsigned char *dat)
 }
 
 
-static bool_t dfe2_next_flux(struct stream *s, uint32_t *p_flux)
+static int dfe2_next_flux(struct stream *s)
 {
     struct dfe2_stream *dfss = container_of(s, struct dfe2_stream, s);
 
@@ -230,7 +213,7 @@ static bool_t dfe2_next_flux(struct stream *s, uint32_t *p_flux)
     uint32_t carry = 0;
     uint32_t abspos = dfss->stream_idx;
     
-    uint32_t val = 0;
+    uint32_t val = 0, flux;
     bool_t done = 0;
 
     if ((dfss->stream_idx >= dfss->index_pos) || (i == 0)) {
@@ -266,64 +249,20 @@ static bool_t dfe2_next_flux(struct stream *s, uint32_t *p_flux)
 
     dfss->dat_idx = i;
 
-    *p_flux = val;
-    return done;
-}
+    if (!done)
+        return -1;
 
-static int dfe2_next_bit(struct stream *s)
-{    
-    struct dfe2_stream *dfss = container_of(s, struct dfe2_stream, s);
-    int new_flux;
-
-    while (dfss->flux < (dfss->clock/2)) {
-        uint32_t flux;
-        if (!dfe2_next_flux(s, &flux))
-            return -1;
-        dfss->flux += (flux * (uint32_t)SCK_PS_PER_TICK) / 1000u;
-        dfss->clocked_zeros = 0;
-    }
-
-    s->latency += dfss->clock;
-    dfss->flux -= dfss->clock;
-
-    if (dfss->flux >= (dfss->clock/2)) {
-        dfss->clocked_zeros++;
-        return 0;
-    }
-
-    if (s->pll_mode != PLL_fixed_clock) {
-        /* PLL: Adjust clock frequency according to phase mismatch. */
-        if ((dfss->clocked_zeros >= 1) && (dfss->clocked_zeros <= 3)) {
-            /* In sync: adjust base clock by 10% of phase mismatch. */
-            int diff = dfss->flux / (int)(dfss->clocked_zeros + 1);
-            dfss->clock += diff / 10;
-        } else {
-            /* Out of sync: adjust base clock towards centre. */
-            dfss->clock += (dfss->clock_centre - dfss->clock) / 10;
-        }
-
-        /* Clamp the clock's adjustment range. */
-        dfss->clock = max(CLOCK_MIN(dfss->clock_centre),
-                          min(CLOCK_MAX(dfss->clock_centre), dfss->clock));
-    } else {
-        dfss->clock = dfss->clock_centre;
-    }
-
-    /* Authentic PLL: Do not snap the timing window to each flux transition. */
-    new_flux = (s->pll_mode == PLL_authentic) ? dfss->flux / 2 : 0;
-    s->latency += dfss->flux - new_flux;
-    dfss->flux = new_flux;
-
-    return 1;
+    flux = (val * (uint32_t)SCK_PS_PER_TICK) / 1000u;
+    return (int)flux;
 }
 
 struct stream_type discferret_dfe2 = {
     .open = dfe2_open,
     .close = dfe2_close,
-    .set_density = dfe2_set_density,
     .select_track = dfe2_select_track,
     .reset = dfe2_reset,
-    .next_bit = dfe2_next_bit,
+    .next_bit = flux_next_bit,
+    .next_flux = dfe2_next_flux,
     .suffix = { "dfi", NULL }
 
 };

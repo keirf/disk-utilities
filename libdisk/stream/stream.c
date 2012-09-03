@@ -17,6 +17,12 @@
 #include "private.h"
 #include "../private.h"
 
+/* Flux-based streams */
+#define CLOCK_CENTRE  2000   /* 2000ns = 2us */
+#define CLOCK_MAX_ADJ 10     /* +/- 10% adjustment */
+#define CLOCK_MIN(_c) (((_c) * (100 - CLOCK_MAX_ADJ)) / 100)
+#define CLOCK_MAX(_c) (((_c) * (100 + CLOCK_MAX_ADJ)) / 100)
+
 extern struct stream_type kryoflux_stream;
 extern struct stream_type diskread;
 extern struct stream_type disk_image;
@@ -62,8 +68,13 @@ struct stream *stream_open(const char *name)
 found:
     if ((s = st->open(name)) == NULL)
         return NULL;
+
     s->type = st;
+
+    /* Flux-based streams */
     s->pll_mode = PLL_default;
+    s->clock = s->clock_centre = CLOCK_CENTRE;
+
     return s;
 }
 
@@ -83,10 +94,17 @@ int stream_select_track(struct stream *s, unsigned int tracknr)
 
 void stream_reset(struct stream *s)
 {
+    /* Flux-based streams */
+    s->flux = 0;
+    s->clocked_zeros = 0;
+    s->clock = s->clock_centre;
+
     s->nr_index = 0;
     s->latency = 0;
     s->index_offset = ~0u>>1; /* bad */
+
     s->type->reset(s);
+
     if (s->nr_index == 0)
         stream_next_index(s);
 }
@@ -155,8 +173,8 @@ enum pll_mode stream_pll_mode(struct stream *s, enum pll_mode pll_mode)
 
 void stream_set_density(struct stream *s, unsigned int ns_per_cell)
 {
-    if (s->type->set_density)
-        s->type->set_density(s, ns_per_cell);
+    /* Flux-based streams */
+    s->clock = s->clock_centre = ns_per_cell;
 }
 
 void index_reset(struct stream *s)
@@ -164,6 +182,51 @@ void index_reset(struct stream *s)
     s->track_bitlen = s->index_offset;
     s->index_offset = 0;
     s->nr_index++;
+}
+
+int flux_next_bit(struct stream *s)
+{
+    int new_flux;
+
+    while (s->flux < (s->clock/2)) {
+        if ((new_flux = s->type->next_flux(s)) == -1)
+            return -1;
+        s->flux += new_flux;
+        s->clocked_zeros = 0;
+    }
+
+    s->latency += s->clock;
+    s->flux -= s->clock;
+
+    if (s->flux >= (s->clock/2)) {
+        s->clocked_zeros++;
+        return 0;
+    }
+
+    if (s->pll_mode != PLL_fixed_clock) {
+        /* PLL: Adjust clock frequency according to phase mismatch. */
+        if ((s->clocked_zeros >= 1) && (s->clocked_zeros <= 3)) {
+            /* In sync: adjust base clock by 10% of phase mismatch. */
+            int diff = s->flux / (int)(s->clocked_zeros + 1);
+            s->clock += diff / 10;
+        } else {
+            /* Out of sync: adjust base clock towards centre. */
+            s->clock += (s->clock_centre - s->clock) / 10;
+        }
+
+        /* Clamp the clock's adjustment range. */
+        s->clock = max(CLOCK_MIN(s->clock_centre),
+                          min(CLOCK_MAX(s->clock_centre), s->clock));
+    } else {
+        s->clock = s->clock_centre;
+    }
+
+    /* Authentic PLL: Do not snap the timing window to each flux transition. */
+    new_flux = (s->pll_mode == PLL_authentic) ? s->flux / 2 : 0;
+    s->latency += s->flux - new_flux;
+    s->flux = new_flux;
+
+    return 1;
 }
 
 /*
