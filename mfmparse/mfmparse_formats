@@ -450,6 +450,9 @@ probe
 
 "Reach For The Skies" = amigados
 
+"Rebellion"
+    * amigados fun_factory
+
 "Rick Dangerous" = amigados_copylock
 
 # No empty tracks on any disk.
@@ -556,6 +559,9 @@ probe
 "Turrican" # Tracks 158-159 may be empty
     27 factor5_hiscore
     * amigados turrican
+
+"Twin Turbos"
+    * amigados fun_factory
 
 "Twinworld" = blue_byte
 
