@@ -14,9 +14,9 @@ LIBS += $(LIBS-y)
 
 all:
 ifneq ($(SHARED_LIB),n)
-	$(MAKE) -C stream streams.opic
-	$(MAKE) -C container containers.opic
-	$(MAKE) -C format formats.opic
+	$(MAKE) -C stream streams.a
+	$(MAKE) -C container containers.a
+	$(MAKE) -C format formats.a
 	$(MAKE) libdisk.so
 else
 	$(MAKE) -C stream streams.o
@@ -28,8 +28,8 @@ endif
 libdisk.a: $(OBJS) stream/streams.o container/containers.o format/formats.o
 	$(AR) rc $@ $^
 
-libdisk.so: $(PICOBJS) stream/streams.opic container/containers.opic \
-		format/formats.opic
+libdisk.so: $(PICOBJS) stream/streams.a container/containers.a \
+		format/formats.a
 	$(CC) -Wl,-h,$(@).$(MAJOR) -shared $(LIBS) -o $(@).$(MAJOR).$(MINOR) $^
 	ln -sf $(@).$(MAJOR).$(MINOR) $(@).$(MAJOR)
 	ln -sf $(@).$(MAJOR) $(@)

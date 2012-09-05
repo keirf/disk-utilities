@@ -10,8 +10,8 @@ all: containers.o containers.opic
 containers.o: $(OBJS)
 	$(LD) -r -o $@ $^
 
-containers.opic: $(PICOBJS)
-	$(LD) -r -o $@ $^
+containers.a: $(PICOBJS)
+	$(AR) rs $@ $^
 
 clean:
 	$(RM) *.a *.o *.opic *.so* *~ $(DEPS)
