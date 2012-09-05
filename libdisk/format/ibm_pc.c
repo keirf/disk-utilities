@@ -1,7 +1,8 @@
 /*
  * disk/ibm_pc.c
  * 
- * 9 (DD) or 18 (HD) 512-byte sectors in IBM System/34 format.
+ * 9 (DD), 18 (HD), or 36 (ED) 512-byte sectors in IBM System/34 format.
+ * Also support similar Siemens iSDX format with 256-byte sectors.
  * 
  * Notes on IBM-compatible MFM data format:
  * ----------------------------------------
@@ -123,18 +124,17 @@ static void *ibm_pc_write_mfm(
             continue;
         }
 
-        if (valid_blocks & (1u<<idam.sec))
-            continue;
-
-        /* Calculate sector size */
-        sec_sz = (1<<idam.no) * 128;
-
         /* Is sector size valid for this format? */
+        sec_sz = 128 << idam.no;
         if (sec_sz != ti->bytes_per_sector) {
             trk_warn(ti, tracknr, "Unexpected IDAM sector size sec=%02x "
                      "cyl=%02x hd=%02x secsz=%d wanted=%d", idam.sec+1,
                      idam.cyl, idam.head, sec_sz, ti->bytes_per_sector);
+            continue;
         }
+
+        if (valid_blocks & (1u<<idam.sec))
+            continue;
 
         /* DAM */
         if ((ibm_scan_dam(s) < 0) ||
@@ -166,9 +166,12 @@ static void ibm_pc_read_mfm(
 {
     struct track_info *ti = &d->di->track[tracknr];
     uint8_t *dat = (uint8_t *)ti->dat;
-    uint8_t cyl = tracknr/2, hd = tracknr&1, no = 2;
+    uint8_t cyl = tracknr/2, hd = tracknr&1, no;
     bool_t iam = dat[ti->len-1];
     unsigned int sec, i, gap4;
+
+    for (no = 0; (128<<no) != ti->bytes_per_sector; no++)
+        continue;
 
     gap4 = (ti->type == TRKTYP_ibm_pc_dd) ? 80 : 108;
 
@@ -203,7 +206,8 @@ static void ibm_pc_read_mfm(
         tbuf_start_crc(tbuf);
         tbuf_bits(tbuf, SPEED_AVG, MFM_raw, 32, 0x44894489);
         tbuf_bits(tbuf, SPEED_AVG, MFM_raw, 32, 0x44895545);
-        tbuf_bytes(tbuf, SPEED_AVG, MFM_all, 512, &dat[sec*512]);
+        tbuf_bytes(tbuf, SPEED_AVG, MFM_all, ti->bytes_per_sector,
+                   &dat[sec*ti->bytes_per_sector]);
         tbuf_emit_crc16_ccitt(tbuf, SPEED_AVG);
         for (i = 0; i < gap4; i++)
             tbuf_bits(tbuf, SPEED_AVG, MFM_all, 8, 0x4e);
