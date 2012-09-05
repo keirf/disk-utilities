@@ -9,7 +9,4 @@ OBJS += mem.o exec.o
 all: libamiga.a
 
 libamiga.a: $(OBJS)
-	$(AR) rc $@ $^
-
-clean:
-	$(RM) *.a *.o *~ $(DEPS)
+	$(AR) rcs $@ $^

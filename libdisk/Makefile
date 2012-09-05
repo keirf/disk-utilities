@@ -14,9 +14,9 @@ LIBS += $(LIBS-y)
 
 all:
 ifneq ($(SHARED_LIB),n)
-	$(MAKE) -C stream streams.a
-	$(MAKE) -C container containers.a
-	$(MAKE) -C format formats.a
+	$(MAKE) -C stream streams.apic
+	$(MAKE) -C container containers.apic
+	$(MAKE) -C format formats.apic
 	$(MAKE) libdisk.so
 else
 	$(MAKE) -C stream streams.o
@@ -26,11 +26,12 @@ else
 endif
 
 libdisk.a: $(OBJS) stream/streams.o container/containers.o format/formats.o
-	$(AR) rc $@ $^
+	$(AR) rcs $@ $^
 
-libdisk.so: $(PICOBJS) stream/streams.a container/containers.a \
-		format/formats.a
+libdisk.so: $(PICOBJS) stream/streams.apic container/containers.apic \
+		format/formats.apic
 	$(CC) -Wl,-h,$(@).$(MAJOR) -shared $(LIBS) -o $(@).$(MAJOR).$(MINOR) $^
+#	strip -x $(@).$(MAJOR).$(MINOR)
 	ln -sf $(@).$(MAJOR).$(MINOR) $(@).$(MAJOR)
 	ln -sf $(@).$(MAJOR) $(@)
 
@@ -45,8 +46,7 @@ install: all
 	$(INSTALL_DATA) include/libdisk/util.h $(INCLUDEDIR)/libdisk
 	$(INSTALL_DATA) include/libdisk/track_types.h $(INCLUDEDIR)/libdisk
 
-clean:
-	$(RM) *.a *.o *.opic *.so* *~ $(DEPS)
+clean::
 	$(MAKE) -C stream clean
 	$(MAKE) -C container clean
 	$(MAKE) -C format clean

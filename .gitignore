@@ -1,5 +1,5 @@
 *.[oa]
-*.opic
+*.[oa]pic
 .*.d
 *~
 *.so

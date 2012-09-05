@@ -9,5 +9,5 @@ install: all
 	$(INSTALL_DIR) $(BINDIR)
 	$(INSTALL_PROG) ipfinfo $(BINDIR)
 
-clean:
-	$(RM) ipfinfo *.o *~
+clean::
+	$(RM) ipfinfo

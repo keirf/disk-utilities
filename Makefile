@@ -13,7 +13,7 @@ install:
 		$(MAKE) -C $$subdir install; \
 	done
 
-clean:
+clean::
 	@set -e; for subdir in $(SUBDIRS); do \
 		$(MAKE) -C $$subdir clean; \
 	done

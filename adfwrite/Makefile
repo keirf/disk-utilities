@@ -9,5 +9,5 @@ install: all
 	$(INSTALL_DIR) $(BINDIR)
 	$(INSTALL_PROG) adfwrite $(BINDIR)
 
-clean:
-	$(RM) adfwrite *.o *~
+clean::
+	$(RM) adfwrite

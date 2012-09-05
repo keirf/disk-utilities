@@ -9,5 +9,5 @@ install: all
 	$(INSTALL_DIR) $(BINDIR)
 	$(INSTALL_PROG) adfread $(BINDIR)
 
-clean:
-	$(RM) adfread *.o *~
+clean::
+	$(RM) adfread

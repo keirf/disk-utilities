@@ -11,7 +11,7 @@ endif
 
 PICOBJS := $(patsubst %.o,%.opic,$(OBJS))
 
-all: streams.o streams.opic
+all: streams.o streams.opic streams.a streams.apic
 
 streams.o: $(OBJS)
 	$(LD) -r -o $@ $^
@@ -19,8 +19,8 @@ streams.o: $(OBJS)
 streams.opic: $(PICOBJS)
 	$(LD) -r -o $@ $^
 
-streams.a: $(PICOBJS)
-	$(AR) rs $@ $^
+streams.a: $(OBJS)
+	$(AR) rcs $@ $^
 
-clean:
-	$(RM) *.a *.o *.opic *.so* *~ $(DEPS)
+streams.apic: $(PICOBJS)
+	$(AR) rcs $@ $^

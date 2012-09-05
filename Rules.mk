@@ -77,4 +77,7 @@ $(call cc-option-add,PIC_CFLAGS,CC,-fvisibility=hidden)
 
 .PHONY: all install clean
 
+clean::
+	$(RM) *.a *.o *apic *.opic *.so* *~ $(DEPS)
+
 -include $(DEPS)

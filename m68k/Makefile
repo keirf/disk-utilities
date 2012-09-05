@@ -26,7 +26,7 @@ install: all
 	$(INSTALL_PROG) copylock $(BINDIR)
 	$(INSTALL_PROG) disassemble $(BINDIR)
 
-clean:
-	$(RM) disassemble copylock *.o *~ $(DEPS)
+clean::
+	$(RM) disassemble copylock
 	$(MAKE) -C m68k clean
 	$(MAKE) -C amiga clean

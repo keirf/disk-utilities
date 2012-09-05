@@ -19,5 +19,5 @@ install: all
 
 config.o: CFLAGS += -DPREFIX=\"$(PREFIX)\"
 
-clean:
-	$(RM) $(TARGET) *.a *.o *.opic *~ $(DEPS)
+clean::
+	$(RM) $(TARGET)
