@@ -634,6 +634,9 @@ ibm_pc_dd
 ibm_pc_hd
     * ibm_pc_hd
 
+ibm_pc_ed
+    * ibm_pc_ed
+
 sega_system_24
     * sega_system_24
 

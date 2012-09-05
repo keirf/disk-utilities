@@ -226,6 +226,7 @@ int dsk_write_mfm(
     case TRKDEN_mfm_single: ns_per_cell = 4000u; break;
     case TRKDEN_mfm_double: ns_per_cell = 2000u; break;
     case TRKDEN_mfm_high: ns_per_cell = 1000u; break;
+    case TRKDEN_mfm_extra: ns_per_cell = 500u; break;
     default: BUG();
     }
     stream_set_density(s, ns_per_cell);

@@ -70,7 +70,8 @@ void tbuf_disable_auto_sector_split(struct track_buffer *tbuf);
 enum track_density {
     TRKDEN_mfm_double, /* default */
     TRKDEN_mfm_high,
-    TRKDEN_mfm_single
+    TRKDEN_mfm_single,
+    TRKDEN_mfm_extra
 };
 
 /* MFM track handler -- interface for various MFM analysers/encoders. */
