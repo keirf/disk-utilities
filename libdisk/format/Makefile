@@ -10,8 +10,8 @@ all: formats.o formats.opic
 formats.o: $(OBJS)
 	$(LD) -r -o $@ $^
 
-formats.opic: $(PICOBJS)
-	$(LD) -r -o $@ $^
+formats.a: $(PICOBJS)
+	$(AR) rs $@ $^
 
 clean:
 	$(RM) *.a *.o *.opic *.so* *~ $(DEPS)
