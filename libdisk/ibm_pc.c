@@ -221,6 +221,14 @@ struct track_handler ibm_pc_hd_handler = {
     .read_mfm = ibm_pc_read_mfm
 };
 
+struct track_handler ibm_pc_ed_handler = {
+    .density = TRKDEN_mfm_extra,
+    .bytes_per_sector = 512,
+    .nr_sectors = 36,
+    .write_mfm = ibm_pc_write_mfm,
+    .read_mfm = ibm_pc_read_mfm
+};
+
 /*
  * Local variables:
  * mode: C

@@ -39,6 +39,9 @@ static struct container *img_open(struct disk *d)
     case IMG_TRACKS*512*18:
         type = TRKTYP_ibm_pc_hd;
         break;
+    case IMG_TRACKS*512*36:
+        type = TRKTYP_ibm_pc_ed;
+        break;
     default:
         warnx("IMG file bad size: %lu bytes", (unsigned long)sz);
         return NULL;
@@ -58,6 +61,8 @@ static struct container *img_open(struct disk *d)
         ti->total_bits = DEFAULT_BITS_PER_TRACK;
         if (type == TRKTYP_ibm_pc_hd)
             ti->total_bits *= 2;
+        else if (type == TRKTYP_ibm_pc_ed)
+            ti->total_bits *= 4;
         read_exact(d->fd, ti->dat, ti->len);
         ti->dat[ti->len++] = 1; /* iam */
     }
@@ -82,6 +87,9 @@ static void img_close(struct disk *d)
         break;
     case TRKTYP_ibm_pc_hd:
         trklen = 18*512;
+        break;
+    case TRKTYP_ibm_pc_ed:
+        trklen = 36*512;
         break;
     case TRKTYP_sega_system_24:
         trklen = 5*2048 + 1024 + 256;
