@@ -105,19 +105,19 @@ static void *ibm_pc_write_mfm(
     while ((stream_next_bit(s) != -1) &&
            (valid_blocks != ((1u<<ti->nr_sectors)-1))) {
 
-        int idx_off;
-        uint8_t dat[2*512];
+        int idx_off, sec_sz;
+        uint8_t dat[2*16384];
         struct ibm_idam idam;
 
         /* IDAM */
         if (((idx_off = ibm_scan_idam(s, &idam)) < 0) || s->crc16_ccitt)
             continue;
-        
+
         idam.sec--;
         if ((idam.sec >= ti->nr_sectors) ||
             (idam.cyl != (tracknr/2)) ||
             (idam.head != (tracknr&1)) ||
-            (idam.no != 2)) {
+            (idam.no > 7)) {
             trk_warn(ti, tracknr, "Unexpected IDAM sec=%02x cyl=%02x hd=%02x "
                      "no=%02x", idam.sec+1, idam.cyl, idam.head, idam.no);
             continue;
@@ -126,14 +126,24 @@ static void *ibm_pc_write_mfm(
         if (valid_blocks & (1u<<idam.sec))
             continue;
 
+        /* Calculate sector size */
+        sec_sz = (1<<idam.no) * 128;
+
+        /* Is sector size valid for this format? */
+        if (sec_sz != ti->bytes_per_sector) {
+            trk_warn(ti, tracknr, "Unexpected IDAM sector size sec=%02x "
+                     "cyl=%02x hd=%02x secsz=%d wanted=%d", idam.sec+1,
+                     idam.cyl, idam.head, sec_sz, ti->bytes_per_sector);
+        }
+
         /* DAM */
         if ((ibm_scan_dam(s) < 0) ||
-            (stream_next_bytes(s, dat, 2*512) == -1) ||
+            (stream_next_bytes(s, dat, 2*sec_sz) == -1) ||
             (stream_next_bits(s, 32) == -1) || s->crc16_ccitt)
             continue;
 
-        mfm_decode_bytes(MFM_all, 512, dat, dat);
-        memcpy(&block[idam.sec*512], dat, 512);
+        mfm_decode_bytes(MFM_all, sec_sz, dat, dat);
+        memcpy(&block[idam.sec*sec_sz], dat, sec_sz);
         valid_blocks |= 1u << idam.sec;
         if (idam.sec == 0)
             ti->data_bitoff = idx_off;
@@ -217,6 +227,18 @@ struct track_handler ibm_pc_hd_handler = {
     .density = TRKDEN_mfm_high,
     .bytes_per_sector = 512,
     .nr_sectors = 18,
+    .write_mfm = ibm_pc_write_mfm,
+    .read_mfm = ibm_pc_read_mfm
+};
+
+/*
+ * Siemens iSDX telephone exchange, High Density format
+ * 31 spt, 256 bytes/sector, 80 tracks
+ */
+struct track_handler siemens_isdx_hd_handler = {
+    .density = TRKDEN_mfm_high,
+    .bytes_per_sector = 256,
+    .nr_sectors = 31,
     .write_mfm = ibm_pc_write_mfm,
     .read_mfm = ibm_pc_read_mfm
 };
