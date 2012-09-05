@@ -15,16 +15,21 @@ LIBS += $(LIBS-y)
 all:
 ifneq ($(SHARED_LIB),n)
 	$(MAKE) -C stream streams.opic
+	$(MAKE) -C container containers.opic
+	$(MAKE) -C format formats.opic
 	$(MAKE) libdisk.so
 else
 	$(MAKE) -C stream streams.o
+	$(MAKE) -C container containers.o
+	$(MAKE) -C format formats.o
 	$(MAKE) libdisk.a
 endif
 
-libdisk.a: $(OBJS) stream/streams.o
+libdisk.a: $(OBJS) stream/streams.o container/containers.o format/formats.o
 	$(AR) rc $@ $^
 
-libdisk.so: $(PICOBJS) stream/streams.opic
+libdisk.so: $(PICOBJS) stream/streams.opic container/containers.opic \
+		format/formats.opic
 	$(CC) -Wl,-h,$(@).$(MAJOR) -shared $(LIBS) -o $(@).$(MAJOR).$(MINOR) $^
 	ln -sf $(@).$(MAJOR).$(MINOR) $(@).$(MAJOR)
 	ln -sf $(@).$(MAJOR) $(@)
@@ -43,3 +48,5 @@ install: all
 clean:
 	$(RM) *.a *.o *.opic *.so* *~ $(DEPS)
 	$(MAKE) -C stream clean
+	$(MAKE) -C container clean
+	$(MAKE) -C format clean
