@@ -129,6 +129,13 @@ static void *ibm_pc_write_mfm(
         /* Calculate sector size */
         sec_sz = (1<<idam.no) * 128;
 
+        /* Is sector size valid for this format? */
+        if (sec_sz != ti->bytes_per_sector) {
+            trk_warn(ti, tracknr, "Unexpected IDAM sector size sec=%02x "
+                     "cyl=%02x hd=%02x secsz=%d wanted=%d", idam.sec+1,
+                     idam.cyl, idam.head, sec_sz, ti->bytes_per_sector);
+        }
+
         /* DAM */
         if ((ibm_scan_dam(s) < 0) ||
             (stream_next_bytes(s, dat, 2*sec_sz) == -1) ||
@@ -224,8 +231,9 @@ struct track_handler ibm_pc_hd_handler = {
     .read_mfm = ibm_pc_read_mfm
 };
 
-/* Siemens iSDX telephone exchange, High Density format, 31 spt, 256 bytes/sector, 80 tracks
- * Essentially this is a standard uPD765 type format with a slightly unusual sector size.
+/*
+ * Siemens iSDX telephone exchange, High Density format
+ * 31 spt, 256 bytes/sector, 80 tracks
  */
 struct track_handler siemens_isdx_hd_handler = {
     .density = TRKDEN_mfm_high,
