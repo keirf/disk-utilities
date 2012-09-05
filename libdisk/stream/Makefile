@@ -19,5 +19,8 @@ streams.o: $(OBJS)
 streams.opic: $(PICOBJS)
 	$(LD) -r -o $@ $^
 
+streams.a: $(PICOBJS)
+	$(AR) rs $@ $^
+
 clean:
 	$(RM) *.a *.o *.opic *.so* *~ $(DEPS)
