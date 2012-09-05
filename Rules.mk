@@ -5,6 +5,11 @@ all:
 ARCH ?= $(shell uname -m | sed -e s/i.86/x86_32/ \
           -e s/i86pc/x86_32/ -e s/amd64/x86_64/)
 
+ifeq ($(shell uname -s),Darwin)
+	PLATFORM = osx
+else
+	PLATFORM = linux
+endif
 PREFIX ?= /usr/local
 BINDIR = $(PREFIX)/bin
 INCLUDEDIR = $(PREFIX)/include

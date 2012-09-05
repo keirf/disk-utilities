@@ -5,8 +5,33 @@ SRCS := $(wildcard *.c)
 OBJS := $(patsubst %.c,%.o,$(SRCS))
 PICOBJS := $(patsubst %.o,%.opic,$(OBJS))
 
-MAJOR := 0
-MINOR := 0
+MAJOR_VERSION := 0
+MINOR_VERSION := 0
+
+
+# base name of the shared library name
+SOLIB_PFX		:=	libdisk
+ifeq ($(PLATFORM),osx)
+	SOLIB		:=	$(SOLIB_PFX).dylib
+	SONAME		:=	$(SOLIB_PFX).$(MAJOR_VERSION).dylib
+	SOVERS		:=	$(SOLIB_PFX).$(MAJOR_VERSION).$(MINOR_VERSION).dylib
+	LDFLAGS		?=	-dynamiclib -install_name $(SONAME)
+endif
+
+ifeq ($(PLATFORM),linux)
+	SOLIB		:=	$(SOLIB_PFX).so
+	SONAME		:=	$(SOLIB_PFX).so.$(MAJOR_VERSION)
+	SOVERS		:=	$(SOLIB_PFX).so.$(MAJOR_VERSION).$(MINOR_VERSION)
+	LDFLAGS		?=	-Wl,-h,$(SONAME) -shared
+endif
+
+ifeq ($(PLATFORM),win32)
+	SOLIB		:=	$(SOLIB_PFX).dll
+	SONAME		:=	$(SOLIB_PFX).$(MAJOR_VERSION).dll
+	SOVERS		:=	$(SOLIB_PFX).$(MAJOR_VERSION).$(MINOR_VERSION).dll
+	LDFLAGS		?=	-Wl,-h,$(SONAME) -shared
+endif
+
 
 LIBS :=
 LIBS-$(caps) := -ldl
@@ -17,7 +42,7 @@ ifneq ($(SHARED_LIB),n)
 	$(MAKE) -C stream streams.apic
 	$(MAKE) -C container containers.apic
 	$(MAKE) -C format formats.apic
-	$(MAKE) libdisk.so
+	$(MAKE) libdisk
 else
 	$(MAKE) -C stream streams.o
 	$(MAKE) -C container containers.o
@@ -28,12 +53,12 @@ endif
 libdisk.a: $(OBJS) stream/streams.o container/containers.o format/formats.o
 	$(AR) rcs $@ $^
 
-libdisk.so: $(PICOBJS) stream/streams.apic container/containers.apic \
+libdisk: $(PICOBJS) stream/streams.apic container/containers.apic \
 		format/formats.apic
-	$(CC) -Wl,-h,$(@).$(MAJOR) -shared $(LIBS) -o $(@).$(MAJOR).$(MINOR) $^
-#	strip -x $(@).$(MAJOR).$(MINOR)
-	ln -sf $(@).$(MAJOR).$(MINOR) $(@).$(MAJOR)
-	ln -sf $(@).$(MAJOR) $(@)
+	$(CC) $(LDFLAGS) $(LIBS) -o $(SOVERS) $^
+#	strip -x $(SOVERS)
+	ln -sf $(SOVERS) $(SONAME)
+	ln -sf $(SONAME) $(SOLIB)
 
 install: all
 	$(INSTALL_DIR) $(LIBDIR)
