@@ -677,3 +677,6 @@ sega_system_24
 siemens_isdx_hd
     * siemens_isdx_hd
 
+microsoft_dmf_hd
+    * microsoft_dmf_hd ibm_pc_hd
+
