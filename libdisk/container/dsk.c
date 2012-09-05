@@ -14,7 +14,7 @@
  */
 
 #include <libdisk/util.h>
-#include "private.h"
+#include "../private.h"
 
 #include <sys/types.h>
 #include <sys/stat.h>

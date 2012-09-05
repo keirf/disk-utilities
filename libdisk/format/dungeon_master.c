@@ -18,7 +18,7 @@
  */
 
 #include <libdisk/util.h>
-#include "private.h"
+#include "../private.h"
 
 #include <arpa/inet.h>
 
