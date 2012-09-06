@@ -47,6 +47,10 @@
  */
 #define PREPEND_BITS 32
 
+/* Maximum bounds for track data. */
+#define MAX_BLOCKS_PER_TRACK 100
+#define MAX_DATA_PER_TRACK   (MAX_BLOCKS_PER_TRACK * 1024)
+
 struct ipf_header {
     uint8_t id[4];
     uint32_t len;
@@ -307,8 +311,9 @@ static bool_t __ipf_close(struct disk *d, uint32_t encoder)
 
     _img = img = memalloc(di->nr_tracks * sizeof(*img));
     _idata = idata = memalloc(di->nr_tracks * sizeof(*idata));
-    _blk = blk = memalloc(di->nr_tracks * 40 * sizeof(*blk));
-    _dat = dat = memalloc(di->nr_tracks * 40 * 1024);
+    _blk = blk = memalloc(di->nr_tracks * MAX_BLOCKS_PER_TRACK * sizeof(*blk));
+    _dat = dat = memalloc(di->nr_tracks * MAX_BLOCKS_PER_TRACK
+                          * MAX_DATA_PER_TRACK);
 
     for (i = 0; i < di->nr_tracks; i++) {
         ti = &di->track[i];
@@ -347,7 +352,12 @@ static bool_t __ipf_close(struct disk *d, uint32_t encoder)
             ibuf.len = ibuf.decoded_bits / 16;
             ibuf.bits = (ibuf.decoded_bits / 2) & 7;
             handlers[ti->type]->read_mfm(d, i, &ibuf.tbuf);
+
             ipf_tbuf_finish_chunk(&ibuf, chkEnd);
+
+            BUG_ON(ibuf.nr_blks > MAX_BLOCKS_PER_TRACK);
+            BUG_ON(ibuf.len > MAX_DATA_PER_TRACK);
+
             if (ibuf.need_sps_encoder) {
                 BUG_ON(encoder != ENC_CAPS);
                 warnx("IPF: Switching to SPS encoder.");
