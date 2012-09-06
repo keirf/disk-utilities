@@ -78,7 +78,7 @@ static void *psygnosis_a_write_mfm(
         *(uint16_t *)&block[ti->len] = htons(sync);
         *(uint16_t *)&block[ti->len+2] = two_sync ? htons(sync) : 0;
         memcpy(block, raw_dat, ti->len);
-        ti->valid_sectors = (1u << ti->nr_sectors) - 1;
+        set_all_sectors_valid(ti);
         ti->len += 4; /* for the sync marks */
         return block;
     }

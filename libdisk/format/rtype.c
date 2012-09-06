@@ -66,7 +66,7 @@ static void *rtype_a_write_mfm(
 
         block = memalloc(ti->len);
         memcpy(block, raw_dat, ti->len);
-        ti->valid_sectors = (1u << ti->nr_sectors) - 1;
+        set_all_sectors_valid(ti);
         return block;
     }
 
@@ -145,7 +145,7 @@ static void *rtype_b_write_mfm(
 
         block = memalloc(ti->len);
         memcpy(block, raw_dat, ti->len);
-        ti->valid_sectors = (1u << ti->nr_sectors) - 1;
+        set_all_sectors_valid(ti);
         ti->total_bits = 105500;
         return block;
     }

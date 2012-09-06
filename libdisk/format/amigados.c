@@ -71,14 +71,15 @@ static void *ados_write_mfm(
 {
     struct track_info *ti = &d->di->track[tracknr];
     char *block, *p;
-    unsigned int i, valid_blocks = 0, extended_blocks = 0;
+    unsigned int i, nr_valid_blocks = 0, has_extended_blocks = 0;
+    unsigned int least_block = ~0u;
 
     block = memalloc(EXT_SEC * ti->nr_sectors);
     for (i = 0; i < EXT_SEC * ti->nr_sectors / 4; i++)
         memcpy((uint32_t *)block + i, "NDOS", 4);
 
     while ((stream_next_bit(s) != -1) &&
-           (valid_blocks != ((1u<<ti->nr_sectors)-1))) {
+           (nr_valid_blocks != ti->nr_sectors)) {
 
         struct ados_hdr ados_hdr;
         char dat[STD_SEC], raw_mfm_dat[2*(sizeof(struct ados_hdr)+STD_SEC)];
@@ -108,47 +109,47 @@ static void *ados_write_mfm(
             continue;
 
         if ((ados_hdr.sector >= ti->nr_sectors) ||
-            (valid_blocks & (1u<<ados_hdr.sector)))
+            is_valid_sector(ti, ados_hdr.sector))
             continue;
 
         /* Detect non-standard header info. */
         if ((ados_hdr.format != 0xffu) ||
             (ados_hdr.track != tracknr) ||
             (sync != syncs[0]))
-            extended_blocks |= 1u << ados_hdr.sector;
+            has_extended_blocks = 1;
         for (i = 0; i < 16; i++)
             if (ados_hdr.lbl[i] != 0)
-                extended_blocks |= 1u << ados_hdr.sector;
+                has_extended_blocks = 1;
 
         p = block + ados_hdr.sector * EXT_SEC;
         *(uint32_t *)p = htonl(sync);
         memcpy(p+4, &ados_hdr, 20);
         memcpy(p+24, dat, STD_SEC);
 
-        if (!(valid_blocks & ((1u<<ados_hdr.sector)-1)))
+        set_sector_valid(ti, ados_hdr.sector);
+        nr_valid_blocks++;
+        if (least_block > ados_hdr.sector) {
             ti->data_bitoff = idx_off;
-
-        valid_blocks |= 1u << ados_hdr.sector;
+            least_block = ados_hdr.sector;
+        }
     }
 
-    if (valid_blocks == 0) {
+    if (nr_valid_blocks == 0) {
         memfree(block);
         return NULL;
     }
 
-    if (!extended_blocks)
+    if (!has_extended_blocks)
         for (i = 0; i < ti->nr_sectors; i++)
             memmove(block + i * STD_SEC,
                     block + i * EXT_SEC + (EXT_SEC - STD_SEC),
                     STD_SEC);
 
     init_track_info(
-        ti, extended_blocks ? TRKTYP_amigados_extended : TRKTYP_amigados);
-
-    ti->valid_sectors = valid_blocks;
+        ti, has_extended_blocks ? TRKTYP_amigados_extended : TRKTYP_amigados);
 
     for (i = 0; i < ti->nr_sectors; i++)
-        if (valid_blocks & (1u << i))
+        if (is_valid_sector(ti, i))
             break;
     ti->data_bitoff -= i * 544*8*2;
 
@@ -191,7 +192,7 @@ static void ados_read_mfm(
         tbuf_bits(tbuf, SPEED_AVG, MFM_even_odd, 32, csum);
         /* data checksum */
         csum = amigados_checksum(dat, STD_SEC);
-        if (!(ti->valid_sectors & (1u << i)))
+        if (!is_valid_sector(ti, i))
             csum ^= 1; /* bad checksum for an invalid sector */
         tbuf_bits(tbuf, SPEED_AVG, MFM_even_odd, 32, csum);
         /* data */

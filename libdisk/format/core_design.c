@@ -54,7 +54,7 @@ static void *core_write_mfm(
         if (csum)
             continue;
 
-        ti->valid_sectors = (1u << ti->nr_sectors) - 1;
+        set_all_sectors_valid(ti);
         return block;
     }
 

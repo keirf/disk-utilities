@@ -272,6 +272,37 @@ const char *disk_get_format_desc_name(enum track_type type)
     return track_format_names[type].desc_name;
 }
 
+int is_valid_sector(struct track_info *ti, unsigned int sector)
+{
+    BUG_ON(sector >= ti->nr_sectors);
+    return (ti->valid_sectors[sector>>3] >> (~sector&7)) & 1;
+}
+
+void set_sector_valid(struct track_info *ti, unsigned int sector)
+{
+    BUG_ON(sector >= ti->nr_sectors);
+    ti->valid_sectors[sector>>3] |= 1u << (~sector&7);
+}
+
+void set_sector_invalid(struct track_info *ti, unsigned int sector)
+{
+    BUG_ON(sector >= ti->nr_sectors);
+    ti->valid_sectors[sector>>3] &= ~(1u << (~sector&7));
+}
+
+void set_all_sectors_valid(struct track_info *ti)
+{
+    unsigned int sector;
+    set_all_sectors_invalid(ti);
+    for (sector = 0; sector < ti->nr_sectors; sector++)
+        set_sector_valid(ti, sector);
+}
+
+void set_all_sectors_invalid(struct track_info *ti)
+{
+    memset(ti->valid_sectors, 0, sizeof(ti->valid_sectors));
+}
+
 
 /*
  * PRIVATE HELPERS
@@ -284,6 +315,7 @@ void init_track_info(struct track_info *ti, enum track_type type)
     ti->typename = track_format_names[type].desc_name;
     ti->bytes_per_sector = thnd->bytes_per_sector;
     ti->nr_sectors = thnd->nr_sectors;
+    BUG_ON(ti->nr_sectors >= sizeof(ti->valid_sectors)*8);
     ti->len = ti->bytes_per_sector * ti->nr_sectors;
 }
 

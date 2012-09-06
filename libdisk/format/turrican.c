@@ -56,7 +56,7 @@ static void *turrican_write_mfm(
 
         block = memalloc(ti->len);
         memcpy(block, dat, ti->len);
-        ti->valid_sectors = (1u << ti->nr_sectors) - 1;
+        set_all_sectors_valid(ti);
         ti->total_bits = 108000;
         return block;
     }
@@ -139,7 +139,7 @@ static void *factor5_hiscore_write_mfm(
                      "Creating empty track.");
             ti->nr_sectors = ti->bytes_per_sector = ti->len = 0;
         } else {
-            ti->valid_sectors = (1u << ti->nr_sectors) - 1;
+            set_all_sectors_valid(ti);
         }
         return block;
     }

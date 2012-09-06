@@ -36,13 +36,12 @@ static void *pdos_write_mfm(
     struct disk *d, unsigned int tracknr, struct stream *s)
 {
     struct track_info *ti = &d->di->track[tracknr];
-    char *block = memalloc(512 * 12);
-    unsigned int i, j, valid_blocks = 0;
+    char *block = memalloc(512 * ti->nr_sectors);
+    unsigned int i, j, nr_valid_blocks = 0;
     struct rnc_pdos_key *keytag = (struct rnc_pdos_key *)
         disk_get_tag_by_id(d, DSKTAG_rnc_pdos_key);
 
-    while ((stream_next_bit(s) != -1) &&
-           (valid_blocks != ((1u<<6)-1))) {
+    while (stream_next_bit(s) != -1) {
 
         uint8_t hdr[2*4], dat[2*512], skip;
         uint32_t k, *p, *q, csum;
@@ -51,7 +50,7 @@ static void *pdos_write_mfm(
             continue;
         ti->data_bitoff = s->index_offset - 15;
 
-        for (i = 0; i < 12; i++) {
+        for (i = 0; i < ti->nr_sectors; i++) {
             /* Check per-sector sync. */
             if (stream_next_bits(s, 16) == -1)
                 goto done;
@@ -101,20 +100,20 @@ static void *pdos_write_mfm(
                 goto done;
         }
 
-        if (i == 12) {
-            valid_blocks = (1u << 12) - 1;
+        if (i == ti->nr_sectors) {
+            nr_valid_blocks = ti->nr_sectors;
             break;
         }
     }
 
 done:
-    if (valid_blocks == 0) {
+    if (nr_valid_blocks == 0) {
         free(block);
         return NULL;
     }
 
     ti->total_bits = 105500;
-    ti->valid_sectors = valid_blocks;
+    set_all_sectors_valid(ti);
 
     return block;
 }
@@ -147,7 +146,7 @@ static void pdos_read_mfm(
 
         /* header */
         csum = amigados_checksum(enc, 512);
-        if (!(ti->valid_sectors & (1u << i)))
+        if (!is_valid_sector(ti, i))
             csum ^= 1; /* bad checksum for an invalid sector */
         hdr |= (csum & 0x5555u) | ((csum >> 15) & 0xaaaau);
         hdr ^= keytag->key ^ (1u<<31);

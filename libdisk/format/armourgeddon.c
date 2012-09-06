@@ -60,7 +60,7 @@ static void *armourgeddon_a_write_mfm(
             continue;
 
         ti->total_bits = 105500;
-        ti->valid_sectors = (1u << ti->nr_sectors) - 1;
+        set_all_sectors_valid(ti);
         block = memalloc(ti->len);
         memcpy(block, (uint16_t *)dat+1, ti->len);
         return block;
@@ -126,7 +126,7 @@ static void *armourgeddon_b_write_mfm(
             continue;
 
         ti->total_bits = 105500;
-        ti->valid_sectors = (1u << ti->nr_sectors) - 1;
+        set_all_sectors_valid(ti);
         block = memalloc(ti->len+1);
         memcpy(block, dat+5, ti->len);
         block[ti->len] = dat[4];

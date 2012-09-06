@@ -160,14 +160,14 @@ int main(int argc, char **argv)
         if (index_align)
             ti->data_bitoff = 1024;
         for (j = 0; j < ti->nr_sectors; j++)
-            if (!(ti->valid_sectors & (1u << j)))
+            if (!is_valid_sector(ti, j))
                 break;
         if (j == ti->nr_sectors)
             continue;
         unidentified++;
         printf("T%u: sectors ", i);
         for (j = 0; j < ti->nr_sectors; j++)
-            if (!(ti->valid_sectors & (1u << j)))
+            if (!is_valid_sector(ti, j))
                 printf("%u,", j);
         printf(" missing\n");
     }

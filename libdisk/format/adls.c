@@ -24,10 +24,10 @@ static void *adls_write_mfm(
 {
     struct track_info *ti = &d->di->track[tracknr];
     char *block = memalloc(5*1024+512);
-    unsigned int valid_blocks = 0;
+    unsigned int nr_valid_blocks = 0;
 
     while ((stream_next_bit(s) != -1) &&
-           (valid_blocks != ((1u<<ti->nr_sectors)-1))) {
+           (nr_valid_blocks != ti->nr_sectors)) {
 
         int idx_off;
         unsigned int sz;
@@ -41,7 +41,7 @@ static void *adls_write_mfm(
             continue;
 
         idam.sec -= 0xf5;
-        if ((idam.sec >= ti->nr_sectors) || (valid_blocks & (1u<<idam.sec)))
+        if ((idam.sec >= ti->nr_sectors) || is_valid_sector(ti, idam.sec))
             continue;
         sz = (idam.sec == 5) ? 512 : 1024;
 
@@ -65,19 +65,19 @@ static void *adls_write_mfm(
 
         mfm_decode_bytes(MFM_all, sz, dat, dat);
         memcpy(&block[idam.sec*1024], dat, sz);
-        valid_blocks |= 1u << idam.sec;
+        set_sector_valid(ti, idam.sec);
+        nr_valid_blocks++;
         if (idam.sec == 0)
             ti->data_bitoff = idx_off;
     }
 
 out:
-    if (!valid_blocks) {
+    if (nr_valid_blocks == 0) {
         memfree(block);
         return NULL;
     }
 
     ti->data_bitoff = 80 * 16;
-    ti->valid_sectors = valid_blocks;
 
     return block;
 }

@@ -32,10 +32,10 @@ static void *archipelagos_write_mfm(
 {
     struct track_info *ti = &d->di->track[tracknr];
     char *block = memalloc(ti->len);
-    unsigned int i, valid_blocks = 0;
+    unsigned int i, nr_valid_blocks = 0, least_block = ~0u;
 
     while ((stream_next_bit(s) != -1) &&
-           (valid_blocks != ((1u<<ti->nr_sectors)-1))) {
+           (nr_valid_blocks != ti->nr_sectors)) {
 
         uint32_t idx_off = s->index_offset - 31;
         uint16_t csum, w, *p;
@@ -52,7 +52,7 @@ static void *archipelagos_write_mfm(
         if (stream_next_bits(s, 16) == -1)
             goto done;
         sec = mfm_decode_bits(MFM_all, (uint16_t)s->word) - 1;
-        if ((sec >= ti->nr_sectors) || (valid_blocks & (1u<<sec)))
+        if ((sec >= ti->nr_sectors) || is_valid_sector(ti, sec))
             continue;
 
         if (stream_next_bits(s, 32) == -1)
@@ -70,21 +70,22 @@ static void *archipelagos_write_mfm(
         if (csum)
             continue;
 
-        valid_blocks |= 1u << sec;
-        if (!(valid_blocks & ((1u<<sec)-1)))
+        set_sector_valid(ti, sec);
+        nr_valid_blocks++;
+        if (least_block > sec) {
             ti->data_bitoff = idx_off;
+            least_block = sec;
+        }
     }
 
 done:
-    if (valid_blocks == 0) {
+    if (nr_valid_blocks == 0) {
         free(block);
         return NULL;
     }
 
-    ti->valid_sectors = valid_blocks;
-
     for (i = 0; i < ti->nr_sectors; i++)
-        if (valid_blocks & (1u << i))
+        if (is_valid_sector(ti, i))
             break;
     ti->data_bitoff -= i * 0x820;
 
@@ -112,7 +113,7 @@ static void archipelagos_read_mfm(
         /* csum */
         for (j = 0; j < ti->bytes_per_sector/2; j++)
             csum += ntohs(dat[j]);
-        if (!(ti->valid_sectors & (1u << i)))
+        if (!is_valid_sector(ti, i))
             csum = ~csum; /* bad checksum for an invalid sector */
         tbuf_bits(tbuf, SPEED_AVG, MFM_all, 16, csum);
         /* data */

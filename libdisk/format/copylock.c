@@ -91,11 +91,11 @@ static void *copylock_write_mfm(
     struct disk *d, unsigned int tracknr, struct stream *s)
 {
     struct track_info *ti = &d->di->track[tracknr];
-    uint32_t *block, lfsr_seed = 0, latency[11], valid_blocks = 0;
-    unsigned int i, sec;
+    uint32_t *block, lfsr_seed = 0, latency[11], nr_valid_blocks = 0;
+    unsigned int i, sec, least_block = ~0u;
 
     while ((stream_next_bit(s) != -1) &&
-           (valid_blocks != ((1u<<ti->nr_sectors)-1))) {
+           (nr_valid_blocks != ti->nr_sectors)) {
 
         uint8_t dat[2*512];
         uint32_t lfsr, lfsr_sec, idx_off = s->index_offset - 15;
@@ -112,7 +112,7 @@ static void *copylock_write_mfm(
             if (s->word != (mfm_encode_word(0xb0+sec) | (1u<<13)))
                 continue;
         }
-        if ((sec >= ti->nr_sectors) || (valid_blocks & (1u<<sec)))
+        if ((sec >= ti->nr_sectors) || is_valid_sector(ti, sec))
             continue;
 
         /* Check the sector header. */
@@ -162,22 +162,25 @@ static void *copylock_write_mfm(
         }
 
         /* Good sector: remember its details. */
-        if (!(valid_blocks & ((1u<<sec)-1)))
-            ti->data_bitoff = idx_off;
         latency[sec] = s->latency;
-        valid_blocks |= 1u << sec;
+        set_sector_valid(ti, sec);
+        nr_valid_blocks++;
+        if (least_block > sec) {
+            ti->data_bitoff = idx_off;
+            least_block = sec;
+        }
     }
 
-    if (valid_blocks == 0)
+    if (nr_valid_blocks == 0)
         return NULL;
 
     /* Check validity of the non-uniform track timings. */
-    if (!(valid_blocks & (1u << 5)))
+    if (!is_valid_sector(ti, 5))
         latency[5] = 514*8*2*2000; /* bodge it */
     for (sec = 0; sec < ARRAY_SIZE(latency); sec++) {
         float d = (100.0 * ((int)latency[sec] - (int)latency[5]))
             / (int)latency[5];
-        if (!(valid_blocks & (1u << sec)))
+        if (!is_valid_sector(ti, sec))
             continue;
         switch (sec) {
         case 4:
@@ -200,7 +203,7 @@ static void *copylock_write_mfm(
 
     /* Adjust track offset for any missing initial sectors. */
     for (sec = 0; sec < ti->nr_sectors; sec++)
-        if (valid_blocks & (1u << sec))
+        if (is_valid_sector(ti, sec))
             break;
     ti->data_bitoff -= sec * (514+48)*8*2;
 
@@ -208,13 +211,12 @@ static void *copylock_write_mfm(
     ti->data_bitoff -= 3*8*2;
 
     /* Magic: We can reconstruct the entire track from the LFSR seed! */
-    if (valid_blocks != ((1u << ti->nr_sectors) - 1)) {
-        trk_warn(ti, tracknr, "Reconstructed damaged track (%03x)",
-                 valid_blocks);
-        valid_blocks = (1u << ti->nr_sectors) - 1;
+    if (nr_valid_blocks != ti->nr_sectors) {
+        trk_warn(ti, tracknr, "Reconstructed damaged track (%u)",
+                 nr_valid_blocks);
+        set_all_sectors_valid(ti);
     }
 
-    ti->valid_sectors = valid_blocks;
     ti->len = 4;
     block = memalloc(ti->len);
     *block = htonl(lfsr_seed);

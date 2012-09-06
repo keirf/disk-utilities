@@ -55,7 +55,7 @@ static struct container *img_open(struct disk *d)
     for (i = 0; i < di->nr_tracks; i++) {
         ti = &di->track[i];
         init_track_info(ti, type);
-        ti->valid_sectors = (1u << ti->nr_sectors) - 1;
+        set_all_sectors_valid(ti);
         ti->dat = memalloc(ti->len+1);
         ti->data_bitoff = 80 * 16; /* iam offset */
         ti->total_bits = DEFAULT_BITS_PER_TRACK;

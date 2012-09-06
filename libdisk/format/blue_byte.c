@@ -63,7 +63,7 @@ static void *blue_byte_write_mfm(
         for (i = 0; i < ti->len/4; i++)
             mfm_decode_bytes(MFM_even_odd, 4, &dat[8+8*i], &block[i]);
 
-        ti->valid_sectors = (1u << ti->nr_sectors) - 1;
+        set_all_sectors_valid(ti);
         return block;
     }
 

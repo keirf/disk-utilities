@@ -53,12 +53,12 @@ static void *batman_write_mfm(
 {
     struct track_info *ti = &d->di->track[tracknr];
     char *block;
-    unsigned int valid_blocks = 0, max_to_gap = 0;
+    unsigned int nr_valid_blocks = 0, max_to_gap = 0;
 
     block = memalloc((12*512) + 1);
 
     while ((stream_next_bit(s) != -1) &&
-           (valid_blocks != ((1u<<ti->nr_sectors)-1))) {
+           (nr_valid_blocks != ti->nr_sectors)) {
 
         struct hdr hdr;
         uint32_t csum, idx_off;
@@ -77,7 +77,7 @@ static void *batman_write_mfm(
             (hdr.mbz != 0) ||
             (hdr.to_gap < 1) || (hdr.to_gap > 12) ||
             (hdr.sector >= ti->nr_sectors) ||
-            (valid_blocks & (1u<<hdr.sector)))
+            (is_valid_sector(ti, hdr.sector)))
             continue;
 
         if (stream_next_bytes(s, dat, 8) == -1)
@@ -93,7 +93,8 @@ static void *batman_write_mfm(
             continue;
 
         memcpy(&block[hdr.sector*512], dat, 512);
-        valid_blocks |= 1u << hdr.sector;
+        set_sector_valid(ti, hdr.sector);
+        nr_valid_blocks++;
 
         /*
          * Look for the first written sector after track gap (or close to it
@@ -106,12 +107,11 @@ static void *batman_write_mfm(
         }
     }
 
-    if (valid_blocks == 0) {
+    if (nr_valid_blocks == 0) {
         memfree(block);
         return NULL;
     }
 
-    ti->valid_sectors = valid_blocks;
     ti->total_bits = 105500;
 
     return block;
@@ -140,7 +140,7 @@ static void batman_read_mfm(
         /* data checksum */
         dat = (uint16_t *)&ti->dat[512*hdr.sector];
         csum = checksum(dat);
-        if (!(ti->valid_sectors & (1u << i)))
+        if (!is_valid_sector(ti, i))
             csum ^= 1; /* bad checksum for an invalid sector */
         tbuf_bits(tbuf, SPEED_AVG, MFM_even_odd, 32, csum);
         /* data */

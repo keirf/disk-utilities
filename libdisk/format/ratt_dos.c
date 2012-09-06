@@ -97,7 +97,7 @@ static void *ratt_dos_write_mfm(
         memcpy(block, dat, nr_longs * 4);
         *(uint32_t *)&block[nr_longs * 4] = htonl(header);
         *(uint16_t *)&block[nr_longs * 4 + 4] = htons(sync);
-        ti->valid_sectors = (1u << ti->nr_sectors) - 1;
+        set_all_sectors_valid(ti);
         return block;
     }
 

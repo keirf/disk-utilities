@@ -72,7 +72,7 @@ static void *gremlin_write_mfm(
         if ((csum != 0) || (tracknr != (trk^1)))
             continue;
 
-        ti->valid_sectors = (1u << ti->nr_sectors) - 1;
+        set_all_sectors_valid(ti);
         return block;
     }
 

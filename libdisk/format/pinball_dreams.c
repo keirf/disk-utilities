@@ -65,7 +65,7 @@ static void *pinball_dreams_write_mfm(
             uint8_t x = mfm_decode_bits(MFM_all, ntohs(p[i]));
             block[i] = (x >> 4) | (x << 4);
         }
-        ti->valid_sectors = (1u << ti->nr_sectors) - 1;
+        set_all_sectors_valid(ti);
         return block;
     }
 

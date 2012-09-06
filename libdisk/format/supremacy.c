@@ -58,7 +58,7 @@ static void *supremacy_a_write_mfm(
 
         block = memalloc(ti->len);
         memcpy(block, &dat[1], ti->len);
-        ti->valid_sectors = (1u << ti->nr_sectors) - 1;
+        set_all_sectors_valid(ti);
         return block;
     }
 
@@ -111,12 +111,12 @@ static void *supremacy_b_write_mfm(
 {
     struct track_info *ti = &d->di->track[tracknr];
     char *block = memalloc(ti->len+1);
-    unsigned int valid_blocks = 0;
+    unsigned int nr_valid_blocks = 0;
 
     ti->data_bitoff = ~0u;
 
     while ((stream_next_bit(s) != -1) &&
-           (valid_blocks != ((1u<<ti->nr_sectors)-1))) {
+           (nr_valid_blocks != ti->nr_sectors)) {
 
         uint32_t csum, dat[0x82*2], idx_off;
         unsigned int i, sec;
@@ -144,11 +144,12 @@ static void *supremacy_b_write_mfm(
             continue;
 
         sec = (uint8_t)ntohl(dat[0]);
-        if ((sec >= ti->nr_sectors) || (valid_blocks & (1u<<sec)))
+        if ((sec >= ti->nr_sectors) || is_valid_sector(ti, sec))
             continue;
 
         memcpy(&block[sec*512], &dat[1], 512);
-        valid_blocks |= 1u << sec;
+        set_sector_valid(ti, sec);
+        nr_valid_blocks++;
 
         /*
          * Sector 0 is not necessarily first written. First written is always
@@ -160,12 +161,11 @@ static void *supremacy_b_write_mfm(
         }
     }
 
-    if (valid_blocks == 0) {
+    if (nr_valid_blocks == 0) {
         free(block);
         return NULL;
     }
 
-    ti->valid_sectors = valid_blocks;
     ti->len++; /* for space to remember which is the first sector */
     return block;
 }
@@ -187,7 +187,7 @@ static void supremacy_b_read_mfm(
         memcpy(&dat[1], &ti->dat[sec*512], 512);
         for (j = csum = 0; j < 0x81; j++)
             csum += ntohl(dat[j]);
-        if (!(ti->valid_sectors & (1u << sec)))
+        if (!is_valid_sector(ti, sec))
             csum = ~csum; /* bad checksum for an invalid sector */
         dat[0x81] = htonl(csum);
 

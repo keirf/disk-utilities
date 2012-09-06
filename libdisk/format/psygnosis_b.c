@@ -34,13 +34,13 @@ static void *psygnosis_b_write_mfm(
 {
     struct track_info *ti = &d->di->track[tracknr];
     char *block = memalloc(ti->len);
-    unsigned int j, k, valid_blocks = 0;
+    unsigned int j, k, nr_valid_blocks = 0;
 
     while ((stream_next_bit(s) != -1) &&
-           (valid_blocks != ((1u<<6)-1))) {
+           (nr_valid_blocks != ti->nr_sectors)) {
 
         uint16_t raw_dat[6*513];
-        uint32_t idx_off, nr_valid = 0;
+        uint32_t idx_off, new_valid = 0;
 
         if ((uint16_t)s->word != 0x4489)
             continue;
@@ -65,24 +65,23 @@ static void *psygnosis_b_write_mfm(
             uint16_t csum = ntohs(*sec++), c = 0;
             for (k = 0; k < 512; k++)
                 c += ntohs(sec[k]);
-            if (c == csum) {
+            if ((c == csum) && !is_valid_sector(ti, j)) {
                 memcpy(&block[j*1024], sec, 1024);
-                valid_blocks |= 1u << j;
-                nr_valid++;
+                set_sector_valid(ti, j);
+                nr_valid_blocks++;
+                new_valid++;
             }
         }
 
-        if (nr_valid)
+        if (new_valid)
             ti->data_bitoff = idx_off;
     }
 
 done:
-    if (valid_blocks == 0) {
+    if (nr_valid_blocks == 0) {
         free(block);
         return NULL;
     }
-
-    ti->valid_sectors = valid_blocks;
 
     return block;
 }
@@ -101,7 +100,7 @@ static void psygnosis_b_read_mfm(
         uint16_t csum = 0;
         for (j = 0; j < 512; j++)
             csum += ntohs(dat[j]);
-        if (!(ti->valid_sectors & (1u << i)))
+        if (!is_valid_sector(ti, i))
             csum = ~csum; /* bad checksum for an invalid sector */
         tbuf_bits(tbuf, SPEED_AVG, MFM_even_odd, 16, csum);
         for (j = 0; j < 512; j++, dat++)

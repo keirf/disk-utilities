@@ -89,7 +89,7 @@ static void *ibm_pc_write_mfm(
 {
     struct track_info *ti = &d->di->track[tracknr];
     char *block = memalloc(ti->len + 1);
-    unsigned int valid_blocks = 0;
+    unsigned int nr_valid_blocks = 0;
     bool_t iam = 0;
 
     /* IAM */
@@ -104,7 +104,7 @@ static void *ibm_pc_write_mfm(
     stream_reset(s);
 
     while ((stream_next_bit(s) != -1) &&
-           (valid_blocks != ((1u<<ti->nr_sectors)-1))) {
+           (nr_valid_blocks != ti->nr_sectors)) {
 
         int idx_off, sec_sz;
         uint8_t dat[2*16384];
@@ -133,7 +133,7 @@ static void *ibm_pc_write_mfm(
             continue;
         }
 
-        if (valid_blocks & (1u<<idam.sec))
+        if (is_valid_sector(ti, idam.sec))
             continue;
 
         /* DAM */
@@ -144,19 +144,19 @@ static void *ibm_pc_write_mfm(
 
         mfm_decode_bytes(MFM_all, sec_sz, dat, dat);
         memcpy(&block[idam.sec*sec_sz], dat, sec_sz);
-        valid_blocks |= 1u << idam.sec;
+        set_sector_valid(ti, idam.sec);
+        nr_valid_blocks++;
         if (idam.sec == 0)
             ti->data_bitoff = idx_off;
     }
 
-    if (!valid_blocks) {
+    if (nr_valid_blocks == 0) {
         memfree(block);
         return NULL;
     }
 
     block[ti->len++] = iam;
     ti->data_bitoff = (iam ? 80 : 140) * 16;
-    ti->valid_sectors = valid_blocks;
 
     return block;
 }

@@ -55,7 +55,7 @@ static void *dugger_write_mfm(
         ti->bytes_per_sector = ti->len;
         block = memalloc(ti->len);
         memcpy(block, &dat[2], ti->len);
-        ti->valid_sectors = (1u << ti->nr_sectors) - 1;
+        set_all_sectors_valid(ti);
         ti->total_bits = 105500;
         return block;
     }

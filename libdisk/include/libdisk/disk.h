@@ -29,7 +29,7 @@ struct track_info {
     /* Sector layout and vailidity. */
     uint16_t bytes_per_sector;
     uint8_t  nr_sectors;
-    uint32_t valid_sectors; /* bitmap of valid sectors */
+    uint8_t valid_sectors[8]; /* bitmap of valid sectors */
 
     /* Pointer and length of type-specific track data. */
     uint8_t *dat;
@@ -109,6 +109,12 @@ int track_write_mfm(
 
 void track_mark_unformatted(
     struct disk *, unsigned int tracknr);
+
+int is_valid_sector(struct track_info *, unsigned int sector);
+void set_sector_valid(struct track_info *, unsigned int sector);
+void set_sector_invalid(struct track_info *, unsigned int sector);
+void set_all_sectors_valid(struct track_info *ti);
+void set_all_sectors_invalid(struct track_info *ti);
 
 #pragma GCC visibility pop
 

@@ -86,7 +86,7 @@ static void *sega_write_mfm(
 
         block = memalloc(ti->len+1);
         memcpy(block, &dat[1], ti->len);
-        ti->valid_sectors = (1u << ti->nr_sectors) - 1;
+        set_all_sectors_valid(ti);
         block[ti->len] = nr_sync;
         ti->len++;
         return block;
@@ -185,7 +185,7 @@ static void *afterburner_sega_write_mfm(
 
         block = memalloc(ti->len);
         memcpy(block, &dat, ti->len);
-        ti->valid_sectors = (1u << ti->nr_sectors) - 1;
+        set_all_sectors_valid(ti);
         return block;
     }
 

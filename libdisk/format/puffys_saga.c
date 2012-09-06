@@ -63,7 +63,7 @@ static void *puffys_saga_write_mfm(
 
         block = memalloc(ti->len);
         memcpy(block, &dat[2], ti->len);
-        ti->valid_sectors = (1u << ti->nr_sectors) - 1;
+        set_all_sectors_valid(ti);
         return block;
     }
 

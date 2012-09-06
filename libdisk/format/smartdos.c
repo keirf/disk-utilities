@@ -56,7 +56,7 @@ static void *smartdos_write_mfm(
         block = memalloc(ti->len);
         for (i = 0; i < ti->len/4; i++)
             mfm_decode_bytes(MFM_even_odd, 4, &dat[2*i], &block[i]);
-        ti->valid_sectors = (1u << ti->nr_sectors) - 1;
+        set_all_sectors_valid(ti);
         ti->total_bits = 100500;
         return block;
     }

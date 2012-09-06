@@ -69,7 +69,7 @@ static void *firebird_write_mfm(
         ti->data_bitoff = idx_off;
         if (ti->type == TRKTYP_ikplus)
             ti->data_bitoff -= 2*16; /* IK+ has a pre-sync header */
-        ti->valid_sectors = (1u << ti->nr_sectors) - 1;
+        set_all_sectors_valid(ti);
         return block;
     }
 

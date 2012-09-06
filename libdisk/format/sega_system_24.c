@@ -21,13 +21,13 @@ static void *sega_system_24_write_mfm(
 {
     struct track_info *ti = &d->di->track[tracknr];
     char *block;
-    unsigned int valid_blocks = 0;
+    unsigned int nr_valid_blocks = 0;
 
     ti->len = 5*2048 + 1024 + 256;
     block = memalloc(ti->len);
 
     while ((stream_next_bit(s) != -1) &&
-           (valid_blocks != ((1u<<ti->nr_sectors)-1))) {
+           (nr_valid_blocks != ti->nr_sectors)) {
 
         int idx_off;
         uint8_t dat[2*2048];
@@ -47,7 +47,7 @@ static void *sega_system_24_write_mfm(
             continue;
         }
 
-        if (valid_blocks & (1u<<idam.sec))
+        if (is_valid_sector(ti, idam.sec))
             continue;
 
         /* DAM */
@@ -58,18 +58,18 @@ static void *sega_system_24_write_mfm(
 
         mfm_decode_bytes(MFM_all, 128<<idam.no, dat, dat);
         memcpy(&block[sec_off(idam.sec)], dat, 128<<idam.no);
-        valid_blocks |= 1u << idam.sec;
+        set_sector_valid(ti, idam.sec);
+        nr_valid_blocks++;
         if (idam.sec == 0)
             ti->data_bitoff = idx_off;
     }
 
-    if (!valid_blocks) {
+    if (nr_valid_blocks == 0) {
         memfree(block);
         return NULL;
     }
 
     ti->data_bitoff = 500;
-    ti->valid_sectors = valid_blocks;
 
     return block;
 }

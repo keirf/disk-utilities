@@ -29,13 +29,13 @@ static void *dungeon_master_weak_write_mfm(
 {
     struct track_info *ti = &d->di->track[tracknr];
     char *block = memalloc(ti->bytes_per_sector * ti->nr_sectors);
-    unsigned int weak_sec = weak_sec(ti->type), valid_blocks = 0;
+    unsigned int weak_sec = weak_sec(ti->type), nr_valid_blocks = 0;
 
     /* Fill value for all sectors seems to be 0xe5. */
     memset(block, 0xe5, ti->bytes_per_sector * ti->nr_sectors);
 
     while ((stream_next_bit(s) != -1) &&
-           (valid_blocks != ((1u<<ti->nr_sectors)-1))) {
+           (nr_valid_blocks != ti->nr_sectors)) {
 
         int idx_off;
         uint8_t dat[2*514];
@@ -51,7 +51,7 @@ static void *dungeon_master_weak_write_mfm(
             continue;
 
         idam.sec--;
-        if ((idam.sec >= ti->nr_sectors) || (valid_blocks & (1u<<idam.sec)))
+        if ((idam.sec >= ti->nr_sectors) || is_valid_sector(ti, idam.sec))
             continue;
 
         /* DAM */
@@ -93,18 +93,17 @@ static void *dungeon_master_weak_write_mfm(
             continue;
 
         memcpy(&block[idam.sec*512], dat, 512);
-        valid_blocks |= 1u << idam.sec;
+        set_sector_valid(ti, idam.sec);
+        nr_valid_blocks++;
         if (idam.sec == 0)
             ti->data_bitoff = idx_off;
     }
 
     /* Must have found valid weak sector. */
-    if (!(valid_blocks & (1u<<weak_sec))) {
+    if (!is_valid_sector(ti, weak_sec)) {
         memfree(block);
         return NULL;
     }
-
-    ti->valid_sectors = valid_blocks;
 
     return block;
 }
