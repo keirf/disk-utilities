@@ -195,6 +195,11 @@ probe
 
 "Exolon" = amigados_copylock
 
+# Seems to have AmigaDOS tracks 61-63 with sectors 8-9 missing.
+# In UAE, resulting IPF loads partway then endlessly steps the drive heads.
+"Eye Of Horus"
+    * amigados eye_of_horus
+
 "F-15 Strike Eagle II" = amigados
 
 "F17 Challenge" = rnc_pdos
