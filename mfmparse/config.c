@@ -279,27 +279,36 @@ found:
             parse_token(&t);
             if (t.type == EOL)
                 break;
+            if (list == &ignore_list)
+                parse_err("'ignore' must be sole format specifier");
             if (t.type != STR)
                 parse_err("expected format string");
             if (!strcmp("ignore", t.u.str)) {
+                if (list->nr != 0)
+                    parse_err("'ignore' must be sole format specifier");
                 memfree(list);
                 list = &ignore_list;
-                goto write_list;
+            } else if (!strcmp("all", t.u.str)) {
+                for (i = 0; disk_get_format_id_name(i) != NULL; i++) {
+                    if (list->nr == list->max)
+                        list = realloc_format_list(list);
+                    list->ent[list->nr++] = i;
+                }
+            } else {
+                for (i = 0;
+                     (fmtname = disk_get_format_id_name(i)) != NULL;
+                     i++)
+                    if (!strcmp(fmtname, t.u.str))
+                        break;
+                if (fmtname == NULL)
+                    parse_err("bad format name \"%s\"", t.u.str);
+                if (list->nr == list->max)
+                    list = realloc_format_list(list);
+                list->ent[list->nr++] = i;
             }
-            for (i = 0;
-                 (fmtname = disk_get_format_id_name(i)) != NULL;
-                 i++)
-                if (!strcmp(fmtname, t.u.str))
-                    break;
-            if (fmtname == NULL)
-                parse_err("bad format name \"%s\"", t.u.str);
-            if (list->nr == list->max)
-                list = realloc_format_list(list);
-            list->ent[list->nr++] = i;
         }
-        if (list->nr == 0)
+        if ((list->nr == 0) && (list != &ignore_list))
             parse_err("empty format list");
-    write_list:
         for (i = start; i <= end; i += step)
             if (formats[i] == NULL)
                 formats[i] = list;
