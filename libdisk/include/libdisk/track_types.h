@@ -72,3 +72,5 @@ X(grand_monster_slam, "Grand Monster Slam")
 X(fun_factory, "Fun Factory")
 X(siemens_isdx_hd, "Siemens iSDX high-density")
 X(eye_of_horus, "Eye Of Horus")
+X(gladiators, "Gladiators")
+

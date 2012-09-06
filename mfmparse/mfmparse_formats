@@ -244,6 +244,9 @@ probe
 
 "Gateway To The Savage Frontier" = amigados
 
+"Gladiators" # Tracks 159+ may be empty
+    * amigados gladiators
+
 "Goal!" = amigados_copylock
 
 "Gods" = amigados_copylock
