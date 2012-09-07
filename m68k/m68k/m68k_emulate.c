@@ -1163,7 +1163,7 @@ int m68k_emulate(struct m68k_emulate_ctxt *c)
                 /* adda/suba semantics */
                 uint32_t *reg = c->p->operand.reg;
                 c->op_sz = OPSZ_L;
-                *reg = op & (1u<<14) ? *reg + val : *reg - val;
+                *reg = op & (1u<<8) ? *reg - val : *reg + val;
             } else {
                 bail_if(rc = ((op & (1u<<8)) ? op_sub : op_add)(c, val));
             }
