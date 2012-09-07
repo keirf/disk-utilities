@@ -45,7 +45,7 @@ RM := rm -f
 CFLAGS = -O2
 #CFLAGS = -O0 -g
 CFLAGS += -fno-strict-aliasing -std=gnu99 -Wall
-ifneq($(PLATFORM),win32)
+ifneq ($(PLATFORM),win32)
 CFLAGS += -Werror
 endif
 CFLAGS += -I$(ROOT)/libdisk/include
