@@ -4,8 +4,13 @@ Amiga Disk Utilities
 A collection of utilities for ripping, dumping, analysing, and modifying Amiga
 disk images. All code is public domain (see the COPYING file).
 
-All code except amiga-native/ targets Linux, but should be very POSIX portable.
+All code except amiga-native/ targets Linux, Mac OS X, and Windows
+(using Cygwin), and should be very POSIX portable.
 amiga-native/ targets classic Amiga m68k, tested with SAS/C 6.50.
+
+Prerequisites: You need at least Make and a C compiler (GCC, for Clang you'll
+have to edit CC in Rules.mk). On Mac OS X, the Xcode Command Line Tools
+include this. On Windows, you need Cygwin, Make, and a C compiler.
 
 Building:
 ---------
@@ -19,18 +24,23 @@ Library search path ("error while loading shared libraries: libdisk.so.0"):
 ---------------------------------------------------------------------------
 Note that libdisk.so will need to be on the run-time linker's search
 path for many of these tools to run. There are a few ways to ensure this:
- 1. Use LD_LIBRARY_PATH. This environment variable specifies a set of
- paths for the linker to search. So, to run mfmparse without running
- 'make install', you could do run it as follows:
-    # LD_LIBRARY_PATH=libdisk mfmparse/mfmparse
+ 1. Use LD_LIBRARY_PATH on Linux, DYLD_LIBRARY_PATH on Mac OS X, or PATH on
+ Windows. This environment variable specifies a set of paths for the linker
+ to search. So, to run mfmparse without running 'make install', you could
+ run it as follows:
+    # LD_LIBRARY_PATH=libdisk mfmparse/mfmparse # Linux
+    # DYLD_LIBRARY_PATH=libdisk mfmparse/mfmparse # Mac OS X
+    # PATH=$PATH:`pwd`/libdisk mfmparse/mfmparse # Cygwin
  2. Install to a location on the system-wide search path. Unfortunately
- the default install location for libdisk (/usr/local/lib64) is often not
- searched by default. If this is the case on your system, you will need
- to add the path to /etc/ld.so.conf (or to a file in /etc/ld.so.conf.d/
- in some Linux distros). Then try the following as root:
+ the default install location for libdisk (/usr/local/lib64) on 64-bit
+ Linux is often not searched by default. If this is the case on your system,
+ you will need to add the path to /etc/ld.so.conf (or to a file in
+ /etc/ld.so.conf.d/ in some Linux distros). Then try the following as root:
     # echo "/usr/local/lib64" >>/etc/ld.so.conf
     # ldconfig
  You should now be able to run mfmparse and other tools just fine.
+ 
+ This should not be necessary on 32-bit Linux, Windows, or Mac OS X.
 
 Brief Descriptions:
 -------------------
