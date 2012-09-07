@@ -7,6 +7,10 @@ ARCH ?= $(shell uname -m | sed -e s/i.86/x86_32/ \
 
 ifeq ($(shell uname -s),Darwin)
 PLATFORM = osx
+else ifeq ($(shell uname -s | cut -c1-6),CYGWIN)
+PLATFORM = win32
+else ifeq ($(shell uname -s | cut -c1-5),MINGW)
+PLATFORM = win32
 else
 PLATFORM = linux
 endif
@@ -17,6 +21,9 @@ INCLUDEDIR = $(PREFIX)/include
 ifeq ($(ARCH),x86_64)
 LIBDIR = $(PREFIX)/lib64
 else
+LIBDIR = $(PREFIX)/lib
+endif
+ifeq ($(PLATFORM),osx)
 LIBDIR = $(PREFIX)/lib
 endif
 
@@ -37,7 +44,10 @@ RM := rm -f
 
 CFLAGS = -O2
 #CFLAGS = -O0 -g
-CFLAGS += -fno-strict-aliasing -std=gnu99 -Werror -Wall
+CFLAGS += -fno-strict-aliasing -std=gnu99 -Wall
+ifneq($(PLATFORM),win32)
+CFLAGS += -Werror
+endif
 CFLAGS += -I$(ROOT)/libdisk/include
 CFLAGS += -MMD -MF .$(@F).d
 CFLAGS += $(CFLAGS-y)
