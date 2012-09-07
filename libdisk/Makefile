@@ -61,9 +61,9 @@ $(SOVERS): $(PICOBJS) stream/streams.apic container/containers.apic \
 
 install: all
 	$(INSTALL_DIR) $(LIBDIR)
-	$(INSTALL_PROG) libdisk.so.$(MAJOR).$(MINOR) $(LIBDIR)
-	ln -sf libdisk.so.$(MAJOR).$(MINOR) $(LIBDIR)/libdisk.so.$(MAJOR)
-	ln -sf libdisk.so.$(MAJOR) $(LIBDIR)/libdisk.so
+	$(INSTALL_PROG) $(SOVERS) $(LIBDIR)
+	ln -sf $(SOVERS) $(LIBDIR)/$(SONAME)
+	ln -sf $(SONAME) $(LIBDIR)/$(SOLIB)
 	$(INSTALL_DIR) $(INCLUDEDIR)/libdisk
 	$(INSTALL_DATA) include/libdisk/disk.h $(INCLUDEDIR)/libdisk
 	$(INSTALL_DATA) include/libdisk/stream.h $(INCLUDEDIR)/libdisk
