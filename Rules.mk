@@ -19,6 +19,9 @@ LIBDIR = $(PREFIX)/lib64
 else
 LIBDIR = $(PREFIX)/lib
 endif
+ifeq ($(PLATFORM),osx)
+LIBDIR = $(PREFIX)/lib
+endif
 
 $(ARCH) := y
 CFLAGS-$(x86_32) += -m32 -march=i686
