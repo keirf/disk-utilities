@@ -17,8 +17,6 @@
 #include <libdisk/util.h>
 #include "../private.h"
 
-#include <arpa/inet.h>
-
 static void *menace_write_mfm(
     struct disk *d, unsigned int tracknr, struct stream *s)
 {
@@ -44,11 +42,11 @@ static void *menace_write_mfm(
             if (stream_next_bytes(s, raw, 4) == -1)
                 goto fail;
             mfm_decode_bytes(MFM_even_odd, 2, raw, &dat[i]);
-            csum += ntohs(dat[i]);
+            csum += be16toh(dat[i]);
         }
 
-        csum -= ntohs(dat[0xc1c]);
-        if (csum != ntohs(dat[0xc1c]))
+        csum -= be16toh(dat[0xc1c]);
+        if (csum != be16toh(dat[0xc1c]))
             continue;
 
         block = memalloc(ti->len);
@@ -73,8 +71,8 @@ static void menace_read_mfm(
     tbuf_bits(tbuf, SPEED_AVG, MFM_raw, 32, 0x552a2a55);
 
     for (i = csum = 0; i < ti->len/2; i++) {
-        tbuf_bits(tbuf, SPEED_AVG, MFM_even_odd, 16, ntohs(dat[i]));
-        csum += ntohs(dat[i]);
+        tbuf_bits(tbuf, SPEED_AVG, MFM_even_odd, 16, be16toh(dat[i]));
+        csum += be16toh(dat[i]);
     }
 
     tbuf_bits(tbuf, SPEED_AVG, MFM_even_odd, 16, csum);

@@ -20,8 +20,6 @@
 #include <libdisk/util.h>
 #include "../private.h"
 
-#include <arpa/inet.h>
-
 static void *grand_monster_slam_write_mfm(
     struct disk *d, unsigned int tracknr, struct stream *s)
 {
@@ -47,8 +45,8 @@ static void *grand_monster_slam_write_mfm(
         mfm_decode_bytes(MFM_odd_even, sizeof(dat)/2, dat, dat);
 
         for (i = csum = 0; i < 0xb00; i++)
-            csum += (uint32_t)ntohs(dat[i]);
-        csum += ((uint32_t)ntohs(dat[0xb00]) << 16) | ntohs(dat[0xb01]);
+            csum += (uint32_t)be16toh(dat[i]);
+        csum += ((uint32_t)be16toh(dat[0xb00]) << 16) | be16toh(dat[0xb01]);
         if (csum != 0)
             continue;
 
@@ -74,7 +72,7 @@ static void grand_monster_slam_read_mfm(
     tbuf_bits(tbuf, SPEED_AVG, MFM_all, 8, 0);
 
     for (i = csum = 0; i < ti->len/2; i++)
-        csum += (uint32_t)ntohs(dat[i]);
+        csum += (uint32_t)be16toh(dat[i]);
     csum = -csum;
 
     tbuf_bytes(tbuf, SPEED_AVG, MFM_odd, ti->len, dat);

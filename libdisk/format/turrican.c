@@ -17,8 +17,6 @@
 #include <libdisk/util.h>
 #include "../private.h"
 
-#include <arpa/inet.h>
-
 static void *turrican_write_mfm(
     struct disk *d, unsigned int tracknr, struct stream *s)
 {
@@ -43,7 +41,7 @@ static void *turrican_write_mfm(
         if (stream_next_bytes(s, dat, 2*ti->len) == -1)
             goto fail;
         for (i = csum = 0; i < ti->len/4; i++) {
-            csum ^= ntohl(dat[2*i]) ^ ntohl(dat[2*i+1]);
+            csum ^= be32toh(dat[2*i]) ^ be32toh(dat[2*i+1]);
             mfm_decode_bytes(MFM_even_odd, 4, &dat[2*i], &dat[i]);
         }
         csum &= 0x55555555u;
@@ -51,7 +49,7 @@ static void *turrican_write_mfm(
         if (stream_next_bytes(s, &dat[ti->len/4], 8) == -1)
             goto fail;
         mfm_decode_bytes(MFM_even_odd, 4, &dat[ti->len/4], &dat[ti->len/4]);
-        if (csum != ntohl(dat[ti->len/4]))
+        if (csum != be32toh(dat[ti->len/4]))
             continue;
 
         block = memalloc(ti->len);
@@ -76,7 +74,7 @@ static void turrican_read_mfm(
     tbuf_bits(tbuf, SPEED_AVG, MFM_all, 8, 0);
 
     for (i = csum = 0; i < ti->len/4; i++) {
-        csum ^= ntohl(dat[i]) ^ (ntohl(dat[i]) >> 1);
+        csum ^= be32toh(dat[i]) ^ (be32toh(dat[i]) >> 1);
         tbuf_bytes(tbuf, SPEED_AVG, MFM_even_odd, 4, &dat[i]);
     }
     csum &= 0x55555555u;
@@ -125,12 +123,12 @@ static void *factor5_hiscore_write_mfm(
         if (stream_next_bytes(s, dat, 8) == -1)
             break;
         mfm_decode_bytes(MFM_even_odd, 4, dat, dat);
-        csum = ntohl(dat[0]) ^ 0x12345678;
+        csum = be32toh(dat[0]) ^ 0x12345678;
 
         for (i = sum = 0; i < ti->len/4; i++) {
             if (stream_next_bytes(s, dat, 8) == -1)
                 break;
-            sum ^= ntohl(dat[0]) ^ ntohl(dat[1]);
+            sum ^= be32toh(dat[0]) ^ be32toh(dat[1]);
             mfm_decode_bytes(MFM_even_odd, 4, dat, &block[i]);
         }
         sum &= 0x55555555;
@@ -162,13 +160,13 @@ static void factor5_hiscore_read_mfm(
         return;
 
     for (i = csum = 0; i < ti->len/4; i++)
-        csum ^= ntohl(dat[i]) ^ ntohl(dat[i] >> 1);
+        csum ^= be32toh(dat[i]) ^ be32toh(dat[i] >> 1);
     csum &= 0x55555555;
     csum ^= 0x12345678;
     tbuf_bits(tbuf, SPEED_AVG, MFM_even_odd, 32, csum);
 
     for (i = 0; i < ti->len/4; i++)
-        tbuf_bits(tbuf, SPEED_AVG, MFM_even_odd, 32, ntohl(dat[i]));
+        tbuf_bits(tbuf, SPEED_AVG, MFM_even_odd, 32, be32toh(dat[i]));
 }
 
 struct track_handler factor5_hiscore_handler = {

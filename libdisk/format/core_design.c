@@ -23,8 +23,6 @@
 #include <libdisk/util.h>
 #include "../private.h"
 
-#include <arpa/inet.h>
-
 static void *core_write_mfm(
     struct disk *d, unsigned int tracknr, struct stream *s)
 {
@@ -42,13 +40,13 @@ static void *core_write_mfm(
         if (stream_next_bytes(s, mfm, sizeof(mfm)) == -1)
             goto fail;
         mfm_decode_bytes(MFM_even_odd, 4, mfm, mfm);
-        csum = ntohl(mfm[0]);
+        csum = be32toh(mfm[0]);
 
         for (i = 0; i < ti->len/4; i++) {
             if (stream_next_bytes(s, mfm, sizeof(mfm)) == -1)
                 goto fail;
             mfm_decode_bytes(MFM_even_odd, 4, mfm, &block[i]);
-            csum -= ntohl(block[i]);
+            csum -= be32toh(block[i]);
         }
 
         if (csum)
@@ -73,11 +71,11 @@ static void core_read_mfm(
     tbuf_bits(tbuf, SPEED_AVG, MFM_raw, 16, 0x8915);
 
     for (i = 0; i < ti->len/4; i++)
-        csum += ntohl(dat[i]);
+        csum += be32toh(dat[i]);
     tbuf_bits(tbuf, SPEED_AVG, MFM_even_odd, 32, csum);
 
     for (i = 0; i < ti->len/4; i++)
-        tbuf_bits(tbuf, SPEED_AVG, MFM_even_odd, 32, ntohl(dat[i]));
+        tbuf_bits(tbuf, SPEED_AVG, MFM_even_odd, 32, be32toh(dat[i]));
 }
 
 struct track_handler core_design_handler = {

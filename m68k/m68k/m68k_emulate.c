@@ -9,7 +9,6 @@
 #include <stdarg.h>
 #include <stdint.h>
 #include <stdio.h>
-#include <arpa/inet.h>
 #include "m68k_emulate.h"
 
 /* Type, address-of, and value of an instruction's operand. */

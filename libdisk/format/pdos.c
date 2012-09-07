@@ -30,8 +30,6 @@
 #include <libdisk/util.h>
 #include "../private.h"
 
-#include <arpa/inet.h>
-
 static void *pdos_write_mfm(
     struct disk *d, unsigned int tracknr, struct stream *s)
 {
@@ -75,7 +73,7 @@ static void *pdos_write_mfm(
                 keytag = (struct rnc_pdos_key *)
                     disk_set_tag(d, DSKTAG_rnc_pdos_key, 4, &key);
             } else {
-                *(uint32_t *)hdr ^= ntohl(keytag->key) ^ 0x80;
+                *(uint32_t *)hdr ^= be32toh(keytag->key) ^ 0x80;
                 if ((hdr[0] != i) || (hdr[1] != tracknr) ||
                     (hdr[2] != (uint8_t)(csum>>8)) ||
                     (hdr[3] != (uint8_t)csum))
@@ -87,8 +85,8 @@ static void *pdos_write_mfm(
             p = (uint32_t *)dat;
             q = (uint32_t *)&block[i*512];
             for (j = 0; j < 512/4; j++) {
-                uint32_t enc = ntohl(*p++);
-                *q++ = htonl(enc ^ k);
+                uint32_t enc = be32toh(*p++);
+                *q++ = htobe32(enc ^ k);
                 k = enc;
             }
 
@@ -140,8 +138,8 @@ static void pdos_read_mfm(
         /* encrypt data */
         k = keytag->key;
         for (j = 0; j < 128; j++) {
-            k ^= ntohl(*dat++);
-            enc[j] = htonl(k);
+            k ^= be32toh(*dat++);
+            enc[j] = htobe32(k);
         }
 
         /* header */

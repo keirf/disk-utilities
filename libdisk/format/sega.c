@@ -12,8 +12,6 @@
 #include <libdisk/util.h>
 #include "../private.h"
 
-#include <arpa/inet.h>
-
 /*
  * TRKTYP_sega_boot:
  *  u16 0xa245 :: Sync
@@ -78,7 +76,7 @@ static void *sega_write_mfm(
             if (stream_next_bytes(s, raw, 8) == -1)
                 goto fail;
             mfm_decode_bytes(MFM_even_odd, 4, raw, &dat[i]);
-            csum += ntohl(dat[i]);
+            csum += be32toh(dat[i]);
         }
 
         if (csum != 0)
@@ -110,11 +108,11 @@ static void sega_read_mfm(
     tbuf_bits(tbuf, SPEED_AVG, MFM_raw, 32, 0xaaaaaaaa);
 
     for (i = csum = 0; i < ti->len/4; i++)
-        csum -= ntohl(dat[i]);
+        csum -= be32toh(dat[i]);
     tbuf_bits(tbuf, SPEED_AVG, MFM_even_odd, 32, csum);
 
     for (i = 0; i < ti->len/4; i++)
-        tbuf_bits(tbuf, SPEED_AVG, MFM_even_odd, 32, ntohl(dat[i]));
+        tbuf_bits(tbuf, SPEED_AVG, MFM_even_odd, 32, be32toh(dat[i]));
 }
 
 struct track_handler sega_boot_handler = {
@@ -169,18 +167,18 @@ static void *afterburner_sega_write_mfm(
             if (stream_next_bytes(s, raw, 8) == -1)
                 goto fail;
             mfm_decode_bytes(MFM_even_odd, 4, raw, &dat[i]);
-            csum -= ntohl(raw[0]) + ntohl(raw[1]);
+            csum -= be32toh(raw[0]) + be32toh(raw[1]);
         }
 
         if (stream_next_bytes(s, raw, 8) == -1)
             goto fail;
         mfm_decode_bytes(MFM_even_odd, 4, raw, &sum);
-        if (csum != ntohl(sum))
+        if (csum != be32toh(sum))
             continue;
 
-        if (((ntohl(dat[0]) >> 16) != (tracknr/2)) ||
-            (((uint16_t)ntohl(dat[0]) != 0x0001) &&
-             ((uint16_t)ntohl(dat[0]) != 0xff01)))
+        if (((be32toh(dat[0]) >> 16) != (tracknr/2)) ||
+            (((uint16_t)be32toh(dat[0]) != 0x0001) &&
+             ((uint16_t)be32toh(dat[0]) != 0xff01)))
             continue;
 
         block = memalloc(ti->len);
@@ -220,9 +218,9 @@ static void afterburner_sega_read_mfm(
 
     prev = 0xa245a245; /* get 1st clock bit right for checksum */
     for (i = csum = 0; i < ti->len/4; i++) {
-        tbuf_bits(tbuf, SPEED_AVG, MFM_even_odd, 32, ntohl(dat[i]));
-        csum += csum_long(prev, ntohl(dat[i]));
-        prev = ntohl(dat[i]);
+        tbuf_bits(tbuf, SPEED_AVG, MFM_even_odd, 32, be32toh(dat[i]));
+        csum += csum_long(prev, be32toh(dat[i]));
+        prev = be32toh(dat[i]);
     }
 
     tbuf_bits(tbuf, SPEED_AVG, MFM_even_odd, 32, csum);

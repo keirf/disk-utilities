@@ -18,9 +18,6 @@
 #include <libdisk/util.h>
 #include "../private.h"
 
-#include <arpa/inet.h>
-
-
 /*
  * R-Type (variant A): T10-62
  *  u16 0x9521 :: Sync
@@ -140,7 +137,7 @@ static void *rtype_b_write_mfm(
             goto fail;
         mfm_decode_bytes(MFM_even_odd, 4,
                          &raw_dat[ti->len/4], &raw_dat[ti->len/4]);
-        if (csum != ntohl(raw_dat[ti->len/4]))
+        if (csum != be32toh(raw_dat[ti->len/4]))
             continue;
 
         block = memalloc(ti->len);

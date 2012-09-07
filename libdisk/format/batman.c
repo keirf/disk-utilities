@@ -22,8 +22,6 @@
 #include <libdisk/util.h>
 #include "../private.h"
 
-#include <arpa/inet.h>
-
 struct hdr {
     uint8_t track, sector, to_gap, mbz;
 };
@@ -34,7 +32,7 @@ static uint32_t checksum(uint16_t *dat)
     uint32_t sum;
 
     for (i = sum = 0; i < 256; i++) {
-        uint32_t x = ntohs(dat[i]);
+        uint32_t x = be16toh(dat[i]);
         x <<= i & 15;
         x |= x >> 16;
         sum += x;
@@ -83,7 +81,7 @@ static void *batman_write_mfm(
         if (stream_next_bytes(s, dat, 8) == -1)
             break;
         mfm_decode_bytes(MFM_even_odd, 4, dat, dat);
-        csum = ntohl(*(uint32_t *)dat);
+        csum = be32toh(*(uint32_t *)dat);
 
         if (stream_next_bytes(s, dat, 2*512) == -1)
             break;

@@ -24,8 +24,6 @@
 #include <libdisk/util.h>
 #include "../private.h"
 
-#include <arpa/inet.h>
-
 #define SOS_SIG 0x534f5336u
 
 static void *sensible_write_mfm(
@@ -48,13 +46,13 @@ static void *sensible_write_mfm(
             goto fail;
         mfm_decode_bytes(MFM_odd_even, 12+ti->len, raw_dat, raw_dat);
 
-        if ((ntohl(raw_dat[0]) != SOS_SIG) ||
-            ((uint8_t)ntohl(raw_dat[2]) != (tracknr^1)))
+        if ((be32toh(raw_dat[0]) != SOS_SIG) ||
+            ((uint8_t)be32toh(raw_dat[2]) != (tracknr^1)))
             continue;
 
         for (i = 0; i < ARRAY_SIZE(raw_dat)/2; i++)
-            csum += ntohl(raw_dat[i]);
-        csum -= ntohl(raw_dat[1]) * 2;
+            csum += be32toh(raw_dat[i]);
+        csum -= be32toh(raw_dat[1]) * 2;
         if (csum != 0)
             continue;
 
@@ -79,7 +77,7 @@ static void sensible_read_mfm(
 
     csum = SOS_SIG + (tracknr ^ 1);
     for (i = 0; i < ti->len/4; i++)
-        csum += ntohl(dat[i]);
+        csum += be32toh(dat[i]);
 
     for (i = 0; i < 2; i++) {
         enc = (i == 0) ? MFM_odd : MFM_even;

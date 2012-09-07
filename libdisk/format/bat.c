@@ -21,8 +21,6 @@
 #include <libdisk/util.h>
 #include "../private.h"
 
-#include <arpa/inet.h>
-
 static void *bat_write_mfm(
     struct disk *d, unsigned int tracknr, struct stream *s)
 {
@@ -45,8 +43,8 @@ static void *bat_write_mfm(
 
         csum = tracknr ^ 1;
         for (i = 0; i < 0x628; i++)
-            csum += ntohl(dat[i]);
-        if (csum != ntohl(dat[0x628]))
+            csum += be32toh(dat[i]);
+        if (csum != be32toh(dat[0x628]))
             continue;
 
         block = memalloc(ti->len);
@@ -71,8 +69,8 @@ static void bat_read_mfm(
     memcpy(dat, ti->dat, ti->len);
     csum = tracknr ^ 1;
     for (i = 0; i < 0x628; i++)
-        csum += ntohl(dat[i]);
-    dat[0x628] = htonl(csum);
+        csum += be32toh(dat[i]);
+    dat[0x628] = htobe32(csum);
 
     tbuf_bytes(tbuf, SPEED_AVG, MFM_even_odd, 0x629*4, dat);
 }

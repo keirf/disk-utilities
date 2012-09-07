@@ -16,7 +16,6 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <unistd.h>
-#include <arpa/inet.h>
 #include <time.h>
 #include <utime.h>
 
@@ -50,10 +49,10 @@ static int emul_read(uint32_t addr, uint32_t *val, unsigned int bytes,
         *val = *(uint8_t *)&s->mem[addr];
         break;
     case 2:
-        *val = ntohs(*(uint16_t *)&s->mem[addr]);
+        *val = be16toh(*(uint16_t *)&s->mem[addr]);
         break;
     case 4:
-        *val = ntohl(*(uint32_t *)&s->mem[addr]);
+        *val = be32toh(*(uint32_t *)&s->mem[addr]);
         break;
     default:
         return M68KEMUL_UNHANDLEABLE;

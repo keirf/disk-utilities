@@ -24,8 +24,6 @@
 #include <libdisk/util.h>
 #include "../private.h"
 
-#include <arpa/inet.h>
-
 static void *fun_factory_write_mfm(
     struct disk *d, unsigned int tracknr, struct stream *s)
 {
@@ -43,7 +41,7 @@ static void *fun_factory_write_mfm(
         if (stream_next_bytes(s, raw, 8) == -1)
             goto fail;
         mfm_decode_bytes(MFM_even_odd, 4, raw, &hdr);
-        if (ntohl(hdr) != (0xffffff00u | tracknr))
+        if (be32toh(hdr) != (0xffffff00u | tracknr))
             continue;
 
         if (stream_next_bytes(s, raw, 2*ti->len) == -1)
@@ -53,7 +51,7 @@ static void *fun_factory_write_mfm(
         if (stream_next_bytes(s, raw, 8) == -1)
             goto fail;
         mfm_decode_bytes(MFM_even_odd, 4, raw, &csum);
-        if (ntohl(csum) != amigados_checksum(dat, ti->len))
+        if (be32toh(csum) != amigados_checksum(dat, ti->len))
             continue;
 
         block = memalloc(ti->len);

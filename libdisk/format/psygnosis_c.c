@@ -16,8 +16,6 @@
 #include <libdisk/util.h>
 #include "../private.h"
 
-#include <arpa/inet.h>
-
 #define V1_METABLK_WORDS 166
 #define V2_METABLK_WORDS 154
 
@@ -30,7 +28,7 @@ static uint16_t checksum(uint16_t *dat, unsigned int nr, unsigned int ver)
         /* Simulate M68K ADDX instruction */
         if (sum > 0xffff)
             sum = (uint16_t)(sum+1);
-        sum += ntohs(dat[i]);
+        sum += be16toh(dat[i]);
     }
     if (ver == 2)
         sum &= 0xfffa;
@@ -73,7 +71,7 @@ static void *psygnosis_c_track0_write_mfm(
                 mfm_decode_bytes(MFM_even_odd, 2, raw, &dat[i]);
             }
 
-            if (checksum(&dat[1], metablk_words, ver) != ntohs(dat[0]))
+            if (checksum(&dat[1], metablk_words, ver) != be16toh(dat[0]))
                 continue;
 
             init_track_info(ti, TRKTYP_psygnosis_c_track0);
@@ -108,7 +106,7 @@ static void psygnosis_c_track0_read_mfm(
     tbuf_bits(tbuf, SPEED_AVG, MFM_even_odd, 16,
               checksum(dat, metablk_words, ver));
     for (i = 0; i < metablk_words; i++)
-        tbuf_bits(tbuf, SPEED_AVG, MFM_even_odd, 16, ntohs(dat[i]));
+        tbuf_bits(tbuf, SPEED_AVG, MFM_even_odd, 16, be16toh(dat[i]));
     tbuf_bits(tbuf, SPEED_AVG, MFM_all, 16, 0);
 
     handlers[TRKTYP_amigados]->read_mfm(d, tracknr, tbuf);
@@ -160,7 +158,7 @@ static bool_t track_metadata(
             uint16_t trk[160];
             uint32_t disklen;
         } *h1 = (struct h1 *)(h + 1);
-        mdat->decoded_len = ntohs(h1->trk[tracknr]);
+        mdat->decoded_len = be16toh(h1->trk[tracknr]);
         mdat->mask = !(mdat->decoded_len & 0x1000);
         mdat->decoded_len &= 0xfff;
     } else /* mdat->version == 2 */ {
@@ -208,7 +206,7 @@ static void *psygnosis_c_custom_rll_write_mfm(
         if (stream_next_bytes(s, raw, 4) == -1)
             break;
         mfm_decode_bytes(MFM_even_odd, 2, raw, raw);
-        csum = ntohs(raw[0]);
+        csum = be16toh(raw[0]);
 
         memset(dat, 0, mdat.decoded_len * 4);
         for (i = 0;;) {
@@ -243,7 +241,7 @@ static void *psygnosis_c_custom_rll_write_mfm(
         for (i = 0, lsum = 0; i < mdat.decoded_len; i++) {
             dat[i] ^= mdat.mask;
             lsum += dat[i];
-            dat[i] = htonl(dat[i]);
+            dat[i] = htobe32(dat[i]);
         }
         lsum ^= lsum >> 16;
         lsum &= (mdat.version == 2) ? 0xfffa : 0xfff0;
@@ -276,18 +274,18 @@ static void psygnosis_c_custom_rll_read_mfm(
         tbuf_bits(tbuf, SPEED_AVG, MFM_all, 8, 0xfc);
 
     for (i = 0, csum = 0; i < mdat.decoded_len; i++)
-        csum += ntohl(dat[i]);
+        csum += be32toh(dat[i]);
     csum ^= csum >> 16;
     csum &= (mdat.version == 2) ? 0xfffa : 0xfff0;
     tbuf_bits(tbuf, SPEED_AVG, MFM_even_odd, 16, csum);
 
     for (i = 0; i < mdat.decoded_len*32; i++) {
-        if ((ntohl(dat[i/32])^mdat.mask) & (1u << (31-(i&31)))) {
+        if ((be32toh(dat[i/32])^mdat.mask) & (1u << (31-(i&31)))) {
             /* D=1 C=0 */
             tbuf_bits(tbuf, SPEED_AVG, MFM_raw, 2, 0x2);
             bits += 2;
         } else if ((++i >= mdat.decoded_len*32) ||
-                   !((ntohl(dat[i/32])^mdat.mask) & (1u << (31-(i&31))))) {
+                   !((be32toh(dat[i/32])^mdat.mask) & (1u << (31-(i&31))))) {
             /* D=00 C=10 */
             tbuf_bits(tbuf, SPEED_AVG, MFM_raw, 4, 0x2);
             bits += 4;
@@ -351,7 +349,7 @@ static void *psygnosis_c_write_mfm(
         }
 
         if (checksum((uint16_t *)dat+1, nr_bytes/2, mdat.version) !=
-            ntohs(*(uint16_t *)dat))
+            be16toh(*(uint16_t *)dat))
             continue;
 
         init_track_info(ti, TRKTYP_psygnosis_c);
@@ -379,12 +377,12 @@ static void psygnosis_c_read_mfm(
 
     tbuf_bits(tbuf, SPEED_AVG, MFM_raw, 16, 0x4429);
 
-    *(uint16_t *)dat = htons(
+    *(uint16_t *)dat = htobe16(
         checksum((uint16_t *)ti->dat, ti->len/2, mdat.version));
     memcpy((uint8_t *)dat + 2, ti->dat, ti->len);
 
     for (i = 0; i < (ti->len+2+3)/4; i++)
-        tbuf_bits(tbuf, SPEED_AVG, MFM_even_odd, 32, ntohl(dat[i]));
+        tbuf_bits(tbuf, SPEED_AVG, MFM_even_odd, 32, be32toh(dat[i]));
 }
 
 struct track_handler psygnosis_c_handler = {

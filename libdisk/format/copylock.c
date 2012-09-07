@@ -40,8 +40,6 @@
 #include <libdisk/util.h>
 #include "../private.h"
 
-#include <arpa/inet.h>
-
 static const uint16_t sync_list[] = {
     0x8a91, 0x8a44, 0x8a45, 0x8a51, 0x8912, 0x8911,
     0x8914, 0x8915, 0x8944, 0x8945, 0x8951 };
@@ -219,7 +217,7 @@ static void *copylock_write_mfm(
 
     ti->len = 4;
     block = memalloc(ti->len);
-    *block = htonl(lfsr_seed);
+    *block = htobe32(lfsr_seed);
     return block;
 }
 
@@ -227,7 +225,7 @@ static void copylock_read_mfm(
     struct disk *d, unsigned int tracknr, struct track_buffer *tbuf)
 {
     struct track_info *ti = &d->di->track[tracknr];
-    uint32_t lfsr, lfsr_seed = ntohl(*(uint32_t *)ti->dat);
+    uint32_t lfsr, lfsr_seed = be32toh(*(uint32_t *)ti->dat);
     unsigned int i, sec = 0;
     uint16_t speed = SPEED_AVG;
 

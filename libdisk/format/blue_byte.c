@@ -29,8 +29,6 @@
 #include <libdisk/util.h>
 #include "../private.h"
 
-#include <arpa/inet.h>
-
 #define trknr(t) ((80 * !((t) & 1)) + ((t) >> 1))
 
 static void *blue_byte_write_mfm(
@@ -88,7 +86,7 @@ static void blue_byte_read_mfm(
     tbuf_bits(tbuf, SPEED_AVG, MFM_even_odd, 32, hdr);
 
     for (i = 0; i < ti->len/4; i++)
-        tbuf_bits(tbuf, SPEED_AVG, MFM_even_odd, 32, ntohl(dat[i]));
+        tbuf_bits(tbuf, SPEED_AVG, MFM_even_odd, 32, be32toh(dat[i]));
 
     tbuf_emit_crc16_ccitt(tbuf, SPEED_AVG);
 }

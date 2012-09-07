@@ -48,8 +48,6 @@
 #include <libdisk/util.h>
 #include "../private.h"
 
-#include <arpa/inet.h>
-
 /* Sector data sizes for amigados and amigados_extended handlers. */
 #define STD_SEC 512
 #define EXT_SEC (STD_SEC + 24)
@@ -102,8 +100,8 @@ static void *ados_write_mfm(
                          &ados_hdr.dat_checksum);
         mfm_decode_bytes(MFM_even_odd, STD_SEC, &raw_mfm_dat[2*28], dat);
 
-        ados_hdr.hdr_checksum = ntohl(ados_hdr.hdr_checksum);
-        ados_hdr.dat_checksum = ntohl(ados_hdr.dat_checksum);
+        ados_hdr.hdr_checksum = be32toh(ados_hdr.hdr_checksum);
+        ados_hdr.dat_checksum = be32toh(ados_hdr.dat_checksum);
         if ((amigados_checksum(&ados_hdr, 20) != ados_hdr.hdr_checksum) ||
             (amigados_checksum(dat, STD_SEC) != ados_hdr.dat_checksum))
             continue;
@@ -122,7 +120,7 @@ static void *ados_write_mfm(
                 has_extended_blocks = 1;
 
         p = block + ados_hdr.sector * EXT_SEC;
-        *(uint32_t *)p = htonl(sync);
+        *(uint32_t *)p = htobe32(sync);
         memcpy(p+4, &ados_hdr, 20);
         memcpy(p+24, dat, STD_SEC);
 
@@ -173,7 +171,7 @@ static void ados_read_mfm(
         ados_hdr.track = tracknr;
 
         if (ti->type == TRKTYP_amigados_extended) {
-            sync = ntohl(*(uint32_t *)&dat[0]);
+            sync = be32toh(*(uint32_t *)&dat[0]);
             memcpy(&ados_hdr, &dat[4], 20);
             dat += 24;
         }

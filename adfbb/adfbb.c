@@ -16,9 +16,9 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <unistd.h>
-#include <arpa/inet.h>
 #include <time.h>
 #include <utime.h>
+#include <libdisk/util.h>
 
 /* read_exact, write_exact */
 #include "../libdisk/util.c"
@@ -28,7 +28,7 @@ uint32_t checksum(void *dat)
     uint32_t csum = 0, *bb = dat;
     unsigned int i;
     for (i = 0; i < 1024/4; i++) {
-        uint32_t x = ntohl(bb[i]);
+        uint32_t x = be32toh(bb[i]);
         if ((csum + x) < csum)
             csum++;
         csum += x;
@@ -51,8 +51,8 @@ static void copy_bb(char *bb, const char *tmpl, unsigned int sz)
     memset(&bb[4], 0, 1020);
     for (i = 0; i < sz; i++)
         bb[12+i] = tmpl[i];
-    *(uint32_t *)&bb[8] = htonl(880);
-    *(uint32_t *)&bb[4] = htonl(checksum(bb));
+    *(uint32_t *)&bb[8] = htobe32(880);
+    *(uint32_t *)&bb[4] = htobe32(checksum(bb));
 }
 
 static void decode_new_bb(char *bb, const char *filename)
@@ -77,8 +77,8 @@ static void decode_new_bb(char *bb, const char *filename)
     p = buf;
     type = longs = 0;
     while ((char *)p < ((char *)buf + sz - 8)) {
-        type = ntohl(*p++);
-        longs = ntohl(*p++);
+        type = be32toh(*p++);
+        longs = be32toh(*p++);
         if (type == 0x3e9)
             break;
         p += longs;
@@ -182,7 +182,7 @@ int main(int argc, char **argv)
         goto out;
     }
 
-    rootblock = ntohl(*(uint32_t *)&bb[8]);
+    rootblock = be32toh(*(uint32_t *)&bb[8]);
     if (rootblock != 880)
         printf("** Bogus rootblock index %u\n", rootblock);
 
@@ -202,7 +202,7 @@ out:
         else if (fixup == 3)
             decode_new_bb(bb, argv[2]+2);
         *(uint32_t *)&bb[4] = 0;
-        *(uint32_t *)&bb[4] = htonl(checksum(bb));
+        *(uint32_t *)&bb[4] = htobe32(checksum(bb));
         lseek(fd, 0, SEEK_SET);
         write_exact(fd, bb, 1024);
         printf("Bootblock fixed up.\n");

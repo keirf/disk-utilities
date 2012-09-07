@@ -20,8 +20,6 @@
 #include <libdisk/util.h>
 #include "../private.h"
 
-#include <arpa/inet.h>
-
 struct ratt_file {
     uint8_t name[13];
     uint8_t first_trk, nr_trks, sync_idx;
@@ -51,7 +49,7 @@ static void *ratt_dos_write_mfm(
         }
         return NULL;
     found:
-        sync = ntohs(((uint16_t *)t2->dat)[6+f->sync_idx]);
+        sync = be16toh(((uint16_t *)t2->dat)[6+f->sync_idx]);
     }
 
     while (stream_next_bit(s) != -1) {
@@ -68,7 +66,7 @@ static void *ratt_dos_write_mfm(
         if (stream_next_bytes(s, raw, 8) == -1)
             goto fail;
         mfm_decode_bytes(MFM_odd_even, 4, raw, raw);
-        header = csum = ~ntohl(raw[0]);
+        header = csum = ~be32toh(raw[0]);
         if ((nr_longs = (uint16_t)csum) == 0)
             nr_longs = max_longs;
         if (nr_longs > max_longs)
@@ -80,23 +78,23 @@ static void *ratt_dos_write_mfm(
             if (stream_next_bytes(s, raw, 8) == -1)
                 goto fail;
             mfm_decode_bytes(MFM_odd_even, 4, raw, &dat[i]);
-            dat[i] = htonl(ntohl(dat[i]) - key);
+            dat[i] = htobe32(be32toh(dat[i]) - key);
             key += step;
-            csum += ntohl(dat[i]);
+            csum += be32toh(dat[i]);
         }
 
         if (stream_next_bytes(s, raw, 8) == -1)
             goto fail;
         mfm_decode_bytes(MFM_odd_even, 4, raw, raw);
-        csum += ntohl(raw[0]);
+        csum += be32toh(raw[0]);
         if (csum != 0)
             continue;
 
         ti->len = ti->bytes_per_sector = nr_longs * 4 + 6;
         block = memalloc(ti->len);
         memcpy(block, dat, nr_longs * 4);
-        *(uint32_t *)&block[nr_longs * 4] = htonl(header);
-        *(uint16_t *)&block[nr_longs * 4 + 4] = htons(sync);
+        *(uint32_t *)&block[nr_longs * 4] = htobe32(header);
+        *(uint16_t *)&block[nr_longs * 4 + 4] = htobe16(sync);
         set_all_sectors_valid(ti);
         return block;
     }
@@ -114,8 +112,8 @@ static void ratt_dos_read_mfm(
     unsigned int i, nr_longs;
 
     nr_longs = (ti->len - 6) / 4;
-    csum = header = ntohl(dat[nr_longs]);
-    sync = ntohs(*(uint16_t *)&dat[nr_longs+1]);
+    csum = header = be32toh(dat[nr_longs]);
+    sync = be16toh(*(uint16_t *)&dat[nr_longs+1]);
 
     tbuf_bits(tbuf, SPEED_AVG, MFM_raw, 16, sync);
     tbuf_bits(tbuf, SPEED_AVG, MFM_odd_even, 32, ~header);
@@ -123,9 +121,9 @@ static void ratt_dos_read_mfm(
     key = 0xeff478edu;
     step = 0xbffb7e5eu;
     for (i = 0; i < nr_longs; i++) {
-        tbuf_bits(tbuf, SPEED_AVG, MFM_odd_even, 32, ntohl(dat[i]) + key);
+        tbuf_bits(tbuf, SPEED_AVG, MFM_odd_even, 32, be32toh(dat[i]) + key);
         key += step;
-        csum += ntohl(dat[i]);
+        csum += be32toh(dat[i]);
     }
 
     tbuf_bits(tbuf, SPEED_AVG, MFM_odd_even, 32, -csum);

@@ -22,8 +22,6 @@
 #include <libdisk/util.h>
 #include "../private.h"
 
-#include <arpa/inet.h>
-
 static void *alienbreed_protection_write_mfm(
     struct disk *d, unsigned int tracknr, struct stream *s)
 {
@@ -71,7 +69,7 @@ static void alienbreed_protection_read_mfm(
 
     tbuf_bits(tbuf, SPEED_AVG, MFM_raw, 32, 0x89248924);
     for (i = 0; i < 3; i++)
-        tbuf_bits(tbuf, SPEED_AVG, MFM_even_odd, 32, ntohl(dat[i]));
+        tbuf_bits(tbuf, SPEED_AVG, MFM_even_odd, 32, be32toh(dat[i]));
     for (i = 0; i < 1000; i++)
         tbuf_bits(tbuf, SPEED_AVG, MFM_all, 32, 0);
 }

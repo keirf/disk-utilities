@@ -18,8 +18,6 @@
 #include <libdisk/util.h>
 #include "../private.h"
 
-#include <arpa/inet.h>
-
 static void *pinball_dreams_write_mfm(
     struct disk *d, unsigned int tracknr, struct stream *s)
 {
@@ -44,8 +42,8 @@ static void *pinball_dreams_write_mfm(
         if (stream_next_bytes(s, dat, sizeof(dat)) == -1)
             goto fail;
         for (i = csum[1] = 0; i < ARRAY_SIZE(dat); i++)
-            csum[1] ^= ntohl(dat[i]);
-        if (ntohl(csum[0]) != (csum[1] & 0x55555555u))
+            csum[1] ^= be32toh(dat[i]);
+        if (be32toh(csum[0]) != (csum[1] & 0x55555555u))
             continue;
 
         stream_next_bits(s, 32);
@@ -62,7 +60,7 @@ static void *pinball_dreams_write_mfm(
         block = memalloc(ti->len);
         p = (uint16_t *)dat;
         for (i = 0; i < ti->len; i++) {
-            uint8_t x = mfm_decode_bits(MFM_all, ntohs(p[i]));
+            uint8_t x = mfm_decode_bits(MFM_all, be16toh(p[i]));
             block[i] = (x >> 4) | (x << 4);
         }
         set_all_sectors_valid(ti);
@@ -84,7 +82,7 @@ static void pinball_dreams_read_mfm(
     tbuf_bits(tbuf, SPEED_AVG, MFM_raw, 32, 0x448a448a);
 
     for (i = csum = 0; i < ti->len/2; i++)
-        csum ^= ntohs(*cdat++);
+        csum ^= be16toh(*cdat++);
     csum = ((csum >> 4) & 0x0f0fu) | ((csum << 4) & 0xf0f0u);
     tbuf_bits(tbuf, SPEED_AVG, MFM_all, 16, 0);
     tbuf_bits(tbuf, SPEED_AVG, MFM_all, 16, csum);

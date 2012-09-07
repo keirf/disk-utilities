@@ -9,7 +9,6 @@
 #include <err.h>
 #include <stdlib.h>
 #include <string.h>
-#include <arpa/inet.h>
 
 #include <amiga/amiga.h>
 
@@ -42,10 +41,10 @@ int mem_read(uint32_t addr, uint32_t *val, unsigned int bytes,
         *val = *(uint8_t *)&m->dat[addr];
         break;
     case 2:
-        *val = ntohs(*(uint16_t *)&m->dat[addr]);
+        *val = be16toh(*(uint16_t *)&m->dat[addr]);
         break;
     case 4:
-        *val = ntohl(*(uint32_t *)&m->dat[addr]);
+        *val = be32toh(*(uint32_t *)&m->dat[addr]);
         break;
     default:
         return M68KEMUL_UNHANDLEABLE;
@@ -71,10 +70,10 @@ int mem_write(uint32_t addr, uint32_t val, unsigned int bytes,
         *(uint8_t *)&m->dat[addr] = val;
         break;
     case 2:
-        *(uint16_t *)&m->dat[addr] = htons(val);
+        *(uint16_t *)&m->dat[addr] = htobe16(val);
         break;
     case 4:
-        *(uint32_t *)&m->dat[addr] = htonl(val);
+        *(uint32_t *)&m->dat[addr] = htobe32(val);
         break;
     default:
         return M68KEMUL_UNHANDLEABLE;

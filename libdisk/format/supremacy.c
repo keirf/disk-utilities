@@ -9,8 +9,6 @@
 #include <libdisk/util.h>
 #include "../private.h"
 
-#include <arpa/inet.h>
-
 /*
  * TRKTYP_supremacy_a: Used on Disk 1, Track 2 only.
  *  u16 0x4489,0x4489,0x2aaa
@@ -48,12 +46,12 @@ static void *supremacy_a_write_mfm(
             break;
         mfm_decode_bytes(MFM_odd_even, sizeof(dat)/2, dat, dat);
 
-        if (ntohl(dat[0]) != 1)
+        if (be32toh(dat[0]) != 1)
             continue;
 
         for (i = csum = 0; i < 0x401; i++)
-            csum += ntohl(dat[i]);
-        if (csum != ntohl(dat[0x401]))
+            csum += be32toh(dat[i]);
+        if (csum != be32toh(dat[0x401]))
             continue;
 
         block = memalloc(ti->len);
@@ -75,11 +73,11 @@ static void supremacy_a_read_mfm(
     tbuf_bits(tbuf, SPEED_AVG, MFM_raw, 32, 0x44894489);
     tbuf_bits(tbuf, SPEED_AVG, MFM_all, 8, 0);
 
-    dat[0] = htonl(1);
+    dat[0] = htobe32(1);
     memcpy(&dat[1], ti->dat, ti->len);
     for (i = csum = 0; i < 0x401; i++)
-        csum += ntohl(dat[i]);
-    dat[0x401] = htonl(csum);
+        csum += be32toh(dat[i]);
+    dat[0x401] = htobe32(csum);
 
     tbuf_bytes(tbuf, SPEED_AVG, MFM_odd_even, 0x402*4, dat);
 }
@@ -136,14 +134,14 @@ static void *supremacy_b_write_mfm(
         mfm_decode_bytes(MFM_odd_even, sizeof(dat)/2, dat, dat);
 
         for (i = csum = 0; i < 0x81; i++)
-            csum += ntohl(dat[i]);
-        if (csum != ntohl(dat[0x81]))
+            csum += be32toh(dat[i]);
+        if (csum != be32toh(dat[0x81]))
             continue;
 
-        if ((ntohl(dat[0]) >> 8) != (tracknr>>1))
+        if ((be32toh(dat[0]) >> 8) != (tracknr>>1))
             continue;
 
-        sec = (uint8_t)ntohl(dat[0]);
+        sec = (uint8_t)be32toh(dat[0]);
         if ((sec >= ti->nr_sectors) || is_valid_sector(ti, sec))
             continue;
 
@@ -183,13 +181,13 @@ static void supremacy_b_read_mfm(
         tbuf_bits(tbuf, SPEED_AVG, MFM_raw, 32, 0x44894489);
         tbuf_bits(tbuf, SPEED_AVG, MFM_all, 8, 0);
 
-        dat[0] = htonl(((tracknr>>1)<<8) | sec);
+        dat[0] = htobe32(((tracknr>>1)<<8) | sec);
         memcpy(&dat[1], &ti->dat[sec*512], 512);
         for (j = csum = 0; j < 0x81; j++)
-            csum += ntohl(dat[j]);
+            csum += be32toh(dat[j]);
         if (!is_valid_sector(ti, sec))
             csum = ~csum; /* bad checksum for an invalid sector */
-        dat[0x81] = htonl(csum);
+        dat[0x81] = htobe32(csum);
 
         tbuf_bytes(tbuf, SPEED_AVG, MFM_odd_even, 0x82*4, dat);
 

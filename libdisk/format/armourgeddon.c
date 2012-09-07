@@ -9,8 +9,6 @@
 #include <libdisk/util.h>
 #include "../private.h"
 
-#include <arpa/inet.h>
-
 /*
  * Format A:
  *  u16 4429,5552
@@ -28,7 +26,7 @@ static uint16_t checksum(uint16_t *dat, unsigned int nr)
         /* Simulate M68K ADDX instruction */
         if (sum > 0xffff)
             sum = (uint16_t)(sum+1);
-        sum += ntohs(dat[i]);
+        sum += be16toh(dat[i]);
     }
     sum &= 0xfffa;
     return (uint16_t)sum;
@@ -56,7 +54,7 @@ static void *armourgeddon_a_write_mfm(
         for (i = 0; i < 0xc4d; i++)
             mfm_decode_bytes(MFM_even_odd, 2, &dat[2*i], &dat[i]);
 
-        if (checksum(dat+1, 0xc4c) != ntohs(*dat))
+        if (checksum(dat+1, 0xc4c) != be16toh(*dat))
             continue;
 
         ti->total_bits = 105500;
@@ -80,7 +78,7 @@ static void armourgeddon_a_read_mfm(
     tbuf_bits(tbuf, SPEED_AVG, MFM_all, 8, 0xfc);
     tbuf_bits(tbuf, SPEED_AVG, MFM_even_odd, 16, checksum(dat, ti->len/2));
     for (i = 0; i < ti->len/2; i++)
-        tbuf_bits(tbuf, SPEED_AVG, MFM_even_odd, 16, ntohs(dat[i]));
+        tbuf_bits(tbuf, SPEED_AVG, MFM_even_odd, 16, be16toh(dat[i]));
 }
 
 struct track_handler armourgeddon_a_handler = {

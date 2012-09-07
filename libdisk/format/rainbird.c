@@ -23,8 +23,6 @@
 #include <libdisk/util.h>
 #include "../private.h"
 
-#include <arpa/inet.h>
-
 static void *rainbird_write_mfm(
     struct disk *d, unsigned int tracknr, struct stream *s)
 {
@@ -44,8 +42,8 @@ static void *rainbird_write_mfm(
             goto fail;
         mfm_decode_bytes(MFM_even_odd, 4, &raw_dat[0], &hdr);
         mfm_decode_bytes(MFM_even_odd, 4, &raw_dat[2], &csum);
-        hdr = ntohl(hdr);
-        csum = ntohl(csum);
+        hdr = be32toh(hdr);
+        csum = be32toh(csum);
 
         if (hdr != (0xffffff00u | tracknr))
             continue;

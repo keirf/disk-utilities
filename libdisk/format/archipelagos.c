@@ -25,8 +25,6 @@
 #include <libdisk/util.h>
 #include "../private.h"
 
-#include <arpa/inet.h>
-
 static void *archipelagos_write_mfm(
     struct disk *d, unsigned int tracknr, struct stream *s)
 {
@@ -64,7 +62,7 @@ static void *archipelagos_write_mfm(
             if (stream_next_bits(s, 32) == -1)
                 goto done;
             csum -= w = mfm_decode_bits(MFM_all, s->word);
-            *p++ = htons(w);
+            *p++ = htobe16(w);
         }
 
         if (csum)
@@ -112,13 +110,13 @@ static void archipelagos_read_mfm(
         tbuf_bits(tbuf, SPEED_AVG, MFM_all, 8, i+1);
         /* csum */
         for (j = 0; j < ti->bytes_per_sector/2; j++)
-            csum += ntohs(dat[j]);
+            csum += be16toh(dat[j]);
         if (!is_valid_sector(ti, i))
             csum = ~csum; /* bad checksum for an invalid sector */
         tbuf_bits(tbuf, SPEED_AVG, MFM_all, 16, csum);
         /* data */
         for (j = 0; j < 512; j++, dat++)
-            tbuf_bits(tbuf, SPEED_AVG, MFM_all, 16, ntohs(*dat));
+            tbuf_bits(tbuf, SPEED_AVG, MFM_all, 16, be16toh(*dat));
         /* gap */
         for (j = 0; j < 9; j++)
             tbuf_bits(tbuf, SPEED_AVG, MFM_all, 8, 0);

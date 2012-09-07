@@ -11,8 +11,6 @@
 #include <libdisk/util.h>
 #include "../private.h"
 
-#include <arpa/inet.h>
-
 #define sec_no(sec) (((sec) < 5) ? 4 : ((sec) < 6) ? 3 : 1)
 #define sec_off(sec) (((sec) < 6) ? (sec)*2048 : 11*1024)
 

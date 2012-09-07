@@ -31,8 +31,6 @@
 #include <libdisk/util.h>
 #include "../private.h"
 
-#include <arpa/inet.h>
-
 int ibm_scan_mark(struct stream *s, uint16_t mark, unsigned int max_scan)
 {
     int idx_off = -1;

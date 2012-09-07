@@ -14,8 +14,6 @@
 #include <libdisk/util.h>
 #include "../private.h"
 
-#include <arpa/inet.h>
-
 static const uint16_t sync_list[] = {
     0x8912, 0x8911, 0x8914, 0x8915 };
 #define NR_SYNCS 4

@@ -22,8 +22,6 @@
 #include <libdisk/util.h>
 #include "../private.h"
 
-#include <arpa/inet.h>
-
 static void *commando_write_mfm(
     struct disk *d, unsigned int tracknr, struct stream *s)
 {
@@ -44,7 +42,7 @@ static void *commando_write_mfm(
         if (stream_next_bytes(s, dat, 4) == -1)
             break;
         mfm_decode_bytes(MFM_even_odd, 2, dat, &trk);
-        trk = ntohs(trk);
+        trk = be16toh(trk);
         if (trk != tracknr)
             continue;
 
@@ -54,8 +52,8 @@ static void *commando_write_mfm(
 
         csum = ~0u;
         for (i = 0; i < 0x600; i++)
-            csum -= ntohl(dat[i]);
-        if (csum != ntohl(dat[0x600]))
+            csum -= be32toh(dat[i]);
+        if (csum != be32toh(dat[0x600]))
             continue;
 
         block = memalloc(ti->len);
@@ -80,8 +78,8 @@ static void commando_read_mfm(
     memcpy(dat, ti->dat, ti->len);
     csum = ~0u;
     for (i = 0; i < 0x600; i++)
-        csum -= ntohl(dat[i]);
-    dat[0x600] = htonl(csum);
+        csum -= be32toh(dat[i]);
+    dat[0x600] = htobe32(csum);
 
     tbuf_bytes(tbuf, SPEED_AVG, MFM_even_odd, 0x601*4, dat);
 }

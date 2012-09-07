@@ -13,7 +13,6 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <unistd.h>
-#include <arpa/inet.h>
 
 struct disk_header {
     char sig[8];
@@ -40,25 +39,25 @@ static struct container *eadf_open(struct disk *d)
         return NULL;
 
     d->di = di = memalloc(sizeof(*di));
-    di->nr_tracks = ntohs(dhdr.nr_tracks);
+    di->nr_tracks = be16toh(dhdr.nr_tracks);
     di->track = memalloc(di->nr_tracks * sizeof(struct track_info));
 
     for (i = 0; i < di->nr_tracks; i++) {
         ti = &di->track[i];
         read_exact(d->fd, &thdr, sizeof(thdr));
-        thdr.type = ntohs(thdr.type);
+        thdr.type = be16toh(thdr.type);
         if (thdr.type != 1) {
             warnx("Bad track type %u in Ext-ADF", thdr.type);
             goto cleanup_error;
         }
         init_track_info(ti, TRKTYP_raw);
-        ti->len = ntohl(thdr.len);
+        ti->len = be32toh(thdr.len);
         if (ti->len == 0) {
             init_track_info(ti, TRKTYP_unformatted);
             ti->total_bits = TRK_WEAK;
         } else {
             ti->dat = memalloc(ti->len);
-            ti->total_bits = ntohl(thdr.bitlen);
+            ti->total_bits = be32toh(thdr.bitlen);
         }
     }
 
@@ -93,19 +92,19 @@ static void eadf_close(struct disk *d)
 
     memset(&dhdr, 0, sizeof(dhdr));
     strncpy(dhdr.sig, "UAE-1ADF", sizeof(dhdr.sig));
-    dhdr.nr_tracks = htons(di->nr_tracks);
+    dhdr.nr_tracks = htobe16(di->nr_tracks);
     write_exact(d->fd, &dhdr, sizeof(dhdr));
 
     memset(mfm, 0, sizeof(mfm));
-    thdr.type = htons(1);
+    thdr.type = htobe16(1);
     for (i = 0; i < di->nr_tracks; i++) {
         ti = &di->track[i];
         if (ti->type == TRKTYP_unformatted) {
             thdr.len = thdr.bitlen = 0;
         } else {
             mfm[i] = track_mfm_get(d, i);
-            thdr.len = htonl((mfm[i]->bitlen+7)/8);
-            thdr.bitlen = htonl(mfm[i]->bitlen);
+            thdr.len = htobe32((mfm[i]->bitlen+7)/8);
+            thdr.bitlen = htobe32(mfm[i]->bitlen);
             for (j = 0; j < (mfm[i]->bitlen+7)/8; j++) {
                 if (mfm[i]->speed[j] == 1000)
                     continue;

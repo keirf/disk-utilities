@@ -22,8 +22,6 @@
 #include <libdisk/util.h>
 #include "../private.h"
 
-#include <arpa/inet.h>
-
 /* Sync and encoding-block-size for each group of 4 tracks. */
 struct track_param {
     uint16_t sync, blksz;
@@ -59,18 +57,18 @@ static void *tlk_dos_write_mfm(
                              &dat[i*param->blksz], &dat[(i*param->blksz)/2]);
 
         /* TLK-ID */
-        if (ntohs(dat[0]) != tlk_id)
+        if (be16toh(dat[0]) != tlk_id)
             continue;
 
         /* Track no. */
-        if ((uint16_t)~ntohs(dat[1]) != tracknr)
+        if ((uint16_t)~be16toh(dat[1]) != tracknr)
             continue;
 
         /* Checksum */
         csum = 0;
         for (i = 4; i < 6300/2; i++)
-            csum += ntohs(dat[i]);
-        sum = ntohs(dat[2]) | ((uint32_t)ntohs(dat[3]) << 16);
+            csum += be16toh(dat[i]);
+        sum = be16toh(dat[2]) | ((uint32_t)be16toh(dat[3]) << 16);
         if (sum != csum)
             continue;
 
@@ -97,12 +95,12 @@ static void tlk_dos_read_mfm(
 
     memcpy(&dat[4], ti->dat, ti->len);
     for (i = 4; i < 6300/2; i++)
-        csum += ntohs(dat[i]);
+        csum += be16toh(dat[i]);
 
-    dat[0] = htons(tlk_id);
-    dat[1] = htons(~tracknr);
-    dat[2] = htons(csum);
-    dat[3] = htons(csum >> 16);
+    dat[0] = htobe16(tlk_id);
+    dat[1] = htobe16(~tracknr);
+    dat[2] = htobe16(csum);
+    dat[3] = htobe16(csum >> 16);
 
     tbuf_bits(tbuf, SPEED_AVG, MFM_raw, 16, param->sync);
     tbuf_bits(tbuf, SPEED_AVG, MFM_raw, 16, param->sync);

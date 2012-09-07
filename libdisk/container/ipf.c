@@ -13,7 +13,6 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <unistd.h>
-#include <arpa/inet.h>
 #include <time.h>
 
 /*
@@ -257,14 +256,14 @@ static void ipf_write_chunk(
     uint32_t crc, i, *_dat = memalloc(dat_len);
 
     for (i = 0; i < dat_len/4; i++)
-        _dat[i] = htonl(((uint32_t *)dat)[i]);
+        _dat[i] = htobe32(((uint32_t *)dat)[i]);
 
     memcpy(ipf_header.id, id, 4);
-    ipf_header.len = htonl(dat_len + sizeof(ipf_header));
+    ipf_header.len = htobe32(dat_len + sizeof(ipf_header));
     ipf_header.crc = 0;
     crc = crc32(&ipf_header, sizeof(ipf_header));
     crc = crc32_add(_dat, dat_len, crc);
-    ipf_header.crc = htonl(crc);
+    ipf_header.crc = htobe32(crc);
 
     write_exact(d->fd, &ipf_header, sizeof(ipf_header));
     write_exact(d->fd, _dat, dat_len);
@@ -383,7 +382,7 @@ static bool_t __ipf_close(struct disk *d, uint32_t encoder)
 
             /* Convert endianness of all block descriptors. */
             for (j = 0; j < img->blkcnt * sizeof(*blk) / 4; j++)
-                ((uint32_t *)blk)[j] = htonl(((uint32_t *)blk)[j]);
+                ((uint32_t *)blk)[j] = htobe32(((uint32_t *)blk)[j]);
 
             /* Finally, compute DATA CRC. */
             idata->size = ibuf.len + ibuf.nr_blks * sizeof(*blk);

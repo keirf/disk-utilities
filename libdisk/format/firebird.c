@@ -25,8 +25,6 @@
 #include <libdisk/util.h>
 #include "../private.h"
 
-#include <arpa/inet.h>
-
 static void *firebird_write_mfm(
     struct disk *d, unsigned int tracknr, struct stream *s)
 {

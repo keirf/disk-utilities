@@ -19,8 +19,6 @@
 #include <libdisk/util.h>
 #include "../private.h"
 
-#include <arpa/inet.h>
-
 static void *vade_retro_alienas_write_mfm(
     struct disk *d, unsigned int tracknr, struct stream *s)
 {
@@ -40,10 +38,10 @@ static void *vade_retro_alienas_write_mfm(
             if (stream_next_bytes(s, raw, 4) == -1)
                 goto fail;
             mfm_decode_bytes(MFM_even_odd, 2, raw, &dat[i]);
-            sum += ntohs(dat[i]);
+            sum += be16toh(dat[i]);
         }
-        sum -= ntohs(dat[0xc57]);
-        if (sum != ntohs(dat[0xc57]))
+        sum -= be16toh(dat[0xc57]);
+        if (sum != be16toh(dat[0xc57]))
             continue;
 
         block = memalloc(ti->len);
@@ -66,8 +64,8 @@ static void vade_retro_alienas_read_mfm(
     tbuf_bits(tbuf, SPEED_AVG, MFM_raw, 16, 0x4142);
 
     for (i = sum = 0; i < 0xc57; i++) {
-        tbuf_bits(tbuf, SPEED_AVG, MFM_even_odd, 16, ntohs(dat[i]));
-        sum += ntohs(dat[i]);
+        tbuf_bits(tbuf, SPEED_AVG, MFM_even_odd, 16, be16toh(dat[i]));
+        sum += be16toh(dat[i]);
     }
 
     tbuf_bits(tbuf, SPEED_AVG, MFM_even_odd, 16, sum);

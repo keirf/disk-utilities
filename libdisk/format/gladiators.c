@@ -17,8 +17,6 @@
 #include <libdisk/util.h>
 #include "../private.h"
 
-#include <arpa/inet.h>
-
 static void *gladiators_write_mfm(
     struct disk *d, unsigned int tracknr, struct stream *s)
 {
@@ -38,13 +36,13 @@ static void *gladiators_write_mfm(
             if (stream_next_bytes(s, raw, 8) == -1)
                 goto fail;
             mfm_decode_bytes(MFM_even_odd, 4, raw, &dat[i]);
-            csum += ntohl(raw[0]) + ntohl(raw[1]);
+            csum += be32toh(raw[0]) + be32toh(raw[1]);
         }
 
         if (stream_next_bytes(s, raw, 8) == -1)
             goto fail;
         mfm_decode_bytes(MFM_even_odd, 4, raw, &sum);
-        if (csum != ntohl(sum))
+        if (csum != be32toh(sum))
             continue;
 
         block = memalloc(ti->len);
@@ -84,9 +82,9 @@ static void gladiators_read_mfm(
 
     prev = 0x8915; /* get 1st clock bit right for checksum */
     for (i = csum = 0; i < ti->len/4; i++) {
-        tbuf_bits(tbuf, SPEED_AVG, MFM_even_odd, 32, ntohl(dat[i]));
-        csum += csum_long(prev, ntohl(dat[i]));
-        prev = ntohl(dat[i]);
+        tbuf_bits(tbuf, SPEED_AVG, MFM_even_odd, 32, be32toh(dat[i]));
+        csum += csum_long(prev, be32toh(dat[i]));
+        prev = be32toh(dat[i]);
     }
 
     tbuf_bits(tbuf, SPEED_AVG, MFM_even_odd, 32, csum);

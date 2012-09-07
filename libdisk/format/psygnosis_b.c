@@ -27,8 +27,6 @@
 #include <libdisk/util.h>
 #include "../private.h"
 
-#include <arpa/inet.h>
-
 static void *psygnosis_b_write_mfm(
     struct disk *d, unsigned int tracknr, struct stream *s)
 {
@@ -62,9 +60,9 @@ static void *psygnosis_b_write_mfm(
 
         for (j = 0; j < 6; j++) {
             uint16_t *sec = &raw_dat[j*513];
-            uint16_t csum = ntohs(*sec++), c = 0;
+            uint16_t csum = be16toh(*sec++), c = 0;
             for (k = 0; k < 512; k++)
-                c += ntohs(sec[k]);
+                c += be16toh(sec[k]);
             if ((c == csum) && !is_valid_sector(ti, j)) {
                 memcpy(&block[j*1024], sec, 1024);
                 set_sector_valid(ti, j);
@@ -99,12 +97,12 @@ static void psygnosis_b_read_mfm(
     for (i = 0; i < 6; i++) {
         uint16_t csum = 0;
         for (j = 0; j < 512; j++)
-            csum += ntohs(dat[j]);
+            csum += be16toh(dat[j]);
         if (!is_valid_sector(ti, i))
             csum = ~csum; /* bad checksum for an invalid sector */
         tbuf_bits(tbuf, SPEED_AVG, MFM_even_odd, 16, csum);
         for (j = 0; j < 512; j++, dat++)
-            tbuf_bits(tbuf, SPEED_AVG, MFM_even_odd, 16, ntohs(*dat));
+            tbuf_bits(tbuf, SPEED_AVG, MFM_even_odd, 16, be16toh(*dat));
     }
 }
 

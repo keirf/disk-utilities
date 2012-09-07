@@ -23,8 +23,6 @@
 #include <libdisk/util.h>
 #include "../private.h"
 
-#include <arpa/inet.h>
-
 static void *phantom_fighter_write_mfm(
     struct disk *d, unsigned int tracknr, struct stream *s)
 {
@@ -54,8 +52,8 @@ static void *phantom_fighter_write_mfm(
         mfm_decode_bytes(MFM_even_odd, 0x1760, dat, dat);
 
         for (i = csum = 0; i < ti->len/2; i++)
-            csum += ntohs(dat[i]);
-        if (csum != ntohs(dat[ti->len/2]))
+            csum += be16toh(dat[i]);
+        if (csum != be16toh(dat[ti->len/2]))
             continue;
 
         block = memalloc(ti->len);
@@ -79,7 +77,7 @@ static void phantom_fighter_read_mfm(
     tbuf_bits(tbuf, SPEED_AVG, MFM_all, 8, 0xff);
 
     for (i = csum = 0; i < ti->len/2; i++)
-        csum += ntohs(dat[i]);
+        csum += be16toh(dat[i]);
 
     for (j = 0; j < 2; j++) {
         unsigned int type = j ? MFM_odd : MFM_even;

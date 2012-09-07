@@ -18,8 +18,6 @@
 #include <libdisk/util.h>
 #include "../private.h"
 
-#include <arpa/inet.h>
-
 static void *smartdos_write_mfm(
     struct disk *d, unsigned int tracknr, struct stream *s)
 {
@@ -37,13 +35,13 @@ static void *smartdos_write_mfm(
         if (stream_next_bytes(s, dat, 8) == -1)
             goto fail;
         mfm_decode_bytes(MFM_even_odd, 4, dat, dat);
-        csum = ntohl(dat[0]);
+        csum = be32toh(dat[0]);
 
         if (stream_next_bytes(s, dat, sizeof(dat)) == -1)
             goto fail;
 
         for (i = sum = 0; i < 3102; i++) {
-            uint32_t n = sum + ntohl(dat[i]);
+            uint32_t n = sum + be32toh(dat[i]);
             sum = (n < sum) ? n + 1 : n;
         }
 
@@ -92,12 +90,12 @@ static void smartdos_read_mfm(
     tbuf_bits(tbuf, SPEED_AVG, MFM_raw, 16, 0x4488);
 
     for (i = 0; i < 1551; i++) {
-        mfm_encode_even_odd(prev, ntohl(dat[i]), &e, &o);
+        mfm_encode_even_odd(prev, be32toh(dat[i]), &e, &o);
         n = sum + e;
         sum = (n < sum) ? n + 1 : n;
         n = sum + o;
         sum = (n < sum) ? n + 1 : n;
-        prev = ntohl(dat[i]);
+        prev = be32toh(dat[i]);
     }
 
     sum = sum ^ ((sum << 8) & 0xf00u) ^ ((sum >> 24) & 0xf0u);
@@ -106,7 +104,7 @@ static void smartdos_read_mfm(
     tbuf_bits(tbuf, SPEED_AVG, MFM_even_odd, 32, sum);
 
     for (i = 0; i < ti->len/4; i++)
-        tbuf_bits(tbuf, SPEED_AVG, MFM_even_odd, 32, ntohl(dat[i]));
+        tbuf_bits(tbuf, SPEED_AVG, MFM_even_odd, 32, be32toh(dat[i]));
 }
 
 struct track_handler smartdos_handler = {

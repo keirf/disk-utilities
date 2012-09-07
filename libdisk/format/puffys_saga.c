@@ -20,8 +20,6 @@
 #include <libdisk/util.h>
 #include "../private.h"
 
-#include <arpa/inet.h>
-
 static void *puffys_saga_write_mfm(
     struct disk *d, unsigned int tracknr, struct stream *s)
 {
@@ -57,8 +55,8 @@ static void *puffys_saga_write_mfm(
 
         csum = 0;
         for (i = 1; i < 2818; i++)
-            csum += ntohs(dat[i]);
-        if ((ntohs(dat[0]) != csum) || (ntohs(dat[1]) != (tracknr/2)))
+            csum += be16toh(dat[i]);
+        if ((be16toh(dat[0]) != csum) || (be16toh(dat[1]) != (tracknr/2)))
             continue;
 
         block = memalloc(ti->len);
@@ -85,13 +83,13 @@ static void puffys_saga_read_mfm(
 
     csum = tracknr/2;
     for (i = 0; i < ti->len/2; i++)
-        csum += ntohs(dat[i]);
+        csum += be16toh(dat[i]);
     tbuf_bits(tbuf, SPEED_AVG, MFM_all, 16, csum);
 
     tbuf_bits(tbuf, SPEED_AVG, MFM_all, 16, tracknr/2);
 
     for (i = 0; i < ti->len/2; i++)
-        tbuf_bits(tbuf, SPEED_AVG, MFM_all, 16, ntohs(dat[i]));
+        tbuf_bits(tbuf, SPEED_AVG, MFM_all, 16, be16toh(dat[i]));
 }
 
 struct track_handler puffys_saga_handler = {

@@ -17,10 +17,10 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <unistd.h>
-#include <arpa/inet.h>
 #include <time.h>
 #include <utime.h>
 #include <ctype.h>
+#include <libdisk/util.h>
 
 /* Physical characteristics of an AmigaDOS DS/DD floppy disk. */
 #define BYTES_PER_BLOCK   512
@@ -148,7 +148,7 @@ static void checksum_block(void *dat)
     unsigned int i;
 
     for (i = 0; i < BYTES_PER_BLOCK/4; i++)
-        sum += ntohl(blk[i]);
+        sum += be32toh(blk[i]);
 
     if (sum != 0)
         errx(1, "Bad block checksum %08x", sum);
@@ -166,9 +166,9 @@ static const char *format_bcpl_string(uint8_t *bcpl_str)
 static time_t time_from_datestamp(struct ffs_datestamp *stamp)
 {
     time_t time = (time_t)(8*365+2)*24*60*60;
-    time += (time_t)ntohl(stamp->days)*24*60*60;
-    time += (time_t)ntohl(stamp->mins)*60;
-    time += (time_t)ntohl(stamp->ticks)/50;
+    time += (time_t)be32toh(stamp->days)*24*60*60;
+    time += (time_t)be32toh(stamp->mins)*60;
+    time += (time_t)be32toh(stamp->ticks)/50;
     return time;
 }
 
@@ -194,7 +194,7 @@ static void handle_file(int fd, char *path, struct ffs_fileheader *file)
 
     printf(" %-54s %6u %s\n",
            path,
-           ntohl(file->file_size),
+           be32toh(file->file_size),
            format_datestamp(&file->datestamp));
 
     if (is_readonly)
@@ -206,21 +206,21 @@ static void handle_file(int fd, char *path, struct ffs_fileheader *file)
 
     data_per_block = is_ffs ? BYTES_PER_BLOCK : BYTES_PER_BLOCK-24;
 
-    todo = ntohl(file->file_size);
+    todo = be32toh(file->file_size);
     for (nxtblk = 0; todo != 0; nxtblk++) {
         unsigned int idx, this_todo;
         char *dat;
         if (nxtblk == HASH_SIZE) {
-            idx = ntohl(file->extension);
+            idx = be32toh(file->extension);
             put_block(file);
             file = get_block(fd, idx);
             checksum_block(file);
-            if ((ntohl(file->type) != T_LIST) ||
-                (ntohl(file->subtype) != ST_FILE))
+            if ((be32toh(file->type) != T_LIST) ||
+                (be32toh(file->subtype) != ST_FILE))
                 errx(1, "Bad file-ext block");
             nxtblk = 0;
         }
-        idx = ntohl(file->data[HASH_SIZE-nxtblk-1]);
+        idx = be32toh(file->data[HASH_SIZE-nxtblk-1]);
         dat = get_block(fd, idx);
         if (!is_ffs)
             checksum_block(dat);
@@ -252,11 +252,11 @@ static void handle_dir(int fd, char *prefix, struct ffs_dir *dir)
     printf(" %-61s %s\n", prefix, format_datestamp(&dir->datestamp));
 
     for (i = 0; i < HASH_SIZE; i++) {
-        idx = ntohl(dir->hash[i]);
+        idx = be32toh(dir->hash[i]);
         while (idx != 0) {
             file = get_block(fd, idx);
-            if (ntohl(file->type) != T_HEADER)
-                errx(1, "Not a header block (type %08x)", ntohl(file->type));
+            if (be32toh(file->type) != T_HEADER)
+                errx(1, "Not a header block (type %08x)", be32toh(file->type));
             checksum_block(file);
 
             name = format_bcpl_string(file->file_name);
@@ -265,9 +265,9 @@ static void handle_dir(int fd, char *prefix, struct ffs_dir *dir)
             strcpy(path, prefix);
             strcat(path, name);
 
-            idx = ntohl(file->hash_chain);
+            idx = be32toh(file->hash_chain);
 
-            switch ((int)ntohl(file->subtype)) {
+            switch ((int)be32toh(file->subtype)) {
             case ST_USERDIR:
                 handle_dir(fd, path, (struct ffs_dir *)file);
                 break;
@@ -275,7 +275,7 @@ static void handle_dir(int fd, char *prefix, struct ffs_dir *dir)
                 handle_file(fd, path, file);
                 break;
             default:
-                errx(1, "Unrecognised subtype %08x", ntohl(dir->subtype));
+                errx(1, "Unrecognised subtype %08x", be32toh(dir->subtype));
             }
         }
     }
@@ -321,9 +321,9 @@ int main(int argc, char **argv)
 
     root_block = get_block(fd, BLOCKS_PER_DISK/2);
     checksum_block(root_block);
-    if ((ntohl(root_block->type) != T_HEADER) ||
-        (ntohl(root_block->subtype) != ST_ROOT) ||
-        (ntohl(root_block->hash_size) != HASH_SIZE))
+    if ((be32toh(root_block->type) != T_HEADER) ||
+        (be32toh(root_block->subtype) != ST_ROOT) ||
+        (be32toh(root_block->hash_size) != HASH_SIZE))
         errx(1, "Bad root block");
 
     vol = format_bcpl_string(root_block->disk_name);

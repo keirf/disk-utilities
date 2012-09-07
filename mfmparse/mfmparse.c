@@ -16,13 +16,13 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <unistd.h>
-#include <arpa/inet.h>
 #include <time.h>
 #include <utime.h>
 #include <getopt.h>
 
 #include <libdisk/stream.h>
 #include <libdisk/disk.h>
+#include <libdisk/util.h>
 
 #include "common.h"
 

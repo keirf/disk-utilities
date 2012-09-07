@@ -20,8 +20,6 @@
 #include <libdisk/util.h>
 #include "../private.h"
 
-#include <arpa/inet.h>
-
 static void *tracker_write_mfm(
     struct disk *d, unsigned int tracknr, struct stream *s)
 {
@@ -45,18 +43,18 @@ static void *tracker_write_mfm(
         if (stream_next_bytes(s, raw, 8) == -1)
             goto fail;
         mfm_decode_bytes(MFM_even_odd, 4, raw, dat);
-        if (ntohl(dat[0]) != (0xff0000ffu | ((tracknr/2)-1)<<16))
+        if (be32toh(dat[0]) != (0xff0000ffu | ((tracknr/2)-1)<<16))
             continue;
 
         if (stream_next_bytes(s, raw, 8) == -1)
             goto fail;
         mfm_decode_bytes(MFM_even_odd, 4, raw, &csum);
-        csum = ntohl(csum);
+        csum = be32toh(csum);
 
         if (stream_next_bytes(s, raw, 8) == -1)
             goto fail;
         mfm_decode_bytes(MFM_even_odd, 4, raw, dat);
-        if (ntohl(dat[0]) != 0)
+        if (be32toh(dat[0]) != 0)
             continue;
 
         for (sec = 0; sec < ti->nr_sectors; sec++) {

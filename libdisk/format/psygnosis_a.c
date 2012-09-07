@@ -26,8 +26,6 @@
 #include <libdisk/util.h>
 #include "../private.h"
 
-#include <arpa/inet.h>
-
 static void *psygnosis_a_write_mfm(
     struct disk *d, unsigned int tracknr, struct stream *s)
 {
@@ -56,14 +54,14 @@ static void *psygnosis_a_write_mfm(
          */
         if (stream_next_bits(s, two_sync ? 32 : 16) == -1)
             goto fail;
-        raw_dat[0] = htonl(s->word);
+        raw_dat[0] = htobe32(s->word);
         if (stream_next_bytes(s, &raw_dat[1], 12) == -1)
             goto fail;
 
         mfm_decode_bytes(MFM_even_odd, 4, &raw_dat[0], &hdr);
         mfm_decode_bytes(MFM_even_odd, 4, &raw_dat[2], &csum);
-        hdr = ntohl(hdr);
-        csum = ntohl(csum);
+        hdr = be32toh(hdr);
+        csum = be32toh(csum);
 
         if (hdr != (0xffffff00u | tracknr))
             continue;
@@ -75,8 +73,8 @@ static void *psygnosis_a_write_mfm(
             continue;
 
         block = memalloc(ti->len + 4);
-        *(uint16_t *)&block[ti->len] = htons(sync);
-        *(uint16_t *)&block[ti->len+2] = two_sync ? htons(sync) : 0;
+        *(uint16_t *)&block[ti->len] = htobe16(sync);
+        *(uint16_t *)&block[ti->len+2] = two_sync ? htobe16(sync) : 0;
         memcpy(block, raw_dat, ti->len);
         set_all_sectors_valid(ti);
         ti->len += 4; /* for the sync marks */
@@ -95,9 +93,9 @@ static void psygnosis_a_read_mfm(
     unsigned int dat_len = ti->len - 4;
     uint16_t sync;
 
-    sync = ntohs(*(uint16_t *)&ti->dat[dat_len]);
+    sync = be16toh(*(uint16_t *)&ti->dat[dat_len]);
     tbuf_bits(tbuf, SPEED_AVG, MFM_raw, 16, sync);
-    sync = ntohs(*(uint16_t *)&ti->dat[dat_len+2]);
+    sync = be16toh(*(uint16_t *)&ti->dat[dat_len+2]);
     if (sync)
         tbuf_bits(tbuf, SPEED_AVG, MFM_raw, 16, sync);
 

@@ -19,8 +19,6 @@
 #include <libdisk/util.h>
 #include "../private.h"
 
-#include <arpa/inet.h>
-
 static void *dugger_write_mfm(
     struct disk *d, unsigned int tracknr, struct stream *s)
 {
@@ -39,7 +37,7 @@ static void *dugger_write_mfm(
         if (stream_next_bytes(s, raw, 8) == -1)
             goto fail;
         mfm_decode_bytes(MFM_odd_even, 4, raw, &dat[0]);
-        if ((ti->len = ntohl(dat[0])) > 7000)
+        if ((ti->len = be32toh(dat[0])) > 7000)
             continue;
 
         for (i = 1; i < ti->len/4+3; i++) {
@@ -48,7 +46,7 @@ static void *dugger_write_mfm(
             mfm_decode_bytes(MFM_odd_even, 4, raw, &dat[i]);
         }
 
-        if ((ntohl(dat[1]) != (0x03e90100 | tracknr)) ||
+        if ((be32toh(dat[1]) != (0x03e90100 | tracknr)) ||
             (amigados_checksum(dat, i*4) != 0))
             continue;
 
@@ -73,11 +71,11 @@ static void dugger_read_mfm(
 
     tbuf_bits(tbuf, SPEED_AVG, MFM_raw, 32, 0x44894489);
 
-    dat[0] = htonl(ti->len);
-    dat[1] = htonl(0x03e90100 | tracknr);
+    dat[0] = htobe32(ti->len);
+    dat[1] = htobe32(0x03e90100 | tracknr);
     memcpy(&dat[2], ti->dat, ti->len);
     for (i = 0; i < ti->len/4+2; i++)
-        tbuf_bits(tbuf, SPEED_AVG, MFM_odd_even, 32, ntohl(dat[i]));
+        tbuf_bits(tbuf, SPEED_AVG, MFM_odd_even, 32, be32toh(dat[i]));
 
     tbuf_bits(tbuf, SPEED_AVG, MFM_odd_even, 32, amigados_checksum(dat, i*4));
 }

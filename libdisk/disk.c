@@ -13,7 +13,6 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <unistd.h>
-#include <arpa/inet.h>
 
 #define X(a,b) extern struct track_handler a##_handler;
 #include <libdisk/track_types.h>
@@ -508,7 +507,7 @@ void mfm_decode_bytes(
 
     for (i = 0; i < bytes; i++) {
         if (enc == MFM_all) {
-            out_b[i] = mfm_decode_bits(MFM_all, ntohs(((uint16_t *)in)[i]));
+            out_b[i] = mfm_decode_bits(MFM_all, be16toh(((uint16_t *)in)[i]));
         } else if (enc == MFM_even_odd) {
             out_b[i] = (mfm_decode_bits(MFM_even, in_b[i]) |
                         mfm_decode_bits(MFM_odd, in_b[i + bytes]));
@@ -538,7 +537,7 @@ uint32_t amigados_checksum(void *dat, unsigned int bytes)
     uint32_t *p = dat, csum = 0;
     unsigned int i;
     for (i = 0; i < bytes/4; i++)
-        csum ^= ntohl(p[i]);
+        csum ^= be32toh(p[i]);
     csum ^= csum >> 1;
     csum &= 0x55555555u;
     return csum;

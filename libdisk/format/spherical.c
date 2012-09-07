@@ -17,8 +17,6 @@
 #include <libdisk/util.h>
 #include "../private.h"
 
-#include <arpa/inet.h>
-
 static void *spherical_write_mfm(
     struct disk *d, unsigned int tracknr, struct stream *s)
 {
@@ -38,10 +36,10 @@ static void *spherical_write_mfm(
             if (stream_next_bytes(s, raw, 8) == -1)
                 goto fail;
             mfm_decode_bytes(MFM_even_odd, 4, raw, &dat[i]);
-            csum += ntohl(dat[i]);
+            csum += be32toh(dat[i]);
         }
 
-        csum -= 2*ntohl(dat[i-1]);
+        csum -= 2*be32toh(dat[i-1]);
         if (csum != 0)
             continue;
 
@@ -67,8 +65,8 @@ static void spherical_read_mfm(
     tbuf_bits(tbuf, SPEED_AVG, MFM_all, 8, 0);
 
     for (i = csum = 0; i < ti->len/4; i++) {
-        tbuf_bits(tbuf, SPEED_AVG, MFM_even_odd, 32, ntohl(dat[i]));
-        csum += ntohl(dat[i]);
+        tbuf_bits(tbuf, SPEED_AVG, MFM_even_odd, 32, be32toh(dat[i]));
+        csum += be32toh(dat[i]);
     }
 
     tbuf_bits(tbuf, SPEED_AVG, MFM_even_odd, 32, csum);

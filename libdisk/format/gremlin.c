@@ -25,8 +25,6 @@
 #include <libdisk/util.h>
 #include "../private.h"
 
-#include <arpa/inet.h>
-
 static void *gremlin_write_mfm(
     struct disk *d, unsigned int tracknr, struct stream *s)
 {
@@ -56,18 +54,18 @@ static void *gremlin_write_mfm(
             if (stream_next_bytes(s, mfm, sizeof(mfm)) == -1)
                 goto fail;
             mfm_decode_bytes(MFM_odd_even, 2, mfm, &block[i]);
-            csum += ntohs(block[i]);
+            csum += be16toh(block[i]);
         }
 
         if (stream_next_bytes(s, mfm, sizeof(mfm)) == -1)
             goto fail;
         mfm_decode_bytes(MFM_odd_even, 2, mfm, mfm);
-        csum -= ntohs(mfm[0]);
+        csum -= be16toh(mfm[0]);
 
         if (stream_next_bytes(s, mfm, sizeof(mfm)) == -1)
             goto fail;
         mfm_decode_bytes(MFM_odd_even, 2, mfm, mfm);
-        trk = ntohs(mfm[0]);
+        trk = be16toh(mfm[0]);
 
         if ((csum != 0) || (tracknr != (trk^1)))
             continue;
@@ -92,8 +90,8 @@ static void gremlin_read_mfm(
     tbuf_bits(tbuf, SPEED_AVG, MFM_raw, 32, 0x44895555);
 
     for (i = 0; i < ti->nr_sectors*ti->bytes_per_sector/2; i++) {
-        csum += ntohs(dat[i]);
-        tbuf_bits(tbuf, SPEED_AVG, MFM_odd_even, 16, ntohs(dat[i]));
+        csum += be16toh(dat[i]);
+        tbuf_bits(tbuf, SPEED_AVG, MFM_odd_even, 16, be16toh(dat[i]));
     }
 
     tbuf_bits(tbuf, SPEED_AVG, MFM_odd_even, 16, csum);

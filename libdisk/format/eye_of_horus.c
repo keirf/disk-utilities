@@ -19,8 +19,6 @@
 #include <libdisk/util.h>
 #include "../private.h"
 
-#include <arpa/inet.h>
-
 static void *eye_of_horus_write_mfm(
     struct disk *d, unsigned int tracknr, struct stream *s)
 {
@@ -41,12 +39,12 @@ static void *eye_of_horus_write_mfm(
                 goto fail;
             mfm_decode_bytes(MFM_even_odd, 4, raw, &hdr[i]);
         }
-        if ((ntohl(hdr[0]) != (0xff00000b | (tracknr << 16))) ||
-            (ntohl(hdr[1]) > 0x1600) ||
-            (ntohl(hdr[5]) != amigados_checksum(hdr, 5*4)))
+        if ((be32toh(hdr[0]) != (0xff00000b | (tracknr << 16))) ||
+            (be32toh(hdr[1]) > 0x1600) ||
+            (be32toh(hdr[5]) != amigados_checksum(hdr, 5*4)))
             continue;
 
-        ti->bytes_per_sector = ntohl(hdr[1]);
+        ti->bytes_per_sector = be32toh(hdr[1]);
         ti->len = ti->bytes_per_sector + 3*4;
 
         for (i = 0; i < ti->bytes_per_sector/4; i++) {
@@ -54,7 +52,7 @@ static void *eye_of_horus_write_mfm(
                 goto fail;
             mfm_decode_bytes(MFM_even_odd, 4, raw, &dat[i]);
         }
-        if (ntohl(hdr[6]) != amigados_checksum(dat, ti->bytes_per_sector))
+        if (be32toh(hdr[6]) != amigados_checksum(dat, ti->bytes_per_sector))
             continue;
 
         block = memalloc(ti->len);
@@ -77,17 +75,17 @@ static void eye_of_horus_read_mfm(
 
     tbuf_bits(tbuf, SPEED_AVG, MFM_raw, 32, 0x44894489);
 
-    hdr[0] = htonl(0xff00000b | (tracknr << 16));
-    hdr[1] = htonl(ti->bytes_per_sector);
+    hdr[0] = htobe32(0xff00000b | (tracknr << 16));
+    hdr[1] = htobe32(ti->bytes_per_sector);
     memcpy(&hdr[2], &dat[ti->bytes_per_sector/4], 3*4);
-    hdr[5] = htonl(amigados_checksum(hdr, 5*4));
-    hdr[6] = htonl(amigados_checksum(dat, ti->bytes_per_sector));
+    hdr[5] = htobe32(amigados_checksum(hdr, 5*4));
+    hdr[6] = htobe32(amigados_checksum(dat, ti->bytes_per_sector));
 
     for (i = 0; i < ARRAY_SIZE(hdr); i++)
-        tbuf_bits(tbuf, SPEED_AVG, MFM_even_odd, 32, ntohl(hdr[i]));
+        tbuf_bits(tbuf, SPEED_AVG, MFM_even_odd, 32, be32toh(hdr[i]));
 
     for (i = 0; i < ti->bytes_per_sector/4; i++)
-        tbuf_bits(tbuf, SPEED_AVG, MFM_even_odd, 32, ntohl(dat[i]));
+        tbuf_bits(tbuf, SPEED_AVG, MFM_even_odd, 32, be32toh(dat[i]));
 }
 
 struct track_handler eye_of_horus_handler = {

@@ -14,6 +14,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <endian.h>
 
 #ifndef offsetof
 #define offsetof(a,b) __builtin_offsetof(a,b)

@@ -12,8 +12,6 @@
 #include <libdisk/util.h>
 #include "../private.h"
 
-#include <arpa/inet.h>
-
 static int check_sequence(struct stream *s, unsigned int nr, uint8_t byte)
 {
     while (--nr) {
@@ -154,7 +152,7 @@ static void *crystals_of_arborea_longtrack_write_mfm(
             continue;
         stream_next_bytes(s, raw, 8);
         mfm_decode_bytes(MFM_all, 4, raw, raw);
-        if (ntohl(raw[0]) != 0x524f4430) /* "ROD0" */
+        if (be32toh(raw[0]) != 0x524f4430) /* "ROD0" */
             continue;
         if (!check_sequence(s, 6500, 0x00))
             continue;

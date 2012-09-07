@@ -18,7 +18,6 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <unistd.h>
-#include <arpa/inet.h>
 #include <time.h>
 #include <utime.h>
 
@@ -116,17 +115,17 @@ int main(int argc, char **argv)
         uint32_t *p = (uint32_t *)shadow;
         unsigned int i, j, k, nr_chunks, nr_longs, type, mem_off = base-4;
         unsigned int bptr = 0;
-        if (ntohl(p[0]) != 0x3f3)
-            errx(1, "Unexpected image signature %08x", ntohl(p[0]));
+        if (be32toh(p[0]) != 0x3f3)
+            errx(1, "Unexpected image signature %08x", be32toh(p[0]));
         printf("Loadable image: ");
         for (i = 1; p[i] != 0; i++)
             continue;
-        nr_chunks = ntohl(p[i+1]);        
+        nr_chunks = be32toh(p[i+1]);        
         printf("%u chunks\n", nr_chunks);
         i += 1 + 1 + 2 + nr_chunks;
         for (j = 0; j < nr_chunks; j++) {
-            type = ntohl(p[i]);
-            nr_longs = ntohl(p[i+1]) & 0x3fffffffu;
+            type = be32toh(p[i]);
+            nr_longs = be32toh(p[i+1]) & 0x3fffffffu;
             printf("Chunk %u: %08x, %u longwords\n", j, type, nr_longs);
             i += 2;
             bptr = mem_off;
@@ -134,7 +133,7 @@ int main(int argc, char **argv)
             if ((type == 0x3e9) || (type == 0x3ea)) {
                 /* code/data */
                 for (k = 0; k < nr_longs; k++) {
-                    mem_write(mem_off, ntohl(p[i]), 4, &s);
+                    mem_write(mem_off, be32toh(p[i]), 4, &s);
                     i++;
                     mem_off += 4;
                 }
@@ -147,8 +146,8 @@ int main(int argc, char **argv)
             } else {
                 errx(1, "Unexpected chunk type %08x", type);
             }
-            if (ntohl(p[i]) != 0x3f2)
-                errx(1, "Unexpected chunk end %08x", ntohl(p[i]));
+            if (be32toh(p[i]) != 0x3f2)
+                errx(1, "Unexpected chunk end %08x", be32toh(p[i]));
             i++;
             mem_write(bptr, mem_off/4, 4, &s);
         }
@@ -177,7 +176,7 @@ int main(int argc, char **argv)
         for (i = 0; i < s.ctxt.op_words; i++) {
             if ((pc + 2*i+1) >= MEM_SIZE)
                 break;
-            *(uint16_t *)&shadow[pc + 2*i] = htons(s.ctxt.op[i]);
+            *(uint16_t *)&shadow[pc + 2*i] = htobe16(s.ctxt.op[i]);
             set_bit(pc + 2*i, bmap);
             set_bit(pc + 2*i+1, bmap);
         }

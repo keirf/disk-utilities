@@ -16,9 +16,9 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <unistd.h>
-#include <arpa/inet.h>
 #include <time.h>
 #include <utime.h>
+#include <libdisk/util.h>
 
 /* read_exact, write_exact */
 #include "../libdisk/util.c"
@@ -45,8 +45,8 @@ static void *decode_dat(const char *filename, unsigned int *psz)
     p = buf;
     type = longs = 0;
     while ((char *)p < ((char *)buf + sz - 8)) {
-        type = ntohl(*p++);
-        longs = ntohl(*p++);
+        type = be32toh(*p++);
+        longs = be32toh(*p++);
         if (type == 0x3e9)
             break;
         p += longs;
@@ -123,7 +123,7 @@ int main(int argc, char **argv)
         unsigned int i;
         for (i = 0; i < datsz; i += 4) {
             key = next_key(key);
-            *(uint32_t *)&dat[i] ^= htonl(key);
+            *(uint32_t *)&dat[i] ^= htobe32(key);
         }
         for (i = 0; i < 512; i += 4) {
             key = next_key(key);

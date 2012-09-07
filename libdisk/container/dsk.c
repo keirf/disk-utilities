@@ -20,7 +20,6 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <unistd.h>
-#include <arpa/inet.h>
 #include <time.h>
 
 struct disk_header {
@@ -71,7 +70,7 @@ static void tag_swizzle(struct disk_tag *dtag)
     switch (dtag->id) {
     case DSKTAG_rnc_pdos_key: {
         struct rnc_pdos_key *t = (struct rnc_pdos_key *)dtag;
-        t->key = ntohl(t->key);
+        t->key = be32toh(t->key);
         break;
     }
     }
@@ -109,14 +108,14 @@ static struct container *dsk_open(struct disk *d)
 
     read_exact(d->fd, &dh, sizeof(dh));
     if (strncmp(dh.signature, "DSK\0", 4) ||
-        (ntohs(dh.version) != 0))
+        (be16toh(dh.version) != 0))
         return NULL;
 
     di = memalloc(sizeof(*di));
-    di->nr_tracks = ntohs(dh.nr_tracks);
-    di->flags = ntohs(dh.flags);
+    di->nr_tracks = be16toh(dh.nr_tracks);
+    di->flags = be16toh(dh.flags);
     di->track = memalloc(di->nr_tracks * sizeof(*ti));
-    read_bytes_per_th = bytes_per_th = ntohs(dh.bytes_per_thdr);
+    read_bytes_per_th = bytes_per_th = be16toh(dh.bytes_per_thdr);
     if (read_bytes_per_th > sizeof(*ti))
         read_bytes_per_th = sizeof(*ti);
 
@@ -124,14 +123,14 @@ static struct container *dsk_open(struct disk *d)
         memset(&th, 0, sizeof(th));
         read_exact(d->fd, &th, read_bytes_per_th);
         ti = &di->track[i];
-        init_track_info(ti, ntohs(th.type));
-        ti->flags = ntohs(th.flags);
+        init_track_info(ti, be16toh(th.type));
+        ti->flags = be16toh(th.flags);
         memcpy(ti->valid_sectors, th.valid_sectors, sizeof(th.valid_sectors));
-        ti->len = ntohl(th.len);
-        ti->data_bitoff = ntohl(th.data_bitoff);
-        ti->total_bits = ntohl(th.total_bits);
+        ti->len = be32toh(th.len);
+        ti->data_bitoff = be32toh(th.data_bitoff);
+        ti->total_bits = be32toh(th.total_bits);
         off = lseek(d->fd, bytes_per_th-read_bytes_per_th, SEEK_CUR);
-        lseek(d->fd, ntohl(th.off), SEEK_SET);
+        lseek(d->fd, be32toh(th.off), SEEK_SET);
         ti->dat = memalloc(ti->len);
         read_exact(d->fd, ti->dat, ti->len);
         lseek(d->fd, off, SEEK_SET);
@@ -140,10 +139,10 @@ static struct container *dsk_open(struct disk *d)
     pprevtag = &d->tags;
     do {
         read_exact(d->fd, &tagh, sizeof(tagh));
-        dltag = memalloc(sizeof(*dltag) + ntohs(tagh.len));
+        dltag = memalloc(sizeof(*dltag) + be16toh(tagh.len));
         dtag = &dltag->tag;
-        dtag->id = ntohs(tagh.id);
-        dtag->len = ntohs(tagh.len);
+        dtag->id = be16toh(tagh.id);
+        dtag->len = be16toh(tagh.len);
         read_exact(d->fd, dtag+1, dtag->len);
         tag_swizzle(dtag);
         *pprevtag = dltag;
@@ -171,9 +170,9 @@ static void dsk_close(struct disk *d)
 
     strncpy(dh.signature, "DSK\0", 4);
     dh.version = 0;
-    dh.nr_tracks = htons(di->nr_tracks);
-    dh.bytes_per_thdr = htons(sizeof(th));
-    dh.flags = htons(di->flags);
+    dh.nr_tracks = htobe16(di->nr_tracks);
+    dh.bytes_per_thdr = htobe16(sizeof(th));
+    dh.flags = htobe16(di->flags);
     write_exact(d->fd, &dh, sizeof(dh));
 
     datoff = sizeof(dh) + di->nr_tracks * sizeof(th);
@@ -182,13 +181,13 @@ static void dsk_close(struct disk *d)
 
     for (i = 0; i < di->nr_tracks; i++) {
         ti = &di->track[i];
-        th.type = htons(ti->type);
-        th.flags = htons(ti->flags);
+        th.type = htobe16(ti->type);
+        th.flags = htobe16(ti->flags);
         memcpy(th.valid_sectors, ti->valid_sectors, sizeof(th.valid_sectors));
-        th.off = htonl(datoff);
-        th.len = htonl(ti->len);
-        th.data_bitoff = htonl(ti->data_bitoff);
-        th.total_bits = htonl(ti->total_bits);
+        th.off = htobe32(datoff);
+        th.len = htobe32(ti->len);
+        th.data_bitoff = htobe32(ti->data_bitoff);
+        th.total_bits = htobe32(ti->total_bits);
         write_exact(d->fd, &th, sizeof(th));
         datoff += ti->len;
     }
@@ -196,8 +195,8 @@ static void dsk_close(struct disk *d)
     for (dltag = d->tags; dltag != NULL; dltag = dltag->next) {
         struct tag_header tagh;
         dtag = &dltag->tag;
-        tagh.id = htons(dtag->id);
-        tagh.len = htons(dtag->len);
+        tagh.id = htobe16(dtag->id);
+        tagh.len = htobe16(dtag->len);
         tag_swizzle(dtag);
         write_exact(d->fd, &tagh, sizeof(tagh));
         write_exact(d->fd, dtag+1, dtag->len);
