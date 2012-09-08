@@ -1,6 +1,19 @@
 default = amigados
-probe
+
+# all: Try all supported formats, in arbitrary order.
+# May show many false positives.
+all
     * all
+
+# probe_amiga: A list of more common Amiga formats which do not
+# show too many false positives.
+probe_amiga
+    * amigados copylock psygnosis_a psygnosis_b rnc_pdos core_design \
+      gremlin rainbird blue_byte ikplus firebird \
+      archipelagos sensible \
+      bat batman menace commando turrican federation_of_free_traders \
+      phantom_fighter supremacy_a supremacy_b \
+      protec_longtrack gremlin_longtrack
 
 ####################
 # Game List - every checked game is listed here
