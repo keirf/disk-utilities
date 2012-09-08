@@ -6,7 +6,6 @@
  * Written in 2011 by Keir Fraser
  */
 
-#include <err.h>
 #include <stdlib.h>
 #include <amiga/amiga.h>
 
