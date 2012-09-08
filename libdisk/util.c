@@ -8,7 +8,6 @@
 
 #include <libdisk/util.h>
 
-#include <errno.h>
 #include <unistd.h>
 
 void __bug(const char *file, int line)
