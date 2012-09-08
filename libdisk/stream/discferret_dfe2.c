@@ -37,16 +37,6 @@ struct dfe2_stream {
 #define MHZ(x) ((x) * 1000000)
 #define SCK_PS_PER_TICK (1000000000/(dfss->acq_freq/1000))
 
-static uint32_t read_u16_be(unsigned char *dat)
-{
-    return ((uint32_t)dat[0] << 8) | (uint32_t)dat[1];
-}
-
-static uint32_t read_u32_be(unsigned char *dat)
-{
-    return (read_u16_be(&dat[0]) << 16) | read_u16_be(&dat[2]);
-}
-
 static struct stream *dfe2_open(const char *name)
 {
     struct stat sbuf;
@@ -167,10 +157,10 @@ static int dfe2_select_track(struct stream *s, unsigned int tracknr)
             return -1;
         read_exact(dfss->fd, header, 10);
         cur_offst += data_length + 10;
-        cyl = read_u16_be(&header[0]);
-        head = read_u16_be(&header[2]);
-        sector = read_u16_be(&header[4]);
-        data_length = read_u32_be(&header[6]);
+        cyl = be16toh(*(uint16_t *)&header[0]);
+        head = be16toh(*(uint16_t *)&header[2]);
+        sector = be16toh(*(uint16_t *)&header[4]);
+        data_length = be32toh(*(uint32_t *)&header[6]);
     }
     if (tracknr != (cyl*2)+head)
         printf("DFI track number doesn't match!\n");

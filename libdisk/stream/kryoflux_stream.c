@@ -104,16 +104,6 @@ static void kfs_reset(struct stream *s)
     kfss->index_pos = ~0u;
 }
 
-static uint32_t read_u16(unsigned char *dat)
-{
-    return ((uint32_t)dat[1] << 8) | (uint32_t)dat[0];
-}
-
-static uint32_t read_u32(unsigned char *dat)
-{
-    return (read_u16(&dat[2]) << 16) | read_u16(&dat[0]);
-}
-
 static int kfs_next_flux(struct stream *s)
 {
     struct kfs_stream *kfss = container_of(s, struct kfs_stream, s);
@@ -152,9 +142,9 @@ static int kfs_next_flux(struct stream *s)
             goto two_byte_sample;
         case 0xd: /* oob */ {
             uint32_t pos;
-            uint16_t sz = read_u16(&dat[i+2]);
+            uint16_t sz = le16toh(*(uint16_t *)&dat[i+2]);
             i += 4;
-            pos = read_u32(&dat[i+0]);
+            pos = le32toh(*(uint32_t *)&dat[i+0]);
             switch (dat[i-3]) {
             case 0x1: /* stream read */
             case 0x3: /* stream end */
