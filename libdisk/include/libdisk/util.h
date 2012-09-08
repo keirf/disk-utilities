@@ -24,8 +24,8 @@
 #endif
 
 #if !defined(__MINGW32__)
-//#define __PLATFORM_HAS_ERR_H__
-//#include <err.h>
+#define __PLATFORM_HAS_ERR_H__
+#include <err.h>
 #endif
 
 #ifndef offsetof
@@ -78,6 +78,7 @@ uint16_t crc16_ccitt(const void *buf, size_t len, uint16_t crc);
 uint16_t crc16_ccitt_bit(uint8_t b, uint16_t crc);
 
 #if !defined(__PLATFORM_HAS_ENDIAN_H__)
+
 uint16_t htobe16(uint16_t host_16bits);
 uint32_t htobe32(uint32_t host_32bits);
 uint16_t htole16(uint16_t host_16bits);
@@ -91,6 +92,7 @@ uint32_t le32toh(uint32_t little_endian_32bits);
 #endif /* !defined(__PLATFORM_HAS_ENDIAN_H__) */
 
 #if !defined(__PLATFORM_HAS_ERR_H__)
+
 #define err(retval, ...) do { \
     fprintf(stderr, __VA_ARGS__); \
     fprintf(stderr, "Undefined error: %d\n", errno); \
