@@ -15,6 +15,14 @@
 #include <stdlib.h>
 #include <string.h>
 
+#if defined(__linux__)
+#define __PLATFORM_HAS_ENDIAN_H__
+#ifndef _BSD_SOURCE
+#define _BSD_SOURCE
+#endif
+#include <endian.h>
+#endif
+
 #ifndef offsetof
 #define offsetof(a,b) __builtin_offsetof(a,b)
 #endif
@@ -64,10 +72,12 @@ uint32_t crc32(const void *buf, size_t len);
 uint16_t crc16_ccitt(const void *buf, size_t len, uint16_t crc);
 uint16_t crc16_ccitt_bit(uint8_t b, uint16_t crc);
 
+#if !defined(__PLATFORM_HAS_ENDIAN_H__)
 uint16_t htobe16(uint16_t host_16bits);
 uint32_t htobe32(uint32_t host_32bits);
 uint16_t be16toh(uint16_t big_endian_16bits);
 uint32_t be32toh(uint32_t big_endian_32bits);
+#endif
 
 #pragma GCC visibility pop
 
