@@ -168,11 +168,27 @@ uint16_t htobe16(uint16_t host_16bits)
     return result;
 }
 
+uint16_t htole16(uint16_t host_16bits)
+{
+    uint16_t result;
+    ((uint8_t *)&result)[1] = host_16bits >> 8;
+	((uint8_t *)&result)[0] = host_16bits;
+    return result;
+}
+
 uint32_t htobe32(uint32_t host_32bits)
 {
     uint32_t result;
     ((uint16_t *)&result)[0] = htobe16(host_32bits >> 16);
 	((uint16_t *)&result)[1] = htobe16(host_32bits);
+    return result;
+}
+
+uint32_t htole32(uint32_t host_32bits)
+{
+    uint32_t result;
+    ((uint16_t *)&result)[1] = htole16(host_32bits >> 16);
+	((uint16_t *)&result)[0] = htole16(host_32bits);
     return result;
 }
 
@@ -182,10 +198,22 @@ uint16_t be16toh(uint16_t big_endian_16bits)
             ((uint8_t *)&big_endian_16bits)[1]);
 }
 
+uint16_t le16toh(uint16_t little_endian_16bits)
+{
+    return ((((uint8_t *)&big_endian_16bits)[1] << 8) |
+            ((uint8_t *)&big_endian_16bits)[0]);
+}
+
 uint32_t be32toh(uint32_t big_endian_32bits)
 {
     return ((be16toh(((uint16_t *)&big_endian_32bits)[0]) << 16) |
             be16toh(((uint16_t *)&big_endian_32bits)[1]));
+}
+
+uint32_t le32toh(uint32_t little_endian_32bits)
+{
+    return ((le16toh(((uint16_t *)&big_endian_32bits)[1]) << 16) |
+            le16toh(((uint16_t *)&big_endian_32bits)[0]));
 }
 
 #endif /* !defined(__PLATFORM_HAS_ENDIAN_H__) */
