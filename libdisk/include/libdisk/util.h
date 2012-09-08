@@ -24,8 +24,8 @@
 #endif
 
 #if !defined(__MINGW32__)
-//#define __PLATFORM_HAS_ERR_H__
-//#include <err.h>
+#define __PLATFORM_HAS_ERR_H__
+#include <err.h>
 #endif
 
 #ifndef offsetof
