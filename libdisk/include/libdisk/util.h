@@ -9,8 +9,8 @@
 #ifndef __LIBDISK_UTIL_H__
 #define __LIBDISK_UTIL_H__
 
+#include <errno.h>
 #include <inttypes.h>
-#include <err.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -21,6 +21,11 @@
 #define _BSD_SOURCE
 #endif
 #include <endian.h>
+#endif
+
+#if !defined(__MINGW32__)
+//#define __PLATFORM_HAS_ERR_H__
+//#include <err.h>
 #endif
 
 #ifndef offsetof
@@ -83,7 +88,34 @@ uint32_t be32toh(uint32_t big_endian_32bits);
 uint16_t le16toh(uint16_t little_endian_16bits);
 uint32_t le32toh(uint32_t little_endian_32bits);
 
-#endif
+#endif /* !defined(__PLATFORM_HAS_ENDIAN_H__) */
+
+#if !defined(__PLATFORM_HAS_ERR_H__)
+#define err(retval, ...) do { \
+    fprintf(stderr, __VA_ARGS__); \
+    fprintf(stderr, "Undefined error: %d\n", errno); \
+    exit(retval); \
+} while(0)
+    
+#define errx(retval, ...) do { \
+    fprintf(stderr, __VA_ARGS__); \
+    fprintf(stderr, "\n"); \
+    exit(retval); \
+} while(0)
+
+#define warn(...) do { \
+    fprintf(stderr, __VA_ARGS__); \
+    fprintf(stderr, "Undefined error: %d\n", errno); \
+} while(0)
+
+
+#define warnx(...) do { \
+    fprintf(stderr, __VA_ARGS__); \
+    fprintf(stderr, "\n"); \
+} while(0)
+
+
+#endif /* !defined(__PLATFORM_HAS_ERR_H__) */
 
 #pragma GCC visibility pop
 
