@@ -200,8 +200,8 @@ uint16_t be16toh(uint16_t big_endian_16bits)
 
 uint16_t le16toh(uint16_t little_endian_16bits)
 {
-    return ((((uint8_t *)&big_endian_16bits)[1] << 8) |
-            ((uint8_t *)&big_endian_16bits)[0]);
+    return ((((uint8_t *)&little_endian_16bits)[1] << 8) |
+            ((uint8_t *)&little_endian_16bits)[0]);
 }
 
 uint32_t be32toh(uint32_t big_endian_32bits)
@@ -212,8 +212,8 @@ uint32_t be32toh(uint32_t big_endian_32bits)
 
 uint32_t le32toh(uint32_t little_endian_32bits)
 {
-    return ((le16toh(((uint16_t *)&big_endian_32bits)[1]) << 16) |
-            le16toh(((uint16_t *)&big_endian_32bits)[0]));
+    return ((le16toh(((uint16_t *)&little_endian_32bits)[1]) << 16) |
+            le16toh(((uint16_t *)&little_endian_32bits)[0]));
 }
 
 #endif /* !defined(__PLATFORM_HAS_ENDIAN_H__) */
