@@ -12,7 +12,6 @@
 #include <stdio.h>
 #include <string.h>
 #include <ctype.h>
-#include <err.h>
 #include <libdisk/disk.h>
 #include <libdisk/util.h>
 
