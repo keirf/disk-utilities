@@ -75,8 +75,14 @@ uint16_t crc16_ccitt_bit(uint8_t b, uint16_t crc);
 #if !defined(__PLATFORM_HAS_ENDIAN_H__)
 uint16_t htobe16(uint16_t host_16bits);
 uint32_t htobe32(uint32_t host_32bits);
+uint16_t htole16(uint16_t host_16bits);
+uint32_t htole32(uint32_t host_32bits);
+
 uint16_t be16toh(uint16_t big_endian_16bits);
 uint32_t be32toh(uint32_t big_endian_32bits);
+uint16_t le16toh(uint16_t little_endian_16bits);
+uint32_t le32toh(uint32_t little_endian_32bits);
+
 #endif
 
 #pragma GCC visibility pop
