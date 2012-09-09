@@ -13,7 +13,6 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <unistd.h>
-#include <dlfcn.h>
 
 #define w(f, a...) fprintf(stderr, "*** " f, ## a)
 
