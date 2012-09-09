@@ -334,7 +334,7 @@ static void append_bit(struct track_buffer *tbuf, uint16_t speed, uint8_t x)
         tbuf->pos = 0;
 }
 
-static void mfm_tbuf_bit(
+static void tbuf_bit(
     struct track_buffer *tbuf, uint16_t speed,
     enum bitcell_encoding enc, uint8_t dat)
 {
@@ -357,7 +357,7 @@ void tbuf_init(struct track_buffer *tbuf, uint32_t bitstart, uint32_t bitlen)
     tbuf->len = bitlen;
     tbuf->bits = memalloc(bytes);
     tbuf->speed = memalloc(2*bytes);
-    tbuf->bit = mfm_tbuf_bit;
+    tbuf->bit = tbuf_bit;
 }
 
 static void tbuf_finalise(struct track_buffer *tbuf)
