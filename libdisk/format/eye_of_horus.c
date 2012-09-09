@@ -19,7 +19,7 @@
 #include <libdisk/util.h>
 #include "../private.h"
 
-static void *eye_of_horus_write_mfm(
+static void *eye_of_horus_write_raw(
     struct disk *d, unsigned int tracknr, struct stream *s)
 {
     struct track_info *ti = &d->di->track[tracknr];
@@ -66,7 +66,7 @@ fail:
     return NULL;
 }
 
-static void eye_of_horus_read_mfm(
+static void eye_of_horus_read_raw(
     struct disk *d, unsigned int tracknr, struct track_buffer *tbuf)
 {
     struct track_info *ti = &d->di->track[tracknr];
@@ -90,8 +90,8 @@ static void eye_of_horus_read_mfm(
 
 struct track_handler eye_of_horus_handler = {
     .nr_sectors = 1,
-    .write_mfm = eye_of_horus_write_mfm,
-    .read_mfm = eye_of_horus_read_mfm
+    .write_raw = eye_of_horus_write_raw,
+    .read_raw = eye_of_horus_read_raw
 };
 
 /*

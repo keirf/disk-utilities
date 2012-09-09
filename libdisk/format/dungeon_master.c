@@ -22,7 +22,7 @@
 
 #define weak_sec(_type) (((_type) == TRKTYP_chaos_strikes_back_weak) ? 1 : 0)
 
-static void *dungeon_master_weak_write_mfm(
+static void *dungeon_master_weak_write_raw(
     struct disk *d, unsigned int tracknr, struct stream *s)
 {
     struct track_info *ti = &d->di->track[tracknr];
@@ -106,7 +106,7 @@ static void *dungeon_master_weak_write_mfm(
     return block;
 }
 
-static void dungeon_master_weak_read_mfm(
+static void dungeon_master_weak_read_raw(
     struct disk *d, unsigned int tracknr, struct track_buffer *tbuf)
 {
     struct track_info *ti = &d->di->track[tracknr];
@@ -157,15 +157,15 @@ static void dungeon_master_weak_read_mfm(
 struct track_handler dungeon_master_weak_handler = {
     .bytes_per_sector = 512,
     .nr_sectors = 10,
-    .write_mfm = dungeon_master_weak_write_mfm,
-    .read_mfm = dungeon_master_weak_read_mfm
+    .write_raw = dungeon_master_weak_write_raw,
+    .read_raw = dungeon_master_weak_read_raw
 };
 
 struct track_handler chaos_strikes_back_weak_handler = {
     .bytes_per_sector = 512,
     .nr_sectors = 10,
-    .write_mfm = dungeon_master_weak_write_mfm,
-    .read_mfm = dungeon_master_weak_read_mfm
+    .write_raw = dungeon_master_weak_write_raw,
+    .read_raw = dungeon_master_weak_read_raw
 };
 
 /*

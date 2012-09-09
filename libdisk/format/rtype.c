@@ -29,7 +29,7 @@
  *  u8 sector_data[5968]
  */
 
-static void *rtype_a_write_mfm(
+static void *rtype_a_write_raw(
     struct disk *d, unsigned int tracknr, struct stream *s)
 {
     struct track_info *ti = &d->di->track[tracknr];
@@ -71,7 +71,7 @@ fail:
     return NULL;
 }
 
-static void rtype_a_read_mfm(
+static void rtype_a_read_raw(
     struct disk *d, unsigned int tracknr, struct track_buffer *tbuf)
 {
     struct track_info *ti = &d->di->track[tracknr];
@@ -89,8 +89,8 @@ static void rtype_a_read_mfm(
 struct track_handler rtype_a_handler = {
     .bytes_per_sector = 5968,
     .nr_sectors = 1,
-    .write_mfm = rtype_a_write_mfm,
-    .read_mfm = rtype_a_read_mfm
+    .write_raw = rtype_a_write_raw,
+    .read_raw = rtype_a_read_raw
 };
 
 /*
@@ -103,7 +103,7 @@ struct track_handler rtype_a_handler = {
  *  u8 sector_data[6552]
  */
 
-static void *rtype_b_write_mfm(
+static void *rtype_b_write_raw(
     struct disk *d, unsigned int tracknr, struct stream *s)
 {
     struct track_info *ti = &d->di->track[tracknr];
@@ -151,7 +151,7 @@ fail:
     return NULL;
 }
 
-static void rtype_b_read_mfm(
+static void rtype_b_read_raw(
     struct disk *d, unsigned int tracknr, struct track_buffer *tbuf)
 {
     struct track_info *ti = &d->di->track[tracknr];
@@ -174,8 +174,8 @@ static void rtype_b_read_mfm(
 struct track_handler rtype_b_handler = {
     .bytes_per_sector = 6552,
     .nr_sectors = 1,
-    .write_mfm = rtype_b_write_mfm,
-    .read_mfm = rtype_b_read_mfm
+    .write_raw = rtype_b_write_raw,
+    .read_raw = rtype_b_read_raw
 };
 
 /*

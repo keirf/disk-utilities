@@ -32,7 +32,7 @@ unsigned int bit_weight(uint8_t *p, unsigned int nr)
     return nr_ones;
 }
 
-static void *rnc_hidden_write_mfm(
+static void *rnc_hidden_write_raw(
     struct disk *d, unsigned int tracknr, struct stream *s)
 {
     struct track_info *ti = &d->di->track[tracknr];
@@ -42,7 +42,7 @@ static void *rnc_hidden_write_mfm(
     unsigned int i, j, found, sec, nr_ones;
 
     init_track_info(ti, TRKTYP_amigados);
-    ablk = handlers[TRKTYP_amigados]->write_mfm(d, tracknr, s);
+    ablk = handlers[TRKTYP_amigados]->write_raw(d, tracknr, s);
     if ((ablk == NULL) || (ti->type != TRKTYP_amigados))
         goto out;
 
@@ -116,14 +116,14 @@ out:
     return block;
 }
 
-static void rnc_hidden_read_mfm(
+static void rnc_hidden_read_raw(
     struct disk *d, unsigned int tracknr, struct track_buffer *tbuf)
 {
     struct track_info *ti = &d->di->track[tracknr];
     uint8_t *dat = (uint8_t *)ti->dat + 512*11;
     unsigned int sec, i, trailer_map = dat[10];
 
-    handlers[TRKTYP_amigados]->read_mfm(d, tracknr, tbuf);
+    handlers[TRKTYP_amigados]->read_raw(d, tracknr, tbuf);
 
     for (sec = 0; sec < NR_SYNCS; sec++) {
         /* aaaa...aaaa */
@@ -144,8 +144,8 @@ static void rnc_hidden_read_mfm(
 struct track_handler rnc_hidden_handler = {
     .bytes_per_sector = 512,
     .nr_sectors = 11,
-    .write_mfm = rnc_hidden_write_mfm,
-    .read_mfm = rnc_hidden_read_mfm
+    .write_raw = rnc_hidden_write_raw,
+    .read_raw = rnc_hidden_read_raw
 };
 
 /*

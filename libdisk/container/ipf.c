@@ -349,7 +349,7 @@ static bool_t __ipf_close(struct disk *d, uint32_t encoder)
             ibuf.decoded_bits = PREPEND_BITS;
             ibuf.len = ibuf.decoded_bits / 16;
             ibuf.bits = (ibuf.decoded_bits / 2) & 7;
-            handlers[ti->type]->read_mfm(d, i, &ibuf.tbuf);
+            handlers[ti->type]->read_raw(d, i, &ibuf.tbuf);
 
             ipf_tbuf_finish_chunk(&ibuf, chkEnd);
 
@@ -437,7 +437,7 @@ struct container container_ipf = {
     .init = dsk_init,
     .open = ipf_open,
     .close = ipf_close,
-    .write_mfm = dsk_write_mfm
+    .write_raw = dsk_write_raw
 };
 
 /*

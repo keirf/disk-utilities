@@ -27,7 +27,7 @@
 #include <libdisk/util.h>
 #include "../private.h"
 
-static void *psygnosis_b_write_mfm(
+static void *psygnosis_b_write_raw(
     struct disk *d, unsigned int tracknr, struct stream *s)
 {
     struct track_info *ti = &d->di->track[tracknr];
@@ -84,7 +84,7 @@ done:
     return block;
 }
 
-static void psygnosis_b_read_mfm(
+static void psygnosis_b_read_raw(
     struct disk *d, unsigned int tracknr, struct track_buffer *tbuf)
 {
     struct track_info *ti = &d->di->track[tracknr];
@@ -109,8 +109,8 @@ static void psygnosis_b_read_mfm(
 struct track_handler psygnosis_b_handler = {
     .bytes_per_sector = 1024,
     .nr_sectors = 6,
-    .write_mfm = psygnosis_b_write_mfm,
-    .read_mfm = psygnosis_b_read_mfm
+    .write_raw = psygnosis_b_write_raw,
+    .read_raw = psygnosis_b_read_raw
 };
 
 /*

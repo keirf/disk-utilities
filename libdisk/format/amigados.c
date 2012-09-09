@@ -64,7 +64,7 @@ struct ados_hdr {
     uint32_t dat_checksum;
 };
 
-static void *ados_write_mfm(
+static void *ados_write_raw(
     struct disk *d, unsigned int tracknr, struct stream *s)
 {
     struct track_info *ti = &d->di->track[tracknr];
@@ -154,7 +154,7 @@ static void *ados_write_mfm(
     return block;
 }
 
-static void ados_read_mfm(
+static void ados_read_raw(
     struct disk *d, unsigned int tracknr, struct track_buffer *tbuf)
 {
     struct track_info *ti = &d->di->track[tracknr];
@@ -204,15 +204,15 @@ static void ados_read_mfm(
 struct track_handler amigados_handler = {
     .bytes_per_sector = STD_SEC,
     .nr_sectors = 11,
-    .write_mfm = ados_write_mfm,
-    .read_mfm = ados_read_mfm
+    .write_raw = ados_write_raw,
+    .read_raw = ados_read_raw
 };
 
 struct track_handler amigados_extended_handler = {
     .bytes_per_sector = EXT_SEC,
     .nr_sectors = 11,
-    .write_mfm = ados_write_mfm,
-    .read_mfm = ados_read_mfm
+    .write_raw = ados_write_raw,
+    .read_raw = ados_read_raw
 };
 
 /*
@@ -222,7 +222,7 @@ struct track_handler amigados_extended_handler = {
  * in the track gap, or expects only (MFM-encoded) zeros.
  */
 
-static void *ados_longtrack_write_mfm(
+static void *ados_longtrack_write_raw(
     struct disk *d, unsigned int tracknr, struct stream *s)
 {
     struct track_info *ti = &d->di->track[tracknr];
@@ -232,7 +232,7 @@ static void *ados_longtrack_write_mfm(
     char *ablk;
 
     init_track_info(ti, TRKTYP_amigados);
-    ablk = handlers[TRKTYP_amigados]->write_mfm(d, tracknr, s);
+    ablk = handlers[TRKTYP_amigados]->write_raw(d, tracknr, s);
     if (ablk == NULL)
         return NULL;
 
@@ -243,12 +243,12 @@ static void *ados_longtrack_write_mfm(
 
 struct track_handler amigados_long_105500_handler = {
     .bytes_per_sector = 105500,
-    .write_mfm = ados_longtrack_write_mfm,
+    .write_raw = ados_longtrack_write_raw,
 };
 
 struct track_handler amigados_long_111000_handler = {
     .bytes_per_sector = 111000,
-    .write_mfm = ados_longtrack_write_mfm,
+    .write_raw = ados_longtrack_write_raw,
 };
 
 /*

@@ -22,7 +22,7 @@
 #include <libdisk/util.h>
 #include "../private.h"
 
-static void *alienbreed_protection_write_mfm(
+static void *alienbreed_protection_write_raw(
     struct disk *d, unsigned int tracknr, struct stream *s)
 {
     struct track_info *ti = &d->di->track[tracknr];
@@ -60,7 +60,7 @@ found:
     return dat;
 }
 
-static void alienbreed_protection_read_mfm(
+static void alienbreed_protection_read_raw(
     struct disk *d, unsigned int tracknr, struct track_buffer *tbuf)
 {
     struct track_info *ti = &d->di->track[tracknr];
@@ -75,8 +75,8 @@ static void alienbreed_protection_read_mfm(
 }
 
 struct track_handler alienbreed_protection_handler = {
-    .write_mfm = alienbreed_protection_write_mfm,
-    .read_mfm = alienbreed_protection_read_mfm
+    .write_raw = alienbreed_protection_write_raw,
+    .read_raw = alienbreed_protection_read_raw
 };
 
 /*

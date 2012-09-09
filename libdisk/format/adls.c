@@ -17,7 +17,7 @@
 #include <libdisk/util.h>
 #include "../private.h"
 
-static void *adls_write_mfm(
+static void *adls_write_raw(
     struct disk *d, unsigned int tracknr, struct stream *s)
 {
     struct track_info *ti = &d->di->track[tracknr];
@@ -80,7 +80,7 @@ out:
     return block;
 }
 
-static void adls_read_mfm(
+static void adls_read_raw(
     struct disk *d, unsigned int tracknr, struct track_buffer *tbuf)
 {
     struct track_info *ti = &d->di->track[tracknr];
@@ -130,8 +130,8 @@ static void adls_read_mfm(
 struct track_handler adls_handler = {
     .bytes_per_sector = 1024,
     .nr_sectors = 6,
-    .write_mfm = adls_write_mfm,
-    .read_mfm = adls_read_mfm
+    .write_raw = adls_write_raw,
+    .read_raw = adls_read_raw
 };
 
 /*

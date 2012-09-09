@@ -26,7 +26,7 @@ struct ratt_file {
     uint32_t pad, length;
 };
 
-static void *ratt_dos_write_mfm(
+static void *ratt_dos_write_raw(
     struct disk *d, unsigned int tracknr, struct stream *s)
 {
     struct track_info *ti = &d->di->track[tracknr];
@@ -103,7 +103,7 @@ fail:
     return NULL;
 }
 
-static void ratt_dos_read_mfm(
+static void ratt_dos_read_raw(
     struct disk *d, unsigned int tracknr, struct track_buffer *tbuf)
 {
     struct track_info *ti = &d->di->track[tracknr];
@@ -132,15 +132,15 @@ static void ratt_dos_read_mfm(
 struct track_handler ratt_dos_1800_handler = {
     .bytes_per_sector = 0x1800,
     .nr_sectors = 1,
-    .write_mfm = ratt_dos_write_mfm,
-    .read_mfm = ratt_dos_read_mfm
+    .write_raw = ratt_dos_write_raw,
+    .read_raw = ratt_dos_read_raw
 };
 
 struct track_handler ratt_dos_1810_handler = {
     .bytes_per_sector = 0x1810,
     .nr_sectors = 1,
-    .write_mfm = ratt_dos_write_mfm,
-    .read_mfm = ratt_dos_read_mfm
+    .write_raw = ratt_dos_write_raw,
+    .read_raw = ratt_dos_read_raw
 };
 
 /*

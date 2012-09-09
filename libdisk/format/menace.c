@@ -17,7 +17,7 @@
 #include <libdisk/util.h>
 #include "../private.h"
 
-static void *menace_write_mfm(
+static void *menace_write_raw(
     struct disk *d, unsigned int tracknr, struct stream *s)
 {
     struct track_info *ti = &d->di->track[tracknr];
@@ -60,7 +60,7 @@ fail:
     return NULL;
 }
 
-static void menace_read_mfm(
+static void menace_read_raw(
     struct disk *d, unsigned int tracknr, struct track_buffer *tbuf)
 {
     struct track_info *ti = &d->di->track[tracknr];
@@ -81,8 +81,8 @@ static void menace_read_mfm(
 struct track_handler menace_handler = {
     .bytes_per_sector = 6200,
     .nr_sectors = 1,
-    .write_mfm = menace_write_mfm,
-    .read_mfm = menace_read_mfm
+    .write_raw = menace_write_raw,
+    .read_raw = menace_read_raw
 };
 
 /*

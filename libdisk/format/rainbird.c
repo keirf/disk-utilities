@@ -23,7 +23,7 @@
 #include <libdisk/util.h>
 #include "../private.h"
 
-static void *rainbird_write_mfm(
+static void *rainbird_write_raw(
     struct disk *d, unsigned int tracknr, struct stream *s)
 {
     struct track_info *ti = &d->di->track[tracknr];
@@ -64,7 +64,7 @@ fail:
     return NULL;
 }
 
-static void rainbird_read_mfm(
+static void rainbird_read_raw(
     struct disk *d, unsigned int tracknr, struct track_buffer *tbuf)
 {
     struct track_info *ti = &d->di->track[tracknr];
@@ -83,8 +83,8 @@ static void rainbird_read_mfm(
 struct track_handler rainbird_handler = {
     .bytes_per_sector = 5120,
     .nr_sectors = 1,
-    .write_mfm = rainbird_write_mfm,
-    .read_mfm = rainbird_read_mfm
+    .write_raw = rainbird_write_raw,
+    .read_raw = rainbird_read_raw
 };
 
 /*

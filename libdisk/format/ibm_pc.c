@@ -82,7 +82,7 @@ int ibm_scan_dam(struct stream *s)
     return ibm_scan_mark(s, 0x5545, 1000);
 }
 
-static void *ibm_pc_write_mfm(
+static void *ibm_pc_write_raw(
     struct disk *d, unsigned int tracknr, struct stream *s)
 {
     struct track_info *ti = &d->di->track[tracknr];
@@ -159,7 +159,7 @@ static void *ibm_pc_write_mfm(
     return block;
 }
 
-static void ibm_pc_read_mfm(
+static void ibm_pc_read_raw(
     struct disk *d, unsigned int tracknr, struct track_buffer *tbuf)
 {
     struct track_info *ti = &d->di->track[tracknr];
@@ -221,24 +221,24 @@ struct track_handler ibm_pc_dd_handler = {
     .density = TRKDEN_mfm_double,
     .bytes_per_sector = 512,
     .nr_sectors = 9,
-    .write_mfm = ibm_pc_write_mfm,
-    .read_mfm = ibm_pc_read_mfm
+    .write_raw = ibm_pc_write_raw,
+    .read_raw = ibm_pc_read_raw
 };
 
 struct track_handler ibm_pc_hd_handler = {
     .density = TRKDEN_mfm_high,
     .bytes_per_sector = 512,
     .nr_sectors = 18,
-    .write_mfm = ibm_pc_write_mfm,
-    .read_mfm = ibm_pc_read_mfm
+    .write_raw = ibm_pc_write_raw,
+    .read_raw = ibm_pc_read_raw
 };
 
 struct track_handler ibm_pc_ed_handler = {
     .density = TRKDEN_mfm_extra,
     .bytes_per_sector = 512,
     .nr_sectors = 36,
-    .write_mfm = ibm_pc_write_mfm,
-    .read_mfm = ibm_pc_read_mfm
+    .write_raw = ibm_pc_write_raw,
+    .read_raw = ibm_pc_read_raw
 };
 
 /* Siemens iSDX telephone exchange. 80 tracks. */
@@ -246,8 +246,8 @@ struct track_handler siemens_isdx_hd_handler = {
     .density = TRKDEN_mfm_high,
     .bytes_per_sector = 256,
     .nr_sectors = 32,
-    .write_mfm = ibm_pc_write_mfm,
-    .read_mfm = ibm_pc_read_mfm
+    .write_raw = ibm_pc_write_raw,
+    .read_raw = ibm_pc_read_raw
 };
 
 /*

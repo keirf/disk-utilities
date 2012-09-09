@@ -20,7 +20,7 @@
 #include <libdisk/util.h>
 #include "../private.h"
 
-static void *grand_monster_slam_write_mfm(
+static void *grand_monster_slam_write_raw(
     struct disk *d, unsigned int tracknr, struct stream *s)
 {
     struct track_info *ti = &d->di->track[tracknr];
@@ -60,7 +60,7 @@ fail:
     return NULL;
 }
 
-static void grand_monster_slam_read_mfm(
+static void grand_monster_slam_read_raw(
     struct disk *d, unsigned int tracknr, struct track_buffer *tbuf)
 {
     struct track_info *ti = &d->di->track[tracknr];
@@ -84,8 +84,8 @@ static void grand_monster_slam_read_mfm(
 struct track_handler grand_monster_slam_handler = {
     .bytes_per_sector = 512*11,
     .nr_sectors = 1,
-    .write_mfm = grand_monster_slam_write_mfm,
-    .read_mfm = grand_monster_slam_read_mfm
+    .write_raw = grand_monster_slam_write_raw,
+    .read_raw = grand_monster_slam_read_raw
 };
 
 /*

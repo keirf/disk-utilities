@@ -17,7 +17,7 @@
 #include <libdisk/util.h>
 #include "../private.h"
 
-static void *turrican_write_mfm(
+static void *turrican_write_raw(
     struct disk *d, unsigned int tracknr, struct stream *s)
 {
     struct track_info *ti = &d->di->track[tracknr];
@@ -63,7 +63,7 @@ fail:
     return NULL;
 }
 
-static void turrican_read_mfm(
+static void turrican_read_raw(
     struct disk *d, unsigned int tracknr, struct track_buffer *tbuf)
 {
     struct track_info *ti = &d->di->track[tracknr];
@@ -85,8 +85,8 @@ static void turrican_read_mfm(
 struct track_handler turrican_handler = {
     .bytes_per_sector = 6520,
     .nr_sectors = 1,
-    .write_mfm = turrican_write_mfm,
-    .read_mfm = turrican_read_mfm
+    .write_raw = turrican_write_raw,
+    .read_raw = turrican_read_raw
 };
 
 /*
@@ -101,7 +101,7 @@ struct track_handler turrican_handler = {
  * a track containing just the 4489 sync word (avoids loader hang).
  */
 
-static void *factor5_hiscore_write_mfm(
+static void *factor5_hiscore_write_raw(
     struct disk *d, unsigned int tracknr, struct stream *s)
 {
     struct track_info *ti = &d->di->track[tracknr];
@@ -146,7 +146,7 @@ static void *factor5_hiscore_write_mfm(
     return NULL;
 }
 
-static void factor5_hiscore_read_mfm(
+static void factor5_hiscore_read_raw(
     struct disk *d, unsigned int tracknr, struct track_buffer *tbuf)
 {
     struct track_info *ti = &d->di->track[tracknr];
@@ -172,8 +172,8 @@ static void factor5_hiscore_read_mfm(
 struct track_handler factor5_hiscore_handler = {
     .bytes_per_sector = 396,
     .nr_sectors = 1,
-    .write_mfm = factor5_hiscore_write_mfm,
-    .read_mfm = factor5_hiscore_read_mfm
+    .write_raw = factor5_hiscore_write_raw,
+    .read_raw = factor5_hiscore_read_raw
 };
 
 /*

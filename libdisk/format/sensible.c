@@ -26,7 +26,7 @@
 
 #define SOS_SIG 0x534f5336u
 
-static void *sensible_write_mfm(
+static void *sensible_write_raw(
     struct disk *d, unsigned int tracknr, struct stream *s)
 {
     struct track_info *ti = &d->di->track[tracknr];
@@ -66,7 +66,7 @@ fail:
     return NULL;
 }
 
-static void sensible_read_mfm(
+static void sensible_read_raw(
     struct disk *d, unsigned int tracknr, struct track_buffer *tbuf)
 {
     struct track_info *ti = &d->di->track[tracknr];
@@ -91,8 +91,8 @@ static void sensible_read_mfm(
 struct track_handler sensible_handler = {
     .bytes_per_sector = 12*512,
     .nr_sectors = 1,
-    .write_mfm = sensible_write_mfm,
-    .read_mfm = sensible_read_mfm
+    .write_raw = sensible_write_raw,
+    .read_raw = sensible_read_raw
 };
 
 /*

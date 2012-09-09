@@ -20,7 +20,7 @@
 #include <libdisk/util.h>
 #include "../private.h"
 
-static void *tracker_write_mfm(
+static void *tracker_write_raw(
     struct disk *d, unsigned int tracknr, struct stream *s)
 {
     struct track_info *ti = &d->di->track[tracknr];
@@ -76,7 +76,7 @@ fail:
     return NULL;
 }
 
-static void tracker_read_mfm(
+static void tracker_read_raw(
     struct disk *d, unsigned int tracknr, struct track_buffer *tbuf)
 {
     struct track_info *ti = &d->di->track[tracknr];
@@ -101,8 +101,8 @@ static void tracker_read_mfm(
 struct track_handler tracker_handler = {
     .bytes_per_sector = 512,
     .nr_sectors = 11,
-    .write_mfm = tracker_write_mfm,
-    .read_mfm = tracker_read_mfm
+    .write_raw = tracker_write_raw,
+    .read_raw = tracker_read_raw
 };
 
 /*

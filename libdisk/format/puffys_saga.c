@@ -20,7 +20,7 @@
 #include <libdisk/util.h>
 #include "../private.h"
 
-static void *puffys_saga_write_mfm(
+static void *puffys_saga_write_raw(
     struct disk *d, unsigned int tracknr, struct stream *s)
 {
     struct track_info *ti = &d->di->track[tracknr];
@@ -69,7 +69,7 @@ fail:
     return NULL;
 }
 
-static void puffys_saga_read_mfm(
+static void puffys_saga_read_raw(
     struct disk *d, unsigned int tracknr, struct track_buffer *tbuf)
 {
     struct track_info *ti = &d->di->track[tracknr];
@@ -95,8 +95,8 @@ static void puffys_saga_read_mfm(
 struct track_handler puffys_saga_handler = {
     .bytes_per_sector = 5632,
     .nr_sectors = 1,
-    .write_mfm = puffys_saga_write_mfm,
-    .read_mfm = puffys_saga_read_mfm
+    .write_raw = puffys_saga_write_raw,
+    .read_raw = puffys_saga_read_raw
 };
 
 /*

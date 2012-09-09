@@ -139,12 +139,12 @@ struct disk_info *disk_get_info(struct disk *d)
     return d->di;
 }
 
-struct track_mfm *track_mfm_get(struct disk *d, unsigned int tracknr)
+struct track_raw *track_raw_get(struct disk *d, unsigned int tracknr)
 {
     struct disk_info *di = d->di;
     struct track_info *ti;
     const struct track_handler *thnd;
-    struct track_mfm *track_mfm;
+    struct track_raw *track_raw;
     struct track_buffer tbuf;
 
     if (tracknr >= di->nr_tracks)
@@ -155,28 +155,28 @@ struct track_mfm *track_mfm_get(struct disk *d, unsigned int tracknr)
         tbuf_init(&tbuf, ti->data_bitoff, ti->total_bits);
 
     thnd = handlers[ti->type];
-    thnd->read_mfm(d, tracknr, &tbuf);
+    thnd->read_raw(d, tracknr, &tbuf);
 
     tbuf_finalise(&tbuf);
 
-    track_mfm = memalloc(sizeof(*track_mfm));
-    track_mfm->mfm = tbuf.mfm;
-    track_mfm->speed = tbuf.speed;
-    track_mfm->bitlen = tbuf.len;
-    track_mfm->has_weak_bits = tbuf.has_weak_bits;
-    return track_mfm;
+    track_raw = memalloc(sizeof(*track_raw));
+    track_raw->bits = tbuf.bits;
+    track_raw->speed = tbuf.speed;
+    track_raw->bitlen = tbuf.len;
+    track_raw->has_weak_bits = tbuf.has_weak_bits;
+    return track_raw;
 }
 
-void track_mfm_put(struct track_mfm *track_mfm)
+void track_raw_put(struct track_raw *track_raw)
 {
-    if (track_mfm == NULL)
+    if (track_raw == NULL)
         return;
-    memfree(track_mfm->mfm);
-    memfree(track_mfm->speed);
-    memfree(track_mfm);
+    memfree(track_raw->bits);
+    memfree(track_raw->speed);
+    memfree(track_raw);
 }
 
-int track_write_mfm_from_stream(
+int track_write_raw_from_stream(
     struct disk *d, unsigned int tracknr, enum track_type type,
     struct stream *s)
 {
@@ -186,15 +186,15 @@ int track_write_mfm_from_stream(
     memfree(ti->dat);
     ti->dat = NULL;
 
-    return d->container->write_mfm(d, tracknr, type, s);
+    return d->container->write_raw(d, tracknr, type, s);
 }
 
-int track_write_mfm(
+int track_write_raw(
     struct disk *d, unsigned int tracknr, enum track_type type,
-    struct track_mfm *mfm)
+    struct track_raw *raw)
 {
-    struct stream *s = stream_soft_open(mfm->mfm, mfm->speed, mfm->bitlen);
-    int rc = track_write_mfm_from_stream(d, tracknr, type, s);
+    struct stream *s = stream_soft_open(raw->bits, raw->speed, raw->bitlen);
+    int rc = track_write_raw_from_stream(d, tracknr, type, s);
     stream_close(s);
     return rc;
 }
@@ -328,7 +328,7 @@ static void change_bit(uint8_t *map, unsigned int bit, bool_t on)
 
 static void append_bit(struct track_buffer *tbuf, uint16_t speed, uint8_t x)
 {
-    change_bit(tbuf->mfm, tbuf->pos, x);
+    change_bit(tbuf->bits, tbuf->pos, x);
     tbuf->speed[tbuf->pos >> 3] = speed;
     if (++tbuf->pos >= tbuf->len)
         tbuf->pos = 0;
@@ -355,7 +355,7 @@ void tbuf_init(struct track_buffer *tbuf, uint32_t bitstart, uint32_t bitlen)
     memset(tbuf, 0, sizeof(*tbuf));
     tbuf->start = tbuf->pos = bitstart;
     tbuf->len = bitlen;
-    tbuf->mfm = memalloc(bytes);
+    tbuf->bits = memalloc(bytes);
     tbuf->speed = memalloc(2*bytes);
     tbuf->bit = mfm_tbuf_bit;
 }
@@ -384,7 +384,7 @@ static void tbuf_finalise(struct track_buffer *tbuf)
     do {
         if (--pos < 0)
             pos += tbuf->len;
-        change_bit(tbuf->mfm, pos, b);
+        change_bit(tbuf->bits, pos, b);
         tbuf->speed[pos >> 3] = SPEED_AVG;
         b = !b;
     } while (pos != tbuf->pos);

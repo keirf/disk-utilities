@@ -32,7 +32,7 @@ static uint16_t checksum(uint16_t *dat, unsigned int nr)
     return (uint16_t)sum;
 }
 
-static void *armourgeddon_a_write_mfm(
+static void *armourgeddon_a_write_raw(
     struct disk *d, unsigned int tracknr, struct stream *s)
 {
     struct track_info *ti = &d->di->track[tracknr];
@@ -67,7 +67,7 @@ static void *armourgeddon_a_write_mfm(
     return NULL;
 }
 
-static void armourgeddon_a_read_mfm(
+static void armourgeddon_a_read_raw(
     struct disk *d, unsigned int tracknr, struct track_buffer *tbuf)
 {
     struct track_info *ti = &d->di->track[tracknr];
@@ -84,8 +84,8 @@ static void armourgeddon_a_read_mfm(
 struct track_handler armourgeddon_a_handler = {
     .bytes_per_sector = 6296,
     .nr_sectors = 1,
-    .write_mfm = armourgeddon_a_write_mfm,
-    .read_mfm = armourgeddon_a_read_mfm
+    .write_raw = armourgeddon_a_write_raw,
+    .read_raw = armourgeddon_a_read_raw
 };
 
 /*
@@ -97,7 +97,7 @@ struct track_handler armourgeddon_a_handler = {
  * No checksum or validation info on these tracks!!
  */
 
-static void *armourgeddon_b_write_mfm(
+static void *armourgeddon_b_write_raw(
     struct disk *d, unsigned int tracknr, struct stream *s)
 {
     struct track_info *ti = &d->di->track[tracknr];
@@ -136,7 +136,7 @@ fail:
     return NULL;
 }
 
-static void armourgeddon_b_read_mfm(
+static void armourgeddon_b_read_raw(
     struct disk *d, unsigned int tracknr, struct track_buffer *tbuf)
 {
     struct track_info *ti = &d->di->track[tracknr];
@@ -159,8 +159,8 @@ static void armourgeddon_b_read_mfm(
 struct track_handler armourgeddon_b_handler = {
     .bytes_per_sector = 12*512,
     .nr_sectors = 1,
-    .write_mfm = armourgeddon_b_write_mfm,
-    .read_mfm = armourgeddon_b_read_mfm
+    .write_raw = armourgeddon_b_write_raw,
+    .read_raw = armourgeddon_b_read_raw
 };
 
 /*

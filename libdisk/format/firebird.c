@@ -25,7 +25,7 @@
 #include <libdisk/util.h>
 #include "../private.h"
 
-static void *firebird_write_mfm(
+static void *firebird_write_raw(
     struct disk *d, unsigned int tracknr, struct stream *s)
 {
     struct track_info *ti = &d->di->track[tracknr];
@@ -76,7 +76,7 @@ fail:
     return NULL;
 }
 
-static void firebird_read_mfm(
+static void firebird_read_raw(
     struct disk *d, unsigned int tracknr, struct track_buffer *tbuf)
 {
     struct track_info *ti = &d->di->track[tracknr];
@@ -104,22 +104,22 @@ static void firebird_read_mfm(
 struct track_handler firebird_handler = {
     .bytes_per_sector = 12*512,
     .nr_sectors = 1,
-    .write_mfm = firebird_write_mfm,
-    .read_mfm = firebird_read_mfm
+    .write_raw = firebird_write_raw,
+    .read_raw = firebird_read_raw
 };
 
 struct track_handler ikplus_handler = {
     .bytes_per_sector = 12*512,
     .nr_sectors = 1,
-    .write_mfm = firebird_write_mfm,
-    .read_mfm = firebird_read_mfm
+    .write_raw = firebird_write_raw,
+    .read_raw = firebird_read_raw
 };
 
 struct track_handler afterburner_data_handler = {
     .bytes_per_sector = 12*512,
     .nr_sectors = 1,
-    .write_mfm = firebird_write_mfm,
-    .read_mfm = firebird_read_mfm
+    .write_raw = firebird_write_raw,
+    .read_raw = firebird_read_raw
 };
 
 /*

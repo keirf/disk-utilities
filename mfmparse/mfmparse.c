@@ -136,14 +136,14 @@ int main(int argc, char **argv)
         if (list == NULL)
             continue;
         for (j = 0; j < list->nr; j++) {
-            if (track_write_mfm_from_stream(
+            if (track_write_raw_from_stream(
                     d, i, list->ent[list->pos], s) == 0)
                 break;
             if (++list->pos >= list->nr)
                 list->pos = 0;
         }
         if ((j == list->nr) &&
-            (track_write_mfm_from_stream(d, i, TRKTYP_unformatted, s) != 0)) {
+            (track_write_raw_from_stream(d, i, TRKTYP_unformatted, s) != 0)) {
             /* Tracks 160+ are expected to be unused. Don't warn about them. */
             if (i < 160)
                 unidentified++;

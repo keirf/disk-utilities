@@ -13,7 +13,7 @@
 #define SECTOR_BAD_THRESH (SCAN_SECTOR_BITS/50)
 #define CLOCK_JITTER_THRESH 20 /* +/- 20% */
 
-static void *unformatted_write_mfm(
+static void *unformatted_write_raw(
     struct disk *d, unsigned int tracknr, struct stream *s)
 {
     struct disk_info *di = d->di;
@@ -64,7 +64,7 @@ static void *unformatted_write_mfm(
     return memalloc(0); /* dummy */
 }
 
-static void unformatted_read_mfm(
+static void unformatted_read_raw(
     struct disk *d, unsigned int tracknr, struct track_buffer *tbuf)
 {
     unsigned int i;
@@ -85,8 +85,8 @@ static void unformatted_read_mfm(
 }
 
 struct track_handler unformatted_handler = {
-    .write_mfm = unformatted_write_mfm,
-    .read_mfm = unformatted_read_mfm
+    .write_raw = unformatted_write_raw,
+    .read_raw = unformatted_read_raw
 };
 
 /*

@@ -25,7 +25,7 @@
 #include <libdisk/util.h>
 #include "../private.h"
 
-static void *archipelagos_write_mfm(
+static void *archipelagos_write_raw(
     struct disk *d, unsigned int tracknr, struct stream *s)
 {
     struct track_info *ti = &d->di->track[tracknr];
@@ -94,7 +94,7 @@ done:
     return block;
 }
 
-static void archipelagos_read_mfm(
+static void archipelagos_read_raw(
     struct disk *d, unsigned int tracknr, struct track_buffer *tbuf)
 {
     struct track_info *ti = &d->di->track[tracknr];
@@ -126,8 +126,8 @@ static void archipelagos_read_mfm(
 struct track_handler archipelagos_handler = {
     .bytes_per_sector = 1024,
     .nr_sectors = 5,
-    .write_mfm = archipelagos_write_mfm,
-    .read_mfm = archipelagos_read_mfm
+    .write_raw = archipelagos_write_raw,
+    .read_raw = archipelagos_read_raw
 };
 
 /*

@@ -37,7 +37,7 @@ static uint16_t sega_sync(uint16_t type)
     BUG();
 }
 
-static void *sega_write_mfm(
+static void *sega_write_raw(
     struct disk *d, unsigned int tracknr, struct stream *s)
 {
     struct track_info *ti = &d->di->track[tracknr];
@@ -94,7 +94,7 @@ fail:
     return NULL;
 }
 
-static void sega_read_mfm(
+static void sega_read_raw(
     struct disk *d, unsigned int tracknr, struct track_buffer *tbuf)
 {
     struct track_info *ti = &d->di->track[tracknr];
@@ -118,22 +118,22 @@ static void sega_read_mfm(
 struct track_handler sega_boot_handler = {
     .bytes_per_sector = 6000,
     .nr_sectors = 1,
-    .write_mfm = sega_write_mfm,
-    .read_mfm = sega_read_mfm
+    .write_raw = sega_write_raw,
+    .read_raw = sega_read_raw
 };
 
 struct track_handler outrun_sega_handler = {
     .bytes_per_sector = 6000,
     .nr_sectors = 1,
-    .write_mfm = sega_write_mfm,
-    .read_mfm = sega_read_mfm
+    .write_raw = sega_write_raw,
+    .read_raw = sega_read_raw
 };
 
 struct track_handler thunderblade_sega_handler = {
     .bytes_per_sector = 6000,
     .nr_sectors = 1,
-    .write_mfm = sega_write_mfm,
-    .read_mfm = sega_read_mfm
+    .write_raw = sega_write_raw,
+    .read_raw = sega_read_raw
 };
 
 /*
@@ -147,7 +147,7 @@ struct track_handler thunderblade_sega_handler = {
  * the header in the output data.
  */
 
-static void *afterburner_sega_write_mfm(
+static void *afterburner_sega_write_raw(
     struct disk *d, unsigned int tracknr, struct stream *s)
 {
     struct track_info *ti = &d->di->track[tracknr];
@@ -207,7 +207,7 @@ static uint32_t csum_long(uint32_t w_prev, uint32_t w)
     return csum;
 }
 
-static void afterburner_sega_read_mfm(
+static void afterburner_sega_read_raw(
     struct disk *d, unsigned int tracknr, struct track_buffer *tbuf)
 {
     struct track_info *ti = &d->di->track[tracknr];
@@ -229,8 +229,8 @@ static void afterburner_sega_read_mfm(
 struct track_handler afterburner_sega_handler = {
     .bytes_per_sector = 6204,
     .nr_sectors = 1,
-    .write_mfm = afterburner_sega_write_mfm,
-    .read_mfm = afterburner_sega_read_mfm
+    .write_raw = afterburner_sega_write_raw,
+    .read_raw = afterburner_sega_read_raw
 };
 
 /*

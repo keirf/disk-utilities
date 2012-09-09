@@ -18,7 +18,7 @@
 #include <libdisk/util.h>
 #include "../private.h"
 
-static void *smartdos_write_mfm(
+static void *smartdos_write_raw(
     struct disk *d, unsigned int tracknr, struct stream *s)
 {
     struct track_info *ti = &d->di->track[tracknr];
@@ -80,7 +80,7 @@ static void mfm_encode_even_odd(
 }
 
 
-static void smartdos_read_mfm(
+static void smartdos_read_raw(
     struct disk *d, unsigned int tracknr, struct track_buffer *tbuf)
 {
     struct track_info *ti = &d->di->track[tracknr];
@@ -110,8 +110,8 @@ static void smartdos_read_mfm(
 struct track_handler smartdos_handler = {
     .bytes_per_sector = 6204+12,
     .nr_sectors = 1,
-    .write_mfm = smartdos_write_mfm,
-    .read_mfm = smartdos_read_mfm
+    .write_raw = smartdos_write_raw,
+    .read_raw = smartdos_read_raw
 };
 
 /*

@@ -37,7 +37,7 @@ static int check_length(struct stream *s, unsigned int min_bits)
  *  successive sync marks. Track contents are not otherwise checked or tested.
  */
 
-static void *protec_longtrack_write_mfm(
+static void *protec_longtrack_write_raw(
     struct disk *d, unsigned int tracknr, struct stream *s)
 {
     struct track_info *ti = &d->di->track[tracknr];
@@ -55,7 +55,7 @@ static void *protec_longtrack_write_mfm(
     return NULL;
 }
 
-static void protec_longtrack_read_mfm(
+static void protec_longtrack_read_raw(
     struct disk *d, unsigned int tracknr, struct track_buffer *tbuf)
 {
     unsigned int i;
@@ -66,8 +66,8 @@ static void protec_longtrack_read_mfm(
 }
 
 struct track_handler protec_longtrack_handler = {
-    .write_mfm = protec_longtrack_write_mfm,
-    .read_mfm = protec_longtrack_read_mfm
+    .write_raw = protec_longtrack_write_raw,
+    .read_raw = protec_longtrack_read_raw
 };
 
 /*
@@ -83,7 +83,7 @@ struct track_handler protec_longtrack_handler = {
  *  Track is typically ~105500 bits long.
  */
 
-static void *gremlin_longtrack_write_mfm(
+static void *gremlin_longtrack_write_raw(
     struct disk *d, unsigned int tracknr, struct stream *s)
 {
     struct track_info *ti = &d->di->track[tracknr];
@@ -100,7 +100,7 @@ static void *gremlin_longtrack_write_mfm(
     return NULL;
 }
 
-static void gremlin_longtrack_read_mfm(
+static void gremlin_longtrack_read_raw(
     struct disk *d, unsigned int tracknr, struct track_buffer *tbuf)
 {
     struct track_info *ti = &d->di->track[tracknr];
@@ -112,8 +112,8 @@ static void gremlin_longtrack_read_mfm(
 }
 
 struct track_handler gremlin_longtrack_handler = {
-    .write_mfm = gremlin_longtrack_write_mfm,
-    .read_mfm = gremlin_longtrack_read_mfm
+    .write_raw = gremlin_longtrack_write_raw,
+    .read_raw = gremlin_longtrack_read_raw
 };
 
 /*
@@ -126,8 +126,8 @@ struct track_handler gremlin_longtrack_handler = {
  */
 
 struct track_handler tiertex_longtrack_handler = {
-    .write_mfm = gremlin_longtrack_write_mfm,
-    .read_mfm = gremlin_longtrack_read_mfm
+    .write_raw = gremlin_longtrack_write_raw,
+    .read_raw = gremlin_longtrack_read_raw
 };
 
 /*
@@ -140,7 +140,7 @@ struct track_handler tiertex_longtrack_handler = {
  *  starting 12 bytes into the DMA buffer (i.e., 12 bytes after the sync)
  */
 
-static void *crystals_of_arborea_longtrack_write_mfm(
+static void *crystals_of_arborea_longtrack_write_raw(
     struct disk *d, unsigned int tracknr, struct stream *s)
 {
     struct track_info *ti = &d->di->track[tracknr];
@@ -165,7 +165,7 @@ static void *crystals_of_arborea_longtrack_write_mfm(
     return NULL;
 }
 
-static void crystals_of_arborea_longtrack_read_mfm(
+static void crystals_of_arborea_longtrack_read_raw(
     struct disk *d, unsigned int tracknr, struct track_buffer *tbuf)
 {
     unsigned int i;
@@ -177,8 +177,8 @@ static void crystals_of_arborea_longtrack_read_mfm(
 }
 
 struct track_handler crystals_of_arborea_longtrack_handler = {
-    .write_mfm = crystals_of_arborea_longtrack_write_mfm,
-    .read_mfm = crystals_of_arborea_longtrack_read_mfm
+    .write_raw = crystals_of_arborea_longtrack_write_raw,
+    .read_raw = crystals_of_arborea_longtrack_read_raw
 };
 
 /*
@@ -190,7 +190,7 @@ struct track_handler crystals_of_arborea_longtrack_handler = {
  *  the first 0xaa byte in the DMA buffer (i.e., first 0xaa following sync).
  */
 
-static void *infogrames_longtrack_write_mfm(
+static void *infogrames_longtrack_write_raw(
     struct disk *d, unsigned int tracknr, struct stream *s)
 {
     struct track_info *ti = &d->di->track[tracknr];
@@ -210,7 +210,7 @@ static void *infogrames_longtrack_write_mfm(
     return NULL;
 }
 
-static void infogrames_longtrack_read_mfm(
+static void infogrames_longtrack_read_raw(
     struct disk *d, unsigned int tracknr, struct track_buffer *tbuf)
 {
     unsigned int i;
@@ -221,8 +221,8 @@ static void infogrames_longtrack_read_mfm(
 }
 
 struct track_handler infogrames_longtrack_handler = {
-    .write_mfm = infogrames_longtrack_write_mfm,
-    .read_mfm = infogrames_longtrack_read_mfm
+    .write_raw = infogrames_longtrack_write_raw,
+    .read_raw = infogrames_longtrack_read_raw
 };
 
 /*
@@ -234,7 +234,7 @@ struct track_handler infogrames_longtrack_handler = {
  *  starting 4 bytes into the DMA buffer (i.e., 4 bytes after the sync)
  */
 
-static void *bat_longtrack_write_mfm(
+static void *bat_longtrack_write_raw(
     struct disk *d, unsigned int tracknr, struct stream *s)
 {
     struct track_info *ti = &d->di->track[tracknr];
@@ -252,7 +252,7 @@ static void *bat_longtrack_write_mfm(
     return NULL;
 }
 
-static void bat_longtrack_read_mfm(
+static void bat_longtrack_read_raw(
     struct disk *d, unsigned int tracknr, struct track_buffer *tbuf)
 {
     unsigned int i;
@@ -263,8 +263,8 @@ static void bat_longtrack_read_mfm(
 }
 
 struct track_handler bat_longtrack_handler = {
-    .write_mfm = bat_longtrack_write_mfm,
-    .read_mfm = bat_longtrack_read_mfm
+    .write_raw = bat_longtrack_write_raw,
+    .read_raw = bat_longtrack_read_raw
 };
 
 /*

@@ -20,7 +20,7 @@
 #include <libdisk/util.h>
 #include "../private.h"
 
-static void *bombuzal_write_mfm(
+static void *bombuzal_write_raw(
     struct disk *d, unsigned int tracknr, struct stream *s)
 {
     struct track_info *ti = &d->di->track[tracknr];
@@ -29,7 +29,7 @@ static void *bombuzal_write_mfm(
     unsigned int i;
 
     init_track_info(ti, TRKTYP_amigados);
-    ablk = handlers[TRKTYP_amigados]->write_mfm(d, tracknr, s);
+    ablk = handlers[TRKTYP_amigados]->write_raw(d, tracknr, s);
     if ((ablk == NULL) || (ti->type != TRKTYP_amigados))
         goto fail;
 
@@ -67,7 +67,7 @@ fail:
     return NULL;
 }
 
-static void bombuzal_read_mfm(
+static void bombuzal_read_raw(
     struct disk *d, unsigned int tracknr, struct track_buffer *tbuf)
 {
     struct track_info *ti = &d->di->track[tracknr];
@@ -80,14 +80,14 @@ static void bombuzal_read_mfm(
     for (i = 0; i < 168; i++)
         tbuf_bits(tbuf, SPEED_AVG, MFM_all, 8, 0);
 
-    handlers[TRKTYP_amigados]->read_mfm(d, tracknr, tbuf);
+    handlers[TRKTYP_amigados]->read_raw(d, tracknr, tbuf);
 }
 
 struct track_handler bombuzal_handler = {
     .bytes_per_sector = 512,
     .nr_sectors = 11,
-    .write_mfm = bombuzal_write_mfm,
-    .read_mfm = bombuzal_read_mfm
+    .write_raw = bombuzal_write_raw,
+    .read_raw = bombuzal_read_raw
 };
 
 /*

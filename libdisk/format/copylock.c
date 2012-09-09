@@ -85,7 +85,7 @@ static uint32_t lfsr_seek(
     return x;
 }
 
-static void *copylock_write_mfm(
+static void *copylock_write_raw(
     struct disk *d, unsigned int tracknr, struct stream *s)
 {
     struct track_info *ti = &d->di->track[tracknr];
@@ -221,7 +221,7 @@ static void *copylock_write_mfm(
     return block;
 }
 
-static void copylock_read_mfm(
+static void copylock_read_raw(
     struct disk *d, unsigned int tracknr, struct track_buffer *tbuf)
 {
     struct track_info *ti = &d->di->track[tracknr];
@@ -269,15 +269,15 @@ static void copylock_read_mfm(
 struct track_handler copylock_handler = {
     .bytes_per_sector = 512,
     .nr_sectors = 11,
-    .write_mfm = copylock_write_mfm,
-    .read_mfm = copylock_read_mfm
+    .write_raw = copylock_write_raw,
+    .read_raw = copylock_read_raw
 };
 
 struct track_handler copylock_old_handler = {
     .bytes_per_sector = 512,
     .nr_sectors = 11,
-    .write_mfm = copylock_write_mfm,
-    .read_mfm = copylock_read_mfm
+    .write_raw = copylock_write_raw,
+    .read_raw = copylock_read_raw
 };
 
 /*

@@ -9,13 +9,13 @@
 #include <libdisk/util.h>
 #include "../private.h"
 
-static void *raw_write_mfm(
+static void *raw_write_raw(
     struct disk *d, unsigned int tracknr, struct stream *s)
 {
     return NULL;
 }
 
-static void raw_read_mfm(
+static void raw_read_raw(
     struct disk *d, unsigned int tracknr, struct track_buffer *tbuf)
 {
     struct track_info *ti = &d->di->track[tracknr];
@@ -28,8 +28,8 @@ static void raw_read_mfm(
 }
 
 struct track_handler raw_handler = {
-    .write_mfm = raw_write_mfm,
-    .read_mfm = raw_read_mfm
+    .write_raw = raw_write_raw,
+    .read_raw = raw_read_raw
 };
 
 /*

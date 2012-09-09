@@ -91,21 +91,21 @@ struct disk_tag *disk_get_tag_by_idx(struct disk *d, unsigned int idx);
 struct disk_tag *disk_set_tag(
     struct disk *d, uint16_t id, uint16_t len, void *dat);
 
-struct track_mfm {
-    uint8_t *mfm;
+struct track_raw {
+    uint8_t *bits;
     uint16_t *speed;
     uint32_t bitlen;
     uint8_t has_weak_bits;
 };
-struct track_mfm *track_mfm_get(struct disk *d, unsigned int tracknr);
-void track_mfm_put(struct track_mfm *);
+struct track_raw *track_raw_get(struct disk *d, unsigned int tracknr);
+void track_raw_put(struct track_raw *);
 
-int track_write_mfm_from_stream(
+int track_write_raw_from_stream(
     struct disk *, unsigned int tracknr, enum track_type type,
     struct stream *s);
-int track_write_mfm(
+int track_write_raw(
     struct disk *, unsigned int tracknr, enum track_type type,
-    struct track_mfm *);
+    struct track_raw *);
 
 void track_mark_unformatted(
     struct disk *, unsigned int tracknr);

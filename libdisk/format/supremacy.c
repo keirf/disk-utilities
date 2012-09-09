@@ -21,7 +21,7 @@
  *  u8 sector_data[4*1024]
  */
 
-static void *supremacy_a_write_mfm(
+static void *supremacy_a_write_raw(
     struct disk *d, unsigned int tracknr, struct stream *s)
 {
     struct track_info *ti = &d->di->track[tracknr];
@@ -63,7 +63,7 @@ static void *supremacy_a_write_mfm(
     return NULL;
 }
 
-static void supremacy_a_read_mfm(
+static void supremacy_a_read_raw(
     struct disk *d, unsigned int tracknr, struct track_buffer *tbuf)
 {
     struct track_info *ti = &d->di->track[tracknr];
@@ -85,8 +85,8 @@ static void supremacy_a_read_mfm(
 struct track_handler supremacy_a_handler = {
     .bytes_per_sector = 4*1024,
     .nr_sectors = 1,
-    .write_mfm = supremacy_a_write_mfm,
-    .read_mfm = supremacy_a_read_mfm
+    .write_raw = supremacy_a_write_raw,
+    .read_raw = supremacy_a_read_raw
 };
 
 /*
@@ -104,7 +104,7 @@ struct track_handler supremacy_a_handler = {
  *  u8 sector_data[11*512]
  */
 
-static void *supremacy_b_write_mfm(
+static void *supremacy_b_write_raw(
     struct disk *d, unsigned int tracknr, struct stream *s)
 {
     struct track_info *ti = &d->di->track[tracknr];
@@ -168,7 +168,7 @@ static void *supremacy_b_write_mfm(
     return block;
 }
 
-static void supremacy_b_read_mfm(
+static void supremacy_b_read_raw(
     struct disk *d, unsigned int tracknr, struct track_buffer *tbuf)
 {
     struct track_info *ti = &d->di->track[tracknr];
@@ -199,8 +199,8 @@ static void supremacy_b_read_mfm(
 struct track_handler supremacy_b_handler = {
     .bytes_per_sector = 512,
     .nr_sectors = 11,
-    .write_mfm = supremacy_b_write_mfm,
-    .read_mfm = supremacy_b_read_mfm
+    .write_raw = supremacy_b_write_raw,
+    .read_raw = supremacy_b_read_raw
 };
 
 /*

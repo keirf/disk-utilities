@@ -32,13 +32,14 @@ struct amiga_disk {
     uint16_t tracknr;
 
     struct disk *df0_disk;
-    struct track_mfm *track_mfm;
+    struct track_raw *track_raw;
     unsigned int av_ns_per_cell;
 
-    struct event *mfm_delay;
-    time_ns_t last_mfm_bit_time;
-    unsigned int mfmpos, bitpos, mfmbyte, ns_per_cell;
-    uint16_t mfm_word;
+    struct event *data_delay;
+    time_ns_t last_bitcell_time;
+    unsigned int data_word_bitpos, ns_per_cell;
+    unsigned int input_pos, input_byte;
+    uint16_t data_word;
 
     uint8_t dma;
     uint16_t dsklen;

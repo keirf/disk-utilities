@@ -19,7 +19,7 @@
 #include <libdisk/util.h>
 #include "../private.h"
 
-static void *vade_retro_alienas_write_mfm(
+static void *vade_retro_alienas_write_raw(
     struct disk *d, unsigned int tracknr, struct stream *s)
 {
     struct track_info *ti = &d->di->track[tracknr];
@@ -55,7 +55,7 @@ fail:
     return NULL;
 }
 
-static void vade_retro_alienas_read_mfm(
+static void vade_retro_alienas_read_raw(
     struct disk *d, unsigned int tracknr, struct track_buffer *tbuf)
 {
     struct track_info *ti = &d->di->track[tracknr];
@@ -74,8 +74,8 @@ static void vade_retro_alienas_read_mfm(
 struct track_handler vade_retro_alienas_handler = {
     .bytes_per_sector = 6318,
     .nr_sectors = 1,
-    .write_mfm = vade_retro_alienas_write_mfm,
-    .read_mfm = vade_retro_alienas_read_mfm
+    .write_raw = vade_retro_alienas_write_raw,
+    .read_raw = vade_retro_alienas_read_raw
 };
 
 /*

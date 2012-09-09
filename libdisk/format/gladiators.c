@@ -17,7 +17,7 @@
 #include <libdisk/util.h>
 #include "../private.h"
 
-static void *gladiators_write_mfm(
+static void *gladiators_write_raw(
     struct disk *d, unsigned int tracknr, struct stream *s)
 {
     struct track_info *ti = &d->di->track[tracknr];
@@ -71,7 +71,7 @@ static uint32_t csum_long(uint32_t w_prev, uint32_t w)
     return csum;
 }
 
-static void gladiators_read_mfm(
+static void gladiators_read_raw(
     struct disk *d, unsigned int tracknr, struct track_buffer *tbuf)
 {
     struct track_info *ti = &d->di->track[tracknr];
@@ -93,8 +93,8 @@ static void gladiators_read_mfm(
 struct track_handler gladiators_handler = {
     .bytes_per_sector = 6*1024,
     .nr_sectors = 1,
-    .write_mfm = gladiators_write_mfm,
-    .read_mfm = gladiators_read_mfm
+    .write_raw = gladiators_write_raw,
+    .read_raw = gladiators_read_raw
 };
 
 /*

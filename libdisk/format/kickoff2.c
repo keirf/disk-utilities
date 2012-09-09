@@ -23,14 +23,14 @@
 #include <libdisk/util.h>
 #include "../private.h"
 
-static void *kickoff2_write_mfm(
+static void *kickoff2_write_raw(
     struct disk *d, unsigned int tracknr, struct stream *s)
 {
     struct track_info *ti = &d->di->track[tracknr];
     char *ablk;
 
     init_track_info(ti, TRKTYP_amigados);
-    ablk = handlers[TRKTYP_amigados]->write_mfm(d, tracknr, s);
+    ablk = handlers[TRKTYP_amigados]->write_raw(d, tracknr, s);
     if ((ablk == NULL) || (ti->type != TRKTYP_amigados)) {
         memfree(ablk);
         return NULL;
@@ -45,12 +45,12 @@ static void *kickoff2_write_mfm(
     return ablk;
 }
 
-static void kickoff2_read_mfm(
+static void kickoff2_read_raw(
     struct disk *d, unsigned int tracknr, struct track_buffer *tbuf)
 {
     unsigned int i;
 
-    handlers[TRKTYP_amigados]->read_mfm(d, tracknr, tbuf);
+    handlers[TRKTYP_amigados]->read_raw(d, tracknr, tbuf);
 
     /* Extend the last sector. */
     for (i = 0; i < 130; i++)
@@ -61,8 +61,8 @@ static void kickoff2_read_mfm(
 struct track_handler kickoff2_handler = {
     .bytes_per_sector = 512,
     .nr_sectors = 11,
-    .write_mfm = kickoff2_write_mfm,
-    .read_mfm = kickoff2_read_mfm
+    .write_raw = kickoff2_write_raw,
+    .read_raw = kickoff2_read_raw
 };
 
 /*

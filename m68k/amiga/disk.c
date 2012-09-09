@@ -29,9 +29,10 @@ static const char *df0_filename =
 
 static void track_load_byte(struct amiga_state *s)
 {
-    s->disk.ns_per_cell = (s->disk.av_ns_per_cell *
-                           s->disk.track_mfm->speed[s->disk.mfmpos/8]) / 1000u;
-    s->disk.mfmbyte = s->disk.track_mfm->mfm[s->disk.mfmpos/8];
+    s->disk.ns_per_cell =
+        (s->disk.av_ns_per_cell *
+         s->disk.track_raw->speed[s->disk.input_pos/8]) / 1000u;
+    s->disk.input_byte = s->disk.track_raw->bits[s->disk.input_pos/8];
 }
 
 static void disk_dma_word(struct amiga_state *s, uint16_t w)
@@ -53,30 +54,30 @@ static void disk_dma_word(struct amiga_state *s, uint16_t w)
     }
 }
 
-static void mfm_cb(void *_s)
+static void data_cb(void *_s)
 {
     struct amiga_state *s = _s;
-    time_ns_t t = s->disk.last_mfm_bit_time;
+    time_ns_t t = s->disk.last_bitcell_time;
     time_ns_t now = s->event_base.current_time;
-    uint16_t w = s->disk.mfm_word;
+    uint16_t w = s->disk.data_word;
 
     for (t += s->disk.ns_per_cell; t <= now; t += s->disk.ns_per_cell) {
         w <<= 1;
-        if (s->disk.mfmbyte & 0x80)
+        if (s->disk.input_byte & 0x80)
             w |= 1;
-        s->disk.mfmbyte <<= 1;
-        if (++s->disk.mfmpos == s->disk.track_mfm->bitlen) {
+        s->disk.input_byte <<= 1;
+        if (++s->disk.input_pos == s->disk.track_raw->bitlen) {
             cia_set_icr_flag(s, &s->ciab, CIAICRB_FLG);
-            s->disk.mfmpos = 0;
+            s->disk.input_pos = 0;
         }
-        if (!(s->disk.mfmpos & 7))
+        if (!(s->disk.input_pos & 7))
             track_load_byte(s);
-        s->disk.bitpos++;
+        s->disk.data_word_bitpos++;
         s->custom[CUST_dskbytr] &= ~(1u<<12);
-        if (!(s->disk.bitpos & 7)) {
+        if (!(s->disk.data_word_bitpos & 7)) {
             s->custom[CUST_dskbytr] &= 0x7f00;
             s->custom[CUST_dskbytr] |= 0x8000 | (uint8_t)w;
-            if ((s->disk.dma == 2) && !(s->disk.bitpos & 15))
+            if ((s->disk.dma == 2) && !(s->disk.data_word_bitpos & 15))
                 disk_dma_word(s, w);
         }
         if ((s->custom[CUST_adkcon] & (1u<<10)) /* WORDSYNC? */
@@ -84,7 +85,7 @@ static void mfm_cb(void *_s)
             log_info("Disk sync found");
             intreq_set_bit(s, 12); /* disk sync found */
             s->custom[CUST_dskbytr] |= 1u<<12; /* WORDEQUAL */
-            s->disk.bitpos = 0;
+            s->disk.data_word_bitpos = 0;
             if ((s->custom[CUST_dmacon] & (1u<<4)) && (s->disk.dma == 1)) {
                 /*
                  * How much checking should I do for DMA read start?
@@ -102,29 +103,29 @@ static void mfm_cb(void *_s)
         }
     }
 
-    s->disk.last_mfm_bit_time = t - s->disk.ns_per_cell;
-    s->disk.mfm_word = w;
+    s->disk.last_bitcell_time = t - s->disk.ns_per_cell;
+    s->disk.data_word = w;
 
-    event_set(s->disk.mfm_delay, t);
+    event_set(s->disk.data_delay, t);
 }
 
 static void track_load(struct amiga_state *s)
 {
     log_info("Loading track %u", s->disk.tracknr);
-    track_mfm_put(s->disk.track_mfm);
-    s->disk.track_mfm = track_mfm_get(s->disk.df0_disk, s->disk.tracknr);
-    s->disk.mfmpos = s->disk.bitpos = s->disk.mfm_word = 0;
-    s->disk.last_mfm_bit_time = s->event_base.current_time;
-    s->disk.av_ns_per_cell = 200000000ul / s->disk.track_mfm->bitlen;
+    track_raw_put(s->disk.track_raw);
+    s->disk.track_raw = track_raw_get(s->disk.df0_disk, s->disk.tracknr);
+    s->disk.input_pos = s->disk.data_word_bitpos = s->disk.data_word = 0;
+    s->disk.last_bitcell_time = s->event_base.current_time;
+    s->disk.av_ns_per_cell = 200000000ul / s->disk.track_raw->bitlen;
     track_load_byte(s);
-    mfm_cb(s);
+    data_cb(s);
 }
 
 static void track_unload(struct amiga_state *s)
 {
-    track_mfm_put(s->disk.track_mfm);
-    s->disk.track_mfm = NULL;
-    event_unset(s->disk.mfm_delay);
+    track_raw_put(s->disk.track_raw);
+    s->disk.track_raw = NULL;
+    event_unset(s->disk.data_delay);
 }
 
 static void disk_recalc_cia_inputs(struct amiga_state *s)
@@ -263,7 +264,7 @@ void disk_init(struct amiga_state *s)
     s->disk.step = step_none;
     s->disk.old_ciabb = s->ciab.prb_o;
     s->disk.tracknr = 1;
-    s->disk.mfm_delay = event_alloc(&s->event_base, mfm_cb, s);
+    s->disk.data_delay = event_alloc(&s->event_base, data_cb, s);
 }
 
 void amiga_insert_df0(const char *filename)

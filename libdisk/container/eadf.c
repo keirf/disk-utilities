@@ -83,7 +83,7 @@ static void eadf_close(struct disk *d)
     struct track_info *ti;
     struct disk_header dhdr;
     struct track_header thdr;
-    struct track_mfm *mfm[di->nr_tracks];
+    struct track_raw *raw[di->nr_tracks];
     unsigned int i, j;
 
     lseek(d->fd, 0, SEEK_SET);
@@ -95,18 +95,18 @@ static void eadf_close(struct disk *d)
     dhdr.nr_tracks = htobe16(di->nr_tracks);
     write_exact(d->fd, &dhdr, sizeof(dhdr));
 
-    memset(mfm, 0, sizeof(mfm));
+    memset(raw, 0, sizeof(raw));
     thdr.type = htobe16(1);
     for (i = 0; i < di->nr_tracks; i++) {
         ti = &di->track[i];
         if (ti->type == TRKTYP_unformatted) {
             thdr.len = thdr.bitlen = 0;
         } else {
-            mfm[i] = track_mfm_get(d, i);
-            thdr.len = htobe32((mfm[i]->bitlen+7)/8);
-            thdr.bitlen = htobe32(mfm[i]->bitlen);
-            for (j = 0; j < (mfm[i]->bitlen+7)/8; j++) {
-                if (mfm[i]->speed[j] == 1000)
+            raw[i] = track_raw_get(d, i);
+            thdr.len = htobe32((raw[i]->bitlen+7)/8);
+            thdr.bitlen = htobe32(raw[i]->bitlen);
+            for (j = 0; j < (raw[i]->bitlen+7)/8; j++) {
+                if (raw[i]->speed[j] == 1000)
                     continue;
                 printf("*** T%u: Variable-density track cannot be correctly "
                        "written to an Ext-ADF file\n", i);
@@ -117,10 +117,10 @@ static void eadf_close(struct disk *d)
     }
 
     for (i = 0; i < di->nr_tracks; i++) {
-        if (mfm[i] == NULL)
+        if (raw[i] == NULL)
             continue;
-        write_exact(d->fd, mfm[i]->mfm, (mfm[i]->bitlen+7)/8);
-        track_mfm_put(mfm[i]);
+        write_exact(d->fd, raw[i]->bits, (raw[i]->bitlen+7)/8);
+        track_raw_put(raw[i]);
     }
 }
 
@@ -128,7 +128,7 @@ struct container container_eadf = {
     .init = dsk_init,
     .open = eadf_open,
     .close = eadf_close,
-    .write_mfm = dsk_write_mfm
+    .write_raw = dsk_write_raw
 };
 
 /*

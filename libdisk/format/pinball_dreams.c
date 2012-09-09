@@ -18,7 +18,7 @@
 #include <libdisk/util.h>
 #include "../private.h"
 
-static void *pinball_dreams_write_mfm(
+static void *pinball_dreams_write_raw(
     struct disk *d, unsigned int tracknr, struct stream *s)
 {
     struct track_info *ti = &d->di->track[tracknr];
@@ -71,7 +71,7 @@ fail:
     return NULL;
 }
 
-static void pinball_dreams_read_mfm(
+static void pinball_dreams_read_raw(
     struct disk *d, unsigned int tracknr, struct track_buffer *tbuf)
 {
     struct track_info *ti = &d->di->track[tracknr];
@@ -100,8 +100,8 @@ static void pinball_dreams_read_mfm(
 struct track_handler pinball_dreams_handler = {
     .bytes_per_sector = 0x1862,
     .nr_sectors = 1,
-    .write_mfm = pinball_dreams_write_mfm,
-    .read_mfm = pinball_dreams_read_mfm
+    .write_raw = pinball_dreams_write_raw,
+    .read_raw = pinball_dreams_read_raw
 };
 
 /*

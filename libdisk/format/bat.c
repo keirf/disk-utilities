@@ -21,7 +21,7 @@
 #include <libdisk/util.h>
 #include "../private.h"
 
-static void *bat_write_mfm(
+static void *bat_write_raw(
     struct disk *d, unsigned int tracknr, struct stream *s)
 {
     struct track_info *ti = &d->di->track[tracknr];
@@ -57,7 +57,7 @@ static void *bat_write_mfm(
     return NULL;
 }
 
-static void bat_read_mfm(
+static void bat_read_raw(
     struct disk *d, unsigned int tracknr, struct track_buffer *tbuf)
 {
     struct track_info *ti = &d->di->track[tracknr];
@@ -78,8 +78,8 @@ static void bat_read_mfm(
 struct track_handler bat_handler = {
     .bytes_per_sector = 6304,
     .nr_sectors = 1,
-    .write_mfm = bat_write_mfm,
-    .read_mfm = bat_read_mfm
+    .write_raw = bat_write_raw,
+    .read_raw = bat_read_raw
 };
 
 /*

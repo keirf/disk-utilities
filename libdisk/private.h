@@ -40,9 +40,9 @@ enum mfm_encoding {
     MFM_odd_even   /* emit all odd-numbered bits; then even-numbered */
 };
 
-/* Track buffer: this is opaque to MFM encoders, updated via tbuf_* helpers. */
+/* Track buffer: this is opaque to encoders, updated via tbuf_* helpers. */
 struct track_buffer {
-    uint8_t *mfm;
+    uint8_t *bits;
     uint16_t *speed;
     uint32_t start, pos, len;
     uint8_t prev_data_bit;
@@ -74,18 +74,18 @@ enum track_density {
     TRKDEN_mfm_extra
 };
 
-/* MFM track handler -- interface for various MFM analysers/encoders. */
+/* Track handler -- interface for various raw-bitcell analysers/encoders. */
 struct track_handler {
     enum track_density density;
     unsigned int bytes_per_sector;
     unsigned int nr_sectors;
-    void *(*write_mfm)(
+    void *(*write_raw)(
         struct disk *, unsigned int tracknr, struct stream *);
-    void (*read_mfm)(
+    void (*read_raw)(
         struct disk *, unsigned int tracknr, struct track_buffer *);
 };
 
-/* Array of supported MFM analysers/handlers. */
+/* Array of supported raw-bitcell analysers/handlers. */
 extern const struct track_handler *handlers[];
 
 /* Set up a track with defaults for a given track format. */
@@ -99,8 +99,8 @@ struct container {
     struct container *(*open)(struct disk *);
     /* Close, writing back any pending changes. */
     void (*close)(struct disk *);
-    /* Analyse and write an MFM stream to given track in container. */
-    int (*write_mfm)(struct disk *, unsigned int tracknr,
+    /* Analyse and write a raw stream to given track in container. */
+    int (*write_raw)(struct disk *, unsigned int tracknr,
                      enum track_type, struct stream *);
 };
 
@@ -111,9 +111,9 @@ extern struct container container_dsk;
 extern struct container container_img;
 extern struct container container_ipf;
 
-/* Helpers for container implementations: defaults for init() & write_mfm(). */
+/* Helpers for container implementations: defaults for init() & write_raw(). */
 void dsk_init(struct disk *d);
-int dsk_write_mfm(
+int dsk_write_raw(
     struct disk *d, unsigned int tracknr, enum track_type type,
     struct stream *s);
 

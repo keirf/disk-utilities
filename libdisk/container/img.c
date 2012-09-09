@@ -113,7 +113,7 @@ struct container container_img = {
     .init = img_init,
     .open = img_open,
     .close = img_close,
-    .write_mfm = dsk_write_mfm
+    .write_raw = dsk_write_raw
 };
 
 /*

@@ -27,7 +27,7 @@ struct track_param {
     uint16_t sync, blksz;
 };
 
-static void *tlk_dos_write_mfm(
+static void *tlk_dos_write_raw(
     struct disk *d, unsigned int tracknr, struct stream *s,
     uint16_t tlk_id, const struct track_param *track_param)
 {
@@ -83,7 +83,7 @@ fail:
     return NULL;
 }
 
-static void tlk_dos_read_mfm(
+static void tlk_dos_read_raw(
     struct disk *d, unsigned int tracknr, struct track_buffer *tbuf,
     uint16_t tlk_id, const struct track_param *track_param)
 {
@@ -133,23 +133,23 @@ const static struct track_param tlk1_param[] = {
     { 0x4489, 0x189c }, { 0x4489, 0x189c }
 };
 
-static void *tlk_dos_1_write_mfm(
+static void *tlk_dos_1_write_raw(
     struct disk *d, unsigned int tracknr, struct stream *s)
 {
-    return tlk_dos_write_mfm(d, tracknr, s, 0xff54, tlk1_param);
+    return tlk_dos_write_raw(d, tracknr, s, 0xff54, tlk1_param);
 }
 
-static void tlk_dos_1_read_mfm(
+static void tlk_dos_1_read_raw(
     struct disk *d, unsigned int tracknr, struct track_buffer *tbuf)
 {
-    tlk_dos_read_mfm(d, tracknr, tbuf, 0xff54, tlk1_param);
+    tlk_dos_read_raw(d, tracknr, tbuf, 0xff54, tlk1_param);
 }
 
 struct track_handler tlk_dos_1_handler = {
     .bytes_per_sector = 6292,
     .nr_sectors = 1,
-    .write_mfm = tlk_dos_1_write_mfm,
-    .read_mfm = tlk_dos_1_read_mfm
+    .write_raw = tlk_dos_1_write_raw,
+    .read_raw = tlk_dos_1_read_raw
 };
 
 const static struct track_param tlk2_param[] = {
@@ -175,23 +175,23 @@ const static struct track_param tlk2_param[] = {
     { 0x2aad, 0x189c }, { 0x2aad, 0x189c }
 };
 
-static void *tlk_dos_2_write_mfm(
+static void *tlk_dos_2_write_raw(
     struct disk *d, unsigned int tracknr, struct stream *s)
 {
-    return tlk_dos_write_mfm(d, tracknr, s, 0xff56, tlk2_param);
+    return tlk_dos_write_raw(d, tracknr, s, 0xff56, tlk2_param);
 }
 
-static void tlk_dos_2_read_mfm(
+static void tlk_dos_2_read_raw(
     struct disk *d, unsigned int tracknr, struct track_buffer *tbuf)
 {
-    tlk_dos_read_mfm(d, tracknr, tbuf, 0xff56, tlk2_param);
+    tlk_dos_read_raw(d, tracknr, tbuf, 0xff56, tlk2_param);
 }
 
 struct track_handler tlk_dos_2_handler = {
     .bytes_per_sector = 6292,
     .nr_sectors = 1,
-    .write_mfm = tlk_dos_2_write_mfm,
-    .read_mfm = tlk_dos_2_read_mfm
+    .write_raw = tlk_dos_2_write_raw,
+    .read_raw = tlk_dos_2_read_raw
 };
 
 /*

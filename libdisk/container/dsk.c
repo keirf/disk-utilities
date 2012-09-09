@@ -210,7 +210,7 @@ static void dsk_close(struct disk *d)
     }
 }
 
-int dsk_write_mfm(
+int dsk_write_raw(
     struct disk *d, unsigned int tracknr, enum track_type type,
     struct stream *s)
 {
@@ -233,7 +233,7 @@ int dsk_write_mfm(
     ti->total_bits = default_len;
 
     if (stream_select_track(s, tracknr) == 0)
-        ti->dat = handlers[type]->write_mfm(d, tracknr, s);
+        ti->dat = handlers[type]->write_raw(d, tracknr, s);
 
     if (ti->dat == NULL) {
         track_mark_unformatted(d, tracknr);
@@ -265,7 +265,7 @@ struct container container_dsk = {
     .init = dsk_init,
     .open = dsk_open,
     .close = dsk_close,
-    .write_mfm = dsk_write_mfm
+    .write_raw = dsk_write_raw
 };
 
 /*

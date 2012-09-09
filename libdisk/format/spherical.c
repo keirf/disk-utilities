@@ -17,7 +17,7 @@
 #include <libdisk/util.h>
 #include "../private.h"
 
-static void *spherical_write_mfm(
+static void *spherical_write_raw(
     struct disk *d, unsigned int tracknr, struct stream *s)
 {
     struct track_info *ti = &d->di->track[tracknr];
@@ -54,7 +54,7 @@ fail:
     return NULL;
 }
 
-static void spherical_read_mfm(
+static void spherical_read_raw(
     struct disk *d, unsigned int tracknr, struct track_buffer *tbuf)
 {
     struct track_info *ti = &d->di->track[tracknr];
@@ -75,8 +75,8 @@ static void spherical_read_mfm(
 struct track_handler spherical_handler = {
     .bytes_per_sector = 5120,
     .nr_sectors = 1,
-    .write_mfm = spherical_write_mfm,
-    .read_mfm = spherical_read_mfm
+    .write_raw = spherical_write_raw,
+    .read_raw = spherical_read_raw
 };
 
 /*

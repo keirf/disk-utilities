@@ -14,7 +14,7 @@
 #define sec_no(sec) (((sec) < 5) ? 4 : ((sec) < 6) ? 3 : 1)
 #define sec_off(sec) (((sec) < 6) ? (sec)*2048 : 11*1024)
 
-static void *sega_system_24_write_mfm(
+static void *sega_system_24_write_raw(
     struct disk *d, unsigned int tracknr, struct stream *s)
 {
     struct track_info *ti = &d->di->track[tracknr];
@@ -72,7 +72,7 @@ static void *sega_system_24_write_mfm(
     return block;
 }
 
-static void sega_system_24_read_mfm(
+static void sega_system_24_read_raw(
     struct disk *d, unsigned int tracknr, struct track_buffer *tbuf)
 {
     struct track_info *ti = &d->di->track[tracknr];
@@ -113,8 +113,8 @@ struct track_handler sega_system_24_handler = {
     .density = TRKDEN_mfm_high,
     .bytes_per_sector = 2048,
     .nr_sectors = 7,
-    .write_mfm = sega_system_24_write_mfm,
-    .read_mfm = sega_system_24_read_mfm
+    .write_raw = sega_system_24_write_raw,
+    .read_raw = sega_system_24_read_raw
 };
 
 /*

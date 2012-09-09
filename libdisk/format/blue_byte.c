@@ -31,7 +31,7 @@
 
 #define trknr(t) ((80 * !((t) & 1)) + ((t) >> 1))
 
-static void *blue_byte_write_mfm(
+static void *blue_byte_write_raw(
     struct disk *d, unsigned int tracknr, struct stream *s)
 {
     struct track_info *ti = &d->di->track[tracknr];
@@ -70,7 +70,7 @@ fail:
     return NULL;
 }
 
-static void blue_byte_read_mfm(
+static void blue_byte_read_raw(
     struct disk *d, unsigned int tracknr, struct track_buffer *tbuf)
 {
     struct track_info *ti = &d->di->track[tracknr];
@@ -94,8 +94,8 @@ static void blue_byte_read_mfm(
 struct track_handler blue_byte_handler = {
     .bytes_per_sector = 6032,
     .nr_sectors = 1,
-    .write_mfm = blue_byte_write_mfm,
-    .read_mfm = blue_byte_read_mfm
+    .write_raw = blue_byte_write_raw,
+    .read_raw = blue_byte_read_raw
 };
 
 /*

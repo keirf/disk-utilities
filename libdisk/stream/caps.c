@@ -23,7 +23,7 @@ struct caps_stream {
 
     /* Current track info */
     unsigned int track;
-    uint8_t *mfm;
+    uint8_t *bits;
     uint16_t *speed;
     uint32_t pos, bitlen, ns_per_cell;
     struct CapsTrackInfoT1 ti;
@@ -216,7 +216,7 @@ static void caps_reset(struct stream *s)
         BUG_ON(rc);
     }
 
-    cpss->mfm = cpss->ti.trackbuf;
+    cpss->bits = cpss->ti.trackbuf;
     cpss->bitlen = cpss->ti.tracklen * 8;
     cpss->pos = 0;
     cpss->ns_per_cell = 200000000u / cpss->bitlen;
@@ -233,7 +233,7 @@ static int caps_next_bit(struct stream *s)
     if (++cpss->pos >= cpss->bitlen)
         caps_reset(s);
 
-    dat = !!(cpss->mfm[cpss->pos >> 3] & (0x80u >> (cpss->pos & 7)));
+    dat = !!(cpss->bits[cpss->pos >> 3] & (0x80u >> (cpss->pos & 7)));
     speed = ((cpss->pos >> 3) < cpss->ti.timelen)
         ? cpss->speed[cpss->pos >> 3] : 1000u;
     s->latency += (cpss->ns_per_cell * speed) / 1000u;

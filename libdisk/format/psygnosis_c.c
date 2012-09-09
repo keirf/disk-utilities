@@ -35,7 +35,7 @@ static uint16_t checksum(uint16_t *dat, unsigned int nr, unsigned int ver)
     return (uint16_t)sum;
 }
 
-static void *psygnosis_c_track0_write_mfm(
+static void *psygnosis_c_track0_write_raw(
     struct disk *d, unsigned int tracknr, struct stream *s)
 {
     struct track_info *ti = &d->di->track[tracknr];
@@ -44,7 +44,7 @@ static void *psygnosis_c_track0_write_mfm(
     unsigned int i, metablk_words, ver;
 
     init_track_info(ti, TRKTYP_amigados);
-    ablk = handlers[TRKTYP_amigados]->write_mfm(d, tracknr, s);
+    ablk = handlers[TRKTYP_amigados]->write_raw(d, tracknr, s);
     if ((ablk == NULL) || (ti->type != TRKTYP_amigados))
         goto fail;
 
@@ -90,7 +90,7 @@ fail:
     return NULL;
 }
 
-static void psygnosis_c_track0_read_mfm(
+static void psygnosis_c_track0_read_raw(
     struct disk *d, unsigned int tracknr, struct track_buffer *tbuf)
 {
     struct track_info *ti = &d->di->track[tracknr];
@@ -109,14 +109,14 @@ static void psygnosis_c_track0_read_mfm(
         tbuf_bits(tbuf, SPEED_AVG, MFM_even_odd, 16, be16toh(dat[i]));
     tbuf_bits(tbuf, SPEED_AVG, MFM_all, 16, 0);
 
-    handlers[TRKTYP_amigados]->read_mfm(d, tracknr, tbuf);
+    handlers[TRKTYP_amigados]->read_raw(d, tracknr, tbuf);
 }
 
 struct track_handler psygnosis_c_track0_handler = {
     .bytes_per_sector = 512,
     .nr_sectors = 11,
-    .write_mfm = psygnosis_c_track0_write_mfm,
-    .read_mfm = psygnosis_c_track0_read_mfm
+    .write_raw = psygnosis_c_track0_write_raw,
+    .read_raw = psygnosis_c_track0_read_raw
 };
 
 struct track_metadata {
@@ -179,7 +179,7 @@ static bool_t track_metadata(
     return 1;
 }
 
-static void *psygnosis_c_custom_rll_write_mfm(
+static void *psygnosis_c_custom_rll_write_raw(
     struct disk *d, unsigned int tracknr, struct stream *s)
 {
     struct track_info *ti = &d->di->track[tracknr];
@@ -257,7 +257,7 @@ static void *psygnosis_c_custom_rll_write_mfm(
     return NULL;
 }
 
-static void psygnosis_c_custom_rll_read_mfm(
+static void psygnosis_c_custom_rll_read_raw(
     struct disk *d, unsigned int tracknr, struct track_buffer *tbuf)
 {
     struct track_info *ti = &d->di->track[tracknr];
@@ -301,11 +301,11 @@ static void psygnosis_c_custom_rll_read_mfm(
 }
 
 struct track_handler psygnosis_c_custom_rll_handler = {
-    .write_mfm = psygnosis_c_custom_rll_write_mfm,
-    .read_mfm = psygnosis_c_custom_rll_read_mfm
+    .write_raw = psygnosis_c_custom_rll_write_raw,
+    .read_raw = psygnosis_c_custom_rll_read_raw
 };
 
-static void *psygnosis_c_write_mfm(
+static void *psygnosis_c_write_raw(
     struct disk *d, unsigned int tracknr, struct stream *s)
 {
     struct track_info *ti = &d->di->track[tracknr];
@@ -314,7 +314,7 @@ static void *psygnosis_c_write_mfm(
     unsigned int i, nr_bytes = 0;
 
     if (tracknr == 0)
-        return handlers[TRKTYP_psygnosis_c_track0]->write_mfm(d, tracknr, s);
+        return handlers[TRKTYP_psygnosis_c_track0]->write_raw(d, tracknr, s);
 
     if (!track_metadata(d, tracknr, &mdat))
         return NULL;
@@ -322,7 +322,7 @@ static void *psygnosis_c_write_mfm(
     if (mdat.valid && mdat.decoded_len) {
         init_track_info(ti, TRKTYP_psygnosis_c_custom_rll);
         return handlers[TRKTYP_psygnosis_c_custom_rll]
-            ->write_mfm(d, tracknr, s);
+            ->write_raw(d, tracknr, s);
     }
 
     /* Nitro, Track 2: High-score table. */
@@ -363,7 +363,7 @@ static void *psygnosis_c_write_mfm(
     return NULL;
 }
 
-static void psygnosis_c_read_mfm(
+static void psygnosis_c_read_raw(
     struct disk *d, unsigned int tracknr, struct track_buffer *tbuf)
 {
     struct track_info *ti = &d->di->track[tracknr];
@@ -386,8 +386,8 @@ static void psygnosis_c_read_mfm(
 }
 
 struct track_handler psygnosis_c_handler = {
-    .write_mfm = psygnosis_c_write_mfm,
-    .read_mfm = psygnosis_c_read_mfm
+    .write_raw = psygnosis_c_write_raw,
+    .read_raw = psygnosis_c_read_raw
 };
 
 /*

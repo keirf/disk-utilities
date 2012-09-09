@@ -21,7 +21,7 @@ struct di_stream {
 
     /* Current track info */
     unsigned int track;
-    struct track_mfm *track_mfm;
+    struct track_raw *track_raw;
     uint32_t pos, ns_per_cell;
 };
 
@@ -43,7 +43,7 @@ static struct stream *di_open(const char *name)
 static void di_close(struct stream *s)
 {
     struct di_stream *dis = container_of(s, struct di_stream, s);
-    track_mfm_put(dis->track_mfm);
+    track_raw_put(dis->track_raw);
     disk_close(dis->d);
     memfree(dis);
 }
@@ -56,12 +56,12 @@ static int di_select_track(struct stream *s, unsigned int tracknr)
         return 0;
 
     dis->track = ~0u;
-    track_mfm_put(dis->track_mfm);
-    dis->track_mfm = track_mfm_get(dis->d, tracknr);
-    if (dis->track_mfm == NULL)
+    track_raw_put(dis->track_raw);
+    dis->track_raw = track_raw_get(dis->d, tracknr);
+    if (dis->track_raw == NULL)
         return -1;
     dis->track = tracknr;
-    dis->ns_per_cell = 200000000u / dis->track_mfm->bitlen;
+    dis->ns_per_cell = 200000000u / dis->track_raw->bitlen;
 
     return 0;
 }
@@ -70,7 +70,7 @@ static void di_reset(struct stream *s)
 {
     struct di_stream *dis = container_of(s, struct di_stream, s);
 
-    if (dis->track_mfm->has_weak_bits) {
+    if (dis->track_raw->has_weak_bits) {
         unsigned int tracknr = dis->track;
         dis->track = ~0u;
         if (di_select_track(s, tracknr))
@@ -86,12 +86,12 @@ static int di_next_bit(struct stream *s)
     struct di_stream *dis = container_of(s, struct di_stream, s);
     uint8_t dat;
 
-    if (++dis->pos >= dis->track_mfm->bitlen)
+    if (++dis->pos >= dis->track_raw->bitlen)
         di_reset(s);
 
-    dat = !!(dis->track_mfm->mfm[dis->pos >> 3] & (0x80u >> (dis->pos & 7)));
+    dat = !!(dis->track_raw->bits[dis->pos >> 3] & (0x80u >> (dis->pos & 7)));
     s->latency += (dis->ns_per_cell *
-                   dis->track_mfm->speed[dis->pos >> 3]) / 1000u;
+                   dis->track_raw->speed[dis->pos >> 3]) / 1000u;
 
     return dat;
 }

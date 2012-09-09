@@ -25,7 +25,7 @@
 #include <libdisk/util.h>
 #include "../private.h"
 
-static void *gremlin_write_mfm(
+static void *gremlin_write_raw(
     struct disk *d, unsigned int tracknr, struct stream *s)
 {
     struct track_info *ti = &d->di->track[tracknr];
@@ -79,7 +79,7 @@ fail:
     return NULL;
 }
 
-static void gremlin_read_mfm(
+static void gremlin_read_raw(
     struct disk *d, unsigned int tracknr, struct track_buffer *tbuf)
 {
     struct track_info *ti = &d->di->track[tracknr];
@@ -101,8 +101,8 @@ static void gremlin_read_mfm(
 struct track_handler gremlin_handler = {
     .bytes_per_sector = 12*512,
     .nr_sectors = 1,
-    .write_mfm = gremlin_write_mfm,
-    .read_mfm = gremlin_read_mfm
+    .write_raw = gremlin_write_raw,
+    .read_raw = gremlin_read_raw
 };
 
 /*

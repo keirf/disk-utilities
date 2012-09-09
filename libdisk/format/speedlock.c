@@ -16,7 +16,7 @@
 #include <libdisk/util.h>
 #include "../private.h"
 
-static void *speedlock_write_mfm(
+static void *speedlock_write_raw(
     struct disk *d, unsigned int tracknr, struct stream *s)
 {
     struct track_info *ti = &d->di->track[tracknr];
@@ -81,7 +81,7 @@ fail:
     return NULL;
 }
 
-static void speedlock_read_mfm(
+static void speedlock_read_raw(
     struct disk *d, unsigned int tracknr, struct track_buffer *tbuf)
 {
     unsigned int i;
@@ -100,8 +100,8 @@ static void speedlock_read_mfm(
 }
 
 struct track_handler speedlock_handler = {
-    .write_mfm = speedlock_write_mfm,
-    .read_mfm = speedlock_read_mfm
+    .write_raw = speedlock_write_raw,
+    .read_raw = speedlock_read_raw
 };
 
 /*
