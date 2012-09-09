@@ -200,7 +200,7 @@ out:
 
 static void ipf_tbuf_bit(
     struct track_buffer *tbuf, uint16_t speed,
-    enum mfm_encoding enc, uint8_t dat)
+    enum bitcell_encoding enc, uint8_t dat)
 {
     struct ipf_tbuf *ibuf = container_of(tbuf, struct ipf_tbuf, tbuf);
     unsigned int chunktype = (enc == MFM_raw) ? chkSync : chkData;

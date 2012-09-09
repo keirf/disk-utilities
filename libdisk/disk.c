@@ -336,7 +336,7 @@ static void append_bit(struct track_buffer *tbuf, uint16_t speed, uint8_t x)
 
 static void mfm_tbuf_bit(
     struct track_buffer *tbuf, uint16_t speed,
-    enum mfm_encoding enc, uint8_t dat)
+    enum bitcell_encoding enc, uint8_t dat)
 {
     if (enc == MFM_all) {
         /* Clock bit */
@@ -391,7 +391,7 @@ static void tbuf_finalise(struct track_buffer *tbuf)
 }
 
 void tbuf_bits(struct track_buffer *tbuf, uint16_t speed,
-               enum mfm_encoding enc, unsigned int bits, uint32_t x)
+               enum bitcell_encoding enc, unsigned int bits, uint32_t x)
 {
     int i;
 
@@ -423,7 +423,7 @@ void tbuf_bits(struct track_buffer *tbuf, uint16_t speed,
 }
 
 void tbuf_bytes(struct track_buffer *tbuf, uint16_t speed,
-                enum mfm_encoding enc, unsigned int bytes, void *data)
+                enum bitcell_encoding enc, unsigned int bytes, void *data)
 {
     unsigned int i;
     uint8_t *p;
@@ -477,7 +477,7 @@ void tbuf_disable_auto_sector_split(struct track_buffer *tbuf)
     tbuf->disable_auto_sector_split = 1;
 }
 
-uint32_t mfm_decode_bits(enum mfm_encoding enc, uint32_t x)
+uint32_t mfm_decode_bits(enum bitcell_encoding enc, uint32_t x)
 {
     if (enc == MFM_all) {
         uint32_t i, y = 0;
@@ -499,7 +499,7 @@ uint32_t mfm_decode_bits(enum mfm_encoding enc, uint32_t x)
 }
 
 void mfm_decode_bytes(
-    enum mfm_encoding enc, unsigned int bytes, void *in, void *out)
+    enum bitcell_encoding enc, unsigned int bytes, void *in, void *out)
 {
     uint8_t *in_b = in, *out_b = out;
     unsigned int i;

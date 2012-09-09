@@ -31,7 +31,7 @@ struct disk {
 };
 
 /* How to interpret data being appended to a track buffer. */
-enum mfm_encoding {
+enum bitcell_encoding {
     MFM_raw,       /* emit all bits; do not insert clock bits */
     MFM_all,       /* emit all data bits, in order */
     MFM_even,      /* emit even-numbered data bits only */
@@ -50,7 +50,7 @@ struct track_buffer {
     bool_t has_weak_bits;
     bool_t disable_auto_sector_split;
     void (*bit)(struct track_buffer *, uint16_t speed,
-                enum mfm_encoding enc, uint8_t dat);
+                enum bitcell_encoding enc, uint8_t dat);
     void (*gap)(struct track_buffer *, uint16_t speed, unsigned int bits);
     void (*weak)(struct track_buffer *, uint16_t speed, unsigned int bits);
 };
@@ -58,9 +58,9 @@ struct track_buffer {
 /* Append new raw track data into a track buffer. */
 void tbuf_init(struct track_buffer *, uint32_t bitstart, uint32_t bitlen);
 void tbuf_bits(struct track_buffer *, uint16_t speed,
-               enum mfm_encoding enc, unsigned int bits, uint32_t x);
+               enum bitcell_encoding enc, unsigned int bits, uint32_t x);
 void tbuf_bytes(struct track_buffer *, uint16_t speed,
-                enum mfm_encoding enc, unsigned int bytes, void *data);
+                enum bitcell_encoding enc, unsigned int bytes, void *data);
 void tbuf_gap(struct track_buffer *, uint16_t speed, unsigned int bits);
 void tbuf_weak(struct track_buffer *, uint16_t speed, unsigned int bits);
 void tbuf_start_crc(struct track_buffer *tbuf);
@@ -68,10 +68,10 @@ void tbuf_emit_crc16_ccitt(struct track_buffer *tbuf, uint16_t speed);
 void tbuf_disable_auto_sector_split(struct track_buffer *tbuf);
 
 enum track_density {
-    TRKDEN_mfm_double, /* default */
-    TRKDEN_mfm_high,
-    TRKDEN_mfm_single,
-    TRKDEN_mfm_extra
+    TRKDEN_double, /* default */
+    TRKDEN_high,
+    TRKDEN_single,
+    TRKDEN_extra
 };
 
 /* Track handler -- interface for various raw-bitcell analysers/encoders. */
@@ -118,9 +118,9 @@ int dsk_write_raw(
     struct stream *s);
 
 /* Decode helpers for MFM analysers. */
-uint32_t mfm_decode_bits(enum mfm_encoding enc, uint32_t x);
+uint32_t mfm_decode_bits(enum bitcell_encoding enc, uint32_t x);
 void mfm_decode_bytes(
-    enum mfm_encoding enc, unsigned int bytes, void *in, void *out);
+    enum bitcell_encoding enc, unsigned int bytes, void *in, void *out);
 uint32_t mfm_encode_word(uint32_t w);
 uint32_t amigados_checksum(void *dat, unsigned int bytes);
 
