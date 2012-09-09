@@ -110,7 +110,7 @@ static void sega_system_24_read_raw(
 }
 
 struct track_handler sega_system_24_handler = {
-    .density = TRKDEN_high,
+    .density = trkden_high,
     .bytes_per_sector = 2048,
     .nr_sectors = 7,
     .write_raw = sega_system_24_write_raw,

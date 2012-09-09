@@ -218,7 +218,7 @@ static void ibm_pc_read_raw(
 }
 
 struct track_handler ibm_pc_dd_handler = {
-    .density = TRKDEN_double,
+    .density = trkden_double,
     .bytes_per_sector = 512,
     .nr_sectors = 9,
     .write_raw = ibm_pc_write_raw,
@@ -226,7 +226,7 @@ struct track_handler ibm_pc_dd_handler = {
 };
 
 struct track_handler ibm_pc_hd_handler = {
-    .density = TRKDEN_high,
+    .density = trkden_high,
     .bytes_per_sector = 512,
     .nr_sectors = 18,
     .write_raw = ibm_pc_write_raw,
@@ -234,7 +234,7 @@ struct track_handler ibm_pc_hd_handler = {
 };
 
 struct track_handler ibm_pc_ed_handler = {
-    .density = TRKDEN_extra,
+    .density = trkden_extra,
     .bytes_per_sector = 512,
     .nr_sectors = 36,
     .write_raw = ibm_pc_write_raw,
@@ -243,7 +243,7 @@ struct track_handler ibm_pc_ed_handler = {
 
 /* Siemens iSDX telephone exchange. 80 tracks. */
 struct track_handler siemens_isdx_hd_handler = {
-    .density = TRKDEN_high,
+    .density = trkden_high,
     .bytes_per_sector = 256,
     .nr_sectors = 32,
     .write_raw = ibm_pc_write_raw,

@@ -68,10 +68,10 @@ void tbuf_emit_crc16_ccitt(struct track_buffer *tbuf, uint16_t speed);
 void tbuf_disable_auto_sector_split(struct track_buffer *tbuf);
 
 enum track_density {
-    TRKDEN_double, /* default */
-    TRKDEN_high,
-    TRKDEN_single,
-    TRKDEN_extra
+    trkden_double, /* default */
+    trkden_high,
+    trkden_single,
+    trkden_extra
 };
 
 /* Track handler -- interface for various raw-bitcell analysers/encoders. */
