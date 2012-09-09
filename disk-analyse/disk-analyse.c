@@ -1,9 +1,9 @@
 /*
- * mfmparse.c
+ * disk-analyse/disk-analyse.c
  * 
- * Read a raw disk file from (Amiga program) diskread.
+ * Disk data analyser and transcoder.
  * 
- * Written in 2011 by Keir Fraser
+ * Written in 2011-2012 by Keir Fraser
  */
 
 #include <stdint.h>
@@ -28,7 +28,7 @@ int quiet, verbose;
 
 static void usage(int rc)
 {
-    printf("Usage: mfmparse [options] in_file out_file\n");
+    printf("Usage: disk-analyse [options] in_file out_file\n");
     printf("Options:\n");
     printf("  -h, --help    Display this information\n");
     printf("  -q, --quiet   Quiesce normal informational output\n");

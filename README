@@ -26,11 +26,11 @@ Note that libdisk.so will need to be on the run-time linker's search
 path for many of these tools to run. There are a few ways to ensure this:
  1. Use LD_LIBRARY_PATH on Linux, DYLD_LIBRARY_PATH on Mac OS X, or PATH on
  Windows. This environment variable specifies a set of paths for the linker
- to search. So, to run mfmparse without running 'make install', you could
+ to search. So, to run disk-analyse without running 'make install', you could
  run it as follows:
-    # LD_LIBRARY_PATH=libdisk mfmparse/mfmparse # Linux
-    # DYLD_LIBRARY_PATH=libdisk mfmparse/mfmparse # Mac OS X
-    # PATH=$PATH:`pwd`/libdisk mfmparse/mfmparse # Cygwin
+    # LD_LIBRARY_PATH=libdisk disk-analyse/disk-analyse # Linux
+    # DYLD_LIBRARY_PATH=libdisk disk-analyse/disk-analyse # Mac OS X
+    # PATH=$PATH:`pwd`/libdisk disk-analyse/disk-analyse # Cygwin
  2. Install to a location on the system-wide search path. Unfortunately
  the default install location for libdisk (/usr/local/lib64) on 64-bit
  Linux is often not searched by default. If this is the case on your system,
@@ -38,7 +38,7 @@ path for many of these tools to run. There are a few ways to ensure this:
  /etc/ld.so.conf.d/ in some Linux distros). Then try the following as root:
     # echo "/usr/local/lib64" >>/etc/ld.so.conf
     # ldconfig
- You should now be able to run mfmparse and other tools just fine.
+ You should now be able to run disk-analyse and other tools just fine.
  
  This should not be necessary on 32-bit Linux, Windows, or Mac OS X.
 
@@ -75,7 +75,7 @@ m68k/
     Run a given RNC Copylock routine in emulated environment, copying
     decrypted code to a shadow buffer for subsequent disassembly and dump
 
-mfmparse/
+disk-analyse/
     Disk file conversion tool.
     Converts From: Kryoflux STREAM, SPS/IPF, ADF, .DSK, .DFI,
                    output from Amiga diskread tool.

@@ -1,7 +1,7 @@
 ROOT := .
 include $(ROOT)/Rules.mk
 
-SUBDIRS := libdisk adfbb adfread adfwrite m68k mfmparse
+SUBDIRS := libdisk adfbb adfread adfwrite m68k disk-analyse
 
 all:
 	@set -e; for subdir in $(SUBDIRS); do \

@@ -1,5 +1,5 @@
 /*
- * mfmparse/config.c
+ * disk-analyse/config.c
  * 
  * Parse config file which defines allowed formats for particular disks.
  * 
@@ -19,8 +19,8 @@
 
 #define NR_TRACKS 200
 
-#define DEF_DIR PREFIX "/share/mfmparse"
-#define DEF_FIL "mfmparse_formats"
+#define DEF_DIR PREFIX "/share/disk-analyse"
+#define DEF_FIL "formats"
 
 struct token {
     enum { STR, NUM, CHR, EOL } type;
