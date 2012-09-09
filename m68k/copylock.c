@@ -50,12 +50,17 @@ static void sigint_handler(int signum)
 
 static void init_sigint_handler(void)
 {
+#if !defined(__MINGW32__)
     struct sigaction sa;
     sa.sa_handler = sigint_handler;
     sigemptyset(&sa.sa_mask);
     sa.sa_flags = 0;
     if (sigaction(SIGINT, &sa, NULL))
         err(1, NULL);
+#else
+    /* No sigemptyset or sigaction in mingw. */
+    signal(SIGINT, sigint_handler);
+#endif
 }
 
 int main(int argc, char **argv)
