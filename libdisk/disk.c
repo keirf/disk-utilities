@@ -457,9 +457,8 @@ void tbuf_weak(struct track_buffer *tbuf, uint16_t speed, unsigned int bits)
     if (tbuf->weak != NULL) {
         tbuf->weak(tbuf, speed, bits);
     } else {
-        static unsigned int seed = 0;
         while (bits--)
-            tbuf->bit(tbuf, speed, MFM_all, rand_r(&seed) & 1);
+            tbuf->bit(tbuf, speed, MFM_all, rand() & 1);
     }
 }
 
