@@ -241,10 +241,7 @@ struct track_handler ibm_pc_ed_handler = {
     .read_mfm = ibm_pc_read_mfm
 };
 
-/*
- * Siemens iSDX telephone exchange, High Density format
- * 31 spt, 256 bytes/sector, 80 tracks
- */
+/* Siemens iSDX telephone exchange. 80 tracks. */
 struct track_handler siemens_isdx_hd_handler = {
     .density = TRKDEN_mfm_high,
     .bytes_per_sector = 256,
