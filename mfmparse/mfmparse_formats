@@ -161,6 +161,8 @@ probe_amiga
     80 amigados
     * ratt_dos_1800
 
+"Car-Vup" = amigados_copylock
+
 # Original release (SPS 0813) uses Rainbird custom format
 # A subsequent compilation release (SPS 1580) uses AmigaDOS+Copylock
 "Carrier Command"
@@ -257,8 +259,9 @@ probe_amiga
 
 "First Samurai" = amigados_copylock
 
-# Budget re-release
-"Foundation's Waste" = amigados
+"Foundation's Waste"
+    1 amigados protec_longtrack
+    * amigados
 
 "Frontier: Elite II" = amigados
 
@@ -448,6 +451,8 @@ probe_amiga
 
 "Populous II" = amigados # novella protection
 
+"Powerdrome" = amigados_copylock
+
 "Powermonger" = amigados
 
 "Pro Tennis Tour" = blue_byte
@@ -605,6 +610,8 @@ probe_amiga
 "Walker" = amigados_copylock
 
 "Warlock: The Avenger" = amigados_copylock
+
+"Wiz N Liz" = amigados_copylock
 
 "Wizball" = amigados
 
