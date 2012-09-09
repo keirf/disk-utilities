@@ -33,7 +33,7 @@ static int check_length(struct stream *s, unsigned int min_bits)
  *  u16 0x4454
  *  u8 0x33 (encoded in-place, 1000+ times, to track gap)
  *  Track is checked to be >= 107200 bits long
- *  Specifically, protection checks for >= 6700 mfm words gap between
+ *  Specifically, protection checks for >= 6700 raw words between
  *  successive sync marks. Track contents are not otherwise checked or tested.
  */
 
@@ -77,7 +77,7 @@ struct track_handler protec_longtrack_handler = {
  *  The contents are never checked, only successive sync marks are scanned for.
  * 
  *  Track is checked to be >= 102400 bits long.
- *  Specifically, protection checks for >= 6400 mfm words gap between
+ *  Specifically, protection checks for >= 6400 raw words between
  *  successive sync marks. Track contents are not otherwise checked or tested.
  * 
  *  Track is typically ~105500 bits long.
@@ -119,7 +119,7 @@ struct track_handler gremlin_longtrack_handler = {
 /*
  * TRKTYP_tiertex_longtrack: Strider II
  *  A variant of the Gremlin long track, checks 99328 <= x <= 103680 bits long.
- *  Specifically, the variant checks 6208 <= x <= 6480 mfm words gap between
+ *  Specifically, the variant checks 6208 <= x <= 6480 raw words between
  *  successive sync marks. Track contents are not otherwise checked or tested.
  * 
  *  Track is actually ~100150 bits long (normal length!).
@@ -136,7 +136,7 @@ struct track_handler tiertex_longtrack_handler = {
  *  u8[] "ROD0" (encoded MFM_all)
  *  Rest of track is (MFM-encoded) zeroes
  *  Track is checked to be >= 104128 bits long (track is ~110000 bits long)
- *  Specifically, protection checks for > 6500 0xaaaa/0x5555 mfm words
+ *  Specifically, protection checks for > 6500 0xaaaa/0x5555 raw words
  *  starting 12 bytes into the DMA buffer (i.e., 12 bytes after the sync)
  */
 
@@ -186,7 +186,7 @@ struct track_handler crystals_of_arborea_longtrack_handler = {
  *  u16 0xa144 :: sync
  *  Rest of track is (MFM-encoded) zeroes
  *  Track is checked to be >= 104160 bits long (track is ~105500 bits long)
- *  Specifically, protection checks for > 13020 0xaa mfm bytes, starting from
+ *  Specifically, protection checks for > 13020 0xaa raw bytes, starting from
  *  the first 0xaa byte in the DMA buffer (i.e., first 0xaa following sync).
  */
 
@@ -230,7 +230,7 @@ struct track_handler infogrames_longtrack_handler = {
  *  u16 0x8945
  *  Rest of track is (MFM-encoded) zeroes
  *  Track is checked to be >= 109152 bits long (>= 3413 0xa...a longs)
- *  Specifically, protection checks for >= 3412 0xaaaaaaaa mfm longwords
+ *  Specifically, protection checks for >= 3412 0xaaaaaaaa raw longwords
  *  starting 4 bytes into the DMA buffer (i.e., 4 bytes after the sync)
  */
 

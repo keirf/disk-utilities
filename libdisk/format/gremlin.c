@@ -34,7 +34,7 @@ static void *gremlin_write_raw(
 
     while (stream_next_bit(s) != -1) {
 
-        uint16_t mfm[2], csum = 0, trk;
+        uint16_t raw[2], dat, csum = 0, trk;
         uint32_t idx_off = s->index_offset - 15;
 
         if ((uint16_t)s->word != 0x4489)
@@ -51,21 +51,21 @@ static void *gremlin_write_raw(
         ti->data_bitoff = idx_off;
 
         for (i = 0; i < ti->nr_sectors*ti->bytes_per_sector/2; i++) {
-            if (stream_next_bytes(s, mfm, sizeof(mfm)) == -1)
+            if (stream_next_bytes(s, raw, sizeof(raw)) == -1)
                 goto fail;
-            mfm_decode_bytes(MFM_odd_even, 2, mfm, &block[i]);
+            mfm_decode_bytes(MFM_odd_even, 2, raw, &block[i]);
             csum += be16toh(block[i]);
         }
 
-        if (stream_next_bytes(s, mfm, sizeof(mfm)) == -1)
+        if (stream_next_bytes(s, raw, sizeof(raw)) == -1)
             goto fail;
-        mfm_decode_bytes(MFM_odd_even, 2, mfm, mfm);
-        csum -= be16toh(mfm[0]);
+        mfm_decode_bytes(MFM_odd_even, 2, raw, &dat);
+        csum -= be16toh(dat);
 
-        if (stream_next_bytes(s, mfm, sizeof(mfm)) == -1)
+        if (stream_next_bytes(s, raw, sizeof(raw)) == -1)
             goto fail;
-        mfm_decode_bytes(MFM_odd_even, 2, mfm, mfm);
-        trk = be16toh(mfm[0]);
+        mfm_decode_bytes(MFM_odd_even, 2, raw, &dat);
+        trk = be16toh(dat);
 
         if ((csum != 0) || (tracknr != (trk^1)))
             continue;

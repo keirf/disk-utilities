@@ -27,25 +27,27 @@ static void *core_write_raw(
     struct disk *d, unsigned int tracknr, struct stream *s)
 {
     struct track_info *ti = &d->di->track[tracknr];
-    uint32_t mfm[2], csum, *block = memalloc(ti->len);
-    unsigned int i;
+    uint32_t *block = memalloc(ti->len);
 
     while (stream_next_bit(s) != -1) {
+
+        uint32_t raw[2], csum;
+        unsigned int i;
 
         if ((uint16_t)s->word != 0x8915)
             continue;
 
         ti->data_bitoff = s->index_offset - 15;
 
-        if (stream_next_bytes(s, mfm, sizeof(mfm)) == -1)
+        if (stream_next_bytes(s, raw, sizeof(raw)) == -1)
             goto fail;
-        mfm_decode_bytes(MFM_even_odd, 4, mfm, mfm);
-        csum = be32toh(mfm[0]);
+        mfm_decode_bytes(MFM_even_odd, 4, raw, &csum);
+        csum = be32toh(csum);
 
         for (i = 0; i < ti->len/4; i++) {
-            if (stream_next_bytes(s, mfm, sizeof(mfm)) == -1)
+            if (stream_next_bytes(s, raw, sizeof(raw)) == -1)
                 goto fail;
-            mfm_decode_bytes(MFM_even_odd, 4, mfm, &block[i]);
+            mfm_decode_bytes(MFM_even_odd, 4, raw, &block[i]);
             csum -= be32toh(block[i]);
         }
 

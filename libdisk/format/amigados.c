@@ -80,7 +80,7 @@ static void *ados_write_raw(
            (nr_valid_blocks != ti->nr_sectors)) {
 
         struct ados_hdr ados_hdr;
-        char dat[STD_SEC], raw_mfm_dat[2*(sizeof(struct ados_hdr)+STD_SEC)];
+        char dat[STD_SEC], raw[2*(sizeof(struct ados_hdr)+STD_SEC)];
         uint32_t sync = s->word, idx_off = s->index_offset - 31;
 
         for (i = 0; i < ARRAY_SIZE(syncs); i++)
@@ -89,16 +89,16 @@ static void *ados_write_raw(
         if (i == ARRAY_SIZE(syncs))
             continue;
 
-        if (stream_next_bytes(s, raw_mfm_dat, sizeof(raw_mfm_dat)) == -1)
+        if (stream_next_bytes(s, raw, sizeof(raw)) == -1)
             break;
 
-        mfm_decode_bytes(MFM_even_odd, 4, &raw_mfm_dat[2*0], &ados_hdr);
-        mfm_decode_bytes(MFM_even_odd, 16, &raw_mfm_dat[2*4], ados_hdr.lbl);
-        mfm_decode_bytes(MFM_even_odd, 4, &raw_mfm_dat[2*20],
+        mfm_decode_bytes(MFM_even_odd, 4, &raw[2*0], &ados_hdr);
+        mfm_decode_bytes(MFM_even_odd, 16, &raw[2*4], ados_hdr.lbl);
+        mfm_decode_bytes(MFM_even_odd, 4, &raw[2*20],
                          &ados_hdr.hdr_checksum);
-        mfm_decode_bytes(MFM_even_odd, 4, &raw_mfm_dat[2*24],
+        mfm_decode_bytes(MFM_even_odd, 4, &raw[2*24],
                          &ados_hdr.dat_checksum);
-        mfm_decode_bytes(MFM_even_odd, STD_SEC, &raw_mfm_dat[2*28], dat);
+        mfm_decode_bytes(MFM_even_odd, STD_SEC, &raw[2*28], dat);
 
         ados_hdr.hdr_checksum = be32toh(ados_hdr.hdr_checksum);
         ados_hdr.dat_checksum = be32toh(ados_hdr.dat_checksum);
