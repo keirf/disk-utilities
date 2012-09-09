@@ -292,7 +292,7 @@ static bool_t __ipf_close(struct disk *d, uint32_t encoder)
     ipf_write_chunk(d, "CAPS", NULL, 0);
 
     t = time(NULL);
-    localtime_r(&t, &tm);
+    tm = *localtime(&t); /* not thread-safe */
     if (tm.tm_sec > 59)
         tm.tm_sec = 59;
 
