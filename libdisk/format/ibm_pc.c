@@ -248,7 +248,7 @@ struct track_handler ibm_pc_ed_handler = {
 struct track_handler siemens_isdx_hd_handler = {
     .density = TRKDEN_mfm_high,
     .bytes_per_sector = 256,
-    .nr_sectors = 31,
+    .nr_sectors = 32,
     .write_mfm = ibm_pc_write_mfm,
     .read_mfm = ibm_pc_read_mfm
 };
