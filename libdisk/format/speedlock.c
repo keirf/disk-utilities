@@ -87,15 +87,15 @@ static void speedlock_read_raw(
     unsigned int i;
 
     for (i = 0; i < 4864; i++) /* 77824 bitcells */
-        tbuf_bits(tbuf, SPEED_AVG, MFM_all, 8, 0);
+        tbuf_bits(tbuf, SPEED_AVG, bc_mfm, 8, 0);
     tbuf_gap(tbuf, SPEED_AVG, 0);
 
     for (i = 0; i < 40; i++) /* 640 bitcells */
-        tbuf_bits(tbuf, (SPEED_AVG*110)/100, MFM_all, 8, 0);
+        tbuf_bits(tbuf, (SPEED_AVG*110)/100, bc_mfm, 8, 0);
     tbuf_gap(tbuf, (SPEED_AVG*110)/100, 0);
 
     for (i = 0; i < 40; i++) /* 640 bitcells */
-        tbuf_bits(tbuf, (SPEED_AVG*90)/100, MFM_all, 8, 0);
+        tbuf_bits(tbuf, (SPEED_AVG*90)/100, bc_mfm, 8, 0);
     tbuf_gap(tbuf, (SPEED_AVG*90)/100, 0);
 }
 

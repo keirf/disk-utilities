@@ -92,13 +92,13 @@ static void *ados_write_raw(
         if (stream_next_bytes(s, raw, sizeof(raw)) == -1)
             break;
 
-        mfm_decode_bytes(MFM_even_odd, 4, &raw[2*0], &ados_hdr);
-        mfm_decode_bytes(MFM_even_odd, 16, &raw[2*4], ados_hdr.lbl);
-        mfm_decode_bytes(MFM_even_odd, 4, &raw[2*20],
+        mfm_decode_bytes(bc_mfm_even_odd, 4, &raw[2*0], &ados_hdr);
+        mfm_decode_bytes(bc_mfm_even_odd, 16, &raw[2*4], ados_hdr.lbl);
+        mfm_decode_bytes(bc_mfm_even_odd, 4, &raw[2*20],
                          &ados_hdr.hdr_checksum);
-        mfm_decode_bytes(MFM_even_odd, 4, &raw[2*24],
+        mfm_decode_bytes(bc_mfm_even_odd, 4, &raw[2*24],
                          &ados_hdr.dat_checksum);
-        mfm_decode_bytes(MFM_even_odd, STD_SEC, &raw[2*28], dat);
+        mfm_decode_bytes(bc_mfm_even_odd, STD_SEC, &raw[2*28], dat);
 
         ados_hdr.hdr_checksum = be32toh(ados_hdr.hdr_checksum);
         ados_hdr.dat_checksum = be32toh(ados_hdr.dat_checksum);
@@ -180,24 +180,24 @@ static void ados_read_raw(
         ados_hdr.sectors_to_gap = 11 - i;
 
         /* sync mark */
-        tbuf_bits(tbuf, SPEED_AVG, MFM_raw, 32, sync);
+        tbuf_bits(tbuf, SPEED_AVG, bc_raw, 32, sync);
         /* info */
-        tbuf_bytes(tbuf, SPEED_AVG, MFM_even_odd, 4, &ados_hdr);
+        tbuf_bytes(tbuf, SPEED_AVG, bc_mfm_even_odd, 4, &ados_hdr);
         /* lbl */
-        tbuf_bytes(tbuf, SPEED_AVG, MFM_even_odd, 16, ados_hdr.lbl);
+        tbuf_bytes(tbuf, SPEED_AVG, bc_mfm_even_odd, 16, ados_hdr.lbl);
         /* header checksum */
         csum = amigados_checksum(&ados_hdr, 20);
-        tbuf_bits(tbuf, SPEED_AVG, MFM_even_odd, 32, csum);
+        tbuf_bits(tbuf, SPEED_AVG, bc_mfm_even_odd, 32, csum);
         /* data checksum */
         csum = amigados_checksum(dat, STD_SEC);
         if (!is_valid_sector(ti, i))
             csum ^= 1; /* bad checksum for an invalid sector */
-        tbuf_bits(tbuf, SPEED_AVG, MFM_even_odd, 32, csum);
+        tbuf_bits(tbuf, SPEED_AVG, bc_mfm_even_odd, 32, csum);
         /* data */
-        tbuf_bytes(tbuf, SPEED_AVG, MFM_even_odd, STD_SEC, dat);
+        tbuf_bytes(tbuf, SPEED_AVG, bc_mfm_even_odd, STD_SEC, dat);
         dat += STD_SEC;
         /* gap */
-        tbuf_bits(tbuf, SPEED_AVG, MFM_all, 16, 0);
+        tbuf_bits(tbuf, SPEED_AVG, bc_mfm, 16, 0);
     }
 }
 

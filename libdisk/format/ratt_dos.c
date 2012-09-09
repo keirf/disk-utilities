@@ -65,7 +65,7 @@ static void *ratt_dos_write_raw(
 
         if (stream_next_bytes(s, raw, 8) == -1)
             goto fail;
-        mfm_decode_bytes(MFM_odd_even, 4, raw, raw);
+        mfm_decode_bytes(bc_mfm_odd_even, 4, raw, raw);
         header = csum = ~be32toh(raw[0]);
         if ((nr_longs = (uint16_t)csum) == 0)
             nr_longs = max_longs;
@@ -77,7 +77,7 @@ static void *ratt_dos_write_raw(
         for (i = 0; i < nr_longs; i++) {
             if (stream_next_bytes(s, raw, 8) == -1)
                 goto fail;
-            mfm_decode_bytes(MFM_odd_even, 4, raw, &dat[i]);
+            mfm_decode_bytes(bc_mfm_odd_even, 4, raw, &dat[i]);
             dat[i] = htobe32(be32toh(dat[i]) - key);
             key += step;
             csum += be32toh(dat[i]);
@@ -85,7 +85,7 @@ static void *ratt_dos_write_raw(
 
         if (stream_next_bytes(s, raw, 8) == -1)
             goto fail;
-        mfm_decode_bytes(MFM_odd_even, 4, raw, raw);
+        mfm_decode_bytes(bc_mfm_odd_even, 4, raw, raw);
         csum += be32toh(raw[0]);
         if (csum != 0)
             continue;
@@ -115,18 +115,18 @@ static void ratt_dos_read_raw(
     csum = header = be32toh(dat[nr_longs]);
     sync = be16toh(*(uint16_t *)&dat[nr_longs+1]);
 
-    tbuf_bits(tbuf, SPEED_AVG, MFM_raw, 16, sync);
-    tbuf_bits(tbuf, SPEED_AVG, MFM_odd_even, 32, ~header);
+    tbuf_bits(tbuf, SPEED_AVG, bc_raw, 16, sync);
+    tbuf_bits(tbuf, SPEED_AVG, bc_mfm_odd_even, 32, ~header);
 
     key = 0xeff478edu;
     step = 0xbffb7e5eu;
     for (i = 0; i < nr_longs; i++) {
-        tbuf_bits(tbuf, SPEED_AVG, MFM_odd_even, 32, be32toh(dat[i]) + key);
+        tbuf_bits(tbuf, SPEED_AVG, bc_mfm_odd_even, 32, be32toh(dat[i]) + key);
         key += step;
         csum += be32toh(dat[i]);
     }
 
-    tbuf_bits(tbuf, SPEED_AVG, MFM_odd_even, 32, -csum);
+    tbuf_bits(tbuf, SPEED_AVG, bc_mfm_odd_even, 32, -csum);
 }
 
 struct track_handler ratt_dos_1800_handler = {

@@ -53,18 +53,18 @@ static void *gremlin_write_raw(
         for (i = 0; i < ti->nr_sectors*ti->bytes_per_sector/2; i++) {
             if (stream_next_bytes(s, raw, sizeof(raw)) == -1)
                 goto fail;
-            mfm_decode_bytes(MFM_odd_even, 2, raw, &block[i]);
+            mfm_decode_bytes(bc_mfm_odd_even, 2, raw, &block[i]);
             csum += be16toh(block[i]);
         }
 
         if (stream_next_bytes(s, raw, sizeof(raw)) == -1)
             goto fail;
-        mfm_decode_bytes(MFM_odd_even, 2, raw, &dat);
+        mfm_decode_bytes(bc_mfm_odd_even, 2, raw, &dat);
         csum -= be16toh(dat);
 
         if (stream_next_bytes(s, raw, sizeof(raw)) == -1)
             goto fail;
-        mfm_decode_bytes(MFM_odd_even, 2, raw, &dat);
+        mfm_decode_bytes(bc_mfm_odd_even, 2, raw, &dat);
         trk = be16toh(dat);
 
         if ((csum != 0) || (tracknr != (trk^1)))
@@ -86,16 +86,16 @@ static void gremlin_read_raw(
     uint16_t csum = 0, *dat = (uint16_t *)ti->dat;
     unsigned int i;
 
-    tbuf_bits(tbuf, SPEED_AVG, MFM_raw, 32, 0x44894489);
-    tbuf_bits(tbuf, SPEED_AVG, MFM_raw, 32, 0x44895555);
+    tbuf_bits(tbuf, SPEED_AVG, bc_raw, 32, 0x44894489);
+    tbuf_bits(tbuf, SPEED_AVG, bc_raw, 32, 0x44895555);
 
     for (i = 0; i < ti->nr_sectors*ti->bytes_per_sector/2; i++) {
         csum += be16toh(dat[i]);
-        tbuf_bits(tbuf, SPEED_AVG, MFM_odd_even, 16, be16toh(dat[i]));
+        tbuf_bits(tbuf, SPEED_AVG, bc_mfm_odd_even, 16, be16toh(dat[i]));
     }
 
-    tbuf_bits(tbuf, SPEED_AVG, MFM_odd_even, 16, csum);
-    tbuf_bits(tbuf, SPEED_AVG, MFM_odd_even, 16, tracknr^1);
+    tbuf_bits(tbuf, SPEED_AVG, bc_mfm_odd_even, 16, csum);
+    tbuf_bits(tbuf, SPEED_AVG, bc_mfm_odd_even, 16, tracknr^1);
 }
 
 struct track_handler gremlin_handler = {

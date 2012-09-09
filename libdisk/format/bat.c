@@ -39,7 +39,7 @@ static void *bat_write_raw(
 
         if (stream_next_bytes(s, dat, sizeof(dat)) == -1)
             break;
-        mfm_decode_bytes(MFM_even_odd, sizeof(dat)/2, dat, dat);
+        mfm_decode_bytes(bc_mfm_even_odd, sizeof(dat)/2, dat, dat);
 
         csum = tracknr ^ 1;
         for (i = 0; i < 0x628; i++)
@@ -64,7 +64,7 @@ static void bat_read_raw(
     uint32_t csum, dat[0x629];
     unsigned int i;
 
-    tbuf_bits(tbuf, SPEED_AVG, MFM_raw, 16, 0x8945);
+    tbuf_bits(tbuf, SPEED_AVG, bc_raw, 16, 0x8945);
 
     memcpy(dat, ti->dat, ti->len);
     csum = tracknr ^ 1;
@@ -72,7 +72,7 @@ static void bat_read_raw(
         csum += be32toh(dat[i]);
     dat[0x628] = htobe32(csum);
 
-    tbuf_bytes(tbuf, SPEED_AVG, MFM_even_odd, 0x629*4, dat);
+    tbuf_bytes(tbuf, SPEED_AVG, bc_mfm_even_odd, 0x629*4, dat);
 }
 
 struct track_handler bat_handler = {

@@ -42,7 +42,7 @@ static void *grand_monster_slam_write_raw(
 
         if (stream_next_bytes(s, dat, sizeof(dat)) == -1)
             goto fail;
-        mfm_decode_bytes(MFM_odd_even, sizeof(dat)/2, dat, dat);
+        mfm_decode_bytes(bc_mfm_odd_even, sizeof(dat)/2, dat, dat);
 
         for (i = csum = 0; i < 0xb00; i++)
             csum += (uint32_t)be16toh(dat[i]);
@@ -68,17 +68,17 @@ static void grand_monster_slam_read_raw(
     uint32_t csum;
     unsigned int i;
 
-    tbuf_bits(tbuf, SPEED_AVG, MFM_raw, 32, 0x44894489);
-    tbuf_bits(tbuf, SPEED_AVG, MFM_all, 8, 0);
+    tbuf_bits(tbuf, SPEED_AVG, bc_raw, 32, 0x44894489);
+    tbuf_bits(tbuf, SPEED_AVG, bc_mfm, 8, 0);
 
     for (i = csum = 0; i < ti->len/2; i++)
         csum += (uint32_t)be16toh(dat[i]);
     csum = -csum;
 
-    tbuf_bytes(tbuf, SPEED_AVG, MFM_odd, ti->len, dat);
-    tbuf_bits(tbuf, SPEED_AVG, MFM_odd, 32, csum);
-    tbuf_bytes(tbuf, SPEED_AVG, MFM_even, ti->len, dat);
-    tbuf_bits(tbuf, SPEED_AVG, MFM_even, 32, csum);
+    tbuf_bytes(tbuf, SPEED_AVG, bc_mfm_odd, ti->len, dat);
+    tbuf_bits(tbuf, SPEED_AVG, bc_mfm_odd, 32, csum);
+    tbuf_bytes(tbuf, SPEED_AVG, bc_mfm_even, ti->len, dat);
+    tbuf_bits(tbuf, SPEED_AVG, bc_mfm_even, 32, csum);
 }
 
 struct track_handler grand_monster_slam_handler = {

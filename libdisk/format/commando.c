@@ -41,14 +41,14 @@ static void *commando_write_raw(
 
         if (stream_next_bytes(s, dat, 4) == -1)
             break;
-        mfm_decode_bytes(MFM_even_odd, 2, dat, &trk);
+        mfm_decode_bytes(bc_mfm_even_odd, 2, dat, &trk);
         trk = be16toh(trk);
         if (trk != tracknr)
             continue;
 
         if (stream_next_bytes(s, dat, sizeof(dat)) == -1)
             break;
-        mfm_decode_bytes(MFM_even_odd, sizeof(dat)/2, dat, dat);
+        mfm_decode_bytes(bc_mfm_even_odd, sizeof(dat)/2, dat, dat);
 
         csum = ~0u;
         for (i = 0; i < 0x600; i++)
@@ -72,8 +72,8 @@ static void commando_read_raw(
     uint32_t csum, dat[0x601];
     unsigned int i;
 
-    tbuf_bits(tbuf, SPEED_AVG, MFM_raw, 32, 0xa2454489);
-    tbuf_bits(tbuf, SPEED_AVG, MFM_even_odd, 16, tracknr);
+    tbuf_bits(tbuf, SPEED_AVG, bc_raw, 32, 0xa2454489);
+    tbuf_bits(tbuf, SPEED_AVG, bc_mfm_even_odd, 16, tracknr);
 
     memcpy(dat, ti->dat, ti->len);
     csum = ~0u;
@@ -81,7 +81,7 @@ static void commando_read_raw(
         csum -= be32toh(dat[i]);
     dat[0x600] = htobe32(csum);
 
-    tbuf_bytes(tbuf, SPEED_AVG, MFM_even_odd, 0x601*4, dat);
+    tbuf_bytes(tbuf, SPEED_AVG, bc_mfm_even_odd, 0x601*4, dat);
 }
 
 struct track_handler commando_handler = {

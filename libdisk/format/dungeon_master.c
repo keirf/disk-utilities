@@ -66,7 +66,7 @@ static void *dungeon_master_weak_write_raw(
             if (stream_next_bytes(s, dat, sizeof(dat)) == -1)
                 break;
             stream_pll_mode(s, old_mode);
-            mfm_decode_bytes(MFM_all, 514, dat, dat);
+            mfm_decode_bytes(bc_mfm, 514, dat, dat);
 
             /*
              * Check each flakey byte is read as 0x68 or 0xE8. Rewrite as
@@ -84,7 +84,7 @@ static void *dungeon_master_weak_write_raw(
         } else {
             if (stream_next_bytes(s, dat, sizeof(dat)) == -1)
                 break;
-            mfm_decode_bytes(MFM_all, 514, dat, dat);
+            mfm_decode_bytes(bc_mfm, 514, dat, dat);
         }
 
         if (s->crc16_ccitt != 0)
@@ -117,40 +117,40 @@ static void dungeon_master_weak_read_raw(
     for (sec = 0; sec < ti->nr_sectors; sec++) {
         /* IDAM */
         tbuf_start_crc(tbuf);
-        tbuf_bits(tbuf, SPEED_AVG, MFM_raw, 32, 0x44894489);
-        tbuf_bits(tbuf, SPEED_AVG, MFM_raw, 32, 0x44895554);
-        tbuf_bits(tbuf, SPEED_AVG, MFM_all, 8, cyl);
-        tbuf_bits(tbuf, SPEED_AVG, MFM_all, 8, hd);
-        tbuf_bits(tbuf, SPEED_AVG, MFM_all, 8, sec+1);
-        tbuf_bits(tbuf, SPEED_AVG, MFM_all, 8, no);
+        tbuf_bits(tbuf, SPEED_AVG, bc_raw, 32, 0x44894489);
+        tbuf_bits(tbuf, SPEED_AVG, bc_raw, 32, 0x44895554);
+        tbuf_bits(tbuf, SPEED_AVG, bc_mfm, 8, cyl);
+        tbuf_bits(tbuf, SPEED_AVG, bc_mfm, 8, hd);
+        tbuf_bits(tbuf, SPEED_AVG, bc_mfm, 8, sec+1);
+        tbuf_bits(tbuf, SPEED_AVG, bc_mfm, 8, no);
         tbuf_emit_crc16_ccitt(tbuf, SPEED_AVG);
         for (i = 0; i < 22; i++)
-            tbuf_bits(tbuf, SPEED_AVG, MFM_all, 8, 0x4e);
+            tbuf_bits(tbuf, SPEED_AVG, bc_mfm, 8, 0x4e);
         for (i = 0; i < 12; i++)
-            tbuf_bits(tbuf, SPEED_AVG, MFM_all, 8, 0x00);
+            tbuf_bits(tbuf, SPEED_AVG, bc_mfm, 8, 0x00);
 
         /* DAM */
         tbuf_start_crc(tbuf);
-        tbuf_bits(tbuf, SPEED_AVG, MFM_raw, 32, 0x44894489);
-        tbuf_bits(tbuf, SPEED_AVG, MFM_raw, 32, 0x44895545);
+        tbuf_bits(tbuf, SPEED_AVG, bc_raw, 32, 0x44894489);
+        tbuf_bits(tbuf, SPEED_AVG, bc_raw, 32, 0x44895545);
         if (sec == weak_sec) {
             uint16_t crc = crc16_ccitt(&dat[sec*512], 512, tbuf->crc16_ccitt);
-            tbuf_bytes(tbuf, SPEED_AVG, MFM_all, 32, &dat[sec*512]);
+            tbuf_bytes(tbuf, SPEED_AVG, bc_mfm, 32, &dat[sec*512]);
             /* Protection sector: randomise MSB of each byte in weak area. */
             for (i = 0; i < 512-64; i++)
-                tbuf_bits(tbuf, SPEED_AVG, MFM_all, 8,
+                tbuf_bits(tbuf, SPEED_AVG, bc_mfm, 8,
                           (rand() & 1) ? 0x68 : 0xe8);
-            tbuf_bytes(tbuf, SPEED_AVG, MFM_all, 32, &dat[(sec+1)*512-32]);
+            tbuf_bytes(tbuf, SPEED_AVG, bc_mfm, 32, &dat[(sec+1)*512-32]);
             /* CRC is generated pre-randomisation. Restore it now. */
             tbuf->crc16_ccitt = crc;
         } else {
-            tbuf_bytes(tbuf, SPEED_AVG, MFM_all, 512, &dat[sec*512]);
+            tbuf_bytes(tbuf, SPEED_AVG, bc_mfm, 512, &dat[sec*512]);
         }
         tbuf_emit_crc16_ccitt(tbuf, SPEED_AVG);
         for (i = 0; i < 40; i++)
-            tbuf_bits(tbuf, SPEED_AVG, MFM_all, 8, 0x4e);
+            tbuf_bits(tbuf, SPEED_AVG, bc_mfm, 8, 0x4e);
         for (i = 0; i < 12; i++)
-            tbuf_bits(tbuf, SPEED_AVG, MFM_all, 8, 0x00);
+            tbuf_bits(tbuf, SPEED_AVG, bc_mfm, 8, 0x00);
     }
 }
 

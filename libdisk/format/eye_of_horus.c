@@ -37,7 +37,7 @@ static void *eye_of_horus_write_raw(
         for (i = 0; i < ARRAY_SIZE(hdr); i++) {
             if (stream_next_bytes(s, raw, 8) == -1)
                 goto fail;
-            mfm_decode_bytes(MFM_even_odd, 4, raw, &hdr[i]);
+            mfm_decode_bytes(bc_mfm_even_odd, 4, raw, &hdr[i]);
         }
         if ((be32toh(hdr[0]) != (0xff00000b | (tracknr << 16))) ||
             (be32toh(hdr[1]) > 0x1600) ||
@@ -50,7 +50,7 @@ static void *eye_of_horus_write_raw(
         for (i = 0; i < ti->bytes_per_sector/4; i++) {
             if (stream_next_bytes(s, raw, 8) == -1)
                 goto fail;
-            mfm_decode_bytes(MFM_even_odd, 4, raw, &dat[i]);
+            mfm_decode_bytes(bc_mfm_even_odd, 4, raw, &dat[i]);
         }
         if (be32toh(hdr[6]) != amigados_checksum(dat, ti->bytes_per_sector))
             continue;
@@ -73,7 +73,7 @@ static void eye_of_horus_read_raw(
     uint32_t *dat = (uint32_t *)ti->dat, hdr[7];
     unsigned int i;
 
-    tbuf_bits(tbuf, SPEED_AVG, MFM_raw, 32, 0x44894489);
+    tbuf_bits(tbuf, SPEED_AVG, bc_raw, 32, 0x44894489);
 
     hdr[0] = htobe32(0xff00000b | (tracknr << 16));
     hdr[1] = htobe32(ti->bytes_per_sector);
@@ -82,10 +82,10 @@ static void eye_of_horus_read_raw(
     hdr[6] = htobe32(amigados_checksum(dat, ti->bytes_per_sector));
 
     for (i = 0; i < ARRAY_SIZE(hdr); i++)
-        tbuf_bits(tbuf, SPEED_AVG, MFM_even_odd, 32, be32toh(hdr[i]));
+        tbuf_bits(tbuf, SPEED_AVG, bc_mfm_even_odd, 32, be32toh(hdr[i]));
 
     for (i = 0; i < ti->bytes_per_sector/4; i++)
-        tbuf_bits(tbuf, SPEED_AVG, MFM_even_odd, 32, be32toh(dat[i]));
+        tbuf_bits(tbuf, SPEED_AVG, bc_mfm_even_odd, 32, be32toh(dat[i]));
 }
 
 struct track_handler eye_of_horus_handler = {

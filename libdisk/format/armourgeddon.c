@@ -52,7 +52,7 @@ static void *armourgeddon_a_write_raw(
         if (stream_next_bytes(s, dat, sizeof(dat)) == -1)
             break;
         for (i = 0; i < 0xc4d; i++)
-            mfm_decode_bytes(MFM_even_odd, 2, &dat[2*i], &dat[i]);
+            mfm_decode_bytes(bc_mfm_even_odd, 2, &dat[2*i], &dat[i]);
 
         if (checksum(dat+1, 0xc4c) != be16toh(*dat))
             continue;
@@ -74,11 +74,11 @@ static void armourgeddon_a_read_raw(
     uint16_t *dat = (uint16_t *)ti->dat;
     unsigned int i;
 
-    tbuf_bits(tbuf, SPEED_AVG, MFM_raw, 16, 0x4429);
-    tbuf_bits(tbuf, SPEED_AVG, MFM_all, 8, 0xfc);
-    tbuf_bits(tbuf, SPEED_AVG, MFM_even_odd, 16, checksum(dat, ti->len/2));
+    tbuf_bits(tbuf, SPEED_AVG, bc_raw, 16, 0x4429);
+    tbuf_bits(tbuf, SPEED_AVG, bc_mfm, 8, 0xfc);
+    tbuf_bits(tbuf, SPEED_AVG, bc_mfm_even_odd, 16, checksum(dat, ti->len/2));
     for (i = 0; i < ti->len/2; i++)
-        tbuf_bits(tbuf, SPEED_AVG, MFM_even_odd, 16, be16toh(dat[i]));
+        tbuf_bits(tbuf, SPEED_AVG, bc_mfm_even_odd, 16, be16toh(dat[i]));
 }
 
 struct track_handler armourgeddon_a_handler = {
@@ -118,7 +118,7 @@ static void *armourgeddon_b_write_raw(
         for (i = 0; i < sizeof(dat); i++) {
             if (stream_next_bytes(s, raw, 2) == -1)
                 goto fail;
-            mfm_decode_bytes(MFM_even_odd, 1, raw, &dat[i]);
+            mfm_decode_bytes(bc_mfm_even_odd, 1, raw, &dat[i]);
         }
         if (strncmp((char *)dat, "KEEP", 4))
             continue;
@@ -143,17 +143,17 @@ static void armourgeddon_b_read_raw(
     uint8_t *dat = (uint8_t *)ti->dat;
     unsigned int i, len = ti->len-1;
 
-    tbuf_bits(tbuf, SPEED_AVG, MFM_raw, 32, 0x44894489);
-    tbuf_bits(tbuf, SPEED_AVG, MFM_raw, 32, 0x44895555);
+    tbuf_bits(tbuf, SPEED_AVG, bc_raw, 32, 0x44894489);
+    tbuf_bits(tbuf, SPEED_AVG, bc_raw, 32, 0x44895555);
 
-    tbuf_bits(tbuf, SPEED_AVG, MFM_even_odd, 8, 0x4b);
-    tbuf_bits(tbuf, SPEED_AVG, MFM_even_odd, 8, 0x45);
-    tbuf_bits(tbuf, SPEED_AVG, MFM_even_odd, 8, 0x45);
-    tbuf_bits(tbuf, SPEED_AVG, MFM_even_odd, 8, 0x50);
-    tbuf_bits(tbuf, SPEED_AVG, MFM_even_odd, 8, dat[len]);
+    tbuf_bits(tbuf, SPEED_AVG, bc_mfm_even_odd, 8, 0x4b);
+    tbuf_bits(tbuf, SPEED_AVG, bc_mfm_even_odd, 8, 0x45);
+    tbuf_bits(tbuf, SPEED_AVG, bc_mfm_even_odd, 8, 0x45);
+    tbuf_bits(tbuf, SPEED_AVG, bc_mfm_even_odd, 8, 0x50);
+    tbuf_bits(tbuf, SPEED_AVG, bc_mfm_even_odd, 8, dat[len]);
 
     for (i = 0; i < len; i++)
-        tbuf_bits(tbuf, SPEED_AVG, MFM_even_odd, 8, dat[i]);
+        tbuf_bits(tbuf, SPEED_AVG, bc_mfm_even_odd, 8, dat[i]);
 }
 
 struct track_handler armourgeddon_b_handler = {

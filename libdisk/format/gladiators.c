@@ -35,13 +35,13 @@ static void *gladiators_write_raw(
         for (i = csum = 0; i < ARRAY_SIZE(dat); i++) {
             if (stream_next_bytes(s, raw, 8) == -1)
                 goto fail;
-            mfm_decode_bytes(MFM_even_odd, 4, raw, &dat[i]);
+            mfm_decode_bytes(bc_mfm_even_odd, 4, raw, &dat[i]);
             csum += be32toh(raw[0]) + be32toh(raw[1]);
         }
 
         if (stream_next_bytes(s, raw, 8) == -1)
             goto fail;
-        mfm_decode_bytes(MFM_even_odd, 4, raw, &sum);
+        mfm_decode_bytes(bc_mfm_even_odd, 4, raw, &sum);
         if (csum != be32toh(sum))
             continue;
 
@@ -78,16 +78,16 @@ static void gladiators_read_raw(
     uint32_t csum, *dat = (uint32_t *)ti->dat, prev;
     unsigned int i;
 
-    tbuf_bits(tbuf, SPEED_AVG, MFM_raw, 16, 0x8915);
+    tbuf_bits(tbuf, SPEED_AVG, bc_raw, 16, 0x8915);
 
     prev = 0x8915; /* get 1st clock bit right for checksum */
     for (i = csum = 0; i < ti->len/4; i++) {
-        tbuf_bits(tbuf, SPEED_AVG, MFM_even_odd, 32, be32toh(dat[i]));
+        tbuf_bits(tbuf, SPEED_AVG, bc_mfm_even_odd, 32, be32toh(dat[i]));
         csum += csum_long(prev, be32toh(dat[i]));
         prev = be32toh(dat[i]);
     }
 
-    tbuf_bits(tbuf, SPEED_AVG, MFM_even_odd, 32, csum);
+    tbuf_bits(tbuf, SPEED_AVG, bc_mfm_even_odd, 32, csum);
 }
 
 struct track_handler gladiators_handler = {

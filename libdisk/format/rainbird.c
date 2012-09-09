@@ -40,8 +40,8 @@ static void *rainbird_write_raw(
 
         if (stream_next_bytes(s, raw_dat, 16) == -1)
             goto fail;
-        mfm_decode_bytes(MFM_even_odd, 4, &raw_dat[0], &hdr);
-        mfm_decode_bytes(MFM_even_odd, 4, &raw_dat[2], &csum);
+        mfm_decode_bytes(bc_mfm_even_odd, 4, &raw_dat[0], &hdr);
+        mfm_decode_bytes(bc_mfm_even_odd, 4, &raw_dat[2], &csum);
         hdr = be32toh(hdr);
         csum = be32toh(csum);
 
@@ -50,7 +50,7 @@ static void *rainbird_write_raw(
 
         if (stream_next_bytes(s, raw_dat, sizeof(raw_dat)) == -1)
             goto fail;
-        mfm_decode_bytes(MFM_even_odd, ti->len, raw_dat, raw_dat);
+        mfm_decode_bytes(bc_mfm_even_odd, ti->len, raw_dat, raw_dat);
         if (amigados_checksum(raw_dat, ti->len) != csum)
             continue;
 
@@ -70,14 +70,14 @@ static void rainbird_read_raw(
     struct track_info *ti = &d->di->track[tracknr];
     uint32_t *dat = (uint32_t *)ti->dat;
 
-    tbuf_bits(tbuf, SPEED_AVG, MFM_raw, 32, 0x44894489);
+    tbuf_bits(tbuf, SPEED_AVG, bc_raw, 32, 0x44894489);
 
-    tbuf_bits(tbuf, SPEED_AVG, MFM_even_odd, 32, (~0u << 8) | tracknr);
+    tbuf_bits(tbuf, SPEED_AVG, bc_mfm_even_odd, 32, (~0u << 8) | tracknr);
 
-    tbuf_bits(tbuf, SPEED_AVG, MFM_even_odd, 32,
+    tbuf_bits(tbuf, SPEED_AVG, bc_mfm_even_odd, 32,
               amigados_checksum(dat, ti->len));
 
-    tbuf_bytes(tbuf, SPEED_AVG, MFM_even_odd, ti->len, dat);
+    tbuf_bytes(tbuf, SPEED_AVG, bc_mfm_even_odd, ti->len, dat);
 }
 
 struct track_handler rainbird_handler = {

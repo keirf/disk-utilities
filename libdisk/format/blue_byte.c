@@ -53,13 +53,13 @@ static void *blue_byte_write_raw(
         if (s->crc16_ccitt != 0)
             continue;
 
-        mfm_decode_bytes(MFM_even_odd, 4, dat, dat);
+        mfm_decode_bytes(bc_mfm_even_odd, 4, dat, dat);
         if ((dat[0] != trknr(tracknr)) || (dat[1] != 1) ||
             (dat[2] != 0) || (dat[3] != 0))
             continue;
 
         for (i = 0; i < ti->len/4; i++)
-            mfm_decode_bytes(MFM_even_odd, 4, &dat[8+8*i], &block[i]);
+            mfm_decode_bytes(bc_mfm_even_odd, 4, &dat[8+8*i], &block[i]);
 
         set_all_sectors_valid(ti);
         return block;
@@ -80,13 +80,13 @@ static void blue_byte_read_raw(
 
     tbuf_start_crc(tbuf);
 
-    tbuf_bits(tbuf, SPEED_AVG, MFM_raw, 16, 0x5542);
-    tbuf_bits(tbuf, SPEED_AVG, MFM_all, 8, 0);
+    tbuf_bits(tbuf, SPEED_AVG, bc_raw, 16, 0x5542);
+    tbuf_bits(tbuf, SPEED_AVG, bc_mfm, 8, 0);
 
-    tbuf_bits(tbuf, SPEED_AVG, MFM_even_odd, 32, hdr);
+    tbuf_bits(tbuf, SPEED_AVG, bc_mfm_even_odd, 32, hdr);
 
     for (i = 0; i < ti->len/4; i++)
-        tbuf_bits(tbuf, SPEED_AVG, MFM_even_odd, 32, be32toh(dat[i]));
+        tbuf_bits(tbuf, SPEED_AVG, bc_mfm_even_odd, 32, be32toh(dat[i]));
 
     tbuf_emit_crc16_ccitt(tbuf, SPEED_AVG);
 }

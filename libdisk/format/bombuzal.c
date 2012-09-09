@@ -7,7 +7,7 @@
  * 
  * Track is ~105500 bits. Track begins with a short sector:
  *  u16 0xa145   :: Sync
- *  u16 data[18] :: MFM_all
+ *  u16 data[18] :: bc_mfm
  * 
  * Some data from the sector is combined with track 0 & 1 lengths as a
  * checksum.
@@ -45,7 +45,7 @@ static void *bombuzal_write_raw(
         for (i = 0; i < sizeof(dat); i++) {
             if (stream_next_bits(s, 16) == -1)
                 goto fail;
-            dat[i] = mfm_decode_bits(MFM_all, (uint16_t)s->word);
+            dat[i] = mfm_decode_bits(bc_mfm, (uint16_t)s->word);
         }
 
         /* Our own checksum over the data. */
@@ -74,11 +74,11 @@ static void bombuzal_read_raw(
     uint8_t *dat = (uint8_t *)&ti->dat[512*11];
     unsigned int i;
 
-    tbuf_bits(tbuf, SPEED_AVG, MFM_raw, 16, 0xa145);
+    tbuf_bits(tbuf, SPEED_AVG, bc_raw, 16, 0xa145);
     for (i = 0; i < 18; i++)
-        tbuf_bits(tbuf, SPEED_AVG, MFM_all, 8, dat[i]);
+        tbuf_bits(tbuf, SPEED_AVG, bc_mfm, 8, dat[i]);
     for (i = 0; i < 168; i++)
-        tbuf_bits(tbuf, SPEED_AVG, MFM_all, 8, 0);
+        tbuf_bits(tbuf, SPEED_AVG, bc_mfm, 8, 0);
 
     handlers[TRKTYP_amigados]->read_raw(d, tracknr, tbuf);
 }

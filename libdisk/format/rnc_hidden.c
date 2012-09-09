@@ -58,7 +58,7 @@ static void *rnc_hidden_write_raw(
 
         if (stream_next_bytes(s, raw, sizeof(raw)) == -1)
             break;
-        mfm_decode_bytes(MFM_all, sizeof(sig), raw, sig);
+        mfm_decode_bytes(bc_mfm, sizeof(sig), raw, sig);
 
         /* First and last bytes of signature are static. */
         if ((sig[0] != 0xa1) || (sig[9] != 0x00))
@@ -128,16 +128,16 @@ static void rnc_hidden_read_raw(
     for (sec = 0; sec < NR_SYNCS; sec++) {
         /* aaaa...aaaa */
         for (i = 0; i < 16; i++)
-            tbuf_bits(tbuf, SPEED_AVG, MFM_all, 8, 0);
+            tbuf_bits(tbuf, SPEED_AVG, bc_mfm, 8, 0);
         /* sync */
-        tbuf_bits(tbuf, SPEED_AVG, MFM_raw, 16, sync_list[sec]);
+        tbuf_bits(tbuf, SPEED_AVG, bc_raw, 16, sync_list[sec]);
         /* signature */
         for (i = 0; i < 10; i++)
-            tbuf_bits(tbuf, SPEED_AVG, MFM_all, 8, dat[i]);
+            tbuf_bits(tbuf, SPEED_AVG, bc_mfm, 8, dat[i]);
         /* raw zeroes */
         if (trailer_map & (1u << sec))
             for (i = 0; i < 64; i++)
-                tbuf_bits(tbuf, SPEED_AVG, MFM_raw, 8, 0x00);
+                tbuf_bits(tbuf, SPEED_AVG, bc_raw, 8, 0x00);
     }
 }
 

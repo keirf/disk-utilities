@@ -8,8 +8,8 @@
  * RAW TRACK LAYOUT:
  *  u16 0x9521 :: Sync
  *  u16 0x2aaa
- *  u32 data[1630][2] :: MFM_even_odd alternating longs
- *  u32 csum[2]   :: MFM_even_odd
+ *  u32 data[1630][2] :: bc_mfm_even_odd alternating longs
+ *  u32 csum[2]   :: bc_mfm_even_odd
  * TRKTYP_turrican data layout:
  *  u8 sector_data[6552]
  */
@@ -35,20 +35,20 @@ static void *turrican_write_raw(
 
         if (stream_next_bits(s, 16) == -1)
             goto fail;
-        if (mfm_decode_bits(MFM_all, (uint16_t)s->word) != 0)
+        if (mfm_decode_bits(bc_mfm, (uint16_t)s->word) != 0)
             continue;
 
         if (stream_next_bytes(s, dat, 2*ti->len) == -1)
             goto fail;
         for (i = csum = 0; i < ti->len/4; i++) {
             csum ^= be32toh(dat[2*i]) ^ be32toh(dat[2*i+1]);
-            mfm_decode_bytes(MFM_even_odd, 4, &dat[2*i], &dat[i]);
+            mfm_decode_bytes(bc_mfm_even_odd, 4, &dat[2*i], &dat[i]);
         }
         csum &= 0x55555555u;
 
         if (stream_next_bytes(s, &dat[ti->len/4], 8) == -1)
             goto fail;
-        mfm_decode_bytes(MFM_even_odd, 4, &dat[ti->len/4], &dat[ti->len/4]);
+        mfm_decode_bytes(bc_mfm_even_odd, 4, &dat[ti->len/4], &dat[ti->len/4]);
         if (csum != be32toh(dat[ti->len/4]))
             continue;
 
@@ -70,16 +70,16 @@ static void turrican_read_raw(
     uint32_t csum, *dat = (uint32_t *)ti->dat;
     unsigned int i;
 
-    tbuf_bits(tbuf, SPEED_AVG, MFM_raw, 16, 0x9521);
-    tbuf_bits(tbuf, SPEED_AVG, MFM_all, 8, 0);
+    tbuf_bits(tbuf, SPEED_AVG, bc_raw, 16, 0x9521);
+    tbuf_bits(tbuf, SPEED_AVG, bc_mfm, 8, 0);
 
     for (i = csum = 0; i < ti->len/4; i++) {
         csum ^= be32toh(dat[i]) ^ (be32toh(dat[i]) >> 1);
-        tbuf_bytes(tbuf, SPEED_AVG, MFM_even_odd, 4, &dat[i]);
+        tbuf_bytes(tbuf, SPEED_AVG, bc_mfm_even_odd, 4, &dat[i]);
     }
     csum &= 0x55555555u;
     
-    tbuf_bits(tbuf, SPEED_AVG, MFM_even_odd, 32, csum);
+    tbuf_bits(tbuf, SPEED_AVG, bc_mfm_even_odd, 32, csum);
 }
 
 struct track_handler turrican_handler = {
@@ -117,19 +117,19 @@ static void *factor5_hiscore_write_raw(
 
         if (stream_next_bits(s, 16) == -1)
             continue;
-        if (mfm_decode_bits(MFM_all, (uint16_t)s->word) != 0)
+        if (mfm_decode_bits(bc_mfm, (uint16_t)s->word) != 0)
             continue;
 
         if (stream_next_bytes(s, dat, 8) == -1)
             break;
-        mfm_decode_bytes(MFM_even_odd, 4, dat, dat);
+        mfm_decode_bytes(bc_mfm_even_odd, 4, dat, dat);
         csum = be32toh(dat[0]) ^ 0x12345678;
 
         for (i = sum = 0; i < ti->len/4; i++) {
             if (stream_next_bytes(s, dat, 8) == -1)
                 break;
             sum ^= be32toh(dat[0]) ^ be32toh(dat[1]);
-            mfm_decode_bytes(MFM_even_odd, 4, dat, &block[i]);
+            mfm_decode_bytes(bc_mfm_even_odd, 4, dat, &block[i]);
         }
         sum &= 0x55555555;
         if (sum != csum) {
@@ -153,8 +153,8 @@ static void factor5_hiscore_read_raw(
     uint32_t csum, *dat = (uint32_t *)ti->dat;
     unsigned int i;
 
-    tbuf_bits(tbuf, SPEED_AVG, MFM_raw, 16, 0x4489);
-    tbuf_bits(tbuf, SPEED_AVG, MFM_all, 8, 0);
+    tbuf_bits(tbuf, SPEED_AVG, bc_raw, 16, 0x4489);
+    tbuf_bits(tbuf, SPEED_AVG, bc_mfm, 8, 0);
 
     if (ti->len == 0)
         return;
@@ -163,10 +163,10 @@ static void factor5_hiscore_read_raw(
         csum ^= be32toh(dat[i]) ^ be32toh(dat[i] >> 1);
     csum &= 0x55555555;
     csum ^= 0x12345678;
-    tbuf_bits(tbuf, SPEED_AVG, MFM_even_odd, 32, csum);
+    tbuf_bits(tbuf, SPEED_AVG, bc_mfm_even_odd, 32, csum);
 
     for (i = 0; i < ti->len/4; i++)
-        tbuf_bits(tbuf, SPEED_AVG, MFM_even_odd, 32, be32toh(dat[i]));
+        tbuf_bits(tbuf, SPEED_AVG, bc_mfm_even_odd, 32, be32toh(dat[i]));
 }
 
 struct track_handler factor5_hiscore_handler = {

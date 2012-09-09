@@ -42,25 +42,25 @@ static void *tracker_write_raw(
 
         if (stream_next_bytes(s, raw, 8) == -1)
             goto fail;
-        mfm_decode_bytes(MFM_even_odd, 4, raw, dat);
+        mfm_decode_bytes(bc_mfm_even_odd, 4, raw, dat);
         if (be32toh(dat[0]) != (0xff0000ffu | ((tracknr/2)-1)<<16))
             continue;
 
         if (stream_next_bytes(s, raw, 8) == -1)
             goto fail;
-        mfm_decode_bytes(MFM_even_odd, 4, raw, &csum);
+        mfm_decode_bytes(bc_mfm_even_odd, 4, raw, &csum);
         csum = be32toh(csum);
 
         if (stream_next_bytes(s, raw, 8) == -1)
             goto fail;
-        mfm_decode_bytes(MFM_even_odd, 4, raw, dat);
+        mfm_decode_bytes(bc_mfm_even_odd, 4, raw, dat);
         if (be32toh(dat[0]) != 0)
             continue;
 
         for (sec = 0; sec < ti->nr_sectors; sec++) {
             if (stream_next_bytes(s, raw, 2*512) == -1)
                 goto fail;
-            mfm_decode_bytes(MFM_even_odd, 512, raw, &dat[sec*512/4]);
+            mfm_decode_bytes(bc_mfm_even_odd, 512, raw, &dat[sec*512/4]);
         }
 
         if (csum != amigados_checksum(dat, sizeof(dat)))
@@ -83,19 +83,19 @@ static void tracker_read_raw(
     uint32_t hdr, csum;
     unsigned int sec;
 
-    tbuf_bits(tbuf, SPEED_AVG, MFM_raw, 32, 0x44894489);
-    tbuf_bits(tbuf, SPEED_AVG, MFM_raw, 32, 0x44894489);
+    tbuf_bits(tbuf, SPEED_AVG, bc_raw, 32, 0x44894489);
+    tbuf_bits(tbuf, SPEED_AVG, bc_raw, 32, 0x44894489);
 
     hdr = 0xff0000ffu | (((tracknr/2)-1)<<16);
-    tbuf_bits(tbuf, SPEED_AVG, MFM_even_odd, 32, hdr);
+    tbuf_bits(tbuf, SPEED_AVG, bc_mfm_even_odd, 32, hdr);
 
     csum = amigados_checksum(ti->dat, ti->len);
-    tbuf_bits(tbuf, SPEED_AVG, MFM_even_odd, 32, csum);
+    tbuf_bits(tbuf, SPEED_AVG, bc_mfm_even_odd, 32, csum);
 
-    tbuf_bits(tbuf, SPEED_AVG, MFM_even_odd, 32, 0);
+    tbuf_bits(tbuf, SPEED_AVG, bc_mfm_even_odd, 32, 0);
 
     for (sec = 0; sec < ti->nr_sectors; sec++)
-        tbuf_bytes(tbuf, SPEED_AVG, MFM_even_odd, 512, &ti->dat[sec*512]);
+        tbuf_bytes(tbuf, SPEED_AVG, bc_mfm_even_odd, 512, &ti->dat[sec*512]);
 }
 
 struct track_handler tracker_handler = {

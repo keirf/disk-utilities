@@ -44,7 +44,7 @@ static void *supremacy_a_write_raw(
 
         if (stream_next_bytes(s, dat, sizeof(dat)) == -1)
             break;
-        mfm_decode_bytes(MFM_odd_even, sizeof(dat)/2, dat, dat);
+        mfm_decode_bytes(bc_mfm_odd_even, sizeof(dat)/2, dat, dat);
 
         if (be32toh(dat[0]) != 1)
             continue;
@@ -70,8 +70,8 @@ static void supremacy_a_read_raw(
     uint32_t csum, dat[0x402];
     unsigned int i;
 
-    tbuf_bits(tbuf, SPEED_AVG, MFM_raw, 32, 0x44894489);
-    tbuf_bits(tbuf, SPEED_AVG, MFM_all, 8, 0);
+    tbuf_bits(tbuf, SPEED_AVG, bc_raw, 32, 0x44894489);
+    tbuf_bits(tbuf, SPEED_AVG, bc_mfm, 8, 0);
 
     dat[0] = htobe32(1);
     memcpy(&dat[1], ti->dat, ti->len);
@@ -79,7 +79,7 @@ static void supremacy_a_read_raw(
         csum += be32toh(dat[i]);
     dat[0x401] = htobe32(csum);
 
-    tbuf_bytes(tbuf, SPEED_AVG, MFM_odd_even, 0x402*4, dat);
+    tbuf_bytes(tbuf, SPEED_AVG, bc_mfm_odd_even, 0x402*4, dat);
 }
 
 struct track_handler supremacy_a_handler = {
@@ -131,7 +131,7 @@ static void *supremacy_b_write_raw(
 
         if (stream_next_bytes(s, dat, sizeof(dat)) == -1)
             break;
-        mfm_decode_bytes(MFM_odd_even, sizeof(dat)/2, dat, dat);
+        mfm_decode_bytes(bc_mfm_odd_even, sizeof(dat)/2, dat, dat);
 
         for (i = csum = 0; i < 0x81; i++)
             csum += be32toh(dat[i]);
@@ -178,8 +178,8 @@ static void supremacy_b_read_raw(
     for (i = 0; i < ti->nr_sectors; i++) {
         sec = (i + ti->dat[ti->len-1]) % ti->nr_sectors;
 
-        tbuf_bits(tbuf, SPEED_AVG, MFM_raw, 32, 0x44894489);
-        tbuf_bits(tbuf, SPEED_AVG, MFM_all, 8, 0);
+        tbuf_bits(tbuf, SPEED_AVG, bc_raw, 32, 0x44894489);
+        tbuf_bits(tbuf, SPEED_AVG, bc_mfm, 8, 0);
 
         dat[0] = htobe32(((tracknr>>1)<<8) | sec);
         memcpy(&dat[1], &ti->dat[sec*512], 512);
@@ -189,10 +189,10 @@ static void supremacy_b_read_raw(
             csum = ~csum; /* bad checksum for an invalid sector */
         dat[0x81] = htobe32(csum);
 
-        tbuf_bytes(tbuf, SPEED_AVG, MFM_odd_even, 0x82*4, dat);
+        tbuf_bytes(tbuf, SPEED_AVG, bc_mfm_odd_even, 0x82*4, dat);
 
-        tbuf_bits(tbuf, SPEED_AVG, MFM_all, 32, 0);
-        tbuf_bits(tbuf, SPEED_AVG, MFM_all, 16, 0);
+        tbuf_bits(tbuf, SPEED_AVG, bc_mfm, 32, 0);
+        tbuf_bits(tbuf, SPEED_AVG, bc_mfm, 16, 0);
     }
 }
 

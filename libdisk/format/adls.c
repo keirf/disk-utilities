@@ -61,7 +61,7 @@ static void *adls_write_raw(
         if (s->crc16_ccitt != 0)
             continue;
 
-        mfm_decode_bytes(MFM_all, sz, dat, dat);
+        mfm_decode_bytes(bc_mfm, sz, dat, dat);
         memcpy(&block[idam.sec*1024], dat, sz);
         set_sector_valid(ti, idam.sec);
         nr_valid_blocks++;
@@ -101,29 +101,29 @@ static void adls_read_raw(
 
         /* IDAM */
         for (i = 0; i < 12; i++)
-            tbuf_bits(tbuf, SPEED_AVG, MFM_all, 8, 0x00);
+            tbuf_bits(tbuf, SPEED_AVG, bc_mfm, 8, 0x00);
         tbuf_start_crc(tbuf);
-        tbuf_bits(tbuf, SPEED_AVG, MFM_raw, 32, 0x44894489);
-        tbuf_bits(tbuf, SPEED_AVG, MFM_raw, 32, 0x44895554);
-        tbuf_bits(tbuf, SPEED_AVG, MFM_all, 8, cyl);
-        tbuf_bits(tbuf, SPEED_AVG, MFM_all, 8, hd);
-        tbuf_bits(tbuf, SPEED_AVG, MFM_all, 8, sec+0xf5);
-        tbuf_bits(tbuf, SPEED_AVG, MFM_all, 8, no);
+        tbuf_bits(tbuf, SPEED_AVG, bc_raw, 32, 0x44894489);
+        tbuf_bits(tbuf, SPEED_AVG, bc_raw, 32, 0x44895554);
+        tbuf_bits(tbuf, SPEED_AVG, bc_mfm, 8, cyl);
+        tbuf_bits(tbuf, SPEED_AVG, bc_mfm, 8, hd);
+        tbuf_bits(tbuf, SPEED_AVG, bc_mfm, 8, sec+0xf5);
+        tbuf_bits(tbuf, SPEED_AVG, bc_mfm, 8, no);
         tbuf_emit_crc16_ccitt(tbuf, SPEED_AVG);
         for (i = 0; i < 22; i++)
-            tbuf_bits(tbuf, SPEED_AVG, MFM_all, 8, 0x4e);
+            tbuf_bits(tbuf, SPEED_AVG, bc_mfm, 8, 0x4e);
 
         /* DAM */
         for (i = 0; i < 12; i++)
-            tbuf_bits(tbuf, SPEED_AVG, MFM_all, 8, 0x00);
+            tbuf_bits(tbuf, SPEED_AVG, bc_mfm, 8, 0x00);
         tbuf_start_crc(tbuf);
-        tbuf_bits(tbuf, SPEED_AVG, MFM_raw, 32, 0x44894489);
-        tbuf_bits(tbuf, SPEED_AVG, MFM_raw, 32, 0x44895545);
-        tbuf_bytes(tbuf, SPEED_AVG, MFM_all, (sec == 5) ? 512 : 1024,
+        tbuf_bits(tbuf, SPEED_AVG, bc_raw, 32, 0x44894489);
+        tbuf_bits(tbuf, SPEED_AVG, bc_raw, 32, 0x44895545);
+        tbuf_bytes(tbuf, SPEED_AVG, bc_mfm, (sec == 5) ? 512 : 1024,
                    &dat[sec*1024]);
         tbuf_emit_crc16_ccitt(tbuf, SPEED_AVG);
         for (i = 0; i < 24; i++)
-            tbuf_bits(tbuf, SPEED_AVG, MFM_all, 8, 0x4e);
+            tbuf_bits(tbuf, SPEED_AVG, bc_mfm, 8, 0x4e);
     }
 }
 

@@ -39,13 +39,13 @@ static void *alienbreed_protection_write_raw(
         /* Get the data longs. */
         for (i = 0; i < 3; i++) {
             stream_next_bytes(s, x, sizeof(x));
-            mfm_decode_bytes(MFM_even_odd, 4, x, &dat[i]);
+            mfm_decode_bytes(bc_mfm_even_odd, 4, x, &dat[i]);
         }
 
         /* Check for a long sequence of zeroes */
         for (i = 0; i < 1000; i++) {
             stream_next_bits(s, 32);
-            if (mfm_decode_bits(MFM_all, s->word) != 0)
+            if (mfm_decode_bits(bc_mfm, s->word) != 0)
                 break;
         }
         if (i == 1000)
@@ -67,11 +67,11 @@ static void alienbreed_protection_read_raw(
     uint32_t *dat = (uint32_t *)ti->dat;
     unsigned int i;
 
-    tbuf_bits(tbuf, SPEED_AVG, MFM_raw, 32, 0x89248924);
+    tbuf_bits(tbuf, SPEED_AVG, bc_raw, 32, 0x89248924);
     for (i = 0; i < 3; i++)
-        tbuf_bits(tbuf, SPEED_AVG, MFM_even_odd, 32, be32toh(dat[i]));
+        tbuf_bits(tbuf, SPEED_AVG, bc_mfm_even_odd, 32, be32toh(dat[i]));
     for (i = 0; i < 1000; i++)
-        tbuf_bits(tbuf, SPEED_AVG, MFM_all, 32, 0);
+        tbuf_bits(tbuf, SPEED_AVG, bc_mfm, 32, 0);
 }
 
 struct track_handler alienbreed_protection_handler = {

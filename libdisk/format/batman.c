@@ -69,7 +69,7 @@ static void *batman_write_raw(
 
         if (stream_next_bytes(s, dat, 8) == -1)
             break;
-        mfm_decode_bytes(MFM_even_odd, 4, dat, &hdr);
+        mfm_decode_bytes(bc_mfm_even_odd, 4, dat, &hdr);
 
         if ((hdr.track != ((tracknr-2)^1)) ||
             (hdr.mbz != 0) ||
@@ -80,12 +80,12 @@ static void *batman_write_raw(
 
         if (stream_next_bytes(s, dat, 8) == -1)
             break;
-        mfm_decode_bytes(MFM_even_odd, 4, dat, dat);
+        mfm_decode_bytes(bc_mfm_even_odd, 4, dat, dat);
         csum = be32toh(*(uint32_t *)dat);
 
         if (stream_next_bytes(s, dat, 2*512) == -1)
             break;
-        mfm_decode_bytes(MFM_even_odd, 512, dat, dat);
+        mfm_decode_bytes(bc_mfm_even_odd, 512, dat, dat);
 
         if (checksum(dat) != csum)
             continue;
@@ -126,25 +126,25 @@ static void batman_read_raw(
 
     for (i = 0; i < ti->nr_sectors; i++) {
         /* sync mark */
-        tbuf_bits(tbuf, SPEED_AVG, MFM_raw, 16, 0x8944);
+        tbuf_bits(tbuf, SPEED_AVG, bc_raw, 16, 0x8944);
         /* filler */
-        tbuf_bits(tbuf, SPEED_AVG, MFM_all, 8, 0);
+        tbuf_bits(tbuf, SPEED_AVG, bc_mfm, 8, 0);
         /* header info */
         hdr.track = (tracknr-2)^1;
         hdr.sector = (first_sector + i) % 12;
         hdr.to_gap = 12-i;
         hdr.mbz = 0;
-        tbuf_bytes(tbuf, SPEED_AVG, MFM_even_odd, 4, &hdr);
+        tbuf_bytes(tbuf, SPEED_AVG, bc_mfm_even_odd, 4, &hdr);
         /* data checksum */
         dat = (uint16_t *)&ti->dat[512*hdr.sector];
         csum = checksum(dat);
         if (!is_valid_sector(ti, i))
             csum ^= 1; /* bad checksum for an invalid sector */
-        tbuf_bits(tbuf, SPEED_AVG, MFM_even_odd, 32, csum);
+        tbuf_bits(tbuf, SPEED_AVG, bc_mfm_even_odd, 32, csum);
         /* data */
-        tbuf_bytes(tbuf, SPEED_AVG, MFM_even_odd, 512, dat);
+        tbuf_bytes(tbuf, SPEED_AVG, bc_mfm_even_odd, 512, dat);
         /* gap */
-        tbuf_bits(tbuf, SPEED_AVG, MFM_all, 16, 0);
+        tbuf_bits(tbuf, SPEED_AVG, bc_mfm, 16, 0);
     }
 }
 

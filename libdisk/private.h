@@ -32,12 +32,12 @@ struct disk {
 
 /* How to interpret data being appended to a track buffer. */
 enum bitcell_encoding {
-    MFM_raw,       /* emit all bits; do not insert clock bits */
-    MFM_all,       /* emit all data bits, in order */
-    MFM_even,      /* emit even-numbered data bits only */
-    MFM_odd,       /* emit odd-numbered data bits only */
-    MFM_even_odd,  /* emit all even-numbered bits; then odd-numbered */
-    MFM_odd_even   /* emit all odd-numbered bits; then even-numbered */
+    bc_raw,           /* emit all bits; do not insert clock bits */
+    bc_mfm,           /* emit all data bits, in order */
+    bc_mfm_even,      /* emit even-numbered data bits only */
+    bc_mfm_odd,       /* emit odd-numbered data bits only */
+    bc_mfm_even_odd,  /* emit all even-numbered bits; then odd-numbered */
+    bc_mfm_odd_even   /* emit all odd-numbered bits; then even-numbered */
 };
 
 /* Track buffer: this is opaque to encoders, updated via tbuf_* helpers. */

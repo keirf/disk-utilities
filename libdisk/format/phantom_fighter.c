@@ -49,7 +49,7 @@ static void *phantom_fighter_write_raw(
                 goto fail;
         }
 
-        mfm_decode_bytes(MFM_even_odd, 0x1760, dat, dat);
+        mfm_decode_bytes(bc_mfm_even_odd, 0x1760, dat, dat);
 
         for (i = csum = 0; i < ti->len/2; i++)
             csum += be16toh(dat[i]);
@@ -73,20 +73,20 @@ static void phantom_fighter_read_raw(
     uint16_t csum, *dat = (uint16_t *)ti->dat;
     unsigned int i, j;
 
-    tbuf_bits(tbuf, SPEED_AVG, MFM_raw, 32, 0x44894489);
-    tbuf_bits(tbuf, SPEED_AVG, MFM_all, 8, 0xff);
+    tbuf_bits(tbuf, SPEED_AVG, bc_raw, 32, 0x44894489);
+    tbuf_bits(tbuf, SPEED_AVG, bc_mfm, 8, 0xff);
 
     for (i = csum = 0; i < ti->len/2; i++)
         csum += be16toh(dat[i]);
 
     for (j = 0; j < 2; j++) {
-        unsigned int type = j ? MFM_odd : MFM_even;
+        unsigned int type = j ? bc_mfm_odd : bc_mfm_even;
         for (i = 0; i < 4; i++) {
             tbuf_bytes(tbuf, SPEED_AVG, type, 2 * ((i == 3) ? 0x2eb : 0x2ec),
                        &dat[0x2ec*i]);
             if (i == 3)
                 tbuf_bits(tbuf, SPEED_AVG, type, 16, csum);
-            tbuf_bits(tbuf, SPEED_AVG, MFM_all, 16, 0xffff);
+            tbuf_bits(tbuf, SPEED_AVG, bc_mfm, 16, 0xffff);
         }
     }
 }

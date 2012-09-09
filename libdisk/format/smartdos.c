@@ -34,7 +34,7 @@ static void *smartdos_write_raw(
 
         if (stream_next_bytes(s, dat, 8) == -1)
             goto fail;
-        mfm_decode_bytes(MFM_even_odd, 4, dat, dat);
+        mfm_decode_bytes(bc_mfm_even_odd, 4, dat, dat);
         csum = be32toh(dat[0]);
 
         if (stream_next_bytes(s, dat, sizeof(dat)) == -1)
@@ -53,7 +53,7 @@ static void *smartdos_write_raw(
 
         block = memalloc(ti->len);
         for (i = 0; i < ti->len/4; i++)
-            mfm_decode_bytes(MFM_even_odd, 4, &dat[2*i], &block[i]);
+            mfm_decode_bytes(bc_mfm_even_odd, 4, &dat[2*i], &block[i]);
         set_all_sectors_valid(ti);
         ti->total_bits = 100500;
         return block;
@@ -87,7 +87,7 @@ static void smartdos_read_raw(
     uint32_t *dat = (uint32_t *)ti->dat, sum = 0, prev = 0, e, o, n;
     unsigned int i;
 
-    tbuf_bits(tbuf, SPEED_AVG, MFM_raw, 16, 0x4488);
+    tbuf_bits(tbuf, SPEED_AVG, bc_raw, 16, 0x4488);
 
     for (i = 0; i < 1551; i++) {
         mfm_encode_even_odd(prev, be32toh(dat[i]), &e, &o);
@@ -101,10 +101,10 @@ static void smartdos_read_raw(
     sum = sum ^ ((sum << 8) & 0xf00u) ^ ((sum >> 24) & 0xf0u);
     sum &= 0x0ffffff0u;
 
-    tbuf_bits(tbuf, SPEED_AVG, MFM_even_odd, 32, sum);
+    tbuf_bits(tbuf, SPEED_AVG, bc_mfm_even_odd, 32, sum);
 
     for (i = 0; i < ti->len/4; i++)
-        tbuf_bits(tbuf, SPEED_AVG, MFM_even_odd, 32, be32toh(dat[i]));
+        tbuf_bits(tbuf, SPEED_AVG, bc_mfm_even_odd, 32, be32toh(dat[i]));
 }
 
 struct track_handler smartdos_handler = {

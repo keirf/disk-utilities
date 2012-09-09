@@ -54,8 +54,8 @@ static void kickoff2_read_raw(
 
     /* Extend the last sector. */
     for (i = 0; i < 130; i++)
-        tbuf_bits(tbuf, SPEED_AVG, MFM_all, 8, 0x00);
-    tbuf_bits(tbuf, SPEED_AVG, MFM_all, 8, 0xf0);
+        tbuf_bits(tbuf, SPEED_AVG, bc_mfm, 8, 0x00);
+    tbuf_bits(tbuf, SPEED_AVG, bc_mfm, 8, 0xf0);
 }
 
 struct track_handler kickoff2_handler = {

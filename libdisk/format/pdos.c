@@ -59,8 +59,8 @@ static void *pdos_write_raw(
             if ((stream_next_bytes(s, hdr, 2*4) == -1) ||
                 (stream_next_bytes(s, dat, 2*512) == -1))
                 goto done;
-            mfm_decode_bytes(MFM_even_odd, 4, hdr, hdr);
-            mfm_decode_bytes(MFM_even_odd, 512, dat, dat);
+            mfm_decode_bytes(bc_mfm_even_odd, 4, hdr, hdr);
+            mfm_decode_bytes(bc_mfm_even_odd, 512, dat, dat);
             csum = amigados_checksum(dat, 512);
             csum = (uint16_t)(csum | (csum >> 15));
 
@@ -93,7 +93,7 @@ static void *pdos_write_raw(
             /* Skip the sector gap. */
             if (stream_next_bits(s, 16) == -1)
                 goto done;
-            skip = mfm_decode_bits(MFM_all, (uint16_t)s->word);
+            skip = mfm_decode_bits(bc_mfm, (uint16_t)s->word);
             if (stream_next_bits(s, skip*16) == -1)
                 goto done;
         }
@@ -125,7 +125,7 @@ static void pdos_read_raw(
     struct rnc_pdos_key *keytag = (struct rnc_pdos_key *)
         disk_get_tag_by_id(d, DSKTAG_rnc_pdos_key);
 
-    tbuf_bits(tbuf, SPEED_AVG, MFM_raw, 16, 0x1448);
+    tbuf_bits(tbuf, SPEED_AVG, bc_raw, 16, 0x1448);
 
     for (i = 0; i < ti->nr_sectors; i++) {
 
@@ -133,7 +133,7 @@ static void pdos_read_raw(
         uint32_t csum, enc[128];
 
         /* sync */
-        tbuf_bits(tbuf, SPEED_AVG, MFM_raw, 16, 0x4891);
+        tbuf_bits(tbuf, SPEED_AVG, bc_raw, 16, 0x4891);
 
         /* encrypt data */
         k = keytag->key;
@@ -148,16 +148,16 @@ static void pdos_read_raw(
             csum ^= 1; /* bad checksum for an invalid sector */
         hdr |= (csum & 0x5555u) | ((csum >> 15) & 0xaaaau);
         hdr ^= keytag->key ^ (1u<<31);
-        tbuf_bits(tbuf, SPEED_AVG, MFM_even_odd, 32, hdr);
+        tbuf_bits(tbuf, SPEED_AVG, bc_mfm_even_odd, 32, hdr);
 
         /* data */
-        tbuf_bytes(tbuf, SPEED_AVG, MFM_even_odd, 512, enc);
+        tbuf_bytes(tbuf, SPEED_AVG, bc_mfm_even_odd, 512, enc);
 
         /* gap */
-        tbuf_bits(tbuf, SPEED_AVG, MFM_all, 8,
+        tbuf_bits(tbuf, SPEED_AVG, bc_mfm, 8,
                   i == (ti->nr_sectors - 1) ? 0 : 28);
         for (j = 0; j < 28; j++)
-            tbuf_bits(tbuf, SPEED_AVG, MFM_all, 8, 0);
+            tbuf_bits(tbuf, SPEED_AVG, bc_mfm, 8, 0);
     }
 }
 

@@ -58,8 +58,8 @@ static void *psygnosis_a_write_raw(
         if (stream_next_bytes(s, &raw_dat[1], 12) == -1)
             goto fail;
 
-        mfm_decode_bytes(MFM_even_odd, 4, &raw_dat[0], &hdr);
-        mfm_decode_bytes(MFM_even_odd, 4, &raw_dat[2], &csum);
+        mfm_decode_bytes(bc_mfm_even_odd, 4, &raw_dat[0], &hdr);
+        mfm_decode_bytes(bc_mfm_even_odd, 4, &raw_dat[2], &csum);
         hdr = be32toh(hdr);
         csum = be32toh(csum);
 
@@ -68,7 +68,7 @@ static void *psygnosis_a_write_raw(
 
         if (stream_next_bytes(s, raw_dat, sizeof(raw_dat)) == -1)
             goto fail;
-        mfm_decode_bytes(MFM_even_odd, ti->len, raw_dat, raw_dat);
+        mfm_decode_bytes(bc_mfm_even_odd, ti->len, raw_dat, raw_dat);
         if (amigados_checksum(raw_dat, ti->len) != csum)
             continue;
 
@@ -94,17 +94,17 @@ static void psygnosis_a_read_raw(
     uint16_t sync;
 
     sync = be16toh(*(uint16_t *)&ti->dat[dat_len]);
-    tbuf_bits(tbuf, SPEED_AVG, MFM_raw, 16, sync);
+    tbuf_bits(tbuf, SPEED_AVG, bc_raw, 16, sync);
     sync = be16toh(*(uint16_t *)&ti->dat[dat_len+2]);
     if (sync)
-        tbuf_bits(tbuf, SPEED_AVG, MFM_raw, 16, sync);
+        tbuf_bits(tbuf, SPEED_AVG, bc_raw, 16, sync);
 
-    tbuf_bits(tbuf, SPEED_AVG, MFM_even_odd, 32, (~0u << 8) | tracknr);
+    tbuf_bits(tbuf, SPEED_AVG, bc_mfm_even_odd, 32, (~0u << 8) | tracknr);
 
-    tbuf_bits(tbuf, SPEED_AVG, MFM_even_odd, 32,
+    tbuf_bits(tbuf, SPEED_AVG, bc_mfm_even_odd, 32,
               amigados_checksum(dat, dat_len));
 
-    tbuf_bytes(tbuf, SPEED_AVG, MFM_even_odd, dat_len, dat);
+    tbuf_bytes(tbuf, SPEED_AVG, bc_mfm_even_odd, dat_len, dat);
 }
 
 struct track_handler psygnosis_a_handler = {

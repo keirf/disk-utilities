@@ -45,12 +45,12 @@ static void *federation_of_free_traders_write_raw(
 
         if (stream_next_bits(s, 32) == -1)
             goto done;
-        if (mfm_decode_bits(MFM_all, s->word) != (0xff00 | (tracknr^1)))
+        if (mfm_decode_bits(bc_mfm, s->word) != (0xff00 | (tracknr^1)))
             continue;
 
         if (stream_next_bits(s, 16) == -1)
             goto done;
-        sec = mfm_decode_bits(MFM_all, (uint16_t)s->word);
+        sec = mfm_decode_bits(bc_mfm, (uint16_t)s->word);
         if ((sec >= ti->nr_sectors) || is_valid_sector(ti, sec))
             continue;
 
@@ -59,12 +59,12 @@ static void *federation_of_free_traders_write_raw(
             if (stream_next_bits(s, 16) == -1)
                 goto done;
             csum ^= (uint16_t)s->word;
-            p[i] = mfm_decode_bits(MFM_all, (uint16_t)s->word);
+            p[i] = mfm_decode_bits(bc_mfm, (uint16_t)s->word);
         }
 
         if (stream_next_bits(s, 32) == -1)
             goto done;
-        if (csum != mfm_decode_bits(MFM_all, s->word))
+        if (csum != mfm_decode_bits(bc_mfm, s->word))
             continue;
 
         set_sector_valid(ti, sec);
@@ -99,24 +99,24 @@ static void federation_of_free_traders_read_raw(
     for (i = 0; i < ti->nr_sectors; i++) {
         uint16_t csum = 0, w;
         /* header */
-        tbuf_bits(tbuf, SPEED_AVG, MFM_raw, 32, 0x44894489);
-        tbuf_bits(tbuf, SPEED_AVG, MFM_all, 8, 0xff);
-        tbuf_bits(tbuf, SPEED_AVG, MFM_all, 8, tracknr^1);
-        tbuf_bits(tbuf, SPEED_AVG, MFM_all, 8, i);
+        tbuf_bits(tbuf, SPEED_AVG, bc_raw, 32, 0x44894489);
+        tbuf_bits(tbuf, SPEED_AVG, bc_mfm, 8, 0xff);
+        tbuf_bits(tbuf, SPEED_AVG, bc_mfm, 8, tracknr^1);
+        tbuf_bits(tbuf, SPEED_AVG, bc_mfm, 8, i);
         /* data */
         w = i; /* preceding data byte, so first clock bit is correct */
         for (j = 0; j < ti->bytes_per_sector; j++) {
             w = (w << 8) | dat[j];
             csum ^= (uint16_t)mfm_encode_word(w);
-            tbuf_bits(tbuf, SPEED_AVG, MFM_all, 8, dat[j]);
+            tbuf_bits(tbuf, SPEED_AVG, bc_mfm, 8, dat[j]);
         }
         /* csum */
         if (!is_valid_sector(ti, i))
             csum = ~csum; /* bad checksum for an invalid sector */
-        tbuf_bits(tbuf, SPEED_AVG, MFM_all, 16, csum);
+        tbuf_bits(tbuf, SPEED_AVG, bc_mfm, 16, csum);
         /* gap */
         for (j = 0; j < 13; j++)
-            tbuf_bits(tbuf, SPEED_AVG, MFM_all, 8, 0);
+            tbuf_bits(tbuf, SPEED_AVG, bc_mfm, 8, 0);
         dat += ti->bytes_per_sector;
     }
 }

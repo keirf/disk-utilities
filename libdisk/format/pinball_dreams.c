@@ -8,7 +8,7 @@
  * RAW TRACK LAYOUT:
  *  u16 0x448a,0x448a :: Sync
  *  u32 checksum[2] :: Odd/even longs, EOR.L over raw mfm data
- *  u16 dat[0x1862] :: Encoded MFM_all, swap nibbles of each byte
+ *  u16 dat[0x1862] :: Encoded bc_mfm, swap nibbles of each byte
  *  u16 0x4489,0x4489
  * 
  * TRKTYP_pinball_dreams data layout:
@@ -37,7 +37,7 @@ static void *pinball_dreams_write_raw(
 
         if (stream_next_bytes(s, csum, sizeof(csum)) == -1)
             goto fail;
-        mfm_decode_bytes(MFM_even_odd, 4, csum, csum);
+        mfm_decode_bytes(bc_mfm_even_odd, 4, csum, csum);
 
         if (stream_next_bytes(s, dat, sizeof(dat)) == -1)
             goto fail;
@@ -60,7 +60,7 @@ static void *pinball_dreams_write_raw(
         block = memalloc(ti->len);
         p = (uint16_t *)dat;
         for (i = 0; i < ti->len; i++) {
-            uint8_t x = mfm_decode_bits(MFM_all, be16toh(p[i]));
+            uint8_t x = mfm_decode_bits(bc_mfm, be16toh(p[i]));
             block[i] = (x >> 4) | (x << 4);
         }
         set_all_sectors_valid(ti);
@@ -79,21 +79,21 @@ static void pinball_dreams_read_raw(
     uint8_t *dat = (uint8_t *)ti->dat;
     unsigned int i;
 
-    tbuf_bits(tbuf, SPEED_AVG, MFM_raw, 32, 0x448a448a);
+    tbuf_bits(tbuf, SPEED_AVG, bc_raw, 32, 0x448a448a);
 
     for (i = csum = 0; i < ti->len/2; i++)
         csum ^= be16toh(*cdat++);
     csum = ((csum >> 4) & 0x0f0fu) | ((csum << 4) & 0xf0f0u);
-    tbuf_bits(tbuf, SPEED_AVG, MFM_all, 16, 0);
-    tbuf_bits(tbuf, SPEED_AVG, MFM_all, 16, csum);
+    tbuf_bits(tbuf, SPEED_AVG, bc_mfm, 16, 0);
+    tbuf_bits(tbuf, SPEED_AVG, bc_mfm, 16, csum);
 
     for (i = 0; i < ti->len; i++) {
         uint8_t x = dat[i];
         x = (x >> 4) | (x << 4);
-        tbuf_bits(tbuf, SPEED_AVG, MFM_all, 8, x);
+        tbuf_bits(tbuf, SPEED_AVG, bc_mfm, 8, x);
     }
 
-    tbuf_bits(tbuf, SPEED_AVG, MFM_raw, 32,
+    tbuf_bits(tbuf, SPEED_AVG, bc_raw, 32,
               (ti->total_bits == 105500) ? 0x44894489 : 0x44894488);
 }
 

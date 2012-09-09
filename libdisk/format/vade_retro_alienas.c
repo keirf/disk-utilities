@@ -37,7 +37,7 @@ static void *vade_retro_alienas_write_raw(
         for (i = sum = 0; i < 0xc58; i++) {
             if (stream_next_bytes(s, raw, 4) == -1)
                 goto fail;
-            mfm_decode_bytes(MFM_even_odd, 2, raw, &dat[i]);
+            mfm_decode_bytes(bc_mfm_even_odd, 2, raw, &dat[i]);
             sum += be16toh(dat[i]);
         }
         sum -= be16toh(dat[0xc57]);
@@ -61,14 +61,14 @@ static void vade_retro_alienas_read_raw(
     struct track_info *ti = &d->di->track[tracknr];
     uint16_t *dat = (uint16_t *)ti->dat, sum, i;
 
-    tbuf_bits(tbuf, SPEED_AVG, MFM_raw, 16, 0x4142);
+    tbuf_bits(tbuf, SPEED_AVG, bc_raw, 16, 0x4142);
 
     for (i = sum = 0; i < 0xc57; i++) {
-        tbuf_bits(tbuf, SPEED_AVG, MFM_even_odd, 16, be16toh(dat[i]));
+        tbuf_bits(tbuf, SPEED_AVG, bc_mfm_even_odd, 16, be16toh(dat[i]));
         sum += be16toh(dat[i]);
     }
 
-    tbuf_bits(tbuf, SPEED_AVG, MFM_even_odd, 16, sum);
+    tbuf_bits(tbuf, SPEED_AVG, bc_mfm_even_odd, 16, sum);
 }
 
 struct track_handler vade_retro_alienas_handler = {

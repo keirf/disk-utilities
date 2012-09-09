@@ -53,7 +53,7 @@ static void *tlk_dos_write_raw(
         if (stream_next_bytes(s, dat, sizeof(dat)) == -1)
             goto fail;
         for (i = 0; i < (6300/param->blksz); i++)
-            mfm_decode_bytes(MFM_odd_even, param->blksz,
+            mfm_decode_bytes(bc_mfm_odd_even, param->blksz,
                              &dat[i*param->blksz], &dat[(i*param->blksz)/2]);
 
         /* TLK-ID */
@@ -102,11 +102,11 @@ static void tlk_dos_read_raw(
     dat[2] = htobe16(csum);
     dat[3] = htobe16(csum >> 16);
 
-    tbuf_bits(tbuf, SPEED_AVG, MFM_raw, 16, param->sync);
-    tbuf_bits(tbuf, SPEED_AVG, MFM_raw, 16, param->sync);
+    tbuf_bits(tbuf, SPEED_AVG, bc_raw, 16, param->sync);
+    tbuf_bits(tbuf, SPEED_AVG, bc_raw, 16, param->sync);
 
     for (i = 0; i < (6300/param->blksz); i++)
-        tbuf_bytes(tbuf, SPEED_AVG, MFM_odd_even, param->blksz,
+        tbuf_bytes(tbuf, SPEED_AVG, bc_mfm_odd_even, param->blksz,
                    &dat[(i*param->blksz)/2]);
 }
 

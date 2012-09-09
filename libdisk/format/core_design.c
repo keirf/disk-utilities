@@ -41,13 +41,13 @@ static void *core_write_raw(
 
         if (stream_next_bytes(s, raw, sizeof(raw)) == -1)
             goto fail;
-        mfm_decode_bytes(MFM_even_odd, 4, raw, &csum);
+        mfm_decode_bytes(bc_mfm_even_odd, 4, raw, &csum);
         csum = be32toh(csum);
 
         for (i = 0; i < ti->len/4; i++) {
             if (stream_next_bytes(s, raw, sizeof(raw)) == -1)
                 goto fail;
-            mfm_decode_bytes(MFM_even_odd, 4, raw, &block[i]);
+            mfm_decode_bytes(bc_mfm_even_odd, 4, raw, &block[i]);
             csum -= be32toh(block[i]);
         }
 
@@ -70,14 +70,14 @@ static void core_read_raw(
     uint32_t csum = 0, *dat = (uint32_t *)ti->dat;
     unsigned int i;
 
-    tbuf_bits(tbuf, SPEED_AVG, MFM_raw, 16, 0x8915);
+    tbuf_bits(tbuf, SPEED_AVG, bc_raw, 16, 0x8915);
 
     for (i = 0; i < ti->len/4; i++)
         csum += be32toh(dat[i]);
-    tbuf_bits(tbuf, SPEED_AVG, MFM_even_odd, 32, csum);
+    tbuf_bits(tbuf, SPEED_AVG, bc_mfm_even_odd, 32, csum);
 
     for (i = 0; i < ti->len/4; i++)
-        tbuf_bits(tbuf, SPEED_AVG, MFM_even_odd, 32, be32toh(dat[i]));
+        tbuf_bits(tbuf, SPEED_AVG, bc_mfm_even_odd, 32, be32toh(dat[i]));
 }
 
 struct track_handler core_design_handler = {

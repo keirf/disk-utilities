@@ -21,9 +21,9 @@ static void raw_read_raw(
     struct track_info *ti = &d->di->track[tracknr];
 
     if (ti->total_bits/8)
-        tbuf_bytes(tbuf, SPEED_AVG, MFM_raw, ti->total_bits/8, ti->dat);
+        tbuf_bytes(tbuf, SPEED_AVG, bc_raw, ti->total_bits/8, ti->dat);
     if (ti->total_bits%8)
-        tbuf_bits(tbuf, SPEED_AVG, MFM_raw, ti->total_bits%8,
+        tbuf_bits(tbuf, SPEED_AVG, bc_raw, ti->total_bits%8,
                   ti->dat[ti->total_bits/8] >> (8 - ti->total_bits%8));
 }
 

@@ -44,24 +44,24 @@ static void *archipelagos_write_raw(
 
         if (stream_next_bits(s, 32) == -1)
             goto done;
-        if (mfm_decode_bits(MFM_all, s->word) != (0xff00 | tracknr))
+        if (mfm_decode_bits(bc_mfm, s->word) != (0xff00 | tracknr))
             continue;
 
         if (stream_next_bits(s, 16) == -1)
             goto done;
-        sec = mfm_decode_bits(MFM_all, (uint16_t)s->word) - 1;
+        sec = mfm_decode_bits(bc_mfm, (uint16_t)s->word) - 1;
         if ((sec >= ti->nr_sectors) || is_valid_sector(ti, sec))
             continue;
 
         if (stream_next_bits(s, 32) == -1)
             goto done;
-        csum = mfm_decode_bits(MFM_all, s->word);
+        csum = mfm_decode_bits(bc_mfm, s->word);
 
         p = (uint16_t *)(block + sec * ti->bytes_per_sector);
         for (i = 0; i < ti->bytes_per_sector/2; i++) {
             if (stream_next_bits(s, 32) == -1)
                 goto done;
-            csum -= w = mfm_decode_bits(MFM_all, s->word);
+            csum -= w = mfm_decode_bits(bc_mfm, s->word);
             *p++ = htobe16(w);
         }
 
@@ -104,22 +104,22 @@ static void archipelagos_read_raw(
     for (i = 0; i < ti->nr_sectors; i++) {
         uint16_t csum = 0;
         /* header */
-        tbuf_bits(tbuf, SPEED_AVG, MFM_raw, 32, 0x44894489);
-        tbuf_bits(tbuf, SPEED_AVG, MFM_all, 8, 0xff);
-        tbuf_bits(tbuf, SPEED_AVG, MFM_all, 8, tracknr);
-        tbuf_bits(tbuf, SPEED_AVG, MFM_all, 8, i+1);
+        tbuf_bits(tbuf, SPEED_AVG, bc_raw, 32, 0x44894489);
+        tbuf_bits(tbuf, SPEED_AVG, bc_mfm, 8, 0xff);
+        tbuf_bits(tbuf, SPEED_AVG, bc_mfm, 8, tracknr);
+        tbuf_bits(tbuf, SPEED_AVG, bc_mfm, 8, i+1);
         /* csum */
         for (j = 0; j < ti->bytes_per_sector/2; j++)
             csum += be16toh(dat[j]);
         if (!is_valid_sector(ti, i))
             csum = ~csum; /* bad checksum for an invalid sector */
-        tbuf_bits(tbuf, SPEED_AVG, MFM_all, 16, csum);
+        tbuf_bits(tbuf, SPEED_AVG, bc_mfm, 16, csum);
         /* data */
         for (j = 0; j < 512; j++, dat++)
-            tbuf_bits(tbuf, SPEED_AVG, MFM_all, 16, be16toh(*dat));
+            tbuf_bits(tbuf, SPEED_AVG, bc_mfm, 16, be16toh(*dat));
         /* gap */
         for (j = 0; j < 9; j++)
-            tbuf_bits(tbuf, SPEED_AVG, MFM_all, 8, 0);
+            tbuf_bits(tbuf, SPEED_AVG, bc_mfm, 8, 0);
     }
 }
 

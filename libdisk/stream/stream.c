@@ -118,7 +118,7 @@ void stream_next_index(struct stream *s)
 
 void stream_start_crc(struct stream *s)
 {
-    uint16_t x = htobe16(mfm_decode_bits(MFM_all, s->word));
+    uint16_t x = htobe16(mfm_decode_bits(bc_mfm, s->word));
     s->crc16_ccitt = crc16_ccitt(&x, 2, 0xffff);
     s->crc_bitoff = 0;
 }
@@ -133,7 +133,7 @@ int stream_next_bit(struct stream *s)
         return -1;
     s->word = (s->word << 1) | b;
     if (++s->crc_bitoff == 16) {
-        uint8_t b = mfm_decode_bits(MFM_all, s->word);
+        uint8_t b = mfm_decode_bits(bc_mfm, s->word);
         s->crc16_ccitt = crc16_ccitt(&b, 1, s->crc16_ccitt);
         s->crc_bitoff = 0;
     }

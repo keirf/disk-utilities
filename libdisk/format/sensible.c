@@ -44,7 +44,7 @@ static void *sensible_write_raw(
 
         if (stream_next_bytes(s, raw_dat, sizeof(raw_dat)) == -1)
             goto fail;
-        mfm_decode_bytes(MFM_odd_even, 12+ti->len, raw_dat, raw_dat);
+        mfm_decode_bytes(bc_mfm_odd_even, 12+ti->len, raw_dat, raw_dat);
 
         if ((be32toh(raw_dat[0]) != SOS_SIG) ||
             ((uint8_t)be32toh(raw_dat[2]) != (tracknr^1)))
@@ -73,14 +73,14 @@ static void sensible_read_raw(
     uint32_t *dat = (uint32_t *)ti->dat, csum;
     unsigned int i, enc;
 
-    tbuf_bits(tbuf, SPEED_AVG, MFM_raw, 32, 0x44894489);
+    tbuf_bits(tbuf, SPEED_AVG, bc_raw, 32, 0x44894489);
 
     csum = SOS_SIG + (tracknr ^ 1);
     for (i = 0; i < ti->len/4; i++)
         csum += be32toh(dat[i]);
 
     for (i = 0; i < 2; i++) {
-        enc = (i == 0) ? MFM_odd : MFM_even;
+        enc = (i == 0) ? bc_mfm_odd : bc_mfm_even;
         tbuf_bits(tbuf, SPEED_AVG, enc, 32, SOS_SIG);
         tbuf_bits(tbuf, SPEED_AVG, enc, 32, csum);
         tbuf_bits(tbuf, SPEED_AVG, enc, 32, tracknr^1);

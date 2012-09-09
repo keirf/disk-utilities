@@ -338,7 +338,7 @@ static void tbuf_bit(
     struct track_buffer *tbuf, uint16_t speed,
     enum bitcell_encoding enc, uint8_t dat)
 {
-    if (enc == MFM_all) {
+    if (enc == bc_mfm) {
         /* Clock bit */
         uint8_t clk = !(tbuf->prev_data_bit | dat);
         append_bit(tbuf, speed, clk);
@@ -374,10 +374,10 @@ static void tbuf_finalise(struct track_buffer *tbuf)
         nr_bits += tbuf->len;
     nr_bits /= 4; /* /2 to halve the gap, /2 to count data bits only */
     while (nr_bits--)
-        tbuf_bits(tbuf, SPEED_AVG, MFM_all, 1, 0);
+        tbuf_bits(tbuf, SPEED_AVG, bc_mfm, 1, 0);
 
     /* Write splice. Write an MFM-illegal string of zeroes. */
-    tbuf_bits(tbuf, SPEED_AVG, MFM_raw, 5, 0);
+    tbuf_bits(tbuf, SPEED_AVG, bc_raw, 5, 0);
 
     /* Reverse fill the remainder */
     pos = tbuf->start;
@@ -395,28 +395,28 @@ void tbuf_bits(struct track_buffer *tbuf, uint16_t speed,
 {
     int i;
 
-    if (enc == MFM_even_odd) {
-        tbuf_bits(tbuf, speed, MFM_even, bits, x);
-        enc = MFM_odd;
-    } else if (enc == MFM_odd_even) {
-        tbuf_bits(tbuf, speed, MFM_odd, bits, x);
-        enc = MFM_even;
+    if (enc == bc_mfm_even_odd) {
+        tbuf_bits(tbuf, speed, bc_mfm_even, bits, x);
+        enc = bc_mfm_odd;
+    } else if (enc == bc_mfm_odd_even) {
+        tbuf_bits(tbuf, speed, bc_mfm_odd, bits, x);
+        enc = bc_mfm_even;
     }
 
-    if ((enc == MFM_even) || (enc == MFM_odd)) {
+    if ((enc == bc_mfm_even) || (enc == bc_mfm_odd)) {
         uint32_t y = 0;
-        if (enc == MFM_even)
+        if (enc == bc_mfm_even)
             x >>= 1;
         bits >>= 1;
         for (i = 0; i < bits; i++)
             y |= (x >> i) & (1u << i);
         x = y;
-        enc = MFM_all;
+        enc = bc_mfm;
     }
 
     for (i = bits-1; i >= 0; i--) {
         uint8_t b = (x >> i) & 1;
-        if ((enc != MFM_raw) || !(i & 1))
+        if ((enc != bc_raw) || !(i & 1))
             tbuf->crc16_ccitt = crc16_ccitt_bit(b, tbuf->crc16_ccitt);
         tbuf->bit(tbuf, speed, enc, b);
     }
@@ -428,12 +428,12 @@ void tbuf_bytes(struct track_buffer *tbuf, uint16_t speed,
     unsigned int i;
     uint8_t *p;
 
-    if (enc == MFM_even_odd) {
-        tbuf_bytes(tbuf, speed, MFM_even, bytes, data);
-        enc = MFM_odd;
-    } else if (enc == MFM_odd_even) {
-        tbuf_bytes(tbuf, speed, MFM_odd, bytes, data);
-        enc = MFM_even;
+    if (enc == bc_mfm_even_odd) {
+        tbuf_bytes(tbuf, speed, bc_mfm_even, bytes, data);
+        enc = bc_mfm_odd;
+    } else if (enc == bc_mfm_odd_even) {
+        tbuf_bytes(tbuf, speed, bc_mfm_odd, bytes, data);
+        enc = bc_mfm_even;
     }
 
     p = (uint8_t *)data;
@@ -447,7 +447,7 @@ void tbuf_gap(struct track_buffer *tbuf, uint16_t speed, unsigned int bits)
         tbuf->gap(tbuf, speed, bits);
     } else {
         while (bits--)
-            tbuf->bit(tbuf, speed, MFM_all, 0);
+            tbuf->bit(tbuf, speed, bc_mfm, 0);
     }
 }
 
@@ -458,7 +458,7 @@ void tbuf_weak(struct track_buffer *tbuf, uint16_t speed, unsigned int bits)
         tbuf->weak(tbuf, speed, bits);
     } else {
         while (bits--)
-            tbuf->bit(tbuf, speed, MFM_all, rand() & 1);
+            tbuf->bit(tbuf, speed, bc_mfm, rand() & 1);
     }
 }
 
@@ -469,7 +469,7 @@ void tbuf_start_crc(struct track_buffer *tbuf)
 
 void tbuf_emit_crc16_ccitt(struct track_buffer *tbuf, uint16_t speed)
 {
-    tbuf_bits(tbuf, speed, MFM_all, 16, tbuf->crc16_ccitt);
+    tbuf_bits(tbuf, speed, bc_mfm, 16, tbuf->crc16_ccitt);
 }
 
 void tbuf_disable_auto_sector_split(struct track_buffer *tbuf)
@@ -479,7 +479,7 @@ void tbuf_disable_auto_sector_split(struct track_buffer *tbuf)
 
 uint32_t mfm_decode_bits(enum bitcell_encoding enc, uint32_t x)
 {
-    if (enc == MFM_all) {
+    if (enc == bc_mfm) {
         uint32_t i, y = 0;
         for (i = 0; i < 16; i++) {
             y |= (x & 1) << i;
@@ -488,13 +488,13 @@ uint32_t mfm_decode_bits(enum bitcell_encoding enc, uint32_t x)
         return y;
     } 
 
-    if (enc == MFM_even)
+    if (enc == bc_mfm_even)
         return (x & 0x55555555u) << 1;
 
-    if (enc == MFM_odd)
+    if (enc == bc_mfm_odd)
         return x & 0x55555555u;
 
-    BUG_ON(enc != MFM_raw);
+    BUG_ON(enc != bc_raw);
     return x;
 }
 
@@ -505,14 +505,14 @@ void mfm_decode_bytes(
     unsigned int i;
 
     for (i = 0; i < bytes; i++) {
-        if (enc == MFM_all) {
-            out_b[i] = mfm_decode_bits(MFM_all, be16toh(((uint16_t *)in)[i]));
-        } else if (enc == MFM_even_odd) {
-            out_b[i] = (mfm_decode_bits(MFM_even, in_b[i]) |
-                        mfm_decode_bits(MFM_odd, in_b[i + bytes]));
-        } else if (enc == MFM_odd_even) {
-            out_b[i] = (mfm_decode_bits(MFM_odd, in_b[i]) |
-                        mfm_decode_bits(MFM_even, in_b[i + bytes]));
+        if (enc == bc_mfm) {
+            out_b[i] = mfm_decode_bits(bc_mfm, be16toh(((uint16_t *)in)[i]));
+        } else if (enc == bc_mfm_even_odd) {
+            out_b[i] = (mfm_decode_bits(bc_mfm_even, in_b[i]) |
+                        mfm_decode_bits(bc_mfm_odd, in_b[i + bytes]));
+        } else if (enc == bc_mfm_odd_even) {
+            out_b[i] = (mfm_decode_bits(bc_mfm_odd, in_b[i]) |
+                        mfm_decode_bits(bc_mfm_even, in_b[i + bytes]));
         } else {
             BUG();
         }

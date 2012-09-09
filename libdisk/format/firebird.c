@@ -47,12 +47,12 @@ static void *firebird_write_raw(
         if (ti->type == TRKTYP_firebird) {
             if (stream_next_bits(s, 16) == -1)
                 goto fail;
-            if (mfm_decode_bits(MFM_all, (uint16_t)s->word) != 0xff)
+            if (mfm_decode_bits(bc_mfm, (uint16_t)s->word) != 0xff)
                 continue;
         } else if (ti->type == TRKTYP_afterburner_data) {
             if (stream_next_bytes(s, dat, 6) == -1)
                 goto fail;
-            mfm_decode_bytes(MFM_all, 3, dat, dat);
+            mfm_decode_bytes(bc_mfm, 3, dat, dat);
             if ((dat[0] != 0x41) || (dat[1] != 0x42) ||
                 (dat[2] != (tracknr/2)))
                 continue;
@@ -63,7 +63,7 @@ static void *firebird_write_raw(
         if (s->crc16_ccitt != 0)
             continue;
 
-        mfm_decode_bytes(MFM_all, ti->len, dat, block);
+        mfm_decode_bytes(bc_mfm, ti->len, dat, block);
         ti->data_bitoff = idx_off;
         if (ti->type == TRKTYP_ikplus)
             ti->data_bitoff -= 2*16; /* IK+ has a pre-sync header */
@@ -82,21 +82,21 @@ static void firebird_read_raw(
     struct track_info *ti = &d->di->track[tracknr];
 
     if (ti->type == TRKTYP_ikplus)
-        tbuf_bits(tbuf, SPEED_AVG, MFM_all, 16, 0xf72a);
+        tbuf_bits(tbuf, SPEED_AVG, bc_mfm, 16, 0xf72a);
 
     tbuf_start_crc(tbuf);
 
-    tbuf_bits(tbuf, SPEED_AVG, MFM_raw, 32, 0x89448944);
-    tbuf_bits(tbuf, SPEED_AVG, MFM_raw, 16, 0x8944);
+    tbuf_bits(tbuf, SPEED_AVG, bc_raw, 32, 0x89448944);
+    tbuf_bits(tbuf, SPEED_AVG, bc_raw, 16, 0x8944);
 
     if (ti->type == TRKTYP_firebird) {
-        tbuf_bits(tbuf, SPEED_AVG, MFM_all, 8, 0xff);
+        tbuf_bits(tbuf, SPEED_AVG, bc_mfm, 8, 0xff);
     } else if (ti->type == TRKTYP_afterburner_data) {
-        tbuf_bits(tbuf, SPEED_AVG, MFM_all, 16, 0x4142);
-        tbuf_bits(tbuf, SPEED_AVG, MFM_all, 8, tracknr/2);
+        tbuf_bits(tbuf, SPEED_AVG, bc_mfm, 16, 0x4142);
+        tbuf_bits(tbuf, SPEED_AVG, bc_mfm, 8, tracknr/2);
     }
 
-    tbuf_bytes(tbuf, SPEED_AVG, MFM_all, ti->len, ti->dat);
+    tbuf_bytes(tbuf, SPEED_AVG, bc_mfm, ti->len, ti->dat);
 
     tbuf_emit_crc16_ccitt(tbuf, SPEED_AVG);
 }

@@ -40,17 +40,17 @@ static void *fun_factory_write_raw(
 
         if (stream_next_bytes(s, raw, 8) == -1)
             goto fail;
-        mfm_decode_bytes(MFM_even_odd, 4, raw, &hdr);
+        mfm_decode_bytes(bc_mfm_even_odd, 4, raw, &hdr);
         if (be32toh(hdr) != (0xffffff00u | tracknr))
             continue;
 
         if (stream_next_bytes(s, raw, 2*ti->len) == -1)
             goto fail;
-        mfm_decode_bytes(MFM_even_odd, ti->len, raw, dat);
+        mfm_decode_bytes(bc_mfm_even_odd, ti->len, raw, dat);
 
         if (stream_next_bytes(s, raw, 8) == -1)
             goto fail;
-        mfm_decode_bytes(MFM_even_odd, 4, raw, &csum);
+        mfm_decode_bytes(bc_mfm_even_odd, 4, raw, &csum);
         if (be32toh(csum) != amigados_checksum(dat, ti->len))
             continue;
 
@@ -70,13 +70,13 @@ static void fun_factory_read_raw(
     struct track_info *ti = &d->di->track[tracknr];
     uint32_t *dat = (uint32_t *)ti->dat;
 
-    tbuf_bits(tbuf, SPEED_AVG, MFM_raw, 32, 0x44894489);
+    tbuf_bits(tbuf, SPEED_AVG, bc_raw, 32, 0x44894489);
 
-    tbuf_bits(tbuf, SPEED_AVG, MFM_even_odd, 32, (~0u << 8) | tracknr);
+    tbuf_bits(tbuf, SPEED_AVG, bc_mfm_even_odd, 32, (~0u << 8) | tracknr);
 
-    tbuf_bytes(tbuf, SPEED_AVG, MFM_even_odd, ti->len, dat);
+    tbuf_bytes(tbuf, SPEED_AVG, bc_mfm_even_odd, ti->len, dat);
 
-    tbuf_bits(tbuf, SPEED_AVG, MFM_even_odd, 32,
+    tbuf_bits(tbuf, SPEED_AVG, bc_mfm_even_odd, 32,
               amigados_checksum(dat, ti->len));
 }
 

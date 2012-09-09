@@ -68,7 +68,7 @@ static void *psygnosis_c_track0_write_raw(
             for (i = 0; i < (metablk_words + 1); i++) {
                 if (stream_next_bytes(s, raw, 4) == -1)
                     break;
-                mfm_decode_bytes(MFM_even_odd, 2, raw, &dat[i]);
+                mfm_decode_bytes(bc_mfm_even_odd, 2, raw, &dat[i]);
             }
 
             if (checksum(&dat[1], metablk_words, ver) != be16toh(dat[0]))
@@ -100,14 +100,14 @@ static void psygnosis_c_track0_read_raw(
     metablk_words = (ti->len - 512*11) / 2;
     ver = (metablk_words == V1_METABLK_WORDS) ? 1 : 2;
 
-    tbuf_bits(tbuf, SPEED_AVG, MFM_raw, 16, 0x428a);
+    tbuf_bits(tbuf, SPEED_AVG, bc_raw, 16, 0x428a);
     if (ver == 2)
-        tbuf_bits(tbuf, SPEED_AVG, MFM_all, 8, 0);
-    tbuf_bits(tbuf, SPEED_AVG, MFM_even_odd, 16,
+        tbuf_bits(tbuf, SPEED_AVG, bc_mfm, 8, 0);
+    tbuf_bits(tbuf, SPEED_AVG, bc_mfm_even_odd, 16,
               checksum(dat, metablk_words, ver));
     for (i = 0; i < metablk_words; i++)
-        tbuf_bits(tbuf, SPEED_AVG, MFM_even_odd, 16, be16toh(dat[i]));
-    tbuf_bits(tbuf, SPEED_AVG, MFM_all, 16, 0);
+        tbuf_bits(tbuf, SPEED_AVG, bc_mfm_even_odd, 16, be16toh(dat[i]));
+    tbuf_bits(tbuf, SPEED_AVG, bc_mfm, 16, 0);
 
     handlers[TRKTYP_amigados]->read_raw(d, tracknr, tbuf);
 }
@@ -205,7 +205,7 @@ static void *psygnosis_c_custom_rll_write_raw(
 
         if (stream_next_bytes(s, raw, 4) == -1)
             break;
-        mfm_decode_bytes(MFM_even_odd, 2, raw, raw);
+        mfm_decode_bytes(bc_mfm_even_odd, 2, raw, raw);
         csum = be16toh(raw[0]);
 
         memset(dat, 0, mdat.decoded_len * 4);
@@ -269,35 +269,35 @@ static void psygnosis_c_custom_rll_read_raw(
         !mdat.valid || !mdat.decoded_len)
         BUG();
 
-    tbuf_bits(tbuf, SPEED_AVG, MFM_raw, 16, 0x4429);
+    tbuf_bits(tbuf, SPEED_AVG, bc_raw, 16, 0x4429);
     if (mdat.version == 2)
-        tbuf_bits(tbuf, SPEED_AVG, MFM_all, 8, 0xfc);
+        tbuf_bits(tbuf, SPEED_AVG, bc_mfm, 8, 0xfc);
 
     for (i = 0, csum = 0; i < mdat.decoded_len; i++)
         csum += be32toh(dat[i]);
     csum ^= csum >> 16;
     csum &= (mdat.version == 2) ? 0xfffa : 0xfff0;
-    tbuf_bits(tbuf, SPEED_AVG, MFM_even_odd, 16, csum);
+    tbuf_bits(tbuf, SPEED_AVG, bc_mfm_even_odd, 16, csum);
 
     for (i = 0; i < mdat.decoded_len*32; i++) {
         if ((be32toh(dat[i/32])^mdat.mask) & (1u << (31-(i&31)))) {
             /* D=1 C=0 */
-            tbuf_bits(tbuf, SPEED_AVG, MFM_raw, 2, 0x2);
+            tbuf_bits(tbuf, SPEED_AVG, bc_raw, 2, 0x2);
             bits += 2;
         } else if ((++i >= mdat.decoded_len*32) ||
                    !((be32toh(dat[i/32])^mdat.mask) & (1u << (31-(i&31))))) {
             /* D=00 C=10 */
-            tbuf_bits(tbuf, SPEED_AVG, MFM_raw, 4, 0x2);
+            tbuf_bits(tbuf, SPEED_AVG, bc_raw, 4, 0x2);
             bits += 4;
         } else {
             /* D=01 C=0 */
-            tbuf_bits(tbuf, SPEED_AVG, MFM_raw, 3, 0x2);
+            tbuf_bits(tbuf, SPEED_AVG, bc_raw, 3, 0x2);
             bits += 3;
         }
     }
 
     if (bits & 31)
-        tbuf_bits(tbuf, SPEED_AVG, MFM_raw, 32-(bits&31), 0xaaaaaaaau);
+        tbuf_bits(tbuf, SPEED_AVG, bc_raw, 32-(bits&31), 0xaaaaaaaau);
 }
 
 struct track_handler psygnosis_c_custom_rll_handler = {
@@ -345,7 +345,7 @@ static void *psygnosis_c_write_raw(
         for (i = 0; i < (nr_bytes+2+3)/4; i++) {
             if (stream_next_bytes(s, raw, 8) == -1)
                 break;
-            mfm_decode_bytes(MFM_even_odd, 4, raw, &dat[i]);
+            mfm_decode_bytes(bc_mfm_even_odd, 4, raw, &dat[i]);
         }
 
         if (checksum((uint16_t *)dat+1, nr_bytes/2, mdat.version) !=
@@ -375,14 +375,14 @@ static void psygnosis_c_read_raw(
         mdat.valid || mdat.decoded_len)
         BUG();
 
-    tbuf_bits(tbuf, SPEED_AVG, MFM_raw, 16, 0x4429);
+    tbuf_bits(tbuf, SPEED_AVG, bc_raw, 16, 0x4429);
 
     *(uint16_t *)dat = htobe16(
         checksum((uint16_t *)ti->dat, ti->len/2, mdat.version));
     memcpy((uint8_t *)dat + 2, ti->dat, ti->len);
 
     for (i = 0; i < (ti->len+2+3)/4; i++)
-        tbuf_bits(tbuf, SPEED_AVG, MFM_even_odd, 32, be32toh(dat[i]));
+        tbuf_bits(tbuf, SPEED_AVG, bc_mfm_even_odd, 32, be32toh(dat[i]));
 }
 
 struct track_handler psygnosis_c_handler = {

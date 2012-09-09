@@ -106,7 +106,7 @@ static void *copylock_write_raw(
         } else /* TRKTYP_copylock_old */ {
             if (((uint16_t)s->word & 0xff00u) != 0x6500u)
                 continue;
-            sec = mfm_decode_bits(MFM_all, s->word) & 0xfu;
+            sec = mfm_decode_bits(bc_mfm, s->word) & 0xfu;
             if (s->word != (mfm_encode_word(0xb0+sec) | (1u<<13)))
                 continue;
         }
@@ -116,14 +116,14 @@ static void *copylock_write_raw(
         /* Check the sector header. */
         if (stream_next_bits(s, 16) == -1)
             break;
-        if (mfm_decode_bits(MFM_all, (uint16_t)s->word) != sec)
+        if (mfm_decode_bits(bc_mfm, (uint16_t)s->word) != sec)
             continue;
 
         /* Read and decode the sector data. */
         s->latency = 0;
         if (stream_next_bytes(s, dat, sizeof(dat)) == -1)
             break;
-        mfm_decode_bytes(MFM_all, sizeof(dat)/2, dat, dat);
+        mfm_decode_bytes(bc_mfm, sizeof(dat)/2, dat, dat);
 
         /* Deal with sector 6 preamble. */
         i = 0;
@@ -234,28 +234,28 @@ static void copylock_read_raw(
     while (sec < ti->nr_sectors) {
         /* Header */
         if (ti->type == TRKTYP_copylock) {
-            tbuf_bits(tbuf, speed, MFM_all, 8, 0xa0 + sec);
-            tbuf_bits(tbuf, speed, MFM_all, 16, 0);
-            tbuf_bits(tbuf, speed, MFM_raw, 16, sync_list[sec]);
+            tbuf_bits(tbuf, speed, bc_mfm, 8, 0xa0 + sec);
+            tbuf_bits(tbuf, speed, bc_mfm, 16, 0);
+            tbuf_bits(tbuf, speed, bc_raw, 16, sync_list[sec]);
         } else /* TRKTYP_copylock_old */ {
-            tbuf_bits(tbuf, speed, MFM_raw, 16,
+            tbuf_bits(tbuf, speed, bc_raw, 16,
                       mfm_encode_word(0xa0 + sec) | (1u<<13));
-            tbuf_bits(tbuf, speed, MFM_all, 16, 0);
-            tbuf_bits(tbuf, speed, MFM_raw, 16,
+            tbuf_bits(tbuf, speed, bc_mfm, 16, 0);
+            tbuf_bits(tbuf, speed, bc_raw, 16,
                       mfm_encode_word(0xb0 + sec) | (1u<<13));
         }
-        tbuf_bits(tbuf, speed, MFM_all, 8, sec);
+        tbuf_bits(tbuf, speed, bc_mfm, 8, sec);
         /* Data */
         lfsr = lfsr_seek(ti, lfsr_seed, 0, sec);
         for (i = 0; i < 512; i++) {
             if ((sec == 6) && (i == 0))
                 for (i = 0; i < sizeof(sec6_sig); i++)
-                    tbuf_bits(tbuf, speed, MFM_all, 8, sec6_sig[i]);
-            tbuf_bits(tbuf, speed, MFM_all, 8, lfsr_state_byte(lfsr));
+                    tbuf_bits(tbuf, speed, bc_mfm, 8, sec6_sig[i]);
+            tbuf_bits(tbuf, speed, bc_mfm, 8, lfsr_state_byte(lfsr));
             lfsr = lfsr_next_state(lfsr);
         }
         /* Footer */
-        tbuf_bits(tbuf, speed, MFM_all, 8, 0);
+        tbuf_bits(tbuf, speed, bc_mfm, 8, 0);
 
         /* Move to next sector's speed to encode track gap. */
         sec++;

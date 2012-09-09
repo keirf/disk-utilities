@@ -41,7 +41,7 @@ static void *menace_write_raw(
         for (i = csum = 0; i < ARRAY_SIZE(dat); i++) {
             if (stream_next_bytes(s, raw, 4) == -1)
                 goto fail;
-            mfm_decode_bytes(MFM_even_odd, 2, raw, &dat[i]);
+            mfm_decode_bytes(bc_mfm_even_odd, 2, raw, &dat[i]);
             csum += be16toh(dat[i]);
         }
 
@@ -67,15 +67,15 @@ static void menace_read_raw(
     uint16_t csum, *dat = (uint16_t *)ti->dat;
     unsigned int i;
 
-    tbuf_bits(tbuf, SPEED_AVG, MFM_raw, 16, 0x4489);
-    tbuf_bits(tbuf, SPEED_AVG, MFM_raw, 32, 0x552a2a55);
+    tbuf_bits(tbuf, SPEED_AVG, bc_raw, 16, 0x4489);
+    tbuf_bits(tbuf, SPEED_AVG, bc_raw, 32, 0x552a2a55);
 
     for (i = csum = 0; i < ti->len/2; i++) {
-        tbuf_bits(tbuf, SPEED_AVG, MFM_even_odd, 16, be16toh(dat[i]));
+        tbuf_bits(tbuf, SPEED_AVG, bc_mfm_even_odd, 16, be16toh(dat[i]));
         csum += be16toh(dat[i]);
     }
 
-    tbuf_bits(tbuf, SPEED_AVG, MFM_even_odd, 16, csum);
+    tbuf_bits(tbuf, SPEED_AVG, bc_mfm_even_odd, 16, csum);
 }
 
 struct track_handler menace_handler = {

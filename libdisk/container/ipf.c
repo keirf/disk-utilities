@@ -203,13 +203,13 @@ static void ipf_tbuf_bit(
     enum bitcell_encoding enc, uint8_t dat)
 {
     struct ipf_tbuf *ibuf = container_of(tbuf, struct ipf_tbuf, tbuf);
-    unsigned int chunktype = (enc == MFM_raw) ? chkSync : chkData;
+    unsigned int chunktype = (enc == bc_raw) ? chkSync : chkData;
 
     if (chunktype != ibuf->chunktype)
         ipf_tbuf_finish_chunk(ibuf, chunktype);
 
     ibuf->dat[ibuf->len] |= dat << (7 - ibuf->bits);
-    ibuf->decoded_bits += (enc == MFM_raw) ? 1 : 2;
+    ibuf->decoded_bits += (enc == bc_raw) ? 1 : 2;
     if (++ibuf->bits == 8) {
         ibuf->bits = 0;
         ibuf->len++;

@@ -36,14 +36,14 @@ static void *dugger_write_raw(
 
         if (stream_next_bytes(s, raw, 8) == -1)
             goto fail;
-        mfm_decode_bytes(MFM_odd_even, 4, raw, &dat[0]);
+        mfm_decode_bytes(bc_mfm_odd_even, 4, raw, &dat[0]);
         if ((ti->len = be32toh(dat[0])) > 7000)
             continue;
 
         for (i = 1; i < ti->len/4+3; i++) {
             if (stream_next_bytes(s, raw, 8) == -1)
                 goto fail;
-            mfm_decode_bytes(MFM_odd_even, 4, raw, &dat[i]);
+            mfm_decode_bytes(bc_mfm_odd_even, 4, raw, &dat[i]);
         }
 
         if ((be32toh(dat[1]) != (0x03e90100 | tracknr)) ||
@@ -69,15 +69,16 @@ static void dugger_read_raw(
     uint32_t dat[7012/4];
     unsigned int i;
 
-    tbuf_bits(tbuf, SPEED_AVG, MFM_raw, 32, 0x44894489);
+    tbuf_bits(tbuf, SPEED_AVG, bc_raw, 32, 0x44894489);
 
     dat[0] = htobe32(ti->len);
     dat[1] = htobe32(0x03e90100 | tracknr);
     memcpy(&dat[2], ti->dat, ti->len);
     for (i = 0; i < ti->len/4+2; i++)
-        tbuf_bits(tbuf, SPEED_AVG, MFM_odd_even, 32, be32toh(dat[i]));
+        tbuf_bits(tbuf, SPEED_AVG, bc_mfm_odd_even, 32, be32toh(dat[i]));
 
-    tbuf_bits(tbuf, SPEED_AVG, MFM_odd_even, 32, amigados_checksum(dat, i*4));
+    tbuf_bits(tbuf, SPEED_AVG, bc_mfm_odd_even, 32,
+              amigados_checksum(dat, i*4));
 }
 
 struct track_handler dugger_handler = {

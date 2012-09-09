@@ -38,7 +38,7 @@ static void *puffys_saga_write_raw(
         for (i = 0; i < 30; i++) {
             if (stream_next_bits(s, 32) == -1)
                 goto fail;
-            if (mfm_decode_bits(MFM_all, s->word))
+            if (mfm_decode_bits(bc_mfm, s->word))
                 break;
         }
         if (i != 30)
@@ -51,7 +51,7 @@ static void *puffys_saga_write_raw(
 
         if (stream_next_bytes(s, dat, sizeof(dat)) == -1)
             goto fail;
-        mfm_decode_bytes(MFM_all, sizeof(dat)/2, dat, dat);
+        mfm_decode_bytes(bc_mfm, sizeof(dat)/2, dat, dat);
 
         csum = 0;
         for (i = 1; i < 2818; i++)
@@ -76,20 +76,20 @@ static void puffys_saga_read_raw(
     uint16_t csum, *dat = (uint16_t *)ti->dat;
     unsigned int i;
 
-    tbuf_bits(tbuf, SPEED_AVG, MFM_raw, 32, 0x44894489);
+    tbuf_bits(tbuf, SPEED_AVG, bc_raw, 32, 0x44894489);
     for (i = 0; i < 30; i++)
-        tbuf_bits(tbuf, SPEED_AVG, MFM_all, 16, 0);
-    tbuf_bits(tbuf, SPEED_AVG, MFM_all, 8, 0xaa);
+        tbuf_bits(tbuf, SPEED_AVG, bc_mfm, 16, 0);
+    tbuf_bits(tbuf, SPEED_AVG, bc_mfm, 8, 0xaa);
 
     csum = tracknr/2;
     for (i = 0; i < ti->len/2; i++)
         csum += be16toh(dat[i]);
-    tbuf_bits(tbuf, SPEED_AVG, MFM_all, 16, csum);
+    tbuf_bits(tbuf, SPEED_AVG, bc_mfm, 16, csum);
 
-    tbuf_bits(tbuf, SPEED_AVG, MFM_all, 16, tracknr/2);
+    tbuf_bits(tbuf, SPEED_AVG, bc_mfm, 16, tracknr/2);
 
     for (i = 0; i < ti->len/2; i++)
-        tbuf_bits(tbuf, SPEED_AVG, MFM_all, 16, be16toh(dat[i]));
+        tbuf_bits(tbuf, SPEED_AVG, bc_mfm, 16, be16toh(dat[i]));
 }
 
 struct track_handler puffys_saga_handler = {
