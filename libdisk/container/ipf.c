@@ -344,6 +344,7 @@ static bool_t __ipf_close(struct disk *d, uint32_t encoder)
             img->trksize = ceil_bits_to_bytes(img->trkbits);
 
             /* Go get the encoded track data. */
+            ibuf.tbuf.prng_seed = TBUF_PRNG_INIT;
             ibuf.tbuf.bit = ipf_tbuf_bit;
             ibuf.tbuf.gap = ipf_tbuf_gap;
             ibuf.tbuf.weak = ipf_tbuf_weak;

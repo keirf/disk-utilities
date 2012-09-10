@@ -70,13 +70,13 @@ static void unformatted_read_raw(
     unsigned int i;
     int speed_delta = 200;
     uint8_t byte = 0;
-    uint32_t bitlen = (120000 * ((rand() & 255) + 1000 - 128)) / 1000;
+    uint32_t bitlen = (120000 * ((tbuf_rnd16(tbuf)&255) + 1000 - 128)) / 1000;
 
     tbuf_init(tbuf, 0, bitlen);
 
     for (i = 0; i < bitlen; i++) {
         byte <<= 1;
-        byte |= rand() & 1;
+        byte |= tbuf_rnd16(tbuf) & 1;
         if ((i & 7) == 7) {
             tbuf_bits(tbuf, SPEED_AVG + speed_delta, bc_raw, 8, byte);
             speed_delta = -speed_delta;

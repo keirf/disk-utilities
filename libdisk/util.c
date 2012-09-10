@@ -157,6 +157,12 @@ uint16_t crc16_ccitt_bit(uint8_t b, uint16_t crc)
     return crc;
 }
 
+uint16_t rnd16(uint32_t *p_seed)
+{
+    *p_seed = *p_seed * 1103515245 + 12345;
+    return *p_seed >> 16;
+}
+
 #if !defined(__PLATFORM_HAS_ENDIAN_H__)
 
 uint16_t htobe16(uint16_t host_16bits)

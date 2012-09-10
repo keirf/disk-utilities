@@ -44,6 +44,7 @@ enum bitcell_encoding {
 struct tbuf {
     struct track_raw raw;
     struct disk *disk;
+    uint32_t prng_seed;
     uint32_t start, pos;
     uint8_t prev_data_bit;
     uint16_t crc16_ccitt;
@@ -65,6 +66,9 @@ void tbuf_weak(struct tbuf *, uint16_t speed, unsigned int bits);
 void tbuf_start_crc(struct tbuf *tbuf);
 void tbuf_emit_crc16_ccitt(struct tbuf *tbuf, uint16_t speed);
 void tbuf_disable_auto_sector_split(struct tbuf *tbuf);
+
+#define TBUF_PRNG_INIT 0xae659201u
+uint16_t tbuf_rnd16(struct tbuf *tbuf);
 
 enum track_density {
     trkden_double, /* default */

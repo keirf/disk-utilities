@@ -77,6 +77,8 @@ uint32_t crc32(const void *buf, size_t len);
 uint16_t crc16_ccitt(const void *buf, size_t len, uint16_t crc);
 uint16_t crc16_ccitt_bit(uint8_t b, uint16_t crc);
 
+uint16_t rnd16(uint32_t *p_seed);
+
 #if !defined(__PLATFORM_HAS_ENDIAN_H__)
 
 uint16_t htobe16(uint16_t host_16bits);

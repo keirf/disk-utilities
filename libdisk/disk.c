@@ -143,6 +143,7 @@ struct track_raw *track_raw_alloc_buffer(struct disk *d)
 {
     struct tbuf *tbuf = memalloc(sizeof(*tbuf));
     tbuf->disk = d;
+    tbuf->prng_seed = TBUF_PRNG_INIT;
     return &tbuf->raw;
 }
 
@@ -473,7 +474,7 @@ void tbuf_weak(struct tbuf *tbuf, uint16_t speed, unsigned int bits)
         tbuf->weak(tbuf, speed, bits);
     } else {
         while (bits--)
-            tbuf->bit(tbuf, speed, bc_mfm, rand() & 1);
+            tbuf->bit(tbuf, speed, bc_mfm, tbuf_rnd16(tbuf) & 1);
     }
 }
 
@@ -490,6 +491,11 @@ void tbuf_emit_crc16_ccitt(struct tbuf *tbuf, uint16_t speed)
 void tbuf_disable_auto_sector_split(struct tbuf *tbuf)
 {
     tbuf->disable_auto_sector_split = 1;
+}
+
+uint16_t tbuf_rnd16(struct tbuf *tbuf)
+{
+    return rnd16(&tbuf->prng_seed);
 }
 
 uint32_t mfm_decode_bits(enum bitcell_encoding enc, uint32_t x)

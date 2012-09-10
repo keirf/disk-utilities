@@ -139,7 +139,7 @@ static void dungeon_master_weak_read_raw(
             /* Protection sector: randomise MSB of each byte in weak area. */
             for (i = 0; i < 512-64; i++)
                 tbuf_bits(tbuf, SPEED_AVG, bc_mfm, 8,
-                          (rand() & 1) ? 0x68 : 0xe8);
+                          (tbuf_rnd16(tbuf) & 1) ? 0x68 : 0xe8);
             tbuf_bytes(tbuf, SPEED_AVG, bc_mfm, 32, &dat[(sec+1)*512-32]);
             /* CRC is generated pre-randomisation. Restore it now. */
             tbuf->crc16_ccitt = crc;
