@@ -1,16 +1,16 @@
-Amiga Disk Utilities
---------------------
+Disk Utilities 
+==============
 
-A collection of utilities for ripping, dumping, analysing, and modifying Amiga
+A collection of utilities for ripping, dumping, analysing, and modifying
 disk images. All code is public domain (see the COPYING file).
 
 All code except amiga-native/ targets Linux, Mac OS X, and Windows
-(using Cygwin), and should be very POSIX portable.
+(using Cygwin or MinGW), and should be very POSIX portable.
 amiga-native/ targets classic Amiga m68k, tested with SAS/C 6.50.
 
-Prerequisites: You need at least Make and a C compiler (GCC, for Clang you'll
+Prerequisites: You need at least Make and a C compiler (GCC; for Clang you'll
 have to edit CC in Rules.mk). On Mac OS X, the Xcode Command Line Tools
-include this. On Windows, you need Cygwin, Make, and a C compiler.
+include this. On Windows, you need Cygwin/MinGW, Make, and a C compiler.
 
 Building:
 ---------
