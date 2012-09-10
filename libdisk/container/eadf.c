@@ -102,8 +102,8 @@ static void eadf_close(struct disk *d)
         if (ti->type == TRKTYP_unformatted) {
             thdr.len = thdr.bitlen = 0;
         } else {
-            raw[i] = track_raw_alloc_buffer(d);
-            track_raw_read(raw[i], i);
+            raw[i] = track_alloc_raw_buffer(d);
+            track_read_raw(raw[i], i);
             thdr.len = htobe32((raw[i]->bitlen+7)/8);
             thdr.bitlen = htobe32(raw[i]->bitlen);
             for (j = 0; j < (raw[i]->bitlen+7)/8; j++) {
@@ -121,7 +121,7 @@ static void eadf_close(struct disk *d)
         if (raw[i] == NULL)
             continue;
         write_exact(d->fd, raw[i]->bits, (raw[i]->bitlen+7)/8);
-        track_raw_free_buffer(raw[i]);
+        track_free_raw_buffer(raw[i]);
     }
 }
 

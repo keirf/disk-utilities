@@ -139,7 +139,7 @@ struct disk_info *disk_get_info(struct disk *d)
     return d->di;
 }
 
-struct track_raw *track_raw_alloc_buffer(struct disk *d)
+struct track_raw *track_alloc_raw_buffer(struct disk *d)
 {
     struct tbuf *tbuf = memalloc(sizeof(*tbuf));
     tbuf->disk = d;
@@ -147,22 +147,22 @@ struct track_raw *track_raw_alloc_buffer(struct disk *d)
     return &tbuf->raw;
 }
 
-void track_raw_free_buffer(struct track_raw *track_raw)
+void track_free_raw_buffer(struct track_raw *track_raw)
 {
     struct tbuf *tbuf = container_of(track_raw, struct tbuf, raw);
 
-    track_raw_purge_buffer(track_raw);
+    track_purge_raw_buffer(track_raw);
     memfree(tbuf);
 }
 
-void track_raw_purge_buffer(struct track_raw *track_raw)
+void track_purge_raw_buffer(struct track_raw *track_raw)
 {
     memfree(track_raw->bits);
     memfree(track_raw->speed);
     memset(track_raw, 0, sizeof(*track_raw));
 }
 
-void track_raw_read(struct track_raw *track_raw, unsigned int tracknr)
+void track_read_raw(struct track_raw *track_raw, unsigned int tracknr)
 {
     struct tbuf *tbuf = container_of(track_raw, struct tbuf, raw);
     struct disk *d = tbuf->disk;
@@ -170,7 +170,7 @@ void track_raw_read(struct track_raw *track_raw, unsigned int tracknr)
     struct track_info *ti;
     const struct track_handler *thnd;
 
-    track_raw_purge_buffer(track_raw);
+    track_purge_raw_buffer(track_raw);
 
     if (tracknr >= di->nr_tracks)
         return;
