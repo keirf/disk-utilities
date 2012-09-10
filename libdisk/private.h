@@ -42,12 +42,10 @@ enum bitcell_encoding {
 
 /* Track buffer: this is opaque to encoders, updated via tbuf_* helpers. */
 struct track_buffer {
-    uint8_t *bits;
-    uint16_t *speed;
-    uint32_t start, pos, len;
+    struct track_raw raw;
+    uint32_t start, pos;
     uint8_t prev_data_bit;
     uint16_t crc16_ccitt;
-    bool_t has_weak_bits;
     bool_t disable_auto_sector_split;
     void (*bit)(struct track_buffer *, uint16_t speed,
                 enum bitcell_encoding enc, uint8_t dat);

@@ -381,7 +381,7 @@ static bool_t __ipf_close(struct disk *d, uint32_t encoder)
             /* Finish the IMGE chunk. */
             img->gapbits = img->trkbits - img->databits;
             img->blkcnt = ibuf.nr_blks;
-            if (ibuf.tbuf.has_weak_bits)
+            if (ibuf.tbuf.raw.has_weak_bits)
                 img->flags |= IMGF_FLAKEY;
 
             /* Convert endianness of all block descriptors. */

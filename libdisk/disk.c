@@ -145,35 +145,37 @@ struct track_raw *track_raw_get(struct disk *d, unsigned int tracknr)
     struct track_info *ti;
     const struct track_handler *thnd;
     struct track_raw *track_raw;
-    struct track_buffer tbuf;
+    struct track_buffer *tbuf;
 
     if (tracknr >= di->nr_tracks)
         return NULL;
     ti = &di->track[tracknr];
 
+    tbuf = memalloc(sizeof(*tbuf));
+
     if ((int32_t)ti->total_bits > 0)
-        tbuf_init(&tbuf, ti->data_bitoff, ti->total_bits);
+        tbuf_init(tbuf, ti->data_bitoff, ti->total_bits);
 
     thnd = handlers[ti->type];
-    thnd->read_raw(d, tracknr, &tbuf);
+    thnd->read_raw(d, tracknr, tbuf);
 
-    tbuf_finalise(&tbuf);
+    tbuf_finalise(tbuf);
 
-    track_raw = memalloc(sizeof(*track_raw));
-    track_raw->bits = tbuf.bits;
-    track_raw->speed = tbuf.speed;
-    track_raw->bitlen = tbuf.len;
-    track_raw->has_weak_bits = tbuf.has_weak_bits;
-    return track_raw;
+    return &tbuf->raw;
 }
 
 void track_raw_put(struct track_raw *track_raw)
 {
+    struct track_buffer *tbuf;
+
     if (track_raw == NULL)
         return;
+
+    tbuf = container_of(track_raw, struct track_buffer, raw);
+
     memfree(track_raw->bits);
     memfree(track_raw->speed);
-    memfree(track_raw);
+    memfree(tbuf);
 }
 
 int track_write_raw_from_stream(
@@ -328,9 +330,9 @@ static void change_bit(uint8_t *map, unsigned int bit, bool_t on)
 
 static void append_bit(struct track_buffer *tbuf, uint16_t speed, uint8_t x)
 {
-    change_bit(tbuf->bits, tbuf->pos, x);
-    tbuf->speed[tbuf->pos >> 3] = speed;
-    if (++tbuf->pos >= tbuf->len)
+    change_bit(tbuf->raw.bits, tbuf->pos, x);
+    tbuf->raw.speed[tbuf->pos >> 3] = speed;
+    if (++tbuf->pos >= tbuf->raw.bitlen)
         tbuf->pos = 0;
 }
 
@@ -354,9 +356,9 @@ void tbuf_init(struct track_buffer *tbuf, uint32_t bitstart, uint32_t bitlen)
     unsigned int bytes = bitlen + 7 / 8;
     memset(tbuf, 0, sizeof(*tbuf));
     tbuf->start = tbuf->pos = bitstart;
-    tbuf->len = bitlen;
-    tbuf->bits = memalloc(bytes);
-    tbuf->speed = memalloc(2*bytes);
+    tbuf->raw.bitlen = bitlen;
+    tbuf->raw.bits = memalloc(bytes);
+    tbuf->raw.speed = memalloc(2*bytes);
     tbuf->bit = tbuf_bit;
 }
 
@@ -371,7 +373,7 @@ static void tbuf_finalise(struct track_buffer *tbuf)
     /* Forward fill half the gap */
     nr_bits = tbuf->start - tbuf->pos;
     if (nr_bits < 0)
-        nr_bits += tbuf->len;
+        nr_bits += tbuf->raw.bitlen;
     nr_bits /= 4; /* /2 to halve the gap, /2 to count data bits only */
     while (nr_bits--)
         tbuf_bits(tbuf, SPEED_AVG, bc_mfm, 1, 0);
@@ -383,9 +385,9 @@ static void tbuf_finalise(struct track_buffer *tbuf)
     pos = tbuf->start;
     do {
         if (--pos < 0)
-            pos += tbuf->len;
-        change_bit(tbuf->bits, pos, b);
-        tbuf->speed[pos >> 3] = SPEED_AVG;
+            pos += tbuf->raw.bitlen;
+        change_bit(tbuf->raw.bits, pos, b);
+        tbuf->raw.speed[pos >> 3] = SPEED_AVG;
         b = !b;
     } while (pos != tbuf->pos);
 }
@@ -453,7 +455,7 @@ void tbuf_gap(struct track_buffer *tbuf, uint16_t speed, unsigned int bits)
 
 void tbuf_weak(struct track_buffer *tbuf, uint16_t speed, unsigned int bits)
 {
-    tbuf->has_weak_bits = 1;
+    tbuf->raw.has_weak_bits = 1;
     if (tbuf->weak != NULL) {
         tbuf->weak(tbuf, speed, bits);
     } else {
