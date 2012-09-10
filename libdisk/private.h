@@ -43,6 +43,7 @@ enum bitcell_encoding {
 /* Track buffer: this is opaque to encoders, updated via tbuf_* helpers. */
 struct tbuf {
     struct track_raw raw;
+    struct disk *disk;
     uint32_t start, pos;
     uint8_t prev_data_bit;
     uint16_t crc16_ccitt;

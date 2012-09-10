@@ -36,6 +36,7 @@ static struct stream *di_open(const char *name)
     dis = memalloc(sizeof(*dis));
     dis->d = d;
     dis->track = ~0u;
+    dis->track_raw = track_raw_alloc_buffer(d);
 
     return &dis->s;
 }
@@ -43,7 +44,7 @@ static struct stream *di_open(const char *name)
 static void di_close(struct stream *s)
 {
     struct di_stream *dis = container_of(s, struct di_stream, s);
-    track_raw_put(dis->track_raw);
+    track_raw_free_buffer(dis->track_raw);
     disk_close(dis->d);
     memfree(dis);
 }
@@ -56,9 +57,8 @@ static int di_select_track(struct stream *s, unsigned int tracknr)
         return 0;
 
     dis->track = ~0u;
-    track_raw_put(dis->track_raw);
-    dis->track_raw = track_raw_get(dis->d, tracknr);
-    if (dis->track_raw == NULL)
+    track_raw_read(dis->track_raw, tracknr);
+    if (dis->track_raw->bits == NULL)
         return -1;
     dis->track = tracknr;
     dis->ns_per_cell = 200000000u / dis->track_raw->bitlen;

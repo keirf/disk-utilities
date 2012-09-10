@@ -112,8 +112,7 @@ static void data_cb(void *_s)
 static void track_load(struct amiga_state *s)
 {
     log_info("Loading track %u", s->disk.tracknr);
-    track_raw_put(s->disk.track_raw);
-    s->disk.track_raw = track_raw_get(s->disk.df0_disk, s->disk.tracknr);
+    track_raw_read(s->disk.track_raw, s->disk.tracknr);
     s->disk.input_pos = s->disk.data_word_bitpos = s->disk.data_word = 0;
     s->disk.last_bitcell_time = s->event_base.current_time;
     s->disk.av_ns_per_cell = 200000000ul / s->disk.track_raw->bitlen;
@@ -123,8 +122,7 @@ static void track_load(struct amiga_state *s)
 
 static void track_unload(struct amiga_state *s)
 {
-    track_raw_put(s->disk.track_raw);
-    s->disk.track_raw = NULL;
+    track_raw_purge_buffer(s->disk.track_raw);
     event_unset(s->disk.data_delay);
 }
 
@@ -251,6 +249,7 @@ void disk_init(struct amiga_state *s)
     s->disk.df0_disk = disk_open(df0_filename, 1);
     if (s->disk.df0_disk == NULL)
         errx(1, "%s", df0_filename);
+    s->disk.track_raw = track_raw_alloc_buffer(s->disk.df0_disk);
 
     /* Set up CIA peripheral data registers. */
     s->ciaa.pra_i = 0xff; /* disk inputs, all off (active low) */

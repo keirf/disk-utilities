@@ -97,8 +97,10 @@ struct track_raw {
     uint32_t bitlen;
     uint8_t has_weak_bits;
 };
-struct track_raw *track_raw_get(struct disk *d, unsigned int tracknr);
-void track_raw_put(struct track_raw *);
+struct track_raw *track_raw_alloc_buffer(struct disk *d);
+void track_raw_free_buffer(struct track_raw *);
+void track_raw_purge_buffer(struct track_raw *);
+void track_raw_read(struct track_raw *, unsigned int tracknr);
 
 int track_write_raw_from_stream(
     struct disk *, unsigned int tracknr, enum track_type type,

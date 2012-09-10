@@ -139,19 +139,41 @@ struct disk_info *disk_get_info(struct disk *d)
     return d->di;
 }
 
-struct track_raw *track_raw_get(struct disk *d, unsigned int tracknr)
+struct track_raw *track_raw_alloc_buffer(struct disk *d)
 {
+    struct tbuf *tbuf = memalloc(sizeof(*tbuf));
+    tbuf->disk = d;
+    return &tbuf->raw;
+}
+
+void track_raw_free_buffer(struct track_raw *track_raw)
+{
+    struct tbuf *tbuf = container_of(track_raw, struct tbuf, raw);
+
+    track_raw_purge_buffer(track_raw);
+    memfree(tbuf);
+}
+
+void track_raw_purge_buffer(struct track_raw *track_raw)
+{
+    memfree(track_raw->bits);
+    memfree(track_raw->speed);
+    memset(track_raw, 0, sizeof(*track_raw));
+}
+
+void track_raw_read(struct track_raw *track_raw, unsigned int tracknr)
+{
+    struct tbuf *tbuf = container_of(track_raw, struct tbuf, raw);
+    struct disk *d = tbuf->disk;
     struct disk_info *di = d->di;
     struct track_info *ti;
     const struct track_handler *thnd;
-    struct track_raw *track_raw;
-    struct tbuf *tbuf;
+
+    track_raw_purge_buffer(track_raw);
 
     if (tracknr >= di->nr_tracks)
-        return NULL;
+        return;
     ti = &di->track[tracknr];
-
-    tbuf = memalloc(sizeof(*tbuf));
 
     if ((int32_t)ti->total_bits > 0)
         tbuf_init(tbuf, ti->data_bitoff, ti->total_bits);
@@ -160,22 +182,6 @@ struct track_raw *track_raw_get(struct disk *d, unsigned int tracknr)
     thnd->read_raw(d, tracknr, tbuf);
 
     tbuf_finalise(tbuf);
-
-    return &tbuf->raw;
-}
-
-void track_raw_put(struct track_raw *track_raw)
-{
-    struct tbuf *tbuf;
-
-    if (track_raw == NULL)
-        return;
-
-    tbuf = container_of(track_raw, struct tbuf, raw);
-
-    memfree(track_raw->bits);
-    memfree(track_raw->speed);
-    memfree(tbuf);
 }
 
 int track_write_raw_from_stream(
@@ -354,12 +360,19 @@ static void tbuf_bit(
 void tbuf_init(struct tbuf *tbuf, uint32_t bitstart, uint32_t bitlen)
 {
     unsigned int bytes = bitlen + 7 / 8;
-    memset(tbuf, 0, sizeof(*tbuf));
+
     tbuf->start = tbuf->pos = bitstart;
+    tbuf->prev_data_bit = 0;
+    tbuf->crc16_ccitt = 0;
+    tbuf->disable_auto_sector_split = 0;
+    tbuf->bit = tbuf_bit;
+    tbuf->gap = NULL;
+    tbuf->weak = NULL;
+
+    memset(&tbuf->raw, 0, sizeof(tbuf->raw));
     tbuf->raw.bitlen = bitlen;
     tbuf->raw.bits = memalloc(bytes);
     tbuf->raw.speed = memalloc(2*bytes);
-    tbuf->bit = tbuf_bit;
 }
 
 static void tbuf_finalise(struct tbuf *tbuf)
