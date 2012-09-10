@@ -56,7 +56,7 @@ static void *protec_longtrack_write_raw(
 }
 
 static void protec_longtrack_read_raw(
-    struct disk *d, unsigned int tracknr, struct track_buffer *tbuf)
+    struct disk *d, unsigned int tracknr, struct tbuf *tbuf)
 {
     unsigned int i;
 
@@ -101,7 +101,7 @@ static void *gremlin_longtrack_write_raw(
 }
 
 static void gremlin_longtrack_read_raw(
-    struct disk *d, unsigned int tracknr, struct track_buffer *tbuf)
+    struct disk *d, unsigned int tracknr, struct tbuf *tbuf)
 {
     struct track_info *ti = &d->di->track[tracknr];
     unsigned int i;
@@ -166,7 +166,7 @@ static void *crystals_of_arborea_longtrack_write_raw(
 }
 
 static void crystals_of_arborea_longtrack_read_raw(
-    struct disk *d, unsigned int tracknr, struct track_buffer *tbuf)
+    struct disk *d, unsigned int tracknr, struct tbuf *tbuf)
 {
     unsigned int i;
 
@@ -211,7 +211,7 @@ static void *infogrames_longtrack_write_raw(
 }
 
 static void infogrames_longtrack_read_raw(
-    struct disk *d, unsigned int tracknr, struct track_buffer *tbuf)
+    struct disk *d, unsigned int tracknr, struct tbuf *tbuf)
 {
     unsigned int i;
 
@@ -253,7 +253,7 @@ static void *bat_longtrack_write_raw(
 }
 
 static void bat_longtrack_read_raw(
-    struct disk *d, unsigned int tracknr, struct track_buffer *tbuf)
+    struct disk *d, unsigned int tracknr, struct tbuf *tbuf)
 {
     unsigned int i;
 

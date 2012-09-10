@@ -68,7 +68,7 @@ static void *armourgeddon_a_write_raw(
 }
 
 static void armourgeddon_a_read_raw(
-    struct disk *d, unsigned int tracknr, struct track_buffer *tbuf)
+    struct disk *d, unsigned int tracknr, struct tbuf *tbuf)
 {
     struct track_info *ti = &d->di->track[tracknr];
     uint16_t *dat = (uint16_t *)ti->dat;
@@ -137,7 +137,7 @@ fail:
 }
 
 static void armourgeddon_b_read_raw(
-    struct disk *d, unsigned int tracknr, struct track_buffer *tbuf)
+    struct disk *d, unsigned int tracknr, struct tbuf *tbuf)
 {
     struct track_info *ti = &d->di->track[tracknr];
     uint8_t *dat = (uint8_t *)ti->dat;

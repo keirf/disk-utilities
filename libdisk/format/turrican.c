@@ -64,7 +64,7 @@ fail:
 }
 
 static void turrican_read_raw(
-    struct disk *d, unsigned int tracknr, struct track_buffer *tbuf)
+    struct disk *d, unsigned int tracknr, struct tbuf *tbuf)
 {
     struct track_info *ti = &d->di->track[tracknr];
     uint32_t csum, *dat = (uint32_t *)ti->dat;
@@ -147,7 +147,7 @@ static void *factor5_hiscore_write_raw(
 }
 
 static void factor5_hiscore_read_raw(
-    struct disk *d, unsigned int tracknr, struct track_buffer *tbuf)
+    struct disk *d, unsigned int tracknr, struct tbuf *tbuf)
 {
     struct track_info *ti = &d->di->track[tracknr];
     uint32_t csum, *dat = (uint32_t *)ti->dat;

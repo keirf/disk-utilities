@@ -64,7 +64,7 @@ fail:
 }
 
 static void core_read_raw(
-    struct disk *d, unsigned int tracknr, struct track_buffer *tbuf)
+    struct disk *d, unsigned int tracknr, struct tbuf *tbuf)
 {
     struct track_info *ti = &d->di->track[tracknr];
     uint32_t csum = 0, *dat = (uint32_t *)ti->dat;

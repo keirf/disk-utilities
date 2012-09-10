@@ -95,7 +95,7 @@ fail:
 }
 
 static void sega_read_raw(
-    struct disk *d, unsigned int tracknr, struct track_buffer *tbuf)
+    struct disk *d, unsigned int tracknr, struct tbuf *tbuf)
 {
     struct track_info *ti = &d->di->track[tracknr];
     uint32_t csum, *dat = (uint32_t *)ti->dat;
@@ -208,7 +208,7 @@ static uint32_t csum_long(uint32_t w_prev, uint32_t w)
 }
 
 static void afterburner_sega_read_raw(
-    struct disk *d, unsigned int tracknr, struct track_buffer *tbuf)
+    struct disk *d, unsigned int tracknr, struct tbuf *tbuf)
 {
     struct track_info *ti = &d->di->track[tracknr];
     uint32_t csum, *dat = (uint32_t *)ti->dat, prev;

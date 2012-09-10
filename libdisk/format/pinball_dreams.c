@@ -72,7 +72,7 @@ fail:
 }
 
 static void pinball_dreams_read_raw(
-    struct disk *d, unsigned int tracknr, struct track_buffer *tbuf)
+    struct disk *d, unsigned int tracknr, struct tbuf *tbuf)
 {
     struct track_info *ti = &d->di->track[tracknr];
     uint16_t csum, *cdat = (uint16_t *)ti->dat;

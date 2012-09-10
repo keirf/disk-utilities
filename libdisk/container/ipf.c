@@ -127,7 +127,7 @@ struct ipf_block {
 enum chkcode { chkEnd=0, chkSync, chkData, chkGap, chkRaw, chkFlaky };
 
 struct ipf_tbuf {
-    struct track_buffer tbuf;
+    struct tbuf tbuf;
     uint8_t *dat;
     unsigned int len, bits;
     unsigned int decoded_bits;
@@ -199,7 +199,7 @@ out:
 }
 
 static void ipf_tbuf_bit(
-    struct track_buffer *tbuf, uint16_t speed,
+    struct tbuf *tbuf, uint16_t speed,
     enum bitcell_encoding enc, uint8_t dat)
 {
     struct ipf_tbuf *ibuf = container_of(tbuf, struct ipf_tbuf, tbuf);
@@ -217,7 +217,7 @@ static void ipf_tbuf_bit(
 }
 
 static void ipf_tbuf_gap(
-    struct track_buffer *tbuf, uint16_t speed, unsigned int bits)
+    struct tbuf *tbuf, uint16_t speed, unsigned int bits)
 {
     struct ipf_tbuf *ibuf = container_of(tbuf, struct ipf_tbuf, tbuf);
     struct ipf_block *blk = &ibuf->blk[ibuf->nr_blks];
@@ -233,7 +233,7 @@ static void ipf_tbuf_gap(
 }
 
 static void ipf_tbuf_weak(
-    struct track_buffer *tbuf, uint16_t speed, unsigned int bits)
+    struct tbuf *tbuf, uint16_t speed, unsigned int bits)
 {
     struct ipf_tbuf *ibuf = container_of(tbuf, struct ipf_tbuf, tbuf);
 

@@ -116,7 +116,7 @@ static void *batman_write_raw(
 }
 
 static void batman_read_raw(
-    struct disk *d, unsigned int tracknr, struct track_buffer *tbuf)
+    struct disk *d, unsigned int tracknr, struct tbuf *tbuf)
 {
     struct track_info *ti = &d->di->track[tracknr];
     struct hdr hdr;

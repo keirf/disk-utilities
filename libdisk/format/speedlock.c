@@ -82,7 +82,7 @@ fail:
 }
 
 static void speedlock_read_raw(
-    struct disk *d, unsigned int tracknr, struct track_buffer *tbuf)
+    struct disk *d, unsigned int tracknr, struct tbuf *tbuf)
 {
     unsigned int i;
 

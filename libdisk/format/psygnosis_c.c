@@ -91,7 +91,7 @@ fail:
 }
 
 static void psygnosis_c_track0_read_raw(
-    struct disk *d, unsigned int tracknr, struct track_buffer *tbuf)
+    struct disk *d, unsigned int tracknr, struct tbuf *tbuf)
 {
     struct track_info *ti = &d->di->track[tracknr];
     uint16_t *dat = (uint16_t *)(ti->dat + 512*11);
@@ -258,7 +258,7 @@ static void *psygnosis_c_custom_rll_write_raw(
 }
 
 static void psygnosis_c_custom_rll_read_raw(
-    struct disk *d, unsigned int tracknr, struct track_buffer *tbuf)
+    struct disk *d, unsigned int tracknr, struct tbuf *tbuf)
 {
     struct track_info *ti = &d->di->track[tracknr];
     uint32_t csum, *dat = (uint32_t *)ti->dat;
@@ -364,7 +364,7 @@ static void *psygnosis_c_write_raw(
 }
 
 static void psygnosis_c_read_raw(
-    struct disk *d, unsigned int tracknr, struct track_buffer *tbuf)
+    struct disk *d, unsigned int tracknr, struct tbuf *tbuf)
 {
     struct track_info *ti = &d->di->track[tracknr];
     uint32_t dat[0x627] = { 0 };

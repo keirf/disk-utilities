@@ -56,7 +56,7 @@ fail:
 }
 
 static void vade_retro_alienas_read_raw(
-    struct disk *d, unsigned int tracknr, struct track_buffer *tbuf)
+    struct disk *d, unsigned int tracknr, struct tbuf *tbuf)
 {
     struct track_info *ti = &d->di->track[tracknr];
     uint16_t *dat = (uint16_t *)ti->dat, sum, i;

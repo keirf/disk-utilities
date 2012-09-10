@@ -66,7 +66,7 @@ static void *commando_write_raw(
 }
 
 static void commando_read_raw(
-    struct disk *d, unsigned int tracknr, struct track_buffer *tbuf)
+    struct disk *d, unsigned int tracknr, struct tbuf *tbuf)
 {
     struct track_info *ti = &d->di->track[tracknr];
     uint32_t csum, dat[0x601];

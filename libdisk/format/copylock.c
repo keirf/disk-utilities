@@ -222,7 +222,7 @@ static void *copylock_write_raw(
 }
 
 static void copylock_read_raw(
-    struct disk *d, unsigned int tracknr, struct track_buffer *tbuf)
+    struct disk *d, unsigned int tracknr, struct tbuf *tbuf)
 {
     struct track_info *ti = &d->di->track[tracknr];
     uint32_t lfsr, lfsr_seed = be32toh(*(uint32_t *)ti->dat);

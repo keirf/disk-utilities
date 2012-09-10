@@ -41,29 +41,29 @@ enum bitcell_encoding {
 };
 
 /* Track buffer: this is opaque to encoders, updated via tbuf_* helpers. */
-struct track_buffer {
+struct tbuf {
     struct track_raw raw;
     uint32_t start, pos;
     uint8_t prev_data_bit;
     uint16_t crc16_ccitt;
     bool_t disable_auto_sector_split;
-    void (*bit)(struct track_buffer *, uint16_t speed,
+    void (*bit)(struct tbuf *, uint16_t speed,
                 enum bitcell_encoding enc, uint8_t dat);
-    void (*gap)(struct track_buffer *, uint16_t speed, unsigned int bits);
-    void (*weak)(struct track_buffer *, uint16_t speed, unsigned int bits);
+    void (*gap)(struct tbuf *, uint16_t speed, unsigned int bits);
+    void (*weak)(struct tbuf *, uint16_t speed, unsigned int bits);
 };
 
 /* Append new raw track data into a track buffer. */
-void tbuf_init(struct track_buffer *, uint32_t bitstart, uint32_t bitlen);
-void tbuf_bits(struct track_buffer *, uint16_t speed,
+void tbuf_init(struct tbuf *, uint32_t bitstart, uint32_t bitlen);
+void tbuf_bits(struct tbuf *, uint16_t speed,
                enum bitcell_encoding enc, unsigned int bits, uint32_t x);
-void tbuf_bytes(struct track_buffer *, uint16_t speed,
+void tbuf_bytes(struct tbuf *, uint16_t speed,
                 enum bitcell_encoding enc, unsigned int bytes, void *data);
-void tbuf_gap(struct track_buffer *, uint16_t speed, unsigned int bits);
-void tbuf_weak(struct track_buffer *, uint16_t speed, unsigned int bits);
-void tbuf_start_crc(struct track_buffer *tbuf);
-void tbuf_emit_crc16_ccitt(struct track_buffer *tbuf, uint16_t speed);
-void tbuf_disable_auto_sector_split(struct track_buffer *tbuf);
+void tbuf_gap(struct tbuf *, uint16_t speed, unsigned int bits);
+void tbuf_weak(struct tbuf *, uint16_t speed, unsigned int bits);
+void tbuf_start_crc(struct tbuf *tbuf);
+void tbuf_emit_crc16_ccitt(struct tbuf *tbuf, uint16_t speed);
+void tbuf_disable_auto_sector_split(struct tbuf *tbuf);
 
 enum track_density {
     trkden_double, /* default */
@@ -80,7 +80,7 @@ struct track_handler {
     void *(*write_raw)(
         struct disk *, unsigned int tracknr, struct stream *);
     void (*read_raw)(
-        struct disk *, unsigned int tracknr, struct track_buffer *);
+        struct disk *, unsigned int tracknr, struct tbuf *);
 };
 
 /* Array of supported raw-bitcell analysers/handlers. */

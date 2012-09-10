@@ -84,7 +84,7 @@ fail:
 }
 
 static void tlk_dos_read_raw(
-    struct disk *d, unsigned int tracknr, struct track_buffer *tbuf,
+    struct disk *d, unsigned int tracknr, struct tbuf *tbuf,
     uint16_t tlk_id, const struct track_param *track_param)
 {
     struct track_info *ti = &d->di->track[tracknr];
@@ -140,7 +140,7 @@ static void *tlk_dos_1_write_raw(
 }
 
 static void tlk_dos_1_read_raw(
-    struct disk *d, unsigned int tracknr, struct track_buffer *tbuf)
+    struct disk *d, unsigned int tracknr, struct tbuf *tbuf)
 {
     tlk_dos_read_raw(d, tracknr, tbuf, 0xff54, tlk1_param);
 }
@@ -182,7 +182,7 @@ static void *tlk_dos_2_write_raw(
 }
 
 static void tlk_dos_2_read_raw(
-    struct disk *d, unsigned int tracknr, struct track_buffer *tbuf)
+    struct disk *d, unsigned int tracknr, struct tbuf *tbuf)
 {
     tlk_dos_read_raw(d, tracknr, tbuf, 0xff56, tlk2_param);
 }

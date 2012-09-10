@@ -34,7 +34,7 @@ static struct track_format_names {
 #undef X
 };
 
-static void tbuf_finalise(struct track_buffer *tbuf);
+static void tbuf_finalise(struct tbuf *tbuf);
 
 static struct container *container_from_filename(
     const char *name)
@@ -145,7 +145,7 @@ struct track_raw *track_raw_get(struct disk *d, unsigned int tracknr)
     struct track_info *ti;
     const struct track_handler *thnd;
     struct track_raw *track_raw;
-    struct track_buffer *tbuf;
+    struct tbuf *tbuf;
 
     if (tracknr >= di->nr_tracks)
         return NULL;
@@ -166,12 +166,12 @@ struct track_raw *track_raw_get(struct disk *d, unsigned int tracknr)
 
 void track_raw_put(struct track_raw *track_raw)
 {
-    struct track_buffer *tbuf;
+    struct tbuf *tbuf;
 
     if (track_raw == NULL)
         return;
 
-    tbuf = container_of(track_raw, struct track_buffer, raw);
+    tbuf = container_of(track_raw, struct tbuf, raw);
 
     memfree(track_raw->bits);
     memfree(track_raw->speed);
@@ -328,7 +328,7 @@ static void change_bit(uint8_t *map, unsigned int bit, bool_t on)
         map[bit>>3] &= ~(0x80 >> (bit & 7));
 }
 
-static void append_bit(struct track_buffer *tbuf, uint16_t speed, uint8_t x)
+static void append_bit(struct tbuf *tbuf, uint16_t speed, uint8_t x)
 {
     change_bit(tbuf->raw.bits, tbuf->pos, x);
     tbuf->raw.speed[tbuf->pos >> 3] = speed;
@@ -337,7 +337,7 @@ static void append_bit(struct track_buffer *tbuf, uint16_t speed, uint8_t x)
 }
 
 static void tbuf_bit(
-    struct track_buffer *tbuf, uint16_t speed,
+    struct tbuf *tbuf, uint16_t speed,
     enum bitcell_encoding enc, uint8_t dat)
 {
     if (enc == bc_mfm) {
@@ -351,7 +351,7 @@ static void tbuf_bit(
     tbuf->prev_data_bit = dat;
 }
 
-void tbuf_init(struct track_buffer *tbuf, uint32_t bitstart, uint32_t bitlen)
+void tbuf_init(struct tbuf *tbuf, uint32_t bitstart, uint32_t bitlen)
 {
     unsigned int bytes = bitlen + 7 / 8;
     memset(tbuf, 0, sizeof(*tbuf));
@@ -362,7 +362,7 @@ void tbuf_init(struct track_buffer *tbuf, uint32_t bitstart, uint32_t bitlen)
     tbuf->bit = tbuf_bit;
 }
 
-static void tbuf_finalise(struct track_buffer *tbuf)
+static void tbuf_finalise(struct tbuf *tbuf)
 {
     int32_t pos, nr_bits;
     uint8_t b = 0;
@@ -392,7 +392,7 @@ static void tbuf_finalise(struct track_buffer *tbuf)
     } while (pos != tbuf->pos);
 }
 
-void tbuf_bits(struct track_buffer *tbuf, uint16_t speed,
+void tbuf_bits(struct tbuf *tbuf, uint16_t speed,
                enum bitcell_encoding enc, unsigned int bits, uint32_t x)
 {
     int i;
@@ -424,7 +424,7 @@ void tbuf_bits(struct track_buffer *tbuf, uint16_t speed,
     }
 }
 
-void tbuf_bytes(struct track_buffer *tbuf, uint16_t speed,
+void tbuf_bytes(struct tbuf *tbuf, uint16_t speed,
                 enum bitcell_encoding enc, unsigned int bytes, void *data)
 {
     unsigned int i;
@@ -443,7 +443,7 @@ void tbuf_bytes(struct track_buffer *tbuf, uint16_t speed,
         tbuf_bits(tbuf, speed, enc, 8, p[i]);
 }
 
-void tbuf_gap(struct track_buffer *tbuf, uint16_t speed, unsigned int bits)
+void tbuf_gap(struct tbuf *tbuf, uint16_t speed, unsigned int bits)
 {
     if (tbuf->gap != NULL) {
         tbuf->gap(tbuf, speed, bits);
@@ -453,7 +453,7 @@ void tbuf_gap(struct track_buffer *tbuf, uint16_t speed, unsigned int bits)
     }
 }
 
-void tbuf_weak(struct track_buffer *tbuf, uint16_t speed, unsigned int bits)
+void tbuf_weak(struct tbuf *tbuf, uint16_t speed, unsigned int bits)
 {
     tbuf->raw.has_weak_bits = 1;
     if (tbuf->weak != NULL) {
@@ -464,17 +464,17 @@ void tbuf_weak(struct track_buffer *tbuf, uint16_t speed, unsigned int bits)
     }
 }
 
-void tbuf_start_crc(struct track_buffer *tbuf)
+void tbuf_start_crc(struct tbuf *tbuf)
 {
     tbuf->crc16_ccitt = 0xffff;
 }
 
-void tbuf_emit_crc16_ccitt(struct track_buffer *tbuf, uint16_t speed)
+void tbuf_emit_crc16_ccitt(struct tbuf *tbuf, uint16_t speed)
 {
     tbuf_bits(tbuf, speed, bc_mfm, 16, tbuf->crc16_ccitt);
 }
 
-void tbuf_disable_auto_sector_split(struct track_buffer *tbuf)
+void tbuf_disable_auto_sector_split(struct tbuf *tbuf)
 {
     tbuf->disable_auto_sector_split = 1;
 }

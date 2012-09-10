@@ -117,7 +117,7 @@ done:
 }
 
 static void pdos_read_raw(
-    struct disk *d, unsigned int tracknr, struct track_buffer *tbuf)
+    struct disk *d, unsigned int tracknr, struct tbuf *tbuf)
 {
     struct track_info *ti = &d->di->track[tracknr];
     uint32_t k, *dat = (uint32_t *)ti->dat;
