@@ -15,7 +15,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#if defined(__linux__)
+#if !defined(__MINGW32__) && !defined(__APPLE__)
 #define __PLATFORM_HAS_ENDIAN_H__
 #ifndef _BSD_SOURCE
 #define _BSD_SOURCE
