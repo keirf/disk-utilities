@@ -72,6 +72,11 @@ static void *psygnosis_a_write_raw(
         if (amigados_checksum(raw_dat, ti->len) != csum)
             continue;
 
+        /* Some titles (Armourgeddon, Obitus...) mastered with long tracks. */
+        stream_next_index(s);
+        if (s->track_bitlen > 103000)
+            ti->total_bits = 105500;
+
         block = memalloc(ti->len + 4);
         *(uint16_t *)&block[ti->len] = htobe16(sync);
         *(uint16_t *)&block[ti->len+2] = two_sync ? htobe16(sync) : 0;
