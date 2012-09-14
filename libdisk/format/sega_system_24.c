@@ -109,6 +109,37 @@ static void sega_system_24_read_raw(
     }
 }
 
+void *sega_system_24_write_sectors(
+    struct disk *d, unsigned int tracknr, struct track_sectors *sectors)
+{
+    struct track_info *ti = &d->di->track[tracknr];
+    char *block;
+
+    ti->len = 5*2048 + 1024 + 256;
+    if (sectors->nr_bytes < ti->len)
+        return NULL;
+
+    block = memalloc(ti->len);
+    memcpy(block, sectors->data, ti->len);
+
+    sectors->data += ti->len;
+    sectors->nr_bytes -= ti->len;
+
+    ti->data_bitoff = 500;
+
+    return block;
+}
+
+void sega_system_24_read_sectors(
+    struct disk *d, unsigned int tracknr, struct track_sectors *sectors)
+{
+    struct track_info *ti = &d->di->track[tracknr];
+
+    sectors->nr_bytes = ti->len;
+    sectors->data = memalloc(sectors->nr_bytes);
+    memcpy(sectors->data, ti->dat, sectors->nr_bytes);
+}
+
 struct track_handler sega_system_24_handler = {
     .density = trkden_high,
     .bytes_per_sector = 2048,
