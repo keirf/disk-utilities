@@ -25,6 +25,10 @@
 #include "common.h"
 
 int quiet, verbose;
+static int index_align;
+static enum pll_mode pll_mode = PLL_default;
+static struct format_list **format_lists;
+static char *in, *out;
 
 static void usage(int rc)
 {
@@ -51,19 +55,157 @@ static void usage(int rc)
     exit(rc);
 }
 
-int main(int argc, char **argv)
+static void dump_track_list(struct disk_info *di)
 {
-    unsigned int i;
+    unsigned int i, st = 0;
+    const char *prev_name;
+    struct track_info *ti;
+
+    if (quiet)
+        return;
+
+    prev_name = di->track[0].typename;
+    for (i = 1; i < di->nr_tracks; i++) {
+        ti = &di->track[i];
+        if (ti->typename == prev_name)
+            continue;
+        if (st == i-1)
+            printf("T");
+        else
+            printf("T%u-", st);
+        printf("%u: %s\n", i-1, prev_name);
+        st = i;
+        prev_name = ti->typename;
+    }
+    if (st == i-1)
+        printf("T");
+    else
+        printf("T%u-", st);
+    printf("%u: %s\n", i-1, prev_name);
+}
+
+static void handle_stream(void)
+{
     struct stream *s;
     struct disk *d;
     struct disk_info *di;
     struct track_info *ti;
-    struct format_list **format_lists;
-    const char *prev_name;
-    char *config = NULL, *format = NULL;
-    unsigned int st = 0, unidentified = 0;
-    int ch, index_align = 0;
-    enum pll_mode pll_mode = PLL_default;
+    unsigned int i, unidentified = 0;
+
+    if ((s = stream_open(in)) == NULL)
+        errx(1, "Failed to probe input file: %s", in);
+
+    stream_pll_mode(s, pll_mode);
+
+    if ((d = disk_create(out)) == NULL)
+        errx(1, "Unable to create new disk file: %s", out);
+
+    di = disk_get_info(d);
+
+    for (i = 0; i < di->nr_tracks; i++) {
+        struct format_list *list = format_lists[i];
+        unsigned int j;
+        if (list == NULL)
+            continue;
+        for (j = 0; j < list->nr; j++) {
+            if (track_write_raw_from_stream(
+                    d, i, list->ent[list->pos], s) == 0)
+                break;
+            if (++list->pos >= list->nr)
+                list->pos = 0;
+        }
+        if ((j == list->nr) &&
+            (track_write_raw_from_stream(d, i, TRKTYP_unformatted, s) != 0)) {
+            /* Tracks 160+ are expected to be unused. Don't warn about them. */
+            if (i < 160)
+                unidentified++;
+            else
+                track_mark_unformatted(d, i);
+        }
+    }
+
+    for (i = 0; i < di->nr_tracks; i++) {
+        unsigned int j;
+        ti = &di->track[i];
+        if (index_align)
+            ti->data_bitoff = 1024;
+        for (j = 0; j < ti->nr_sectors; j++)
+            if (!is_valid_sector(ti, j))
+                break;
+        if (j == ti->nr_sectors)
+            continue;
+        unidentified++;
+        printf("T%u: sectors ", i);
+        for (j = 0; j < ti->nr_sectors; j++)
+            if (!is_valid_sector(ti, j))
+                printf("%u,", j);
+        printf(" missing\n");
+    }
+
+    dump_track_list(di);
+
+    if (unidentified)
+        fprintf(stderr,"** WARNING: %u tracks are damaged or unidentified!\n",
+                unidentified);
+
+    disk_close(d);
+    stream_close(s);
+}
+
+static void handle_img(void)
+{
+    int fd;
+    off_t sz;
+    unsigned int i;
+    struct track_sectors *sectors;
+    struct disk *d;
+    struct disk_info *di;
+
+    if ((fd = open(in, O_RDONLY)) == -1)
+        err(1, "Failed to open IMG file '%s'", in);
+    sz = lseek(fd, 0, SEEK_END);
+    lseek(fd, 0, SEEK_SET);
+
+    if ((d = disk_create(out)) == NULL)
+        errx(1, "Unable to create new disk file: %s", out);
+
+    di = disk_get_info(d);
+
+    sectors = track_alloc_sector_buffer(d);
+    sectors->data = memalloc(sz);
+    sectors->nr_bytes = sz;
+
+    read_exact(fd, sectors->data, sz);
+    close(fd);
+
+    for (i = 0; (i < di->nr_tracks) && sectors->nr_bytes; i++) {
+        struct format_list *list = format_lists[i];
+        if ((list == NULL) || (list->nr == 0))
+            continue;
+        if (list->nr > 1)
+            errx(1, "T%u: More than one format specified for IMG data", i);
+        if (track_write_sectors(sectors, i, list->ent[0]) != 0)
+            errx(1, "T%u: %s: Unable to import IMG data",
+                 i, disk_get_format_desc_name(list->ent[0]));
+    }
+
+    if (sectors->nr_bytes != 0)
+        errx(1, "Unexpected extra data at end of IMG file");
+
+    dump_track_list(di);
+
+    disk_close(d);
+
+    memfree(sectors->data);
+    sectors->data = NULL;
+    sectors->nr_bytes = 0;
+    track_free_sector_buffer(sectors);
+}
+
+int main(int argc, char **argv)
+{
+    char *p, *config = NULL, *format = NULL;
+    int ch;
 
     const static char sopts[] = "hqvip:f:c:";
     const static struct option lopts[] = {
@@ -118,87 +260,15 @@ int main(int argc, char **argv)
     if (argc != (optind + 2))
         usage(1);
 
+    in = argv[optind];
+    out = argv[optind+1];
+
     format_lists = parse_config(config, format);
 
-    if ((s = stream_open(argv[optind])) == NULL)
-        errx(1, "Failed to probe input file: %s", argv[optind]);
-
-    stream_pll_mode(s, pll_mode);
-
-    if ((d = disk_create(argv[optind+1])) == NULL)
-        errx(1, "Unable to create new disk file: %s", argv[optind+1]);
-
-    di = disk_get_info(d);
-
-    for (i = 0; i < di->nr_tracks; i++) {
-        struct format_list *list = format_lists[i];
-        unsigned int j;
-        if (list == NULL)
-            continue;
-        for (j = 0; j < list->nr; j++) {
-            if (track_write_raw_from_stream(
-                    d, i, list->ent[list->pos], s) == 0)
-                break;
-            if (++list->pos >= list->nr)
-                list->pos = 0;
-        }
-        if ((j == list->nr) &&
-            (track_write_raw_from_stream(d, i, TRKTYP_unformatted, s) != 0)) {
-            /* Tracks 160+ are expected to be unused. Don't warn about them. */
-            if (i < 160)
-                unidentified++;
-            else
-                track_mark_unformatted(d, i);
-        }
-    }
-
-    for (i = 0; i < di->nr_tracks; i++) {
-        unsigned int j;
-        ti = &di->track[i];
-        if (index_align)
-            ti->data_bitoff = 1024;
-        for (j = 0; j < ti->nr_sectors; j++)
-            if (!is_valid_sector(ti, j))
-                break;
-        if (j == ti->nr_sectors)
-            continue;
-        unidentified++;
-        printf("T%u: sectors ", i);
-        for (j = 0; j < ti->nr_sectors; j++)
-            if (!is_valid_sector(ti, j))
-                printf("%u,", j);
-        printf(" missing\n");
-    }
-
-    if (quiet)
-        goto out;
-
-    prev_name = di->track[0].typename;
-    for (i = 1; i < di->nr_tracks; i++) {
-        ti = &di->track[i];
-        if (ti->typename == prev_name)
-            continue;
-        if (st == i-1)
-            printf("T");
-        else
-            printf("T%u-", st);
-        printf("%u: %s\n", i-1, prev_name);
-        st = i;
-        prev_name = ti->typename;
-    }
-    if (st == i-1)
-        printf("T");
+    if (((p = strrchr(in, '.')) != NULL) && !strcmp(p+1, "img"))
+        handle_img();
     else
-        printf("T%u-", st);
-    printf("%u: %s\n", i-1, prev_name);
-
-out:
-    if (unidentified)
-        fprintf(stderr,"** WARNING: %u tracks are damaged or unidentified!\n",
-                unidentified);
-
-    disk_close(d);
-    stream_close(s);
+        handle_stream();
 
     return 0;
 }

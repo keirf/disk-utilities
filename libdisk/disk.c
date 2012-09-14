@@ -185,6 +185,16 @@ void track_read_raw(struct track_raw *track_raw, unsigned int tracknr)
     tbuf_finalise(tbuf);
 }
 
+int track_write_raw(
+    struct track_raw *raw, unsigned int tracknr, enum track_type type)
+{
+    struct tbuf *tbuf = container_of(raw, struct tbuf, raw);
+    struct stream *s = stream_soft_open(raw->bits, raw->speed, raw->bitlen);
+    int rc = track_write_raw_from_stream(tbuf->disk, tracknr, type, s);
+    stream_close(s);
+    return rc;
+}
+
 int track_write_raw_from_stream(
     struct disk *d, unsigned int tracknr, enum track_type type,
     struct stream *s)
@@ -198,14 +208,97 @@ int track_write_raw_from_stream(
     return d->container->write_raw(d, tracknr, type, s);
 }
 
-int track_write_raw(
-    struct disk *d, unsigned int tracknr, enum track_type type,
-    struct track_raw *raw)
+struct sbuf {
+    struct track_sectors sectors;
+    struct disk *disk;
+};
+
+struct track_sectors *track_alloc_sector_buffer(struct disk *d)
 {
-    struct stream *s = stream_soft_open(raw->bits, raw->speed, raw->bitlen);
-    int rc = track_write_raw_from_stream(d, tracknr, type, s);
-    stream_close(s);
-    return rc;
+    struct sbuf *sbuf = memalloc(sizeof(*sbuf));
+    sbuf->disk = d;
+    return &sbuf->sectors;
+}
+
+void track_free_sector_buffer(struct track_sectors *track_sectors)
+{
+    struct sbuf *sbuf = container_of(track_sectors, struct sbuf, sectors);
+
+    track_purge_sector_buffer(track_sectors);
+    memfree(sbuf);
+}
+
+void track_purge_sector_buffer(struct track_sectors *track_sectors)
+{
+    memfree(track_sectors->data);
+    memset(track_sectors, 0, sizeof(*track_sectors));
+}
+
+int track_read_sectors(
+    struct track_sectors *track_sectors, unsigned int tracknr)
+{
+    struct sbuf *sbuf = container_of(track_sectors, struct sbuf, sectors);
+    struct disk *d = sbuf->disk;
+    struct disk_info *di = d->di;
+    struct track_info *ti;
+    const struct track_handler *thnd;
+
+    track_purge_sector_buffer(track_sectors);
+
+    if (tracknr >= di->nr_tracks)
+        return -1;
+    ti = &di->track[tracknr];
+
+    thnd = handlers[ti->type];
+    if (thnd->read_sectors == NULL)
+        return -1;
+
+    thnd->read_sectors(d, tracknr, track_sectors);
+    return track_sectors->data ? 0 : -1;
+}
+
+int track_write_sectors(
+    struct track_sectors *track_sectors, unsigned int tracknr,
+    enum track_type type)
+{
+    struct sbuf *sbuf = container_of(track_sectors, struct sbuf, sectors);
+    struct disk *d = sbuf->disk;
+    struct disk_info *di = d->di;
+    struct track_info *ti;
+    const struct track_handler *thnd;
+    unsigned int ns_per_cell = 0;
+
+    if (tracknr >= di->nr_tracks)
+        return -1;
+    ti = &di->track[tracknr];
+
+    memfree(ti->dat);
+    memset(ti, 0, sizeof(*ti));
+    init_track_info(ti, type);
+
+    thnd = handlers[ti->type];
+    if (thnd->write_sectors == NULL)
+        goto fail;
+
+    switch (thnd->density) {
+    case trkden_single: ns_per_cell = 4000u; break;
+    case trkden_double: ns_per_cell = 2000u; break;
+    case trkden_high: ns_per_cell = 1000u; break;
+    case trkden_extra: ns_per_cell = 500u; break;
+    default: BUG();
+    }
+    ti->total_bits = (DEFAULT_BITS_PER_TRACK * 2000u) / ns_per_cell;
+
+    ti->dat = thnd->write_sectors(d, tracknr, track_sectors);
+    if (ti->dat == NULL)
+        goto fail;
+
+    return 0;
+
+fail:
+    track_mark_unformatted(d, tracknr);
+    ti->typename = "Unformatted*";
+    return -1;
 }
 
 void track_mark_unformatted(

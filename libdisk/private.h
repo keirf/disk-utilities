@@ -86,6 +86,10 @@ struct track_handler {
         struct disk *, unsigned int tracknr, struct stream *);
     void (*read_raw)(
         struct disk *, unsigned int tracknr, struct tbuf *);
+    void *(*write_sectors)(
+        struct disk *, unsigned int tracknr, struct track_sectors *);
+    void (*read_sectors)(
+        struct disk *, unsigned int tracknr, struct track_sectors *);
 };
 
 /* Array of supported raw-bitcell analysers/handlers. */

@@ -101,13 +101,21 @@ struct track_raw *track_alloc_raw_buffer(struct disk *d);
 void track_free_raw_buffer(struct track_raw *);
 void track_purge_raw_buffer(struct track_raw *);
 void track_read_raw(struct track_raw *, unsigned int tracknr);
-
-int track_write_raw_from_stream(
-    struct disk *, unsigned int tracknr, enum track_type type,
-    struct stream *s);
 int track_write_raw(
-    struct disk *, unsigned int tracknr, enum track_type type,
-    struct track_raw *);
+    struct track_raw *, unsigned int tracknr, enum track_type);
+int track_write_raw_from_stream(
+    struct disk *, unsigned int tracknr, enum track_type, struct stream *s);
+
+struct track_sectors {
+    uint8_t *data;
+    uint32_t nr_bytes;
+};
+struct track_sectors *track_alloc_sector_buffer(struct disk *d);
+void track_free_sector_buffer(struct track_sectors *);
+void track_purge_sector_buffer(struct track_sectors *);
+int track_read_sectors(struct track_sectors *, unsigned int tracknr);
+int track_write_sectors(
+    struct track_sectors *, unsigned int tracknr, enum track_type);
 
 void track_mark_unformatted(
     struct disk *, unsigned int tracknr);

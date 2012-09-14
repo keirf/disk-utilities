@@ -217,12 +217,46 @@ static void ibm_pc_read_raw(
      */
 }
 
+void *ibm_pc_write_sectors(
+    struct disk *d, unsigned int tracknr, struct track_sectors *sectors)
+{
+    struct track_info *ti = &d->di->track[tracknr];
+    char *block;
+    bool_t iam = 1;
+
+    if (sectors->nr_bytes < ti->len)
+        return NULL;
+
+    block = memalloc(ti->len + 1);
+    memcpy(block, sectors->data, ti->len);
+
+    sectors->data += ti->len;
+    sectors->nr_bytes -= ti->len;
+
+    block[ti->len++] = iam;
+    ti->data_bitoff = (iam ? 80 : 140) * 16;
+
+    return block;
+}
+
+void ibm_pc_read_sectors(
+    struct disk *d, unsigned int tracknr, struct track_sectors *sectors)
+{
+    struct track_info *ti = &d->di->track[tracknr];
+
+    sectors->nr_bytes = ti->len - 1;
+    sectors->data = memalloc(sectors->nr_bytes);
+    memcpy(sectors->data, ti->dat, sectors->nr_bytes);
+}
+
 struct track_handler ibm_pc_dd_handler = {
     .density = trkden_double,
     .bytes_per_sector = 512,
     .nr_sectors = 9,
     .write_raw = ibm_pc_write_raw,
-    .read_raw = ibm_pc_read_raw
+    .read_raw = ibm_pc_read_raw,
+    .write_sectors = ibm_pc_write_sectors,
+    .read_sectors = ibm_pc_read_sectors
 };
 
 struct track_handler ibm_pc_hd_handler = {
@@ -230,7 +264,9 @@ struct track_handler ibm_pc_hd_handler = {
     .bytes_per_sector = 512,
     .nr_sectors = 18,
     .write_raw = ibm_pc_write_raw,
-    .read_raw = ibm_pc_read_raw
+    .read_raw = ibm_pc_read_raw,
+    .write_sectors = ibm_pc_write_sectors,
+    .read_sectors = ibm_pc_read_sectors
 };
 
 struct track_handler ibm_pc_ed_handler = {
@@ -238,7 +274,9 @@ struct track_handler ibm_pc_ed_handler = {
     .bytes_per_sector = 512,
     .nr_sectors = 36,
     .write_raw = ibm_pc_write_raw,
-    .read_raw = ibm_pc_read_raw
+    .read_raw = ibm_pc_read_raw,
+    .write_sectors = ibm_pc_write_sectors,
+    .read_sectors = ibm_pc_read_sectors
 };
 
 /* Siemens iSDX telephone exchange. 80 tracks. */
@@ -247,7 +285,9 @@ struct track_handler siemens_isdx_hd_handler = {
     .bytes_per_sector = 256,
     .nr_sectors = 32,
     .write_raw = ibm_pc_write_raw,
-    .read_raw = ibm_pc_read_raw
+    .read_raw = ibm_pc_read_raw,
+    .write_sectors = ibm_pc_write_sectors,
+    .read_sectors = ibm_pc_read_sectors
 };
 
 /*
