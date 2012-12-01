@@ -291,6 +291,22 @@ struct track_handler siemens_isdx_hd_handler = {
 };
 
 /*
+ * Microsoft DMF, High Density format
+ * 21 spt, 512 bytes/sector, 80 tracks
+ */
+struct track_handler microsoft_dmf_hd_handler = {
+    .density = trkden_high,
+    .bytes_per_sector = 512,
+    .nr_sectors = 21,
+    .write_raw = ibm_pc_write_raw,
+    .read_raw = ibm_pc_read_raw,
+    .write_sectors = ibm_pc_write_sectors,
+    .read_sectors = ibm_pc_read_sectors
+};
+
+
+
+/*
  * Local variables:
  * mode: C
  * c-file-style: "Linux"
