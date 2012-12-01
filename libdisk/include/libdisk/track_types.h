@@ -73,4 +73,4 @@ X(fun_factory, "Fun Factory")
 X(siemens_isdx_hd, "Siemens iSDX high-density")
 X(eye_of_horus, "Eye Of Horus")
 X(gladiators, "Gladiators")
-
+X(microsoft_dmf_hd, "Microsoft DMF")
