@@ -249,10 +249,22 @@ void ibm_pc_read_sectors(
     memcpy(sectors->data, ti->dat, sectors->nr_bytes);
 }
 
+/* IBM PC 3.5 720K (80 track) and 5.25in 360K (40 track) */
 struct track_handler ibm_pc_dd_handler = {
     .density = trkden_double,
     .bytes_per_sector = 512,
     .nr_sectors = 9,
+    .write_raw = ibm_pc_write_raw,
+    .read_raw = ibm_pc_read_raw,
+    .write_sectors = ibm_pc_write_sectors,
+    .read_sectors = ibm_pc_read_sectors
+};
+
+/* IBM PC 5.25 HD 1200K */
+struct track_handler ibm_pc_hd_5_25_handler = {
+    .density = trkden_high,
+    .bytes_per_sector = 512,
+    .nr_sectors = 15,
     .write_raw = ibm_pc_write_raw,
     .read_raw = ibm_pc_read_raw,
     .write_sectors = ibm_pc_write_sectors,
@@ -318,6 +330,52 @@ struct track_handler trace_traceback_hd_handler = {
     .write_sectors = ibm_pc_write_sectors,
     .read_sectors = ibm_pc_read_sectors
 };
+
+/*
+ * Acorn ADFS "Small", "Medium" and "Large"
+ *   S is 40 tracks, single sided, DD
+ *   M is 50 tracks, double sided, DD
+ *   L is 80 tracks, double sided, DD
+ */
+struct track_handler acorn_adfs_s_m_l_handler = {
+    .density = trkden_double,
+    .bytes_per_sector = 256,
+    .nr_sectors = 16,
+    .write_raw = ibm_pc_write_raw,
+    .read_raw = ibm_pc_read_raw,
+    .write_sectors = ibm_pc_write_sectors,
+    .read_sectors = ibm_pc_read_sectors
+};
+
+/* Acorn ADFS "D" or "E" - 80tk double sided DD */
+struct track_handler acorn_adfs_d_e_handler = {
+    .density = trkden_double,
+    .bytes_per_sector = 1024,
+    .nr_sectors = 5,
+    .write_raw = ibm_pc_write_raw,
+    .read_raw = ibm_pc_read_raw,
+    .write_sectors = ibm_pc_write_sectors,
+    .read_sectors = ibm_pc_read_sectors
+};
+
+/* Acorn ADFS "F" - 80tk double sided HD */
+struct track_handler acorn_adfs_f_handler = {
+    .density = trkden_high,
+    .bytes_per_sector = 1024,
+    .nr_sectors = 10,
+    .write_raw = ibm_pc_write_raw,
+    .read_raw = ibm_pc_read_raw,
+    .write_sectors = ibm_pc_write_sectors,
+    .read_sectors = ibm_pc_read_sectors
+};
+
+/*
+ * There are also two Acorn DFS formats from the BBC Micro which require
+ * FM decode support:
+ *   DFS 40-track - 40tk DS 10/256  200K  FM/SD
+ *   DFS 80-track - 80th DS 10/256  400K  FM/SD
+ */
+
 
 
 
