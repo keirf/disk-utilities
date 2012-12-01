@@ -295,11 +295,13 @@ struct track_handler siemens_isdx_hd_handler = {
  * 21 spt, 512 bytes/sector, 80 tracks
  */
 struct track_handler microsoft_dmf_hd_handler = {
-    .density = TRKDEN_mfm_high,
+    .density = trkden_high,
     .bytes_per_sector = 512,
     .nr_sectors = 21,
-    .write_mfm = ibm_pc_write_mfm,
-    .read_mfm = ibm_pc_read_mfm
+    .write_raw = ibm_pc_write_raw,
+    .read_raw = ibm_pc_read_raw,
+    .write_sectors = ibm_pc_write_sectors,
+    .read_sectors = ibm_pc_read_sectors
 };
 
 
