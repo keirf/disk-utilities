@@ -304,6 +304,21 @@ struct track_handler microsoft_dmf_hd_handler = {
     .read_sectors = ibm_pc_read_sectors
 };
 
+/*
+ * Trace Mountain Products / Magnetic Design Corp "TRACEBACK" duplicator info
+ * 1 spt, 2048 bytes/sector, 1 track
+ * Always stored on phys cyl 80, heads 0 and 1, identical data on both sides.
+ */
+struct track_handler trace_traceback_hd_handler = {
+    .density = trkden_high,
+    .bytes_per_sector = 2048,
+    .nr_sectors = 1,
+    .write_raw = ibm_pc_write_raw,
+    .read_raw = ibm_pc_read_raw,
+    .write_sectors = ibm_pc_write_sectors,
+    .read_sectors = ibm_pc_read_sectors
+};
+
 
 
 /*

@@ -678,5 +678,6 @@ siemens_isdx_hd
     * siemens_isdx_hd
 
 microsoft_dmf_hd
+    160-161 trace_traceback_hd
     * microsoft_dmf_hd ibm_pc_hd
 
