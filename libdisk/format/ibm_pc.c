@@ -32,7 +32,7 @@
 #include "../private.h"
 
 struct ibm_extra_data {
-	int sector_base;
+    int sector_base;
 };
 
 int ibm_scan_mark(struct stream *s, uint16_t mark, unsigned int max_scan)
