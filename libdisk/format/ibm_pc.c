@@ -31,6 +31,10 @@
 #include <libdisk/util.h>
 #include "../private.h"
 
+struct ibm_extra_data {
+	int sector_base;
+};
+
 int ibm_scan_mark(struct stream *s, uint16_t mark, unsigned int max_scan)
 {
     int idx_off = -1;
@@ -86,6 +90,7 @@ static void *ibm_pc_write_raw(
     struct disk *d, unsigned int tracknr, struct stream *s)
 {
     struct track_info *ti = &d->di->track[tracknr];
+    struct ibm_extra_data *extra_data = handlers[ti->type]->extra_data;
     char *block = memalloc(ti->len + 1);
     unsigned int nr_valid_blocks = 0;
     bool_t iam = 0;
@@ -112,13 +117,15 @@ static void *ibm_pc_write_raw(
         if (((idx_off = ibm_scan_idam(s, &idam)) < 0) || s->crc16_ccitt)
             continue;
 
-        idam.sec--;
+        /* PCs start numbering sectors at 1, other platforms start at 0. Shift sector number as appropriate. */
+        idam.sec -= extra_data->sector_base;
+
         if ((idam.sec >= ti->nr_sectors) ||
             (idam.cyl != (tracknr/2)) ||
             (idam.head != (tracknr&1)) ||
             (idam.no > 7)) {
             trk_warn(ti, tracknr, "Unexpected IDAM sec=%02x cyl=%02x hd=%02x "
-                     "no=%02x", idam.sec+1, idam.cyl, idam.head, idam.no);
+                     "no=%02x", idam.sec+extra_data->sector_base, idam.cyl, idam.head, idam.no);
             continue;
         }
 
@@ -126,7 +133,7 @@ static void *ibm_pc_write_raw(
         sec_sz = 128 << idam.no;
         if (sec_sz != ti->bytes_per_sector) {
             trk_warn(ti, tracknr, "Unexpected IDAM sector size sec=%02x "
-                     "cyl=%02x hd=%02x secsz=%d wanted=%d", idam.sec+1,
+                     "cyl=%02x hd=%02x secsz=%d wanted=%d", idam.sec+extra_data->sector_base,
                      idam.cyl, idam.head, sec_sz, ti->bytes_per_sector);
             continue;
         }
@@ -163,6 +170,7 @@ static void ibm_pc_read_raw(
     struct disk *d, unsigned int tracknr, struct tbuf *tbuf)
 {
     struct track_info *ti = &d->di->track[tracknr];
+    struct ibm_extra_data *extra_data = handlers[ti->type]->extra_data;
     uint8_t *dat = (uint8_t *)ti->dat;
     uint8_t cyl = tracknr/2, hd = tracknr&1, no;
     bool_t iam = dat[ti->len-1];
@@ -192,7 +200,7 @@ static void ibm_pc_read_raw(
         tbuf_bits(tbuf, SPEED_AVG, bc_raw, 32, 0x44895554);
         tbuf_bits(tbuf, SPEED_AVG, bc_mfm, 8, cyl);
         tbuf_bits(tbuf, SPEED_AVG, bc_mfm, 8, hd);
-        tbuf_bits(tbuf, SPEED_AVG, bc_mfm, 8, sec+1);
+        tbuf_bits(tbuf, SPEED_AVG, bc_mfm, 8, sec+extra_data->sector_base);
         tbuf_bits(tbuf, SPEED_AVG, bc_mfm, 8, no);
         tbuf_emit_crc16_ccitt(tbuf, SPEED_AVG);
         for (i = 0; i < 22; i++)
@@ -249,6 +257,7 @@ void ibm_pc_read_sectors(
     memcpy(sectors->data, ti->dat, sectors->nr_bytes);
 }
 
+
 /* IBM PC 3.5 720K (80 track) and 5.25in 360K (40 track) */
 struct track_handler ibm_pc_dd_handler = {
     .density = trkden_double,
@@ -257,7 +266,10 @@ struct track_handler ibm_pc_dd_handler = {
     .write_raw = ibm_pc_write_raw,
     .read_raw = ibm_pc_read_raw,
     .write_sectors = ibm_pc_write_sectors,
-    .read_sectors = ibm_pc_read_sectors
+    .read_sectors = ibm_pc_read_sectors,
+    .extra_data = & (struct ibm_extra_data) {
+        .sector_base = 1
+    }
 };
 
 /* IBM PC 5.25 HD 1200K */
@@ -268,7 +280,10 @@ struct track_handler ibm_pc_hd_5_25_handler = {
     .write_raw = ibm_pc_write_raw,
     .read_raw = ibm_pc_read_raw,
     .write_sectors = ibm_pc_write_sectors,
-    .read_sectors = ibm_pc_read_sectors
+    .read_sectors = ibm_pc_read_sectors,
+    .extra_data = & (struct ibm_extra_data) {
+        .sector_base = 1
+    }
 };
 
 struct track_handler ibm_pc_hd_handler = {
@@ -278,7 +293,10 @@ struct track_handler ibm_pc_hd_handler = {
     .write_raw = ibm_pc_write_raw,
     .read_raw = ibm_pc_read_raw,
     .write_sectors = ibm_pc_write_sectors,
-    .read_sectors = ibm_pc_read_sectors
+    .read_sectors = ibm_pc_read_sectors,
+    .extra_data = & (struct ibm_extra_data) {
+        .sector_base = 1
+    }
 };
 
 struct track_handler ibm_pc_ed_handler = {
@@ -288,7 +306,10 @@ struct track_handler ibm_pc_ed_handler = {
     .write_raw = ibm_pc_write_raw,
     .read_raw = ibm_pc_read_raw,
     .write_sectors = ibm_pc_write_sectors,
-    .read_sectors = ibm_pc_read_sectors
+    .read_sectors = ibm_pc_read_sectors,
+    .extra_data = & (struct ibm_extra_data) {
+        .sector_base = 1
+    }
 };
 
 /* Siemens iSDX telephone exchange. 80 tracks. */
@@ -299,7 +320,10 @@ struct track_handler siemens_isdx_hd_handler = {
     .write_raw = ibm_pc_write_raw,
     .read_raw = ibm_pc_read_raw,
     .write_sectors = ibm_pc_write_sectors,
-    .read_sectors = ibm_pc_read_sectors
+    .read_sectors = ibm_pc_read_sectors,
+    .extra_data = & (struct ibm_extra_data) {
+        .sector_base = 1
+    }
 };
 
 /*
@@ -313,7 +337,10 @@ struct track_handler microsoft_dmf_hd_handler = {
     .write_raw = ibm_pc_write_raw,
     .read_raw = ibm_pc_read_raw,
     .write_sectors = ibm_pc_write_sectors,
-    .read_sectors = ibm_pc_read_sectors
+    .read_sectors = ibm_pc_read_sectors,
+    .extra_data = & (struct ibm_extra_data) {
+        .sector_base = 1
+    }
 };
 
 /*
@@ -328,7 +355,10 @@ struct track_handler trace_traceback_hd_handler = {
     .write_raw = ibm_pc_write_raw,
     .read_raw = ibm_pc_read_raw,
     .write_sectors = ibm_pc_write_sectors,
-    .read_sectors = ibm_pc_read_sectors
+    .read_sectors = ibm_pc_read_sectors,
+    .extra_data = & (struct ibm_extra_data) {
+        .sector_base = 1
+    }
 };
 
 /*
@@ -344,7 +374,10 @@ struct track_handler acorn_adfs_s_m_l_handler = {
     .write_raw = ibm_pc_write_raw,
     .read_raw = ibm_pc_read_raw,
     .write_sectors = ibm_pc_write_sectors,
-    .read_sectors = ibm_pc_read_sectors
+    .read_sectors = ibm_pc_read_sectors,
+    .extra_data = & (struct ibm_extra_data) {
+        .sector_base = 0
+    }
 };
 
 /* Acorn ADFS "D" or "E" - 80tk double sided DD */
@@ -355,7 +388,10 @@ struct track_handler acorn_adfs_d_e_handler = {
     .write_raw = ibm_pc_write_raw,
     .read_raw = ibm_pc_read_raw,
     .write_sectors = ibm_pc_write_sectors,
-    .read_sectors = ibm_pc_read_sectors
+    .read_sectors = ibm_pc_read_sectors,
+    .extra_data = & (struct ibm_extra_data) {
+        .sector_base = 0
+    }
 };
 
 /* Acorn ADFS "F" - 80tk double sided HD */
@@ -366,7 +402,10 @@ struct track_handler acorn_adfs_f_handler = {
     .write_raw = ibm_pc_write_raw,
     .read_raw = ibm_pc_read_raw,
     .write_sectors = ibm_pc_write_sectors,
-    .read_sectors = ibm_pc_read_sectors
+    .read_sectors = ibm_pc_read_sectors,
+    .extra_data = & (struct ibm_extra_data) {
+        .sector_base = 0
+    }
 };
 
 /*
