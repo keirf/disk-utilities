@@ -662,12 +662,19 @@ sensible
 ####################
 # IBM PC Formats
 
+# 5.25-inch and 3.5-inch double density (360K and 720K)
 ibm_pc_dd
     * ibm_pc_dd
 
+# 3.5-inch high density (1440K)
 ibm_pc_hd
     * ibm_pc_hd
 
+# 5.25-inch high density (1200K)
+ibm_pc_hd_5_25
+    * ibm_pc_hd_5_25
+
+# 3.5-inch extended density (2880K)
 ibm_pc_ed
     * ibm_pc_ed
 
@@ -680,4 +687,16 @@ siemens_isdx_hd
 microsoft_dmf_hd
     160-161 trace_traceback_hd
     * microsoft_dmf_hd ibm_pc_hd
+
+# Acorn ADFS 'S', 'M' or 'L' (160, 320 or 640K)
+acorn_adfs_s_m_l
+    * acorn_adfs_s_m_l
+
+# Acorn ADFS 'D' or 'E' (800K)
+acorn_adfs_d_e
+    * acorn_adfs_d_e
+
+# Acorn ADFS 'F' (1600K)
+acorn_adfs_f
+    * acorn_adfs_f
 
