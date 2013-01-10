@@ -96,6 +96,7 @@ static void eadf_close(struct disk *d)
     write_exact(d->fd, &dhdr, sizeof(dhdr));
 
     memset(raw, 0, sizeof(raw));
+    memset(&thdr, 0, sizeof(thdr));
     thdr.type = htobe16(1);
     for (i = 0; i < di->nr_tracks; i++) {
         ti = &di->track[i];
