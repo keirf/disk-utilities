@@ -28,6 +28,12 @@
 #include <err.h>
 #endif
 
+#if !defined(__MINGW32__)
+#define file_open open
+#else
+#define file_open(p,f,m...) open(p,(f)|O_BINARY,##m)
+#endif
+
 #ifndef offsetof
 #define offsetof(a,b) __builtin_offsetof(a,b)
 #endif
