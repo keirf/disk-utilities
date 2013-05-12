@@ -198,7 +198,7 @@ static void handle_file(int fd, char *path, struct ffs_fileheader *file)
     if (is_readonly)
         return;
 
-    file_fd = open(path, O_WRONLY|O_CREAT|O_TRUNC, 0666);
+    file_fd = open(path, O_WRONLY|O_CREAT|O_TRUNC|O_BINARY, 0666);
     if (file_fd == -1)
         err(1, "%s", path);
 
@@ -300,7 +300,7 @@ int main(int argc, char **argv)
     else
         errx(1, "Usage: adfread <filename> [<dest_dir>]");
 
-    fd = open(argv[1], O_RDONLY);
+    fd = open(argv[1], O_RDONLY|O_BINARY);
     if (fd == -1)
         err(1, "%s", argv[1]);
 

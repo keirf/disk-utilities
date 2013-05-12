@@ -22,7 +22,7 @@ static struct stream *caps_open(const char *name)
     char sig[4];
 
     /* Simple signature check */
-    if ((fd = open(name, O_RDONLY)) == -1)
+    if ((fd = open(name, O_RDONLY|O_BINARY)) == -1)
         return NULL;
     read_exact(fd, sig, 4);
     close(fd);

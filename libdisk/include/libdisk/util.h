@@ -28,6 +28,10 @@
 #include <err.h>
 #endif
 
+#ifndef O_BINARY
+#define O_BINARY 0
+#endif
+
 #ifndef offsetof
 #define offsetof(a,b) __builtin_offsetof(a,b)
 #endif

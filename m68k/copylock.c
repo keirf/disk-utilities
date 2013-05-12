@@ -75,7 +75,7 @@ int main(int argc, char **argv)
         errx(1, "Usage: %s <infile> <off> <len> <base> <df0_file>",
              argv[0]);
 
-    fd = open(argv[1], O_RDONLY);
+    fd = open(argv[1], O_RDONLY|O_BINARY);
     if (fd == -1)
         err(1, "%s", argv[1]);
 

@@ -123,7 +123,7 @@ static struct stream *caps_open(const char *name)
     struct caps_stream *cpss;
 
     /* Simple signature check */
-    if ((fd = open(name, O_RDONLY)) == -1)
+    if ((fd = open(name, O_RDONLY|O_BINARY)) == -1)
         return NULL;
     read_exact(fd, sig, 4);
     close(fd);

@@ -46,7 +46,7 @@ static struct stream *dr_open(const char *name)
     if ((stat(name, &sbuf) < 0) || (sbuf.st_size != BYTES_PER_FILE))
         return NULL;
 
-    if ((fd = open(name, O_RDONLY)) == -1)
+    if ((fd = open(name, O_RDONLY|O_BINARY)) == -1)
         err(1, "%s", name);
 
     drs = memalloc(sizeof(*drs));

@@ -161,7 +161,7 @@ static void handle_img(void)
     struct disk *d;
     struct disk_info *di;
 
-    if ((fd = open(in, O_RDONLY)) == -1)
+    if ((fd = open(in, O_RDONLY|O_BINARY)) == -1)
         err(1, "Failed to open IMG file '%s'", in);
     sz = lseek(fd, 0, SEEK_END);
     lseek(fd, 0, SEEK_SET);

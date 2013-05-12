@@ -232,7 +232,7 @@ int main(int argc, char **argv)
     if (argc != 2)
         errx(1, "Usage: ipfinfo <filename>");
 
-    fd = open(argv[1], O_RDONLY);
+    fd = open(argv[1], O_RDONLY|O_BINARY);
     if (fd == -1)
         err(1, "%s", argv[1]);
 
