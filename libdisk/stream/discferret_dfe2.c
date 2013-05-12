@@ -47,7 +47,7 @@ static struct stream *dfe2_open(const char *name)
     if (stat(name, &sbuf) < 0)
         return NULL;
 
-    if ((fd = open(name, O_RDONLY)) == -1)
+    if ((fd = file_open(name, O_RDONLY)) == -1)
         err(1, "%s", name);
 
     read_exact(fd, magic, sizeof(magic));

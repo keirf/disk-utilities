@@ -158,7 +158,7 @@ int main(int argc, char **argv)
 
     acquire_drive();
 
-    if ((fp = fopen(argv[1], "w")) == NULL) {
+    if ((fp = fopen(argv[1], "wb")) == NULL) {
         fprintf(stderr, "Could not open file \"%s\"\n", argv[1]);
         release_drive();
         exit(1);
@@ -177,7 +177,7 @@ int main(int argc, char **argv)
         if (track > 10)
             putchar('\b');
         if (track > 100)
-            putchar('\b');            
+            putchar('\b');
         printf("\b%d", track);
         fflush(stdout);
 

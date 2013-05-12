@@ -28,7 +28,7 @@ static void *decode_dat(const char *filename, unsigned int *psz)
     off_t sz;
     int fd;
 
-    if ((fd = open(filename, O_RDONLY)) == -1)
+    if ((fd = file_open(filename, O_RDONLY)) == -1)
         err(1, "%s", filename);
 
     if ((sz = lseek(fd, 0, SEEK_END)) < 0)
@@ -99,7 +99,7 @@ int main(int argc, char **argv)
              " -e: Encrypt with given hex key");
     }
 
-    fd = open(argv[1], O_RDWR);
+    fd = file_open(argv[1], O_RDWR);
     if (fd == -1)
         err(1, "%s", argv[1]);
 

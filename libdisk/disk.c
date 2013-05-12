@@ -67,7 +67,7 @@ struct disk *disk_create(const char *name)
     if ((c = container_from_filename(name)) == NULL)
         return NULL;
 
-    if ((fd = open(name, O_WRONLY|O_CREAT|O_TRUNC, 0666)) == -1) {
+    if ((fd = file_open(name, O_WRONLY|O_CREAT|O_TRUNC, 0666)) == -1) {
         warn("%s", name);
         return NULL;
     }
@@ -91,7 +91,7 @@ struct disk *disk_open(const char *name, int read_only)
     if ((c = container_from_filename(name)) == NULL)
         return NULL;
 
-    if ((fd = open(name, read_only ? O_RDONLY : O_RDWR)) == -1) {
+    if ((fd = file_open(name, read_only ? O_RDONLY : O_RDWR)) == -1) {
         warn("%s", name);
         return NULL;
     }
