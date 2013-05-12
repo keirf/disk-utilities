@@ -28,8 +28,12 @@
 #include <err.h>
 #endif
 
-#ifndef O_BINARY
-#define O_BINARY 0
+#if !defined(O_BINARY)
+#define file_open open
+#define file_open_mode open
+#else
+#define file_open(p,f) open(p,(f)|O_BINARY)
+#define file_open_mode(p,f,m) open(p,(f)|O_BINARY,m)
 #endif
 
 #ifndef offsetof

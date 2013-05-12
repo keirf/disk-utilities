@@ -60,7 +60,7 @@ static void decode_new_bb(char *bb, const char *filename)
     off_t sz;
     int fd;
 
-    if ((fd = open(filename, O_RDONLY|O_BINARY)) == -1)
+    if ((fd = file_open(filename, O_RDONLY)) == -1)
         err(1, "%s", filename);
 
     if ((sz = lseek(fd, 0, SEEK_END)) < 0)
@@ -154,7 +154,7 @@ int main(int argc, char **argv)
              " -g: New Amiga hunk file to decode and poke");
     }
 
-    fd = open(argv[1], (fixup ? O_RDWR : O_RDONLY) | O_BINARY);
+    fd = file_open(argv[1], fixup ? O_RDWR : O_RDONLY);
     if (fd == -1)
         err(1, "%s", argv[1]);
 

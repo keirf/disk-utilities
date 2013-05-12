@@ -82,7 +82,7 @@ static int kfs_select_track(struct stream *s, unsigned int tracknr)
 
     sprintf(trackname, "%s%02u.%u.raw", kfss->basename,
             tracknr>>1, tracknr&1);
-    if ((fd = open(trackname, O_RDONLY|O_BINARY)) == -1)
+    if ((fd = file_open(trackname, O_RDONLY)) == -1)
         return -1;
     if (((sz = lseek(fd, 0, SEEK_END)) < 0) ||
         (lseek(fd, 0, SEEK_SET) < 0))

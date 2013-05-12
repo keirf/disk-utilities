@@ -122,7 +122,7 @@ int main(int argc, char **argv)
         errx(1, "Usage: %s <infile> <off> <len> <base>",
              argv[0]);
 
-    fd = open(argv[1], O_RDONLY|O_BINARY);
+    fd = file_open(argv[1], O_RDONLY);
     if (fd == -1)
         err(1, "%s", argv[1]);
 
