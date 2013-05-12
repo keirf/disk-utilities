@@ -198,7 +198,7 @@ static void handle_file(int fd, char *path, struct ffs_fileheader *file)
     if (is_readonly)
         return;
 
-    file_fd = file_open_mode(path, O_WRONLY|O_CREAT|O_TRUNC, 0666);
+    file_fd = file_open(path, O_WRONLY|O_CREAT|O_TRUNC, 0666);
     if (file_fd == -1)
         err(1, "%s", path);
 
