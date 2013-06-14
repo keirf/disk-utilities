@@ -30,8 +30,10 @@
 
 #if !defined(__MINGW32__)
 #define file_open(p,f,m...) open(p,(f),##m)
+#define posix_mkdir(p,m) mkdir(p,m)
 #else
 #define file_open(p,f,m...) open(p,(f)|O_BINARY,##m)
+#define posix_mkdir(p,m) mkdir(p)
 #endif
 
 #ifndef offsetof
