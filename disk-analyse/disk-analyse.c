@@ -160,6 +160,7 @@ static void handle_img(void)
     struct track_sectors *sectors;
     struct disk *d;
     struct disk_info *di;
+    void *data;
 
     if ((fd = file_open(in, O_RDONLY)) == -1)
         err(1, "Failed to open IMG file '%s'", in);
@@ -172,7 +173,7 @@ static void handle_img(void)
     di = disk_get_info(d);
 
     sectors = track_alloc_sector_buffer(d);
-    sectors->data = memalloc(sz);
+    sectors->data = data = memalloc(sz);
     sectors->nr_bytes = sz;
 
     read_exact(fd, sectors->data, sz);
@@ -196,7 +197,7 @@ static void handle_img(void)
 
     disk_close(d);
 
-    memfree(sectors->data);
+    memfree(data);
     sectors->data = NULL;
     sectors->nr_bytes = 0;
     track_free_sector_buffer(sectors);
