@@ -23,6 +23,8 @@ static void adf_init_track(struct track_info *ti)
     ti->data_bitoff = 1024;
     ti->total_bits = DEFAULT_BITS_PER_TRACK;
 
+    set_all_sectors_invalid(ti);
+
     for (i = 0; i < ti->len/4; i++)
         memcpy(ti->dat+i*4, "NDOS", 4);
 }
@@ -66,7 +68,6 @@ static struct container *adf_open(struct disk *d)
     for (i = 0; i < di->nr_tracks; i++) {
         ti = &di->track[i];
         read_exact(d->fd, ti->dat, ti->len);
-        set_all_sectors_invalid(ti);
         for (j = 0; j < ti->nr_sectors; j++) {
             unsigned char *p = ti->dat + j*ti->bytes_per_sector;
             for (k = 0; k < ti->bytes_per_sector/4; k++)
