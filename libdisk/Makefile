@@ -54,7 +54,7 @@ libdisk.a: $(OBJS) stream/streams.o container/containers.o format/formats.o
 
 $(SOVERS): $(PICOBJS) stream/streams.apic container/containers.apic \
 		format/formats.apic
-	$(CC) $(LDFLAGS) $(LIBS) -o $(SOVERS) $^
+	$(CC) $(LDFLAGS) -o $(SOVERS) $^ $(LIBS)
 #	strip -x $(SOVERS)
 	ln -sf $(SOVERS) $(SONAME)
 	ln -sf $(SONAME) $(SOLIB)
