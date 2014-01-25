@@ -1242,6 +1242,10 @@ int m68k_emulate(struct m68k_emulate_ctxt *c)
     case 0x9: /* COMPLETE */
         dump(c, "sub");
         goto addsub;
+    case 0xa: /* COMPLETE */
+        dump(c, "a-line");
+        raise_exception(M68KVEC_a_line);
+        break;
     case 0xb: { /* COMPLETE */
         c->op_sz = (op>>6)&3;
         if ((op & 0xc0u) == 0xc0u) {
@@ -1544,6 +1548,10 @@ int m68k_emulate(struct m68k_emulate_ctxt *c)
         rc = write_ea(c);
         break;
     }
+    case 0xf: /* COMPLETE */
+        dump(c, "f-line");
+        raise_exception(M68KVEC_f_line);
+        break;
     default: unknown:
         dump(c, "???");
         raise_exception(M68KVEC_illegal_insn);
