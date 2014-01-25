@@ -1287,12 +1287,52 @@ int m68k_emulate(struct m68k_emulate_ctxt *c)
     case 0xc: case_0xc: { /* COMPLETE */
         if ((op & 0xb1f0u) == 0x8100u) {
             /* abcd/sbcd */
+            uint8_t op1, op2, digit[2], x;
             dump(c, "%cbcd.b\t", op & (1u<<14) ? 'a' : 's');
-            if (op & (1u<<3))
+            c->op_sz = OPSZ_B;
+            if (op & (1u<<3)) {
                 dump(c, "-(%s),-(%s)", areg[op&7], areg[(op>>9)&7]);
-            else
-                dump(c, "-%s,%s", dreg[op&7], dreg[(op>>9)&7]);
-            rc = M68KEMUL_UNHANDLEABLE;
+                c->p->operand.type = OP_MEM;
+                c->p->operand.reg = &sh_reg(c, a[op&7]);
+                c->p->operand.mem = *c->p->operand.reg -= 1;
+                bail_if(rc = read_ea(c));
+                op1 = c->p->operand.val;
+                c->p->operand.reg = &sh_reg(c, a[(op>>9)&7]);
+                c->p->operand.mem = *c->p->operand.reg -= 1;
+                bail_if(rc = read_ea(c));
+            } else {
+                dump(c, "%s,%s", dreg[op&7], dreg[(op>>9)&7]);
+                op1 = sh_reg(c, d[op&7]);
+                c->p->operand.type = OP_REG;
+                c->p->operand.reg = &sh_reg(c, d[(op>>9)&7]);
+                c->p->operand.val = *c->p->operand.reg;
+            }
+            op2 = c->p->operand.val;
+            x = !!(sh_reg(c, sr) & CC_X);
+            if (op & (1u<<14)) {
+                /* abcd */
+                digit[0] = (op2&15) + (op1&15) + x;
+                if ((x = (digit[0] > 9)))
+                    digit[0] -= 10;
+                digit[1] = (op2>>4) + (op1>>4) + x;
+                if ((x = (digit[1] > 9)))
+                    digit[1] -= 10;
+            } else {
+                /* sbcd */
+                digit[0] = (op2&15) - (op1&15) - x;
+                if ((x = ((int8_t)digit[0] < 0)))
+                    digit[0] += 10;
+                digit[1] = (op2>>4) - (op1>>4) - x;
+                if ((x = ((int8_t)digit[1] < 0)))
+                    digit[1] += 10;
+            }
+            c->p->operand.val = (uint8_t)(digit[1]<<4 | digit[0]);
+            bail_if(rc = write_ea(c));
+            sh_reg(c, sr) &= ~(CC_X|CC_C);
+            if (x)
+                sh_reg(c, sr) |= CC_X|CC_C;
+            if (c->p->operand.val)
+                sh_reg(c, sr) &= ~CC_Z;
         } else if ((op & 0xf0c0u) == 0x80c0u) {
             /* divs.w/divu.w */
             uint32_t q, r, *reg = &sh_reg(c, d[(op>>9)&7]);
@@ -1401,6 +1441,7 @@ int m68k_emulate(struct m68k_emulate_ctxt *c)
             dump(c, "x.%c\t", op_sz_ch[c->op_sz]);
             if (op & (1u<<3)) {
                 dump(c, "-(%s),-(%s)", areg[op&7], areg[(op>>9)&7]);
+                c->p->operand.type = OP_MEM;
                 c->p->operand.reg = &sh_reg(c, a[op&7]);
                 c->p->operand.mem = *c->p->operand.reg -=
                     (c->op_sz == OPSZ_B ? 1 : c->op_sz == OPSZ_W ? 2 : 4);
