@@ -39,6 +39,12 @@ probe_amiga
     4-146 afterburner_sega
     * ignore
 
+"Albedo"
+    0 amigados
+    2 albedo_protection
+    4-140/2 albedo_data
+    * ignore
+
 # Alien Breed: Disk 2 Track 0 is a custom protection track
 "Alien Breed"
     0 amigados alienbreed_protection
