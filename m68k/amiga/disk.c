@@ -169,6 +169,7 @@ static void step_cb(void *_s)
         s->disk.tracknr += 2;
     else
         s->disk.tracknr -= 2;
+    s->disk.step = step_none;
     track_load(s);
     disk_recalc_cia_inputs(s);
 }
@@ -179,7 +180,7 @@ void disk_cia_changed(struct amiga_state *s)
     uint8_t old_ciabb = s->disk.old_ciabb;
 
     /* Disk side. */
-    if ((old_ciabb ^ new_ciabb) & CIAB_DSKSIDE) {
+    if ((old_ciabb ^ new_ciabb) & (1u << CIAB_DSKSIDE)) {
         s->disk.tracknr ^= 1;
         track_load(s);
     }
@@ -217,7 +218,8 @@ void disk_cia_changed(struct amiga_state *s)
     if (!(old_ciabb & (1u << CIAB_DSKSTEP)) &&
         (new_ciabb & (1u << CIAB_DSKSTEP)) &&
         (s->disk.step == step_none)) {
-        s->disk.step = (new_ciabb & CIAB_DSKDIREC) ? step_out : step_in;
+        s->disk.step = (new_ciabb & (1u << CIAB_DSKDIREC))
+            ? step_out : step_in;
         if (((s->disk.step == step_out) && (s->disk.tracknr <= 1)) ||
             ((s->disk.step == step_in) && (s->disk.tracknr >= 159)))
             s->disk.step = step_none;
