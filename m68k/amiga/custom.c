@@ -71,7 +71,7 @@ uint16_t custom_read_reg(struct amiga_state *s, uint16_t addr)
         break;
     }
 
-    if (addr != CUST_dskbytr)
+    if ((addr != CUST_dskbytr) && (addr != CUST_intreqr))
         log_info("Read %04x from custom register %s (%x)",
                  val, custom_reg_name[addr], (addr<<1)+0xdff000);
 
