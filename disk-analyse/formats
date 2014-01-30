@@ -603,10 +603,19 @@ probe_amiga
 
 "Twinworld" = blue_byte
 
+# Protection checks for track gap of at least 12800 bits (and hence total
+# track length of 95744+12800=108544 bits). Does not care about gap contents.
+# Actual track length is just over 111000 bits.
+"Uninvited"
+    1 amigados_long_111000
+    * amigados
+
 "Vade Retro Alienas"
     * amigados vade_retro_alienas
 
 "Venus The Flytrap" = gremlin_protected
+
+"Victory Road" = amigados_copylock
 
 "Virus"
     * amigados firebird
