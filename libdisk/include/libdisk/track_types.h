@@ -86,4 +86,8 @@ X(anarchy, "Anarchy")
 X(spell_bound, "Spell Bound")
 X(ork_a, "Ork A")
 X(ork_b, "Ork B")
+X(creatures_a, "Creatures A")
+X(creatures_b, "Creatures B")
+X(beastlord_a, "Beastlord A")
+X(beastlord_b, "Beastlord B")
 
