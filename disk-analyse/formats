@@ -65,6 +65,13 @@ probe_amiga
 "Amnios Disk 2" # Tracks 0-1 may be empty
     * psygnosis_b
 
+"Anarchy"
+    0 amigados
+    1 protec_longtrack
+    2-155 anarchy
+    156-159 psygnosis_a
+    * ignore
+
 "Apache" = rnc_pdos
 
 "Arcade Pool" = rnc_pdos
@@ -114,6 +121,11 @@ probe_amiga
     * amigados bat
 
 "B.S.S. Jane Seymour" = amigados_gremlin_longtrack
+
+"Baal"
+    0 amigados
+    1 protec_longtrack
+    * baal
 
 "Badlands" = amigados_copylock
 
@@ -425,6 +437,9 @@ probe_amiga
 
 "Omnicron Conspiracy" = amigados_copylock
 
+"Ork"
+    * amigados ork_a ork_b
+
 "Overdrive" = rnc_pdos
 
 "Onslaught" = amigados
@@ -528,6 +543,11 @@ probe_amiga
 "Space Quest IV" = amigados
 
 "Speedball 2" = amigados_copylock
+
+"Spell Bound"
+    0 amigados
+    1 protec_longtrack
+    * spell_bound
 
 "Speris Legacy" = amigados
 
