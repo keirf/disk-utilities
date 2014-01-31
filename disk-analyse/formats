@@ -13,7 +13,7 @@ probe_amiga
       archipelagos sensible \
       bat batman menace commando turrican federation_of_free_traders \
       phantom_fighter supremacy_a supremacy_b \
-      protec_longtrack gremlin_longtrack
+      protec_longtrack gremlin_longtrack wjs_design_1838
 
 ####################
 # Game List - every checked game is listed here
@@ -142,6 +142,15 @@ probe_amiga
 
 "Battle Master" = amigados_copylock
 
+"Beastlord Disk 1"
+    0 amigados
+    2-131 beastlord_a
+    * ignore
+
+"Beastlord Disk 2"
+    0-107 beastlord_b
+    * ignore
+
 "Beneath A Steel Sky" = amigados
 
 "Bermuda Project" = amigados
@@ -197,6 +206,15 @@ probe_amiga
     * amigados commando
 
 "Corporation" = amigados_copylock
+
+"Creatures Disk 1"
+    0 amigados
+    2-145 creatures_a
+    * ignore
+
+"Creatures Disk 2"
+    0-123 creatures_b
+    * ignore
 
 "Crystal Kingdom Dizzy" # Disk 2 Track 0 may be empty
     * amigados copylock fun_factory
