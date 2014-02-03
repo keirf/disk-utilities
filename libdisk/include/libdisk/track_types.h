@@ -90,4 +90,5 @@ X(creatures_a, "Creatures A")
 X(creatures_b, "Creatures B")
 X(beastlord_a, "Beastlord A")
 X(beastlord_b, "Beastlord B")
-
+X(gadgetslostintime_a, "Fun Factory")
+X(gadgetslostintime_b, "Fun Factory")

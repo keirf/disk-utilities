@@ -305,6 +305,9 @@ probe_amiga
 
 "Future Basketball" = amigados_copylock
 
+"Gadgets Lost In Time"
+    * amigados gadgetslostintime_a gadgetslostintime_b
+
 "Gateway To The Savage Frontier" = amigados
 
 "Gladiators" # Tracks 159+ may be empty
