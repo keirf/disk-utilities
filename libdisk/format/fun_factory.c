@@ -14,9 +14,9 @@
  * 
  * RAW TRACK LAYOUT:
  *  u32 0x44894489 :: Sync
- *  u8  0xff,0xff,0xff,trknr  : Rebellion, Twin Turbos, Crystal Kingdom Dizzy
- *  u8  0xff,0xff,0x00,trknr-trknr % 2  : Gadgets - Lost In Time Disk 1
- *  u8  0xff,0xff,0x01,trknr-trknr % 2  : Gadgets - Lost In Time Disk 2
+ *  u8  0xff,0xff,0xff,trknr     : Fun Factory (usual)
+ *  u8  0xff,0xff,0x00,trknr&~1  : Gadgets - Lost In Time Disk 1
+ *  u8  0xff,0xff,0x01,trknr&~1  : Gadgets - Lost In Time Disk 2
  *  u32 data[10*512/4]
  *  u32 csum
  * MFM encoding of sectors:
