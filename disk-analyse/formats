@@ -91,6 +91,9 @@ probe_amiga
     100 archipelagos
     * ignore
 
+"Armalyte"
+     * arc_development_a copylock amigados
+
 "Armour-Geddon Disk 1"
     0-1 psygnosis_c
     2-53 psygnosis_a
@@ -151,6 +154,9 @@ probe_amiga
     0-107 beastlord_b
     * ignore
 
+"Beavers"
+     * arc_development_b amigados
+     
 "Beneath A Steel Sky" = amigados
 
 "Bermuda Project" = amigados
@@ -235,6 +241,9 @@ probe_amiga
 "Dragon's Breath"
     158 amigados speedlock
     * amigados
+
+"Dragon Breed"
+     * arc_development_a copylock amigados
 
 "Dragon Spirit" = amigados_copylock
 
@@ -408,6 +417,9 @@ probe_amiga
     159 ignore
     * psygnosis_a
 
+"McDonald Land"
+     * arc_development_b copylock amigados
+
 # Disk 1, tracks 1 and 80 may be unformatted
 # Disk 2 track 1 should be Copylock; tracks 0 and 80 may be unformatted
 "Mega Lo Mania" = sensible
@@ -433,6 +445,9 @@ probe_amiga
     * amigados
 
 "New Zealand Story" = amigados_copylock
+
+"Nick Faldo's Championship Golf"
+     * arc_development_b copylock amigados
 
 "Nitro"
     1 protec_longtrack
@@ -497,6 +512,9 @@ probe_amiga
 
 "Powermonger" = amigados
 
+"Predator II"
+     * arc_development_a copylock amigados
+
 "Pro Tennis Tour" = blue_byte
 
 "Project X" = amigados_copylock
@@ -516,6 +534,9 @@ probe_amiga
     10-62 rtype_a
     68 factor5_hiscore
     * rtype_b
+
+"R-Type II"
+     * arc_development_a copylock amigados
 
 # Hit Squad re-release has no copylock
 "Rainbow Islands" = amigados_copylock
@@ -540,6 +561,12 @@ probe_amiga
     1 amigados_long_111000
     * amigados
 
+"Robozone Disk 1"
+     * arc_development_a copylock amigados
+
+"Robozone Disk 2"
+     * arc_development_a copylock amigados
+
 "Rotox" = amigados
 
 "Sensible Soccer" = sensible
@@ -551,6 +578,12 @@ probe_amiga
 "Side Arms"
     2-12/2 ignore
     * amigados
+
+"Simpsons, Bart vs. The Space Mutants"
+     * arc_development_a copylock amigados
+
+"Simpsons, Bart vs. The World"
+     * arc_development_b copylock amigados
 
 "Skyfox"
     1 amigados_long_111000 # Actual length is almost exactly 111000 bits
