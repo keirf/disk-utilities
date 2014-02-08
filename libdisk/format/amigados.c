@@ -215,12 +215,10 @@ struct track_handler amigados_extended_handler = {
     .read_raw = ados_read_raw
 };
 
-/*
- * AmigaDOS Long Tracks:
+/* AmigaDOS Long Tracks:
  * Dummy types and write handler which increase track gap by a defined amount.
  * These are used where the protection routine does not check for any data
- * in the track gap, or expects only (MFM-encoded) zeros.
- */
+ * in the track gap, or expects only (MFM-encoded) zeros. */
 
 static void *ados_longtrack_write_raw(
     struct disk *d, unsigned int tracknr, struct stream *s)

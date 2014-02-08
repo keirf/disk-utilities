@@ -22,10 +22,8 @@ static void *unformatted_write_raw(
     unsigned int lat = s->latency, clk = 2000;
     unsigned int bad_sectors = 0, nr_sectors = 0;
 
-    /*
-     * Scan for bit sequences that break the MFM encoding rules.
-     * Random noise will obviously do this a *lot*.
-     */
+    /* Scan for bit sequences that break the MFM encoding rules.
+     * Random noise will obviously do this a *lot*. */
     while (stream_next_bit(s) != -1) {
         if (s->word & 1) {
             unsigned int new_clk = (s->latency - lat) / (nr_zero + 1);

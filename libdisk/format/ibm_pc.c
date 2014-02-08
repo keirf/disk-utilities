@@ -117,7 +117,8 @@ static void *ibm_pc_write_raw(
         if (((idx_off = ibm_scan_idam(s, &idam)) < 0) || s->crc16_ccitt)
             continue;
 
-        /* PCs start numbering sectors at 1, other platforms start at 0. Shift sector number as appropriate. */
+        /* PCs start numbering sectors at 1, other platforms start at 0. Shift
+         * sector number as appropriate.  */
         idam.sec -= extra_data->sector_base;
 
         if ((idam.sec >= ti->nr_sectors) ||
@@ -125,7 +126,8 @@ static void *ibm_pc_write_raw(
             (idam.head != (tracknr&1)) ||
             (idam.no > 7)) {
             trk_warn(ti, tracknr, "Unexpected IDAM sec=%02x cyl=%02x hd=%02x "
-                     "no=%02x", idam.sec+extra_data->sector_base, idam.cyl, idam.head, idam.no);
+                     "no=%02x", idam.sec+extra_data->sector_base,
+                     idam.cyl, idam.head, idam.no);
             continue;
         }
 
@@ -133,7 +135,8 @@ static void *ibm_pc_write_raw(
         sec_sz = 128 << idam.no;
         if (sec_sz != ti->bytes_per_sector) {
             trk_warn(ti, tracknr, "Unexpected IDAM sector size sec=%02x "
-                     "cyl=%02x hd=%02x secsz=%d wanted=%d", idam.sec+extra_data->sector_base,
+                     "cyl=%02x hd=%02x secsz=%d wanted=%d",
+                     idam.sec+extra_data->sector_base,
                      idam.cyl, idam.head, sec_sz, ti->bytes_per_sector);
             continue;
         }
@@ -219,10 +222,8 @@ static void ibm_pc_read_raw(
             tbuf_bits(tbuf, SPEED_AVG, bc_mfm, 8, 0x4e);
     }
 
-    /*
-     * NB. Proper track gap should be 0x4e recurring up to the index mark.
-     * Then write splice. Then ~140*0x4e, leading into 12*0x00.
-     */
+    /* NB. Proper track gap should be 0x4e recurring up to the index mark.
+     * Then write splice. Then ~140*0x4e, leading into 12*0x00. */
 }
 
 void *ibm_pc_write_sectors(
@@ -326,10 +327,8 @@ struct track_handler siemens_isdx_hd_handler = {
     }
 };
 
-/*
- * Microsoft DMF, High Density format
- * 21 spt, 512 bytes/sector, 80 tracks
- */
+/* Microsoft DMF, High Density format
+ * 21 spt, 512 bytes/sector, 80 tracks */
 struct track_handler microsoft_dmf_hd_handler = {
     .density = trkden_high,
     .bytes_per_sector = 512,
@@ -343,11 +342,9 @@ struct track_handler microsoft_dmf_hd_handler = {
     }
 };
 
-/*
- * Trace Mountain Products / Magnetic Design Corp "TRACEBACK" duplicator info
+/* Trace Mountain Products / Magnetic Design Corp "TRACEBACK" duplicator info
  * 1 spt, 2048 bytes/sector, 1 track
- * Always stored on phys cyl 80, heads 0 and 1, identical data on both sides.
- */
+ * Always stored on phys cyl 80, heads 0 & 1, identical data on both sides. */
 struct track_handler trace_traceback_hd_handler = {
     .density = trkden_high,
     .bytes_per_sector = 2048,
@@ -361,12 +358,10 @@ struct track_handler trace_traceback_hd_handler = {
     }
 };
 
-/*
- * Acorn ADFS "Small", "Medium" and "Large"
+/* Acorn ADFS "Small", "Medium" and "Large"
  *   S is 40 tracks, single sided, DD
  *   M is 50 tracks, double sided, DD
- *   L is 80 tracks, double sided, DD
- */
+ *   L is 80 tracks, double sided, DD */
 struct track_handler acorn_adfs_s_m_l_handler = {
     .density = trkden_double,
     .bytes_per_sector = 256,
@@ -408,15 +403,10 @@ struct track_handler acorn_adfs_f_handler = {
     }
 };
 
-/*
- * There are also two Acorn DFS formats from the BBC Micro which require
+/* There are also two Acorn DFS formats from the BBC Micro which require
  * FM decode support:
  *   DFS 40-track - 40tk DS 10/256  200K  FM/SD
- *   DFS 80-track - 80th DS 10/256  400K  FM/SD
- */
-
-
-
+ *   DFS 80-track - 80th DS 10/256  400K  FM/SD */
 
 /*
  * Local variables:

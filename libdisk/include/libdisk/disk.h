@@ -35,20 +35,17 @@ struct track_info {
     uint8_t *dat;
     uint32_t len;
 
-    /*
-     * Offset from track index of raw data returned by type handler.
+    /* Offset from track index of raw data returned by type handler.
      * Specifically, N means that the there are N full bitcells between the
      * index pulse and the first data bitcell. Hence 0 means that the index
-     * pulse occurs during the cell immediately preceding the first data cell.
-     */
+     * pulse occurs during the cell immediately preceding the first data
+     * cell. */
     uint32_t data_bitoff;
 
-    /*
-     * Total bit length of track (modulo jitter at the write splice / gap).
-     * If TRK_WEAK then handler can be called repeatedly for successive
+    /* Total bit length of track (modulo jitter at the write splice / gap). If 
+     * TRK_WEAK then handler can be called repeatedly for successive
      * revolutions of the disk -- data and length may change due to 'flakey
-     * bits' which confuse the disk controller.
-     */
+     * bits' which confuse the disk controller. */
     uint32_t total_bits;
 };
 

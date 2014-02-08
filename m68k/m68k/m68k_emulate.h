@@ -12,9 +12,7 @@
 struct m68k_emulate_ctxt;
 struct m68k_exception;
 
-/*
- * Return codes from state-accessor functions and from m68k_emulate().
- */
+/* Return codes from state-accessor functions and from m68k_emulate(). */
  /* Completed successfully. State modified appropriately. */
 #define M68KEMUL_OKAY           0
  /* Unhandleable access or emulation. No state modified. */
@@ -22,56 +20,44 @@ struct m68k_exception;
  /* Exception raised and requires delivery. */
 #define M68KEMUL_EXCEPTION      2
 
-/*
- * These operations represent the instruction emulator's interface to memory,
- * privileged state... pretty much everything other than GPRs.
- */
+/* These operations represent the instruction emulator's interface to memory,
+ * privileged state... pretty much everything other than GPRs. */
 struct m68k_emulate_ops
 {
-    /*
-     * All functions:
+    /* All functions:
      *  @ctxt:  [IN ] Emulation context info as passed to the emulator.
      *  @addr:  [IN ] Address in emulated environment.
      *  @bytes: [IN ] Number of bytes to read or write. Valid access sizes are
-     *                1, 2, and 4.
-     */
+     *                1, 2, and 4. */
 
-    /*
-     * read: Emulate a memory read.
+    /* read: Emulate a memory read.
      *  @val:   [OUT] Value read, zero-extended to 'uint32_t'.
-     * NB. This callback is used only for insn fetch if ctxt.emulate = 0.
-     */
+     * NB. This callback is used only for insn fetch if ctxt.emulate = 0. */
     int (*read)(
         uint32_t addr,
         uint32_t *val,
         unsigned int bytes,
         struct m68k_emulate_ctxt *ctxt);
 
-    /*
-     * write: Emulate a memory write.
+    /* write: Emulate a memory write.
      *  @val:   [IN ] Value to write (low-order bytes used as req'd).
-     * NB. This callback is not used if ctxt.emulate = 0.
-     */
+     * NB. This callback is not used if ctxt.emulate = 0. */
     int (*write)(
         uint32_t addr,
         uint32_t val,
         unsigned int bytes,
         struct m68k_emulate_ctxt *ctxt);
 
-    /*
-     * addr_name: Obtain a mnemonic name for EA <addr>, else NULL.
+    /* addr_name: Obtain a mnemonic name for EA <addr>, else NULL.
      * NB. This callback can be left undefined as NULL.
-     *     This callback is not used if ctxt.disassemble = 0.
-     */
+     *     This callback is not used if ctxt.disassemble = 0. */
     const char *(*addr_name)(
         uint32_t addr,
         struct m68k_emulate_ctxt *ctxt);
 
-    /*
-     * deliver_exception: Deliver /interrupt/trap/exception <vector>.
+    /* deliver_exception: Deliver /interrupt/trap/exception <vector>.
      * NB. This callback may use m68k_deliver_exception() if appropriate.
-     *     m68k_emulate() will do so automatically if this callback is NULL.
-     */
+     *     m68k_emulate() will do so automatically if this callback is NULL. */
     int (*deliver_exception)(
         struct m68k_emulate_ctxt *ctxt,
         struct m68k_exception *exception);
@@ -124,21 +110,15 @@ struct m68k_emulate_ctxt
     struct m68k_emulate_priv_ctxt *p;
 };
 
-/*
- * m68k_emulate: Emulate an instruction.
- * Returns M68KEMUL_OKAY or M68KEMUL_UNHANDLEABLE.
- */
+/* m68k_emulate: Emulate an instruction.
+ * Returns M68KEMUL_OKAY or M68KEMUL_UNHANDLEABLE. */
 int m68k_emulate(struct m68k_emulate_ctxt *);
 
-/*
- * m68k_dump_regs: Print register dump to stdout.
- */
+/* m68k_dump_regs: Print register dump to stdout. */
 void m68k_dump_regs(struct m68k_regs *, void (*print)(const char *, ...));
 
-/*
- * m68k_dump_stack: Print stack context.
- *  @stack: Which stack context to dump (user,supervisor,current).
- */
+/* m68k_dump_stack: Print stack context.
+ *  @stack: Which stack context to dump (user,supervisor,current). */
 enum stack { stack_current, stack_user, stack_super };
 void m68k_dump_stack(
     struct m68k_emulate_ctxt *, enum stack,
@@ -151,9 +131,7 @@ struct m68k_exception {
     uint32_t fault_addr;  /* faulting access address */
 };
 
-/*
- * m68k_dump_stack: Deliver the specified exception into emulated context.
- */
+/* m68k_dump_stack: Deliver the specified exception into emulated context. */
 int m68k_deliver_exception(
     struct m68k_emulate_ctxt *, struct m68k_exception *);
 

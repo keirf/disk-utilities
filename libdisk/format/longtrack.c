@@ -28,14 +28,12 @@ static int check_length(struct stream *s, unsigned int min_bits)
     return (s->track_bitlen >= min_bits);
 }
 
-/*
- * TRKTYP_protec_longtrack: PROTEC protection track, used on many releases
+/* TRKTYP_protec_longtrack: PROTEC protection track, used on many releases
  *  u16 0x4454
  *  u8 0x33 (encoded in-place, 1000+ times, to track gap)
  *  Track is checked to be >= 107200 bits long
- *  Specifically, protection checks for >= 6700 raw words between
- *  successive sync marks. Track contents are not otherwise checked or tested.
- */
+ *  Specifically, protection checks for >= 6700 raw words between successive
+ *  sync marks. Track contents are not otherwise checked or tested. */
 
 static void *protec_longtrack_write_raw(
     struct disk *d, unsigned int tracknr, struct stream *s)
@@ -70,8 +68,7 @@ struct track_handler protec_longtrack_handler = {
     .read_raw = protec_longtrack_read_raw
 };
 
-/*
- * TRKTYP_gremlin_longtrack: Lotus I/II, + many others
+/* TRKTYP_gremlin_longtrack: Lotus I/II, + many others
  *  u16 0x4124,0x4124
  *  Rest of track is (MFM-encoded) zeroes, and/or unformatted garbage.
  *  The contents are never checked, only successive sync marks are scanned for.
@@ -80,8 +77,7 @@ struct track_handler protec_longtrack_handler = {
  *  Specifically, protection checks for >= 6400 raw words between
  *  successive sync marks. Track contents are not otherwise checked or tested.
  * 
- *  Track is typically ~105500 bits long.
- */
+ *  Track is typically ~105500 bits long. */
 
 static void *gremlin_longtrack_write_raw(
     struct disk *d, unsigned int tracknr, struct stream *s)
@@ -116,29 +112,25 @@ struct track_handler gremlin_longtrack_handler = {
     .read_raw = gremlin_longtrack_read_raw
 };
 
-/*
- * TRKTYP_tiertex_longtrack: Strider II
+/* TRKTYP_tiertex_longtrack: Strider II
  *  A variant of the Gremlin long track, checks 99328 <= x <= 103680 bits long.
  *  Specifically, the variant checks 6208 <= x <= 6480 raw words between
  *  successive sync marks. Track contents are not otherwise checked or tested.
  * 
- *  Track is actually ~100150 bits long (normal length!).
- */
+ *  Track is actually ~100150 bits long (normal length!). */
 
 struct track_handler tiertex_longtrack_handler = {
     .write_raw = gremlin_longtrack_write_raw,
     .read_raw = gremlin_longtrack_read_raw
 };
 
-/*
- * TRKTYP_crystals_of_arborea_longtrack: Crystals Of Arborea
+/* TRKTYP_crystals_of_arborea_longtrack: Crystals Of Arborea
  *  u16 0xa144 :: sync
  *  u8[] "ROD0" (encoded bc_mfm)
  *  Rest of track is (MFM-encoded) zeroes
  *  Track is checked to be >= 104128 bits long (track is ~110000 bits long)
  *  Specifically, protection checks for > 6500 0xaaaa/0x5555 raw words
- *  starting 12 bytes into the DMA buffer (i.e., 12 bytes after the sync)
- */
+ *  starting 12 bytes into the DMA buffer (i.e., 12 bytes after the sync) */
 
 static void *crystals_of_arborea_longtrack_write_raw(
     struct disk *d, unsigned int tracknr, struct stream *s)
@@ -181,14 +173,12 @@ struct track_handler crystals_of_arborea_longtrack_handler = {
     .read_raw = crystals_of_arborea_longtrack_read_raw
 };
 
-/*
- * TRKTYP_infogrames_longtrack: Hostages, Jumping Jack Son, and others
+/* TRKTYP_infogrames_longtrack: Hostages, Jumping Jack Son, and others
  *  u16 0xa144 :: sync
  *  Rest of track is (MFM-encoded) zeroes
  *  Track is checked to be >= 104160 bits long (track is ~105500 bits long)
  *  Specifically, protection checks for > 13020 0xaa raw bytes, starting from
- *  the first 0xaa byte in the DMA buffer (i.e., first 0xaa following sync).
- */
+ *  the first 0xaa byte in the DMA buffer (i.e., first 0xaa following sync). */
 
 static void *infogrames_longtrack_write_raw(
     struct disk *d, unsigned int tracknr, struct stream *s)
@@ -225,14 +215,12 @@ struct track_handler infogrames_longtrack_handler = {
     .read_raw = infogrames_longtrack_read_raw
 };
 
-/*
- * TRKTYP_bat_longtrack: B.A.T. by Ubisoft
+/* TRKTYP_bat_longtrack: B.A.T. by Ubisoft
  *  u16 0x8945
  *  Rest of track is (MFM-encoded) zeroes
  *  Track is checked to be >= 109152 bits long (>= 3413 0xa...a longs)
  *  Specifically, protection checks for >= 3412 0xaaaaaaaa raw longwords
- *  starting 4 bytes into the DMA buffer (i.e., 4 bytes after the sync)
- */
+ *  starting 4 bytes into the DMA buffer (i.e., 4 bytes after the sync) */
 
 static void *bat_longtrack_write_raw(
     struct disk *d, unsigned int tracknr, struct stream *s)

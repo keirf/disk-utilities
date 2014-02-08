@@ -87,17 +87,13 @@ static void data_cb(void *_s)
             s->custom[CUST_dskbytr] |= 1u<<12; /* WORDEQUAL */
             s->disk.data_word_bitpos = 0;
             if ((s->custom[CUST_dmacon] & (1u<<4)) && (s->disk.dma == 1)) {
-                /*
-                 * How much checking should I do for DMA read start?
-                 * RNC Copylock only sets dmacon[4], doesn't touch the
-                 * master enable (dmacon[9]). UAE doesn't check DMACON at all
-                 * for disk read DMAs. I check dmacon[4] only for now.
-                 */
+                /* How much checking should I do for DMA read start? RNC 
+                 * Copylock only sets dmacon[4], doesn't touch the master 
+                 * enable (dmacon[9]). UAE doesn't check DMACON at all for 
+                 * disk read DMAs. I check dmacon[4] only for now. */
                 log_info("Disk DMA started");
-                /*
-                 * Note that DMA fetch begins with the *next* full word of
-                 * MFM streamed from disk (i.e., toss the first sync word)
-                 */
+                /* Note that DMA fetch begins with the *next* full word of MFM 
+                 * streamed from disk (i.e., toss the first sync word). */
                 s->disk.dma = 2;
             }
         }

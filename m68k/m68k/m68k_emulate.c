@@ -75,15 +75,13 @@ static int check_addr_align(
     uint16_t sw = 0;
     if ((bytes == 1) || !(addr & 1))
         return M68KEMUL_OKAY;
-    /*
-     * Status word:
+    /* Status word:
      *  [15:5]: unused
      *  [4]:    1=read 0=write
      *  [3]:    1=data 0=insn
      *  [2]:    1=super 0=user (Function Code bit 2)
      *  [1]:    1=insn 0=data  (Function Code bit 1)
-     *  [0]:    1=data 0=insn  (Function Code bit 0)
-     */
+     *  [0]:    1=data 0=insn  (Function Code bit 0) */
     sw  = access_type == access_write ? 0x00 : 0x10;
     sw |= access_type == access_fetch ? 0x02 : 0x09;
     if (c->regs->sr & SR_S)
@@ -575,10 +573,8 @@ static int misc_insn(struct m68k_emulate_ctxt *c)
     uint16_t op = c->op[0];
     int rc = 0;
 
-    /*
-     * Misc instruction category (op[15:12]=4) is a hotch potch.
-     * Prevent mis-decoding by checking most precise matches first.
-     */
+    /* Misc instruction category (op[15:12]=4) is a hotch potch. Prevent 
+     * mis-decoding by checking most precise matches first. */
 
     /* 1. Simple full opcode matches. */
     if (op == 0x4afau) {
@@ -689,11 +685,9 @@ static int misc_insn(struct m68k_emulate_ctxt *c)
         sh_reg(c, a[7]) += 4;
     }
 
-    /*
-     * 3. All the rest. The matches may be approximate, and include
-     * invalid cases for the matched instruction. Where that matters, we should
-     * have already decoded the correct instruction with a more precise match.
-     */
+    /* 3. All the rest. The matches may be approximate, and include invalid 
+     * cases for the matched instruction. Where that matters, we should have 
+     * already decoded the correct instruction with a more precise match. */
     else if ((op & 0xf140u) == 0x4100u) {
         /* chk */
         c->op_sz = (op & (1u<<7)) ? OPSZ_W : OPSZ_L;
@@ -1133,10 +1127,8 @@ int m68k_emulate(struct m68k_emulate_ctxt *c)
             bail_if(rc = write_ea(c));
             cc_mov(c, dst.val);
         }
-        /*
-         * Most move instructions perform the second prefetch after writeback.
-         * We simulate this by discarding our second word of prefetch.
-         */
+        /* Most move instructions perform the second prefetch after writeback.
+         * We simulate this by discarding our second word of prefetch. */
         if (c->prefetch_valid > 1)
             c->prefetch_valid = 1;
         break;
@@ -1618,10 +1610,8 @@ bail:
         /* Instruction was aborted. Discard register state; no trace. */
         trace = 0;
 
-        /*
-         * Address/bus errors have PC "in the vicinity of" the instruction.
-         * Just past the main opcode word seems to work well.
-         */
+        /* Address/bus errors have PC "in the vicinity of" the instruction.
+         * Just past the main opcode word seems to work well. */
         if ((c->p->exception.vector == M68KVEC_addr_error) ||
             (c->p->exception.vector == M68KVEC_bus_error))
             c->regs->pc += 2;

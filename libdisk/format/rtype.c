@@ -18,16 +18,14 @@
 #include <libdisk/util.h>
 #include "../private.h"
 
-/*
- * R-Type (variant A): T10-62
+/* R-Type (variant A): T10-62
  *  u16 0x9521 :: Sync
  *  u8  0      :: bc_mfm
  *  u32 csum   :: bc_mfm_odd, AmigaDOS style checksum
  *  u8  data_even[5968] :: bc_mfm_even
  *  u8  data_odd[5968]  :: bc_mfm_odd
  * TRKTYP_rtype data layout:
- *  u8 sector_data[5968]
- */
+ *  u8 sector_data[5968] */
 
 static void *rtype_a_write_raw(
     struct disk *d, unsigned int tracknr, struct stream *s)
@@ -93,15 +91,13 @@ struct track_handler rtype_a_handler = {
     .read_raw = rtype_a_read_raw
 };
 
-/*
- * R-Type (variant B): T63-67, T69-158
+/* R-Type (variant B): T63-67, T69-158
  *  u16 0x9521 :: Sync
  *  u8  0      :: bc_mfm
  *  u32 data[6552/4] :: bc_mfm_even_odd alternating longs
  *  u32 csum   :: bc_mfm_even_odd, (AmigaDOS-style | 0xaaaaaaaa)
  * TRKTYP_rtype data layout:
- *  u8 sector_data[6552]
- */
+ *  u8 sector_data[6552] */
 
 static void *rtype_b_write_raw(
     struct disk *d, unsigned int tracknr, struct stream *s)

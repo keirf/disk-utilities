@@ -405,9 +405,7 @@ void set_all_sectors_invalid(struct track_info *ti)
 }
 
 
-/*
- * PRIVATE HELPERS
- */
+/* PRIVATE HELPERS */
 
 void init_track_info(struct track_info *ti, enum track_type type)
 {

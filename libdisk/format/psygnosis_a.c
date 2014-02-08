@@ -48,10 +48,8 @@ static void *psygnosis_a_write_raw(
             goto fail;
         two_sync = ((uint16_t)s->word == sync);
 
-        /*
-         * Read the track number and checksum. If there's no second sync
-         * mark, the first 16 bits of the header info is already streamed.
-         */
+        /* Read the track number and checksum. If there's no second sync mark, 
+         * the first 16 bits of the header info is already streamed. */
         if (stream_next_bits(s, two_sync ? 32 : 16) == -1)
             goto fail;
         raw_dat[0] = htobe32(s->word);

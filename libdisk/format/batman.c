@@ -94,10 +94,8 @@ static void *batman_write_raw(
         set_sector_valid(ti, hdr.sector);
         nr_valid_blocks++;
 
-        /*
-         * Look for the first written sector after track gap (or close to it
-         * as possible) to determine the track-data offset and first sector.
-         */
+        /* Look for the first written sector after track gap (or close to it as 
+         * possible) to determine the track-data offset and first sector. */
         if (hdr.to_gap > max_to_gap) {
             max_to_gap = hdr.to_gap;
             ti->data_bitoff = idx_off - (12-hdr.to_gap)*1048*8;

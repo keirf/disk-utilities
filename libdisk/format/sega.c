@@ -12,8 +12,7 @@
 #include <libdisk/util.h>
 #include "../private.h"
 
-/*
- * TRKTYP_sega_boot:
+/* TRKTYP_sega_boot:
  *  u16 0xa245 :: Sync
  *  u32 0x55555555
  *  u32 0xaaaaaaaa
@@ -24,8 +23,7 @@
  * 
  * Data layout:
  *  u8 data[6000]
- *  u8 nr_sync_marks
- */
+ *  u8 nr_sync_marks */
 
 static uint16_t sega_sync(uint16_t type)
 {
@@ -136,16 +134,14 @@ struct track_handler thunderblade_sega_handler = {
     .read_raw = sega_read_raw
 };
 
-/*
- * TRKTYP_afterburner_sega:
+/* TRKTYP_afterburner_sega:
  *  u16 0xa245a245 :: Sync
  *  u32 hdr[2]
  *  u32 dat[1550][2] :: Even/odd longs
  *  u32 csum[2]
  * Checksum is over encoded MFM longs, *including* clock bits.
  * Header contains cyl#, plus an unpredictable second word, hence we include
- * the header in the output data.
- */
+ * the header in the output data. */
 
 static void *afterburner_sega_write_raw(
     struct disk *d, unsigned int tracknr, struct stream *s)

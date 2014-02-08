@@ -190,17 +190,15 @@ int main(int argc, char **argv)
         custom->adkcon = 0x9100; /* no precomp, no word sync, MFM */
         custom->dsklen = 0;
 
-        /*
-         * Motor on, drive 0, seek inwards, side 0.
+        /* Motor on, drive 0, seek inwards, side 0.
          * NB. We must do this as a three-step process:
          *  1. Deselect all drives
          *  2. Assert motor-on line
-         *  3. Select require drive
-         * As drives sample the motor-on signal only on the asserting edge of
-         * their select signal. If a drive is selected in the same write cycle
-         * as the motor-on signal is asserted, some drives will sample the
-         * motor-on signal too early and turn *off* their motor!
-         */
+         *  3. Select required drive
+         * As drives sample the motor-on signal only on the asserting edge of 
+         * their select signal. If a drive is selected in the same write cycle 
+         * as the motor-on signal is asserted, some drives will sample the 
+         * motor-on signal too early and turn *off* their motor! */
         ciab->ciaprb |= 0x78;
         ciab->ciaprb = (UBYTE)~CIAF_DSKMOTOR;
         ciab->ciaprb = (UBYTE)~(CIAF_DSKMOTOR

@@ -213,11 +213,9 @@ int main(int argc, char **argv)
         rc = amiga_emulate(&s);
 
         if (!test_bit(pc, bmap)) {
-            /*
-             * If we are dumping non-executed bytes, check if we are decoding 
-             * crap that overlaps a proper jump target. Truncate the crap if 
-             * so!
-             */
+            /* If we are dumping non-executed bytes, check if we are decoding
+             * crap that overlaps a proper jump target. Truncate the crap if
+             * so! */
             for (i = 0; i < s.ctxt.op_words; i++)
                 if (test_bit(pc+i*2, bmap))
                     s.ctxt.op_words = i;

@@ -59,17 +59,13 @@ static void *speedlock_write_raw(
     if ((offs[1] < offs[0]) || (offs[2] < offs[1]))
         goto fail;
 
-    /*
-     * The long-bitcell region starts around 77500 bits after the index.
-     * Check for that, with plenty of slack.
-     */
+    /* The long-bitcell region starts around 77500 bits after the index.
+     * Check for that, with plenty of slack. */
     if ((offs[0] < 75000) || (offs[0] > 80000))
         goto fail;
 
-    /*
-     * Each sector should be around 640 bits long. Check for this,
-     * with plenty of slack.
-     */
+    /* Each sector should be around 640 bits long.
+     * Check for this, with plenty of slack. */
     offs[2] = (offs[2] - offs[0]) / 2;
     if ((offs[2] < 500) || (offs[2] > 1000))
         goto fail;

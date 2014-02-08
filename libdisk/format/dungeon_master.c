@@ -58,20 +58,16 @@ static void *dungeon_master_weak_write_raw(
         crc = s->crc16_ccitt;
 
         if (idam.sec == weak_sec) {
-            /*
-             * Weak-bit protection relies on authentic behaviour of FDC PLL
-             * to respond slowly to marginal bits at edge of inspection window.
-             */
+            /* Weak-bit protection relies on authentic behaviour of FDC PLL to 
+             * respond slowly to marginal bits at edge of inspection window. */
             enum pll_mode old_mode = stream_pll_mode(s, PLL_authentic);
             if (stream_next_bytes(s, dat, sizeof(dat)) == -1)
                 break;
             stream_pll_mode(s, old_mode);
             mfm_decode_bytes(bc_mfm, 514, dat, dat);
 
-            /*
-             * Check each flakey byte is read as 0x68 or 0xE8. Rewrite as
-             * originally mastered (always 0x68, with timing variation).
-             */
+            /* Check each flakey byte is read as 0x68 or 0xE8. Rewrite as
+             * originally mastered (always 0x68, with timing variation). */
             for (i = 20; i < 509; i++) {
                 dat[i] &= 0x7f;
                 if (dat[i] != 0x68)

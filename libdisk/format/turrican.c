@@ -89,8 +89,7 @@ struct track_handler turrican_handler = {
     .read_raw = turrican_read_raw
 };
 
-/*
- * TRKTYP_factor5_hiscore:
+/* TRKTYP_factor5_hiscore:
  *  u16 0x4489
  *  u16 0x2aaa
  *  u32 checksum[2]  :: even/odd mfm
@@ -98,8 +97,7 @@ struct track_handler turrican_handler = {
  * Checksum is EOR data mfm longwords, AND 0x55555555, EOR 0x12345678
  * 
  * Since the loader will handle a bad checksum, we tolerate this and create
- * a track containing just the 4489 sync word (avoids loader hang).
- */
+ * a track containing just the 4489 sync word (avoids loader hang). */
 
 static void *factor5_hiscore_write_raw(
     struct disk *d, unsigned int tracknr, struct stream *s)

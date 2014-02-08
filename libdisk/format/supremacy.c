@@ -9,8 +9,7 @@
 #include <libdisk/util.h>
 #include "../private.h"
 
-/*
- * TRKTYP_supremacy_a: Used on Disk 1, Track 2 only.
+/* TRKTYP_supremacy_a: Used on Disk 1, Track 2 only.
  *  u16 0x4489,0x4489,0x2aaa
  *  u32 data_odd[0x402]
  *  u32 data_even[0x402]
@@ -18,8 +17,7 @@
  *  Checksum is last data long, ADD.L of all preceding data longs
  *  Track length is normal (not long)
  * TRKTYP_supremacy data layout:
- *  u8 sector_data[4*1024]
- */
+ *  u8 sector_data[4*1024] */
 
 static void *supremacy_a_write_raw(
     struct disk *d, unsigned int tracknr, struct stream *s)
@@ -89,8 +87,7 @@ struct track_handler supremacy_a_handler = {
     .read_raw = supremacy_a_read_raw
 };
 
-/*
- * TRKTYP_supremacy_b:
+/* TRKTYP_supremacy_b:
  * 11 sectors:
  *  u16 0x4489,0x4489,0x2aaa :: Sync header
  *  u32 data_odd[0x82]
@@ -101,8 +98,7 @@ struct track_handler supremacy_a_handler = {
  *  Last data long is ADD.L checksum of all preceding data longs.
  *  Track length is normal (not long)
  * TRKTYP_supremacy data layout:
- *  u8 sector_data[11*512]
- */
+ *  u8 sector_data[11*512] */
 
 static void *supremacy_b_write_raw(
     struct disk *d, unsigned int tracknr, struct stream *s)
@@ -149,10 +145,8 @@ static void *supremacy_b_write_raw(
         set_sector_valid(ti, sec);
         nr_valid_blocks++;
 
-        /*
-         * Sector 0 is not necessarily first written. First written is always
-         * first after index mark. So we simply scan for that.
-         */
+        /* Sector 0 is not necessarily first written. First written is always
+         * first after index mark. So we simply scan for that. */
         if (ti->data_bitoff > idx_off) {
             ti->data_bitoff = idx_off;
             block[ti->len] = sec; /* remember first sector */

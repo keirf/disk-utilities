@@ -133,10 +133,9 @@ static void *copylock_write_raw(
             i = sizeof(sec6_sig);
         }
 
-        /*
-         * Get the LFSR start value for this sector. If we know the track LFSR
-         * seed then we work it out from that, else we get it from sector data.
-         */
+        /* Get the LFSR start value for this sector. If we know the track LFSR
+         * seed then we work it out from that, else we get it from sector
+         * data. */
         lfsr = lfsr_sec =
             (lfsr_seed != 0)
             ? lfsr_seek(ti, lfsr_seed, 0, sec)

@@ -15,35 +15,29 @@
 #include <unistd.h>
 #include <time.h>
 
-/*
- * crc32("User IPF") -- Arbitrary ID for identifying generated IPFs.
+/* crc32("User IPF") -- Arbitrary ID for identifying generated IPFs.
  * This is stamped into the INFO release, revision, and userid fields.
  * ** IMPORTANT **
- * Please respect the SPS and do not change these field values. They are of
- * no interest to the IPF decoder library, but allow our IPFs to be easily
- * distinguished from preserved images from the SPS library.
- */
+ * Please respect the SPS and do not change these field values. They are of no 
+ * interest to the IPF decoder library, but allow our IPFs to be easily
+ * distinguished from preserved images from the SPS library. */
 #define IPF_ID 0x843265bbu
 
-/*
- * Encoder types:
+/* Encoder types:
  *  * ENC_SPS is the newer more flexible encoding format, capable of
  *    representing arbitrary-size and -alignment bitstreams.
  *  * ENC_CAPS is more widely supported but requires data to be byte-aligned.
- *    Supported by v2 of the IPF decoder library (unlike ENC_SPS).
- */
+ *    Supported by v2 of the IPF decoder library (unlike ENC_SPS). */
 #define ENC_CAPS 1 /* legacy */
 #define ENC_SPS  2 /* capable of bit-oriented data streams */
 
-/*
- * Number of MFM cells to pre-pend to first block of each track.
- * We do this to avoid the write splice interfering with real track data,
- * when writing an IPF image to disk with Kryoflux.
+/* Number of MFM cells to pre-pend to first block of each track. We do this to 
+ * avoid the write splice interfering with real track data, when writing an 
+ * IPF image to disk with Kryoflux.
  *  - Must be a multiple of 2, since we are encoding MFM data *and* clock.
  *  - Must be a multiple of 16 to keep stream byte-aligned for CAPS encoding.
  * NB. Recent versions of the Kryoflux DTC tool do not have this problem, and
- * we can set PREPEND_BITS to 0.
- */
+ * we can set PREPEND_BITS to 0. */
 #define PREPEND_BITS 32
 
 /* Maximum bounds for track data. */
@@ -427,12 +421,10 @@ out:
 
 static void ipf_close(struct disk *d)
 {
-    /*
-     * Try the older CAPS encoding, and use the newer SPS encoding only when we
-     * discover it is necessary. Note that the new encoding does not work with 
-     * v2 of the IPF decoder library (e.g., libcapsimage.so.2 on Linux). An 
-     * upgrade to the latest decoder library (v4.2 or later) is recommended.
-     */
+    /* Try the older CAPS encoding, and use the newer SPS encoding only when we
+     * discover it is necessary. Note that the new encoding does not work with
+     * v2 of the IPF decoder library (e.g., libcapsimage.so.2 on Linux). An
+     * upgrade to the latest decoder library (v4.2 or later) is recommended. */
     if (!__ipf_close(d, ENC_CAPS) &&
         !__ipf_close(d, ENC_SPS))
         BUG();

@@ -9,13 +9,11 @@
 #include <libdisk/util.h>
 #include "../private.h"
 
-/*
- * Format A:
+/* Format A:
  *  u16 4429,5552
  *  u16 csum[2]         :: even/odd words encoding
  *  u16 data[6296/2][2] :: even/odd words encoding
- * Checksum is ADD.W based.
- */
+ * Checksum is ADD.W based. */
 
 static uint16_t checksum(uint16_t *dat, unsigned int nr)
 {
@@ -88,14 +86,12 @@ struct track_handler armourgeddon_a_handler = {
     .read_raw = armourgeddon_a_read_raw
 };
 
-/*
- * Format B:
+/* Format B:
  *  u16 4489,4489,4489,5555
  *  u8  signature[4][2] :: even/odd bytes encoding, signature is "KEEP"
  *  u8  disk_id[2]      :: even/odd bytes encoding
  *  u8  data[12*512][2] :: even/odd bytes encoding
- * No checksum or validation info on these tracks!!
- */
+ * No checksum or validation info on these tracks!! */
 
 static void *armourgeddon_b_write_raw(
     struct disk *d, unsigned int tracknr, struct stream *s)
