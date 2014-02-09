@@ -571,6 +571,15 @@ probe_amiga
 
 "Sensible Soccer" = sensible
 
+"Shadow Of The Beast"
+    * amigados protec_longtrack shadow_beast
+
+"Shadow Of The Beast II"
+    * amigados protec_longtrack shadow_beast_2
+
+"Shadow Of The Beast III"
+    * amigados protec_longtrack psygnosis_a psygnosis_b
+
 # Some releases are mastered with slightly long AmigaDOS tracks.
 # The resulting warnings are harmless!
 "Shinobi" = amigados_copylock
