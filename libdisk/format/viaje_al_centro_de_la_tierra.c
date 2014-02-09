@@ -9,24 +9,23 @@
  * Written in 2014 by Keir Fraser
  * 
  * RAW TRACK LAYOUT:
- *  u16 0x4489,0x4489
- * 12 sectors back-to-back: (all u32 values are MFM-encoded even-then-odd)
+ * 11 sectors back-to-back: (all u32 values are MFM-encoded even-then-odd)
+ *  u16 sync,sync       :: Per-sector value from syncs[] array below
  *  u32 0xfafafafa,0,0
  *  u32 data[128]
  *  u32 csum            :: EOR.L over all MFM data bits
  *  u32 0
- *  u16 sync            :: Raw value from syncs[] array below
  * 
  * TRKTYP_viaje data layout:
- *  u8 sector_data[12][512]
+ *  u8 sector_data[11][512]
  */
 
 #include <libdisk/util.h>
 #include "../private.h"
 
 static const uint16_t syncs[] = {
-    0x548a, 0x5225, 0x5489, 0x5522, 0x5229, 0x4a8a,
-    0x52a2, 0x522a, 0x5224, 0x448a };
+    0x4489, 0x548a, 0x5225, 0x5489, 0x5522, 0x5229,
+    0x4a8a, 0x52a2, 0x522a, 0x5224, 0x448a };
 
 static void *viaje_write_raw(
     struct disk *d, unsigned int tracknr, struct stream *s)
@@ -39,14 +38,18 @@ retry:
     while ((stream_next_bit(s) != -1) &&
            (nr_valid_blocks != ti->nr_sectors)) {
 
-        if (s->word != 0x44894489)
-            continue;
-        ti->data_bitoff = s->index_offset - 31;
-
         for (sec = 0; sec < ti->nr_sectors; sec++) {
 
             uint32_t csum, i, dat[2], secdat[128];
 
+            /* Sync */
+            if (((s->word >> 16) != (uint16_t)s->word)
+                || ((uint16_t)s->word != syncs[sec]))
+                goto retry;
+            if (sec == 0)
+                ti->data_bitoff = s->index_offset - 31;
+
+            /* Header */
             if (stream_next_bytes(s, dat, 8) == -1)
                 goto out;
             mfm_decode_bytes(bc_mfm_even_odd, 4, dat, dat);
@@ -61,6 +64,7 @@ retry:
                     goto retry;
             }
 
+            /* Data */
             for (i = csum = 0; i < 128; i++) {
                 if (stream_next_bytes(s, dat, 8) == -1)
                     goto out;
@@ -68,6 +72,7 @@ retry:
                 mfm_decode_bytes(bc_mfm_even_odd, 4, dat, &secdat[i]);
             }
 
+            /* Checksum */
             csum &= 0x55555555;
             if (stream_next_bytes(s, dat, 8) == -1)
                 goto out;
@@ -78,17 +83,16 @@ retry:
                 nr_valid_blocks++;
             }
 
+            /* Footer */
             if (stream_next_bytes(s, dat, 8) == -1)
                 goto out;
             mfm_decode_bytes(bc_mfm_even_odd, 4, dat, dat);
             if (be32toh(dat[0]) != 0)
                 goto retry;
 
+            /* Fetch next sync */
             if (stream_next_bits(s, 32) == -1)
                 goto out;
-            if (((s->word >> 16) != (uint16_t)s->word)
-                || ((uint16_t)s->word != syncs[sec]))
-                goto retry;
         }
     }
 
@@ -109,9 +113,9 @@ static void viaje_read_raw(
     uint32_t csum = 0, *dat = (uint32_t *)ti->dat;
     unsigned int i, sec;
 
-    tbuf_bits(tbuf, SPEED_AVG, bc_raw, 32, 0x44894489);
-
     for (sec = 0; sec < ti->nr_sectors; sec++) {
+        tbuf_bits(tbuf, SPEED_AVG, bc_raw, 16, syncs[sec]);
+        tbuf_bits(tbuf, SPEED_AVG, bc_raw, 16, syncs[sec]);
         tbuf_bits(tbuf, SPEED_AVG, bc_mfm_even_odd, 32, 0xfafafafa);
         tbuf_bits(tbuf, SPEED_AVG, bc_mfm_even_odd, 32, 0);
         tbuf_bits(tbuf, SPEED_AVG, bc_mfm_even_odd, 32, 0);
@@ -124,8 +128,6 @@ static void viaje_read_raw(
         csum &= 0x55555555;
         tbuf_bits(tbuf, SPEED_AVG, bc_mfm_even_odd, 32, csum);
         tbuf_bits(tbuf, SPEED_AVG, bc_mfm_even_odd, 32, 0);
-        tbuf_bits(tbuf, SPEED_AVG, bc_raw, 16, syncs[sec]);
-        tbuf_bits(tbuf, SPEED_AVG, bc_raw, 16, syncs[sec]);
     }
 }
 
