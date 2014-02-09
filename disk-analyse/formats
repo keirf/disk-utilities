@@ -689,6 +689,9 @@ probe_amiga
 
 "Venus The Flytrap" = gremlin_protected
 
+"Viaje Al Centro De La Tierra"
+    * amigados ibm_pc_dd viaje
+
 "Victory Road" = amigados_copylock
 
 "Virus"
