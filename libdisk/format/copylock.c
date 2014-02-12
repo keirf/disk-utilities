@@ -21,7 +21,7 @@
  * Sector 6:
  *  First 16 bytes interrupt random stream with signature "Rob Northen Comp"
  *  The LFSR-generated data then continues uninterrupted at 17th byte.
- *  (NB. Old-style Copylock with sifferent sync marks does interrupt the
+ *  (NB. Old-style Copylock with different sync marks does interrupt the
  *       LFSR stream for the "Rob Northen Comp" signature").
  * MFM encoding:
  *  In place, no even/odd split.
@@ -85,13 +85,22 @@ static uint32_t lfsr_seek(
     return x;
 }
 
+bool_t track_is_copylock(struct track_info *ti)
+{
+    return ((ti->type == TRKTYP_copylock)
+            || (ti->type == TRKTYP_copylock_old)
+            || (ti->type == TRKTYP_copylock_old_variant));
+}
+
 static void *copylock_write_raw(
     struct disk *d, unsigned int tracknr, struct stream *s)
 {
     struct track_info *ti = &d->di->track[tracknr];
     uint32_t *block, lfsr_seed = 0, latency[11], nr_valid_blocks = 0;
     unsigned int i, sec, least_block = ~0u;
+    bool_t flipped_format = 0;
 
+retry:
     while ((stream_next_bit(s) != -1) &&
            (nr_valid_blocks != ti->nr_sectors)) {
 
@@ -168,6 +177,24 @@ static void *copylock_write_raw(
         }
     }
 
+    /* It varies as to whether the LFSR sector data continues across the
+     * signature at the start of sector 6. We try to auto-detect that here ---
+     * if we got it wrong then we will have no valid sectors >= 6. */
+    for (sec = 6; sec < ti->nr_sectors; sec++)
+        if (is_valid_sector(ti, sec))
+            break;
+    if ((sec == ti->nr_sectors) /* no valid sectors >= 6 */
+        && ((ti->type == TRKTYP_copylock_old)
+            || (ti->type == TRKTYP_copylock_old_variant))) {
+        init_track_info(ti, (ti->type == TRKTYP_copylock_old)
+                        ? TRKTYP_copylock_old_variant : TRKTYP_copylock_old);
+        if (!flipped_format) {
+            flipped_format = 1;
+            stream_reset(s);
+            goto retry;
+        }
+    }
+
     if (nr_valid_blocks == 0)
         return NULL;
 
@@ -209,8 +236,8 @@ static void *copylock_write_raw(
 
     /* Magic: We can reconstruct the entire track from the LFSR seed! */
     if (nr_valid_blocks != ti->nr_sectors) {
-        trk_warn(ti, tracknr, "Reconstructed damaged track (%u)",
-                 nr_valid_blocks);
+        trk_warn(ti, tracknr, "Reconstructed damaged track (%u bad sectors)",
+                 ti->nr_sectors - nr_valid_blocks);
         set_all_sectors_valid(ti);
     }
 
@@ -273,6 +300,13 @@ struct track_handler copylock_handler = {
 };
 
 struct track_handler copylock_old_handler = {
+    .bytes_per_sector = 512,
+    .nr_sectors = 11,
+    .write_raw = copylock_write_raw,
+    .read_raw = copylock_read_raw
+};
+
+struct track_handler copylock_old_variant_handler = {
     .bytes_per_sector = 512,
     .nr_sectors = 11,
     .write_raw = copylock_write_raw,

@@ -326,8 +326,7 @@ static bool_t __ipf_close(struct disk *d, uint32_t encoder)
         } else {
             /* Basic track metadata. */
             img->dentype = 
-                (ti->type == TRKTYP_copylock) ? denCopylock :
-                (ti->type == TRKTYP_copylock_old) ? denCopylock :
+                track_is_copylock(ti) ? denCopylock :
                 (ti->type == TRKTYP_speedlock) ? denSpeedlock :
                 denUniform;
             img->startbit = ti->data_bitoff - PREPEND_BITS;

@@ -213,6 +213,9 @@ probe_amiga
 
 "Corporation" = amigados_copylock
 
+# Protected by copylock_old_variant
+"Cosmic Pirate" = amigados_copylock
+
 "Creatures Disk 1"
     0 amigados
     2-145 creatures_a
