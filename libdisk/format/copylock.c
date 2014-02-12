@@ -85,6 +85,20 @@ static uint32_t lfsr_seek(
     return x;
 }
 
+/* Might have got LFSR discontiguity at sector-6 signature wrong? */
+static bool_t sec6_discontiguity(struct track_info *ti)
+{
+    unsigned int sec, min = ~0u, max = 0;
+    for (sec = 0; sec < ti->nr_sectors; sec++) {
+        if (!is_valid_sector(ti, sec))
+            continue;
+        if (min > sec)
+            min = sec;
+        max = sec;
+    }
+    return (max < 6) || (min >= 6);
+}
+
 bool_t track_is_copylock(struct track_info *ti)
 {
     return ((ti->type == TRKTYP_copylock)
@@ -92,20 +106,25 @@ bool_t track_is_copylock(struct track_info *ti)
             || (ti->type == TRKTYP_copylock_old_variant));
 }
 
-static void *copylock_write_raw(
-    struct disk *d, unsigned int tracknr, struct stream *s)
-{
-    struct track_info *ti = &d->di->track[tracknr];
-    uint32_t *block, lfsr_seed = 0, latency[11], nr_valid_blocks = 0;
-    unsigned int i, sec, least_block = ~0u;
-    bool_t flipped_format = 0;
+struct copylock_info {
+    uint32_t lfsr_seed;
+    uint32_t latency[11];
+    uint32_t nr_valid_blocks;
+    unsigned int least_block;
+};
 
-retry:
+static void copylock_decode(
+    struct track_info *ti, struct stream *s, struct copylock_info *info)
+{
+    memset(info, 0, sizeof(*info));
+    info->least_block = ~0u;
+
     while ((stream_next_bit(s) != -1) &&
-           (nr_valid_blocks != ti->nr_sectors)) {
+           (info->nr_valid_blocks != ti->nr_sectors)) {
 
         uint8_t dat[2*512];
         uint32_t lfsr, lfsr_sec, idx_off = s->index_offset - 15;
+        unsigned int i, sec;
 
         /* Are we at the start of a sector we have not yet analysed? */
         if (ti->type == TRKTYP_copylock) {
@@ -146,8 +165,8 @@ retry:
          * seed then we work it out from that, else we get it from sector
          * data. */
         lfsr = lfsr_sec =
-            (lfsr_seed != 0)
-            ? lfsr_seek(ti, lfsr_seed, 0, sec)
+            (info->lfsr_seed != 0)
+            ? lfsr_seek(ti, info->lfsr_seed, 0, sec)
             : (dat[i] << 15) | (dat[i+8] << 7) | (dat[i+16] >> 1);
 
         /* Check that the data matches the LFSR-generated stream. */
@@ -160,50 +179,59 @@ retry:
             continue;
 
         /* All good. Finally, stash the LFSR seed if we didn't know it. */
-        if (lfsr_seed == 0) {
-            lfsr_seed = lfsr_seek(ti, lfsr_sec, sec, 0);
+        if (info->lfsr_seed == 0) {
+            info->lfsr_seed = lfsr_seek(ti, lfsr_sec, sec, 0);
             /* Paranoia: Reject the degenerate case of endless zero bytes. */
-            if (lfsr_seed == 0)
+            if (info->lfsr_seed == 0)
                 continue;
         }
 
         /* Good sector: remember its details. */
-        latency[sec] = s->latency;
+        info->latency[sec] = s->latency;
         set_sector_valid(ti, sec);
-        nr_valid_blocks++;
-        if (least_block > sec) {
+        info->nr_valid_blocks++;
+        if (info->least_block > sec) {
             ti->data_bitoff = idx_off;
-            least_block = sec;
+            info->least_block = sec;
         }
     }
+}
+
+static void *copylock_write_raw(
+    struct disk *d, unsigned int tracknr, struct stream *s)
+{
+    struct track_info *ti = &d->di->track[tracknr];
+    struct copylock_info info;
+    unsigned int sec;
+    uint32_t *block;
+
+    copylock_decode(ti, s, &info);
+
+    if (info.nr_valid_blocks == 0)
+        return NULL;
 
     /* It varies as to whether the LFSR sector data continues across the
-     * signature at the start of sector 6. We try to auto-detect that here ---
-     * if we got it wrong then we will have no valid sectors >= 6. */
-    for (sec = 6; sec < ti->nr_sectors; sec++)
-        if (is_valid_sector(ti, sec))
-            break;
-    if ((sec == ti->nr_sectors) /* no valid sectors >= 6 */
-        && ((ti->type == TRKTYP_copylock_old)
-            || (ti->type == TRKTYP_copylock_old_variant))) {
-        init_track_info(ti, (ti->type == TRKTYP_copylock_old)
-                        ? TRKTYP_copylock_old_variant : TRKTYP_copylock_old);
-        if (!flipped_format) {
-            flipped_format = 1;
-            stream_reset(s);
-            goto retry;
+     * signature at the start of sector 6. We try to auto-detect that here. */
+    if ((ti->type == TRKTYP_copylock_old) && sec6_discontiguity(ti)) {
+        struct track_info new_ti;
+        struct copylock_info new_info;
+        memset(&new_ti, 0, sizeof(new_ti));
+        init_track_info(&new_ti, TRKTYP_copylock_old_variant);
+        stream_reset(s);
+        copylock_decode(&new_ti, s, &new_info);
+        if (!sec6_discontiguity(&new_ti)) {
+            /* Variant Copylock decode is an improvement, so let's use that. */
+            info = new_info;
+            *ti = new_ti;
         }
     }
-
-    if (nr_valid_blocks == 0)
-        return NULL;
 
     /* Check validity of the non-uniform track timings. */
     if (!is_valid_sector(ti, 5))
-        latency[5] = 514*8*2*2000; /* bodge it */
-    for (sec = 0; sec < ARRAY_SIZE(latency); sec++) {
-        float d = (100.0 * ((int)latency[sec] - (int)latency[5]))
-            / (int)latency[5];
+        info.latency[5] = 514*8*2*2000; /* bodge it */
+    for (sec = 0; sec < ti->nr_sectors; sec++) {
+        float d = (100.0 * ((int)info.latency[sec] - (int)info.latency[5]))
+            / (int)info.latency[5];
         if (!is_valid_sector(ti, sec))
             continue;
         switch (sec) {
@@ -235,15 +263,15 @@ retry:
     ti->data_bitoff -= 3*8*2;
 
     /* Magic: We can reconstruct the entire track from the LFSR seed! */
-    if (nr_valid_blocks != ti->nr_sectors) {
+    if (info.nr_valid_blocks != ti->nr_sectors) {
         trk_warn(ti, tracknr, "Reconstructed damaged track (%u bad sectors)",
-                 ti->nr_sectors - nr_valid_blocks);
+                 ti->nr_sectors - info.nr_valid_blocks);
         set_all_sectors_valid(ti);
     }
 
     ti->len = 4;
     block = memalloc(ti->len);
-    *block = htobe32(lfsr_seed);
+    *block = htobe32(info.lfsr_seed);
     return block;
 }
 
