@@ -11,7 +11,8 @@ probe_amiga
     * amigados copylock psygnosis_a psygnosis_b rnc_pdos core_design \
       gremlin rainbird blue_byte ikplus firebird \
       archipelagos sensible \
-      bat batman menace commando turrican federation_of_free_traders \
+      bat batman menace elite_a elite_b elite_c elite_d turrican \
+      federation_of_free_traders \
       phantom_fighter supremacy_a supremacy_b \
       protec_longtrack gremlin_longtrack
 
@@ -73,6 +74,12 @@ probe_amiga
     * ignore
 
 "Apache" = rnc_pdos
+
+"Apprentice"
+    * amigados apprentice
+
+"Aquablast"
+    * amigados elite_b
 
 "Arcade Pool" = rnc_pdos
 
@@ -178,6 +185,9 @@ probe_amiga
 
 "Brat" = amigados_copylock
 
+"Buggy Boy" # speed Buggy also
+    * amigados elite_c
+
 "Buck Rogers: Countdown To Doomsday" = amigados
 
 "Cadaver" = amigados_copylock
@@ -209,12 +219,15 @@ probe_amiga
     * amigados
 
 "Commando" # Tracks 98+ may be empty
-    * amigados commando
+    * amigados elite_a
 
 "Corporation" = amigados_copylock
 
 # Protected by copylock_old_variant
 "Cosmic Pirate" = amigados_copylock
+
+"Crackdown"
+    * amigados crackdown gremlin_longtrack
 
 "Creatures Disk 1"
     0 amigados
@@ -231,6 +244,12 @@ probe_amiga
 "Crystals Of Arborea"
     158-159 crystals_of_arborea_longtrack
     * amigados
+
+"Danger Freak"
+    0 amigados
+    1-9 dangerfreak
+    10-151 hellwig_a
+    * ignore
 
 "Death Knights Of Krynn" = amigados
 
@@ -298,6 +317,9 @@ probe_amiga
 
 "Faery Tale Adventure" = amigados # novella protection
 
+"Fantastic Voyage"
+    * amigados fantastic_voyage
+
 "Federation Of Free Traders" # Track 1 may be empty
     0-1 amigados
     158-159 gremlin_longtrack
@@ -352,6 +374,9 @@ probe_amiga
 
 "IK+"
     * amigados ikplus
+
+"Ikari Warriors"
+    * amigados elite_d
 
 # Tracks 76+ are unused
 "Interphase"
@@ -494,6 +519,9 @@ probe_amiga
 
 "P.P. Hammer" = amigados
 
+"Paperboy"
+    * amigados elite_b
+
 "Paradroid '90" = amigados_copylock
 
 "Parasol Stars" = amigados_copylock
@@ -514,6 +542,20 @@ probe_amiga
 "Powerdrome" = amigados_copylock
 
 "Powermonger" = amigados
+
+"Powerstyx"
+    0 amigados
+    1-80 hellwig_a
+    81  hellwig_b
+    82-90 hellwig_a
+    91 hellwig_b
+    92-153 hellwig_a
+    155 hellwig_a
+    157 hellwig_b
+    * ignore
+
+"Powerstyx2"
+    * amigados hellwig_a hellwig_b
 
 "Predator II"
      * arc_development_a copylock amigados
@@ -665,7 +707,7 @@ probe_amiga
 # Sega: (Sega-style tracks): Tracks 134+ may be empty
 # US Gold: (Commando-style tracks): Tracks 135+ may be empty
 "Thunder Blade"
-    * amigados sega_boot thunderblade_sega commando
+    * amigados sega_boot thunderblade_sega elite_a
 
 "Time" = rnc_hidden
 
