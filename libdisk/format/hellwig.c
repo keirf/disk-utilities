@@ -18,7 +18,7 @@
  *
  * TRKTYP_* data layout:
  *  u8 sector_data[bytes_per_sector]
- *  u8 checksum_type | (two_sync << 4)
+ *  u8 checksum_type | (nr_syncs << 4)
  */
 
 #include <libdisk/util.h>
@@ -76,7 +76,7 @@ static void *hellwig_write_raw(
         ti->len += 1;
         block = memalloc(ti->len);
         memcpy(block, dat, ti->len-1);
-        block[ti->len-1] = checksum_type | (two_sync << 4);
+        block[ti->len-1] = checksum_type | ((two_sync?2:1) << 4);
         ti->total_bits = 102000;
         set_all_sectors_valid(ti);
         return block;
@@ -92,11 +92,12 @@ static void hellwig_read_raw(
     struct track_info *ti = &d->di->track[tracknr];
     uint32_t csum, *dat = (uint32_t *)ti->dat;
     enum checksum_type checksum_type = ti->dat[ti->len-1] & 0xf;
-    unsigned int i, two_sync = ti->dat[ti->len-1] >> 4;
+    unsigned int i, nr_sync = ti->dat[ti->len-1] >> 4;
 
-    if (two_sync)
+    while (nr_sync--)
         tbuf_bits(tbuf, SPEED_AVG, bc_raw, 16, 0x4489);
-    tbuf_bits(tbuf, SPEED_AVG, bc_raw, 32, 0x44892aaa);
+
+    tbuf_bits(tbuf, SPEED_AVG, bc_mfm, 8, 0);
 
     for (i = csum = 0; i < ti->bytes_per_sector/4; i++) {
         tbuf_bits(tbuf, SPEED_AVG, bc_mfm_even_odd, 32, be32toh(dat[i]));
