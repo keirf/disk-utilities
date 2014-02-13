@@ -247,8 +247,7 @@ probe_amiga
 
 "Danger Freak"
     0 amigados
-    1-9 dangerfreak
-    10-151 hellwig_a
+    1-151 hellwig
     * ignore
 
 "Death Knights Of Krynn" = amigados
@@ -544,18 +543,7 @@ probe_amiga
 "Powermonger" = amigados
 
 "Powerstyx"
-    0 amigados
-    1-80 hellwig_a
-    81  hellwig_b
-    82-90 hellwig_a
-    91 hellwig_b
-    92-153 hellwig_a
-    155 hellwig_a
-    157 hellwig_b
-    * ignore
-
-"Powerstyx2"
-    * amigados hellwig_a hellwig_b
+    * amigados hellwig
 
 "Predator II"
      * arc_development_a copylock amigados
