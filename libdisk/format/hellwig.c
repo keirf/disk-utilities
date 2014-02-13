@@ -30,8 +30,6 @@
 #include <libdisk/util.h>
 #include "../private.h"
 
-
-
 static void *hellwig_write_raw(
     struct disk *d, unsigned int tracknr, struct stream *s)
 {
@@ -54,10 +52,11 @@ static void *hellwig_write_raw(
             if (s->word != 0x44892aaa)
                 continue;
             ti->data_bitoff = s->index_offset - 47;
-        } else if (s->word == 0x44892aaa)
+        } else if (s->word == 0x44892aaa) {
             ti->data_bitoff = s->index_offset - 31;
-        else
+        } else {
             continue;
+        }
 
         for (i = sum = 0; i < ARRAY_SIZE(dat); i++) {
             if (stream_next_bytes(s, raw, 8) == -1)
@@ -70,9 +69,8 @@ static void *hellwig_write_raw(
             goto fail;
         mfm_decode_bytes(bc_mfm_even_odd, 4, raw, &csum);
 
-        if (be32toh(csum) != sum)
-            if(csum > 0 && csum != 0xffffffff)
-                continue;
+        if ((be32toh(csum) != sum) && (csum != 0) && (csum != 0xffffffff))
+            continue;
 
         block = memalloc(ti->len);
         memcpy(block, dat, ti->len);
@@ -101,15 +99,13 @@ static void hellwig_read_raw(
         csum += be32toh(dat[i]);
     }
 
-    if(ti->type == TRKTYP_dangerfreak)
+    if (ti->type == TRKTYP_dangerfreak) {
         if (tracknr == 7 || tracknr == 9)
             csum = 0xffffffff;
-    else if(ti->type == TRKTYP_hellwig_a)
+    } else if (ti->type == TRKTYP_hellwig_a) {
         if (tracknr == 1)
-            if(csum == 0x9ec821a)
-                csum = 0;
-            else
-                csum = 0xffffffff;
+            csum = (csum == 0x9ec821a) ? 0 : 0xffffffff;
+    }
 
     tbuf_bits(tbuf, SPEED_AVG, bc_mfm_even_odd, 32, csum);
 }

@@ -48,7 +48,7 @@ static void *elite_write_raw(
 
     while (stream_next_bit(s) != -1) {
 
-        uint32_t csum, sum2, dat[(ti->len/4+1)*2];
+        uint32_t csum, dat[(ti->len/4+1)*2];
         uint16_t trk;
         unsigned int i;
         char *block;
@@ -58,7 +58,7 @@ static void *elite_write_raw(
 
         ti->data_bitoff = s->index_offset - 31;
 
-        if(ti->type != TRKTYP_elite_d){
+        if (ti->type != TRKTYP_elite_d) {
             if (stream_next_bytes(s, dat, 4) == -1)
                 break;
             mfm_decode_bytes(bc_mfm_even_odd, 2, dat, &trk);
@@ -76,7 +76,7 @@ static void *elite_write_raw(
         if (csum != be32toh(dat[ti->len/4]))
             continue;
 
-        if(ti->type != TRKTYP_elite_d)
+        if (ti->type != TRKTYP_elite_d)
             ti->total_bits = 105700;
         block = memalloc(ti->len);
         memcpy(block, dat, ti->len);
@@ -95,7 +95,7 @@ static void elite_read_raw(
     unsigned int i;
 
     tbuf_bits(tbuf, SPEED_AVG, bc_raw, 32, 0xa2454489);
-    if(ti->type != TRKTYP_elite_d)
+    if (ti->type != TRKTYP_elite_d)
         tbuf_bits(tbuf, SPEED_AVG, bc_mfm_even_odd, 16, tracknr);
 
     memcpy(dat, ti->dat, ti->len);

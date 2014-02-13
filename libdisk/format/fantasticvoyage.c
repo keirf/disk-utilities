@@ -21,8 +21,6 @@
 #include <libdisk/util.h>
 #include "../private.h"
 
-
-
 static void *fantastic_voyage_write_raw(
     struct disk *d, unsigned int tracknr, struct stream *s)
 {
@@ -58,7 +56,7 @@ static void *fantastic_voyage_write_raw(
             sum += be32toh(dat[i]);
         }
 
-        if(be32toh(csum) != sum)
+        if (be32toh(csum) != sum)
             continue;
 
         block = memalloc(ti->len);
