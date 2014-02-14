@@ -429,6 +429,9 @@ probe_amiga
 # Tracks may be mastered long, causing harmless warnings
 "Lombard RAC Rally" = amigados
 
+"Lorna"
+    * amigados lorna ibm_pc_dd
+
 "Lotus Turbo Challenge" = gremlin_protected
 "Lotus II" = gremlin_protected
 "Lotus III"
