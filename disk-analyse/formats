@@ -410,6 +410,10 @@ probe_amiga
 
 "King's Quest V" = amigados
 
+"Kingdoms Of England"
+    1 amigados empty_longtrack
+    * amigados
+
 "Knightmare" # Disk 1, Tracks 141+, Disk 2, Tracks 150+, may be empty
     0 amigados
     1 copylock

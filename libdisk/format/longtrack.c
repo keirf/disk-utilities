@@ -255,6 +255,32 @@ struct track_handler bat_longtrack_handler = {
     .read_raw = bat_longtrack_read_raw
 };
 
+/* TRKTYP_empty_longtrack:
+ *  Entire track is (MFM-encoded) zeroes
+ *  Track is only checked to be of a certain length. */
+
+static void *empty_longtrack_write_raw(
+    struct disk *d, unsigned int tracknr, struct stream *s)
+{
+    struct track_info *ti = &d->di->track[tracknr];
+
+    if (!check_length(s, 105000))
+        return NULL;
+
+    ti->total_bits = 110000;
+    return memalloc(0);
+}
+
+static void empty_longtrack_read_raw(
+    struct disk *d, unsigned int tracknr, struct tbuf *tbuf)
+{
+}
+
+struct track_handler empty_longtrack_handler = {
+    .write_raw = empty_longtrack_write_raw,
+    .read_raw = empty_longtrack_read_raw
+};
+
 /*
  * Local variables:
  * mode: C
