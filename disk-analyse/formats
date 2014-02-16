@@ -40,6 +40,8 @@ probe_amiga
     4-146 afterburner_sega
     * ignore
 
+"Akira" = amigados
+
 "Albedo"
     0 amigados
     2 albedo_protection
@@ -174,6 +176,8 @@ probe_amiga
 
 "Blade Of Destiny" = amigados
 
+"Blades Of Steel" = amigados
+
 "Blue Max" = amigados
 
 "Body Blows" = rnc_pdos
@@ -249,6 +253,8 @@ probe_amiga
     0 amigados
     1-151 hellwig
     * ignore
+
+"Day Of The Pharaoh" = amigados
 
 "Death Knights Of Krynn" = amigados
 
@@ -330,6 +336,8 @@ probe_amiga
 
 "First Samurai" = amigados_copylock
 
+"Flying Shark" = amigados
+
 "Foundation's Waste"
     1 amigados protec_longtrack
     * amigados
@@ -351,6 +359,10 @@ probe_amiga
 "Goal!" = amigados_copylock
 
 "Gods" = amigados_copylock
+
+"Gold Of The Americas" = amigados
+
+"Golden Eagle" = amigados
 
 "Goldrunner"
     0-1 amigados
@@ -410,6 +422,8 @@ probe_amiga
 
 # OCS and AGA versions
 "Jurassic Park" = rnc_pdos_copylock
+
+"Khalaan" = amigados
 
 # Many variants. Only tested 1.4e and 1.6e: both have long tracks 5 & 7.
 "Kick Off 2"
@@ -725,6 +739,8 @@ probe_amiga
 
 "Titanic Blinky" = amigados_copylock
 
+"Total Eclipse" = amigados_copylock
+
 "Tower Of Babel" = amigados
 
 "Tracker"
@@ -766,6 +782,8 @@ probe_amiga
 "Walker" = amigados_copylock
 
 "Warlock: The Avenger" = amigados_copylock
+
+"Ween" = amigados
 
 "Wiz N Liz" = amigados_copylock
 
