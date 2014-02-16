@@ -352,6 +352,15 @@ probe_amiga
 
 "Gods" = amigados_copylock
 
+"Goldrunner"
+    0-1 amigados
+    2-12/2 ibm_pc_dd
+    20-34/2 ibm_pc_dd
+    60-74/2 ibm_pc_dd
+    78-83 amigados
+    84-154/2 ibm_pc_dd
+    * ignore
+
 "Grand Monster Slam"
     * amigados grand_monster_slam
 
