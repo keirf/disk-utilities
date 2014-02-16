@@ -386,6 +386,10 @@ probe_amiga
 
 "Jimmy White's Whirlwind Snooker" = amigados_copylock
 
+"Jinks"
+    158-161 amigados jinks
+    * amigados
+
 # Budget re-release
 "Journey To The Center Of The Earth" = amigados
 
