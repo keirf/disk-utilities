@@ -283,6 +283,8 @@ probe_amiga
 
 "Emerald Mine II" = amigados
 
+"Exile" = amigados_copylock
+
 "Exolon" = amigados_copylock
 
 # Seems to have AmigaDOS tracks 61-63 with sectors 8-9 missing.
