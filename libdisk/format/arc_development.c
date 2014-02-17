@@ -24,6 +24,16 @@
  *
  * TRKTYP_arc_development data layout:
  *  u8 sector_data[12][512]
+ *
+ * Forgotten Worlds
+ * RAW TRACK LAYOUT:
+ *  u32 0x44894489 ::  Sync
+ *  u16 track number
+ *  u16 dat[6144/2]
+ *  u16 checksum - eor.w over data
+ *
+ * TRKTYP_hi_forgotten_worlds data layout:
+ *  u8 sector_data[6144]
  */
 
 #include <libdisk/util.h>
@@ -131,6 +141,79 @@ struct track_handler arc_development_b_handler = {
     .write_raw = arc_development_write_raw,
     .read_raw = arc_development_read_raw
 };
+
+static void *forgotten_worlds_write_raw(
+    struct disk *d, unsigned int tracknr, struct stream *s)
+{
+    struct track_info *ti = &d->di->track[tracknr];
+
+    while (stream_next_bit(s) != -1) {
+
+        uint16_t raw[2], dat[ti->len/2], trk, sum, csum;
+        unsigned int i;
+        char *block;
+
+        if (s->word != 0x44894489)
+            continue;
+
+        ti->data_bitoff = s->index_offset - 31;
+
+        if (stream_next_bytes(s, raw, 4) == -1)
+            goto fail;
+        mfm_decode_bytes(bc_mfm_even_odd, 2, raw, &trk);
+        if(tracknr != be16toh(trk))
+            continue;
+
+        for (i = sum = 0; i < ARRAY_SIZE(dat); i++) {
+            if (stream_next_bytes(s, raw, 4) == -1)
+                goto fail;
+            mfm_decode_bytes(bc_mfm_even_odd, 2, raw, &dat[i]);
+            sum ^= be16toh(dat[i]);
+        }
+
+        if (stream_next_bytes(s, raw, 4) == -1)
+            goto fail;
+        mfm_decode_bytes(bc_mfm_even_odd, 2, raw, &csum);
+
+        if(sum != be16toh(csum))
+            continue;
+
+        block = memalloc(ti->len);
+        memcpy(block, dat, ti->len);
+        set_all_sectors_valid(ti);
+        ti->total_bits = 100500;
+        return block;
+    }
+
+fail:
+    return NULL;
+}
+
+static void forgotten_worlds_read_raw(
+    struct disk *d, unsigned int tracknr, struct tbuf *tbuf)
+{
+    struct track_info *ti = &d->di->track[tracknr];
+    uint16_t *dat = (uint16_t *)ti->dat, csum;
+    unsigned int i;
+
+    tbuf_bits(tbuf, SPEED_AVG, bc_raw, 32, 0x44894489);
+    tbuf_bits(tbuf, SPEED_AVG, bc_mfm_even_odd, 16, (uint16_t)tracknr);
+
+    for (i = csum =0; i < ti->len/2; i++) {
+        tbuf_bits(tbuf, SPEED_AVG, bc_mfm_even_odd, 16, be16toh(dat[i]));
+        csum ^= be16toh(dat[i]);
+    }
+
+    tbuf_bits(tbuf, SPEED_AVG, bc_mfm_even_odd, 16, csum);
+}
+
+struct track_handler forgotten_worlds_handler = {
+    .bytes_per_sector = 6144,
+    .nr_sectors = 1,
+    .write_raw = forgotten_worlds_write_raw,
+    .read_raw = forgotten_worlds_read_raw
+};
+
 
 /*
  * Local variables:
