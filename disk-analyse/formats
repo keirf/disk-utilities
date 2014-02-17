@@ -61,6 +61,9 @@ probe_amiga
 # No apparent copy protection on several tested releases
 "Alien Syndrome" = amigados
 
+"Alien World"
+    * amigados alien_world
+
 "Amnios Disk 1" # Tracks 155-159 may be empty
     0 amigados
     1 protec_longtrack
@@ -177,6 +180,9 @@ probe_amiga
 "Blade Of Destiny" = amigados
 
 "Blades Of Steel" = amigados
+
+"Blazing Thunder"
+    * amigados blazing_thunder
 
 "Blue Max" = amigados
 
@@ -338,6 +344,12 @@ probe_amiga
 
 "Flying Shark" = amigados
 
+"Forgotten Worlds"
+    0 amigados 
+    158 tiertex_longtrack
+    159 gremlin_longtrack
+    * forgotten_worlds
+
 "Foundation's Waste"
     1 amigados protec_longtrack
     * amigados
@@ -347,6 +359,12 @@ probe_amiga
 "Full Metal Planete" = infogrames_protected
 
 "Future Basketball" = amigados_copylock
+
+"Future Bike Simulator"
+    0-1 amigados 
+    2-89 hi_tec_b
+    91 hi_tec_b
+    * ignore
 
 "Gadgets Lost In Time"
     * amigados gadgetslostintime_a gadgetslostintime_b
@@ -379,6 +397,9 @@ probe_amiga
 "Grand Prix Master" = amigados
 
 "Great Courts" = blue_byte
+
+"Gremlins II"
+    * amigados elite_c
 
 "Gunship 2000" = amigados
 
@@ -638,6 +659,9 @@ probe_amiga
 
 "Rotox" = amigados
 
+"Scooby Doo"
+    * amigados scooby_doo
+
 "Sensible Soccer" = sensible
 
 "Shadow Of The Beast"
@@ -795,6 +819,12 @@ probe_amiga
 "Worms: The Director's Cut" = amigados
 
 "Xenon 2" = amigados_copylock
+
+"Yogi's Big Clean Up"
+    * amigados yogis_escape
+
+"Yogi's Great Escape"
+    * amigados hi_tec_b
 
 "Zeewolf" = amigados
 
