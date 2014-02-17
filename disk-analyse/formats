@@ -193,7 +193,16 @@ probe_amiga
     1 bombuzal
     * amigados
 
+"Bonanza Bros"
+    0 amigados 
+    1-157 fun_factory
+    158 tiertex_longtrack
+    159 gremlin_longtrack
+    * ignore
+
 "Brat" = amigados_copylock
+
+"Bubba N Styx" = amigados_copylock
 
 "Buggy Boy" # speed Buggy also
     * amigados elite_c
@@ -595,6 +604,9 @@ probe_amiga
 
 "Populous II" = amigados # novella protection
 
+"Postman Pat"
+    * amigados rainbird  protec_longtrack
+
 "Powerdrome" = amigados_copylock
 
 "Powermonger" = amigados
@@ -691,6 +703,9 @@ probe_amiga
     1 amigados_long_111000 # Actual length is almost exactly 111000 bits
     * amigados
 
+"Slackskin & Flint"
+    * amigados fun_factory
+
 "Slayer" = amigados_copylock
 
 "Sleeping Gods Lie" = amigados_copylock
@@ -722,6 +737,9 @@ probe_amiga
     158 amigados tiertex_longtrack
     159 amigados gremlin_longtrack
     * amigados
+
+"Stryx"
+    * amigados psygnosis_a  protec_longtrack
 
 "Super Cars Disk 1" = gremlin_protected
 "Super Cars Disk 2"
@@ -761,6 +779,9 @@ probe_amiga
 
 "Time Machine" = amigados_copylock
 
+"Time Soldier"
+    * amigados rainbird infogrames_longtrack
+
 "Titanic Blinky" = amigados_copylock
 
 "Total Eclipse" = amigados_copylock
@@ -775,6 +796,9 @@ probe_amiga
 "Turrican" # Tracks 158-159 may be empty
     27 factor5_hiscore
     * amigados turrican
+
+"Tusker"
+    * amigados rainbird copylock
 
 "Twin Turbos"
     * amigados fun_factory
