@@ -766,6 +766,8 @@ probe_amiga
 "Tecnoball.Z"
     * amigados tlk_dos_2
 
+"Terrorpods" = amigados # extended amigados tracks and some empty tracks
+
 "The Magnetic Scrolls Collection" = amigados
 
 "The Munsters" = amigados_copylock
