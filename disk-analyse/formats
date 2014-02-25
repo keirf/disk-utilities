@@ -757,6 +757,9 @@ probe_amiga
 
 "Switchblade 2" = gremlin_protected
 
+"Sword of Sodan"
+    * amigados sword_sodan
+
 # Protection checks for track length X, where 104448 < X <= 105984, and does
 # not care about gap contents. Actual length is almost exactly 105500 bits.
 "Targhan"
