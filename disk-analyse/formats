@@ -184,6 +184,9 @@ probe_amiga
 "Blazing Thunder"
     * amigados blazing_thunder
 
+"Blood Money"
+    * amigados blood_money protec_longtrack
+
 "Blue Max" = amigados
 
 "Body Blows" = rnc_pdos
@@ -806,6 +809,9 @@ probe_amiga
     * amigados fun_factory
 
 "Twinworld" = blue_byte
+
+"Typhoon Thompson" 
+    * amigados typhoon
 
 # Protection checks for track gap of at least 12800 bits (and hence total
 # track length of 95744+12800=108544 bits). Does not care about gap contents.
