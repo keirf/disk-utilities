@@ -28,9 +28,10 @@ const static uint16_t syncs[] = {
     0x9521, 0x448A, 0xA424, 0xA425, 0xA429, 0xA484
 };
 
-static uint16_t sodan_sum(uint16_t w, uint16_t s){
+static uint16_t sodan_sum(uint16_t w, uint16_t s)
+{
     s ^= be16toh(w);
-    return (s>>1) | (s<<15) ;
+    return (s>>1) | (s<<15);
 }
 
 static void *sword_sodan_write_raw(
@@ -42,10 +43,10 @@ static void *sword_sodan_write_raw(
     unsigned int i, k;
     char *block;
 
-    if (tracknr == 80 || tracknr >159)
+    if (tracknr == 80 || tracknr > 159)
         goto fail;
 
-    for(k = 0; k < ARRAY_SIZE(syncs); k++){
+    for (k = 0; k < ARRAY_SIZE(syncs); k++) {
 
         sync = syncs[k];
 
@@ -98,9 +99,9 @@ static void *sword_sodan_write_raw(
             if (sum != be16toh(csum))
                 continue;
 
-            // No calculation for the data length and chk1 depends
-            // on length in cases when the length is less than 0x1880.
-            // dat is extended by 6 bytes.
+            /* No calculation for the data length and chk1 depends
+             * on length in cases when the length is less than 0x1880.
+             * dat is extended by 6 bytes. */
             dat[0xc40] = be16toh(chk1);
             dat[0xc41] = be16toh(len2);
             dat[0xc42] = sync;
@@ -125,7 +126,7 @@ static void sword_sodan_read_raw(
     struct disk *d, unsigned int tracknr, struct tbuf *tbuf)
 {
     struct track_info *ti = &d->di->track[tracknr];
-    uint16_t sum, chk, *dat = (uint16_t *)ti->dat;
+    uint16_t sum, *dat = (uint16_t *)ti->dat;
     unsigned int i;
 
     tbuf_bits(tbuf, SPEED_AVG, bc_raw, 16, dat[0xc42]);

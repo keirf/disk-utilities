@@ -52,9 +52,8 @@ static void *typhoon_write_raw(
         mfm_decode_bytes(bc_mfm_even_odd, ti->len, raw, dat);
 
         sum = be32toh(raw2[0]) ^ be32toh(raw2[1]);
-        for(i = 0; i < 2*ti->len/4; i++){
+        for (i = 0; i < 2*ti->len/4; i++)
              sum ^= be32toh(raw[i]);
-        }
         sum &= 0x55555555;
 
         if (sum != be32toh(csum))
@@ -91,7 +90,7 @@ static void typhoon_read_raw(
     struct disk *d, unsigned int tracknr, struct tbuf *tbuf)
 {
     struct track_info *ti = &d->di->track[tracknr];
-    uint32_t *dat = (uint16_t *)ti->dat, prev, csum;
+    uint32_t *dat = (uint32_t *)ti->dat, prev, csum;
     unsigned int i;
 
     tbuf_bits(tbuf, SPEED_AVG, bc_raw, 16, 0x4891);
