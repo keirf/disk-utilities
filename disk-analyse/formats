@@ -276,6 +276,14 @@ probe_amiga
 
 "Death Knights Of Krynn" = amigados
 
+"Denaris Disk 1" #NTSC - Hard Wired Release
+    * amigados denaris_a  
+
+"Denaris Disk 2" #NTSC - Hard Wired Release
+    12 factor5_hiscore
+    162 factor5_hiscore
+    * denaris_b
+
 # OCS and AGA versions
 "Dennis" = amigados_copylock
 
