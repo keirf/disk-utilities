@@ -83,16 +83,11 @@ static void scp_close(struct stream *s)
 static int scp_select_track(struct stream *s, unsigned int tracknr)
 {
     struct scp_stream *scss = container_of(s, struct scp_stream, s);
-
-    unsigned char trk_header[4]; /* track header */
-    unsigned char longwords[12];
-    unsigned int trkoffset[MAX_REVS];
-    unsigned int rev;
-
-    uint16_t cyl = 0;
-    uint16_t head = 0;
-    uint32_t hdr_offset;
-    uint32_t tdh_offset;
+    uint8_t trk_header[4];
+    uint32_t longwords[3];
+    unsigned int rev, trkoffset[MAX_REVS];
+    uint16_t cyl, head;
+    uint32_t hdr_offset, tdh_offset;
 
     if (scss->dat && (scss->track == tracknr))
         return 0;
@@ -106,8 +101,8 @@ static int scp_select_track(struct stream *s, unsigned int tracknr)
     if (lseek(scss->fd, hdr_offset, SEEK_SET) != hdr_offset)
         return -1;
 
-    read_exact(scss->fd, trk_header, sizeof(uint32_t));
-    tdh_offset = le32toh(*(uint32_t *)trk_header);
+    read_exact(scss->fd, longwords, sizeof(uint32_t));
+    tdh_offset = le32toh(longwords[0]);
 
     if (lseek(scss->fd, tdh_offset, SEEK_SET) != tdh_offset)
         return -1;
@@ -120,13 +115,12 @@ static int scp_select_track(struct stream *s, unsigned int tracknr)
     head = trk_header[3] & 1;
 
     if (tracknr != (cyl*2)+head)
-        return -1;//printf("SCP track number doesn't match!\n");
+        return -1;
 
     for (rev = 0 ; rev < scss->revs ; rev++) {
         read_exact(scss->fd, longwords, sizeof(longwords));
-
-        trkoffset[rev] = tdh_offset + le32toh(*(uint32_t *)&longwords[8]);
-        scss->index_off[rev] = le32toh(*(uint32_t *)&longwords[4]) * sizeof(uint16_t);
+        trkoffset[rev] = tdh_offset + le32toh(longwords[2]);
+        scss->index_off[rev] = le32toh(longwords[1]) * sizeof(uint16_t);
         scss->datsz += scss->index_off[rev];
     }
 
@@ -136,7 +130,6 @@ static int scp_select_track(struct stream *s, unsigned int tracknr)
     for (rev = 0 ; rev < scss->revs ; rev++) {
         if (lseek(scss->fd, trkoffset[rev], SEEK_SET) != trkoffset[rev])
             return -1;
-
         read_exact(scss->fd, scss->dat+scss->datsz, scss->index_off[rev]);
         scss->datsz += scss->index_off[rev];
         scss->index_off[rev] = scss->datsz;
@@ -192,11 +185,11 @@ static int scp_next_flux(struct stream *s)
 }
 
 struct stream_type supercard_scp = {
-    /*.open =*/ scp_open,
-    /*.close =*/ scp_close,
-    /*.select_track =*/ scp_select_track,
-    /*.reset =*/ scp_reset,
-    /*.next_bit =*/ flux_next_bit,
-    /*.next_flux =*/ scp_next_flux,
-    /*.suffix =*/ { "scp", NULL }
+    .open = scp_open,
+    .close = scp_close,
+    .select_track = scp_select_track,
+    .reset = scp_reset,
+    .next_bit = flux_next_bit,
+    .next_flux = scp_next_flux,
+    .suffix = { "scp", NULL }
 };
