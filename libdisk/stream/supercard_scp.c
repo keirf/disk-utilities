@@ -24,7 +24,7 @@ struct scp_stream {
     unsigned int track;
 
     /* Raw track data. */
-    unsigned char *dat;
+    uint16_t *dat;
     unsigned int datsz;
     unsigned int filesz;
 
@@ -35,7 +35,7 @@ struct scp_stream {
     unsigned int index_off[MAX_REVS]; /* data offsets of each index */
 };
 
-#define SCK_PS_PER_TICK (25000)
+#define SCK_NS_PER_TICK (25u)
 
 static struct stream *scp_open(const char *name)
 {
@@ -86,7 +86,6 @@ static int scp_select_track(struct stream *s, unsigned int tracknr)
     uint8_t trk_header[4];
     uint32_t longwords[3];
     unsigned int rev, trkoffset[MAX_REVS];
-    uint16_t cyl, head;
     uint32_t hdr_offset, tdh_offset;
 
     if (scss->dat && (scss->track == tracknr))
@@ -111,26 +110,24 @@ static int scp_select_track(struct stream *s, unsigned int tracknr)
     if (memcmp(trk_header, "TRK", 3) != 0)
         return -1;
 
-    cyl = trk_header[3] / 2;
-    head = trk_header[3] & 1;
-
-    if (tracknr != (cyl*2)+head)
+    if (trk_header[3] != tracknr)
         return -1;
 
     for (rev = 0 ; rev < scss->revs ; rev++) {
         read_exact(scss->fd, longwords, sizeof(longwords));
         trkoffset[rev] = tdh_offset + le32toh(longwords[2]);
-        scss->index_off[rev] = le32toh(longwords[1]) * sizeof(uint16_t);
+        scss->index_off[rev] = le32toh(longwords[1]);
         scss->datsz += scss->index_off[rev];
     }
 
-    scss->dat = memalloc(scss->datsz);
+    scss->dat = memalloc(scss->datsz * sizeof(scss->dat[0]));
     scss->datsz = 0;
 
     for (rev = 0 ; rev < scss->revs ; rev++) {
         if (lseek(scss->fd, trkoffset[rev], SEEK_SET) != trkoffset[rev])
             return -1;
-        read_exact(scss->fd, scss->dat+scss->datsz, scss->index_off[rev]);
+        read_exact(scss->fd, &scss->dat[scss->datsz],
+                   scss->index_off[rev] * sizeof(scss->dat[0]));
         scss->datsz += scss->index_off[rev];
         scss->index_off[rev] = scss->datsz;
     }
@@ -145,25 +142,27 @@ static void scp_reset(struct stream *s)
     struct scp_stream *scss = container_of(s, struct scp_stream, s);
 
     scss->dat_idx = 0;
-    scss->index_pos = ~0u;
+    scss->index_pos = 0;
 }
 
 static int scp_next_flux(struct stream *s)
 {
     struct scp_stream *scss = container_of(s, struct scp_stream, s);
-    unsigned int i = scss->dat_idx;
-    unsigned char *dat = scss->dat;
-    uint32_t val = 0, flux;
-    bool_t done = 0;
+    uint32_t val = 0, flux, t;
 
-    if ((i == 0 || i >= scss->index_pos) && s->nr_index < scss->revs) {
-        scss->index_pos = scss->index_off[s->nr_index];
-        index_reset(s);
-    }
+    for (;;) {
+        if (scss->dat_idx >= scss->index_pos) {
+            uint32_t rev = s->nr_index % scss->revs;
+            scss->index_pos = scss->index_off[rev];
+            scss->dat_idx = rev ? scss->index_off[rev-1] : 0;
+            index_reset(s);
+            val = 0;
+        }
 
-    while (i < scss->datsz) {
-        uint16_t t = be16toh(*(uint16_t*)&dat[i]);
-        i += sizeof(uint16_t);
+        if (s->nr_index >= MAX_REVS)
+            return -1;
+
+        t = be16toh(scss->dat[scss->dat_idx++]);
 
         if (t == 0) { /* overflow */
             val += 0x10000;
@@ -171,16 +170,10 @@ static int scp_next_flux(struct stream *s)
         }
 
         val += t;
-        done = 1;
         break;
     }
 
-    scss->dat_idx = i;
-
-    if (!done)
-        return -1;
-
-    flux = (val * (uint32_t)SCK_PS_PER_TICK) / 1000u;
+    flux = val * SCK_NS_PER_TICK;
     return (int)flux;
 }
 
