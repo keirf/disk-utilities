@@ -26,7 +26,6 @@ struct scp_stream {
     /* Raw track data. */
     uint16_t *dat;
     unsigned int datsz;
-    unsigned int filesz;
 
     unsigned int revs;       /* stored disk revolutions */
     unsigned int dat_idx;    /* current index into dat[] */
@@ -42,7 +41,7 @@ static struct stream *scp_open(const char *name)
     struct stat sbuf;
     struct scp_stream *scss;
     char header[0x10];
-    int fd, filesz;
+    int fd;
 
     if (stat(name, &sbuf) < 0)
         return NULL;
@@ -51,9 +50,6 @@ static struct stream *scp_open(const char *name)
         err(1, "%s", name);
 
     read_exact(fd, header, sizeof(header));
-
-    if (((filesz = lseek(fd, 0, SEEK_END)) < 0) || (lseek(fd, 0, SEEK_SET) < 0))
-        err(1, "%s", name);
 
     if (memcmp(header, "SCP", 3) != 0)
         errx(1, "%s is not a SCP file!", name);
@@ -66,7 +62,6 @@ static struct stream *scp_open(const char *name)
 
     scss = memalloc(sizeof(*scss));
     scss->fd = fd;
-    scss->filesz = filesz;
     scss->revs = min((int)header[5], MAX_REVS);
 
     return &scss->s;
