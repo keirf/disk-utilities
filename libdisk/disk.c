@@ -53,6 +53,8 @@ static struct container *container_from_filename(
         return &container_img;
     if (!strcmp(p, "ipf"))
         return &container_ipf;
+    if (!strcmp(p, "scp"))
+        return &container_scp;
 fail:
     warnx("Unknown file suffix: %s (valid suffixes: .adf,.dsk,.ipf)", name);
     return NULL;
