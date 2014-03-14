@@ -27,6 +27,7 @@ extern struct stream_type diskread;
 extern struct stream_type disk_image;
 extern struct stream_type caps;
 extern struct stream_type discferret_dfe2;
+extern struct stream_type supercard_scp;
 
 const static struct stream_type *stream_type[] = {
     &kryoflux_stream,
@@ -34,6 +35,7 @@ const static struct stream_type *stream_type[] = {
     &disk_image,
     &caps,
     &discferret_dfe2,
+    &supercard_scp,
     NULL
 };
 
