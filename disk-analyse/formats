@@ -142,6 +142,9 @@ probe_amiga
     1 protec_longtrack
     * baal
 
+"Back to the Future III" # Disk 2 only tracks 2-84 contain data
+    * back_future3 amigados copylock
+
 "Badlands" = amigados_copylock
 
 "Barbarian / Psygnosis"
@@ -242,6 +245,9 @@ probe_amiga
 
 "Commando" # Tracks 98+ may be empty
     * amigados elite_a
+
+"Conqueror"
+    * amigados spherical conqueror
 
 "Corporation" = amigados_copylock
 
@@ -870,6 +876,9 @@ probe_amiga
     * amigados hi_tec_b
 
 "Zeewolf" = amigados
+
+"Zool"
+    * amigados gremlin
 
 "Zool 2"
     * amigados gremlin
