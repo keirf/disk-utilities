@@ -118,6 +118,7 @@ extern struct container container_eadf;
 extern struct container container_dsk;
 extern struct container container_img;
 extern struct container container_ipf;
+extern struct container container_scp;
 
 /* Helpers for container implementations: defaults for init() & write_raw(). */
 void dsk_init(struct disk *d);

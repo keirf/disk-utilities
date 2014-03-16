@@ -47,6 +47,7 @@ static void usage(int rc)
     printf("  .img  => IBM-MFM Sector Dump\n");
     printf("  .ipf  => SPS/IPF\n");
     printf("  .dsk  => Libdisk\n");
+    printf("  .scp  => Supercard Pro\n");
     printf("Read-only support:\n");
     printf("  .dat  => Diskread\n");
     printf("  .dfi  => DiscFerret DFE2\n");
