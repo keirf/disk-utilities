@@ -1,13 +1,13 @@
 /*
  * disk/firebird.c
- * 
+ *
  * Custom formats as used by:
  *   After Burner (Software Studios / Argonaut)
  *   IK+ (Software Studios / Archer Maclean)
  *   Virus (Firebird / David Braben)
- * 
+ *
  * Written in 2011 by Keir Fraser
- * 
+ *
  * RAW TRACK LAYOUT:
  *  u16 0xf72a (TRKTYP_ikplus only)
  *  u16 0x8944,0x8944,0x8944 :: Sync
@@ -17,7 +17,7 @@
  *  u16 crc_ccitt :: Over all track contents, in order
  * MFM encoding:
  *  Continuous, no even/odd split
- * 
+ *
  * TRKTYP_* data layout:
  *  u8 sector_data[12*512]
  */
@@ -120,6 +120,97 @@ struct track_handler afterburner_data_handler = {
     .nr_sectors = 1,
     .write_raw = firebird_write_raw,
     .read_raw = firebird_read_raw
+};
+
+/*
+ * Custom formats as used by Quartz
+ *
+ * Written in 2014 by Keith Krellwitz
+ *
+ * RAW TRACK LAYOUT:
+ *  u16 0x8944, 0x8944 :: Sync (TRKTYP_quartz_a)
+ *  u16 0x8944, 0xa92a, 0x8944 :: Sync (TRKTYP_quartz_b)
+ *  u8  data[6168]
+ *
+ * TRKTYP_* data layout:
+ *  u8 sector_data[6168]
+ */
+
+static void *firebird_b_write_raw(
+    struct disk *d, unsigned int tracknr, struct stream *s)
+{
+    struct track_info *ti = &d->di->track[tracknr];
+
+    while (stream_next_bit(s) != -1) {
+        uint32_t sync;
+        uint8_t raw[2], dat[ti->len], sum;
+        unsigned int i;
+        char *block;
+
+        sync = (ti->type == TRKTYP_quartz_a) ? 0x89448944 : 0x8944a92a;
+
+        if (s->word != sync)
+                continue;
+
+        if (ti->type == TRKTYP_quartz_b){
+            if (stream_next_bits(s, 16) == -1)
+                goto fail;
+            if ((uint16_t)s->word != 0x8944)
+                continue;
+            ti->data_bitoff = s->index_offset - 47;
+         } else
+            ti->data_bitoff = s->index_offset - 31;
+
+
+        for (i = sum = 0; i < ti->len; i++) {
+            if (stream_next_bytes(s, raw, 2) == -1)
+                goto fail;
+            mfm_decode_bytes(bc_mfm_even_odd, 1, raw, &dat[i]);
+        }
+
+        if (dat[2] != tracknr/2)
+            continue;
+
+        block = memalloc(ti->len);
+        memcpy(block, dat, ti->len);
+        set_all_sectors_valid(ti);
+        ti->total_bits = 100500;
+        return block;
+    }
+
+fail:
+    return NULL;
+}
+
+static void firebird_b_read_raw(
+    struct disk *d, unsigned int tracknr, struct tbuf *tbuf)
+{
+    struct track_info *ti = &d->di->track[tracknr];
+    unsigned int i;
+    uint8_t *dat = (uint8_t *)ti->dat;
+
+    if (ti->type == TRKTYP_quartz_a)
+        tbuf_bits(tbuf, SPEED_AVG, bc_raw, 32, 0x89448944);
+    else {
+        tbuf_bits(tbuf, SPEED_AVG, bc_raw, 32, 0x8944a92a);
+        tbuf_bits(tbuf, SPEED_AVG, bc_raw, 16, 0x8944);
+    }
+
+    for (i = 0; i < ti->len; i++)
+        tbuf_bits(tbuf, SPEED_AVG, bc_mfm_even_odd, 8, dat[i]);
+}
+
+struct track_handler quartz_a_handler = {
+    .bytes_per_sector = 6168,
+    .nr_sectors = 1,
+    .write_raw = firebird_b_write_raw,
+    .read_raw = firebird_b_read_raw
+};
+struct track_handler quartz_b_handler = {
+    .bytes_per_sector = 6168,
+    .nr_sectors = 1,
+    .write_raw = firebird_b_write_raw,
+    .read_raw = firebird_b_read_raw
 };
 
 /*

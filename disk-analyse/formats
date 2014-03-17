@@ -176,7 +176,11 @@ probe_amiga
 
 "Bermuda Project" = amigados
 
+
 "Bio Challenge" = rnc_hidden
+
+"Bills Tomato Game"
+    * amigados_long_105500 bill_tomato
 
 "Bionic Commando" = amigados
 
@@ -559,6 +563,9 @@ probe_amiga
 "Nick Faldo's Championship Golf"
      * arc_development_b copylock amigados
 
+"Night Hunter"
+    *  night_hunter_a night_hunter_b amigados
+
 "Nitro"
     1 protec_longtrack
     * psygnosis_c
@@ -646,6 +653,9 @@ probe_amiga
 
 "Putty" = amigados_copylock
 
+"Quartz"
+    * amigados quartz_a quartz_b
+
 "Qwak" = amigados
 
 "R-Type" # Track 159 may be empty
@@ -687,6 +697,9 @@ probe_amiga
      * arc_development_a copylock amigados
 
 "Rotox" = amigados
+
+"Savage"
+    * amigados savage
 
 "Scooby Doo"
     * amigados scooby_doo
@@ -839,6 +852,9 @@ probe_amiga
 
 "Vade Retro Alienas"
     * amigados vade_retro_alienas
+
+"Vampires Empire"
+    * amigados vampires_empire_a vampires_empire_b vampires_empire_c
 
 "Venus The Flytrap" = gremlin_protected
 
