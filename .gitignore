@@ -13,3 +13,4 @@ disk-analyse/disk-analyse
 ipfinfo/ipfinfo
 m68k/disassemble
 m68k/copylock
+scp/scp_dump
