@@ -14,8 +14,6 @@
 #include <fcntl.h>
 #include <unistd.h>
 
-#define MAX_REVS  5
-
 struct scp_stream {
     struct stream s;
     int fd;
@@ -31,7 +29,7 @@ struct scp_stream {
     unsigned int dat_idx;    /* current index into dat[] */
     unsigned int index_pos;  /* next index offset */
 
-    unsigned int index_off[MAX_REVS]; /* data offsets of each index */
+    unsigned int index_off[]; /* data offsets of each index */
 };
 
 #define SCK_NS_PER_TICK (25u)
@@ -40,7 +38,7 @@ static struct stream *scp_open(const char *name)
 {
     struct stat sbuf;
     struct scp_stream *scss;
-    char header[0x10];
+    uint8_t header[0x10], revs;
     int fd;
 
     if (stat(name, &sbuf) < 0)
@@ -54,15 +52,15 @@ static struct stream *scp_open(const char *name)
     if (memcmp(header, "SCP", 3) != 0)
         errx(1, "%s is not a SCP file!", name);
 
-    if (header[5] == 0)
+    if ((revs = header[5]) == 0)
         errx(1, "%s has an invalid revolution count (%u)!", name, header[5]);
 
     if (header[9] != 0 && header[9] != 16)
         errx(1, "%s has unsupported bit cell time width (%u)", name, header[9]);
 
-    scss = memalloc(sizeof(*scss));
+    scss = memalloc(sizeof(*scss) + revs*sizeof(unsigned int));
     scss->fd = fd;
-    scss->revs = min((int)header[5], MAX_REVS);
+    scss->revs = revs;
 
     return &scss->s;
 }
@@ -80,7 +78,7 @@ static int scp_select_track(struct stream *s, unsigned int tracknr)
     struct scp_stream *scss = container_of(s, struct scp_stream, s);
     uint8_t trk_header[4];
     uint32_t longwords[3];
-    unsigned int rev, trkoffset[MAX_REVS];
+    unsigned int rev, trkoffset[scss->revs];
     uint32_t hdr_offset, tdh_offset;
 
     if (scss->dat && (scss->track == tracknr))
@@ -153,9 +151,6 @@ static int scp_next_flux(struct stream *s)
             index_reset(s);
             val = 0;
         }
-
-        if (s->nr_index >= MAX_REVS)
-            return -1;
 
         t = be16toh(scss->dat[scss->dat_idx++]);
 
