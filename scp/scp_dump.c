@@ -16,11 +16,15 @@
 #include <fcntl.h>
 #include <sys/types.h>
 #include <sys/stat.h>
+#include <getopt.h>
 
 #include <libdisk/util.h>
 #include "scp.h"
 
 #define DEFAULT_SERDEVICE  "/dev/ttyUSB0"
+#define DEFAULT_NRTRACKS   164
+
+#define log(_f, _a...) do { if (!quiet) printf(_f, ##_a); } while (0)
 
 struct track_header {
     uint8_t sig[3];
@@ -32,15 +36,70 @@ struct track_header {
     } rev[5];
 };
 
+static void usage(int rc)
+{
+    printf("Usage: scp_dump [options] out_file\n");
+    printf("Options:\n");
+    printf("  -h, --help    Display this information\n");
+    printf("  -q, --quiet   Quiesce normal informational output\n");
+    printf("  -d, --device  Name of serial device (%s)\n", DEFAULT_SERDEVICE);
+    printf("  -r, --ramtest Test SCP on-board SRAM before dumping\n");
+    printf("  -t, --tracks  Nr tracks to dump (%d)\n", DEFAULT_NRTRACKS);
+
+    exit(rc);
+}
+
 int main(int argc, char **argv)
 {
     struct scp_handle *scp;
     struct scp_flux flux;
     struct disk_header dhdr;
     struct track_header thdr;
-    unsigned int rev, trk, nr_tracks = 164;
+    unsigned int rev, trk, nr_tracks = DEFAULT_NRTRACKS;
     uint32_t *th_offs, file_off, dat_off;
-    int fd;
+    int ch, fd, quiet = 0, ramtest = 0;
+    char *sername = DEFAULT_SERDEVICE;
+
+    const static char sopts[] = "hqd:rt:";
+    const static struct option lopts[] = {
+        { "help", 0, NULL, 'h' },
+        { "quiet", 0, NULL, 'q' },
+        { "device", 1, NULL, 'd' },
+        { "ramtest", 0, NULL, 'r' },
+        { "tracks", 1, NULL, 't' },
+        { 0, 0, 0, 0 }
+    };
+
+    while ((ch = getopt_long(argc, argv, sopts, lopts, NULL)) != -1) {
+        switch (ch) {
+        case 'h':
+            usage(0);
+            break;
+        case 'q':
+            quiet = 1;
+            break;
+        case 'd':
+            sername = optarg;
+            break;
+        case 'r':
+            ramtest = 1;
+            break;
+        case 't':
+            nr_tracks = atoi(optarg);
+            break;
+        default:
+            usage(1);
+            break;
+        }
+    }
+
+    if (argc != (optind + 1))
+        usage(1);
+
+    if (nr_tracks > 168) {
+        warnx("Too many tracks specified (%u)", nr_tracks);
+        usage(1);
+    }
 
     if ((fd = file_open(argv[1], O_WRONLY|O_CREAT|O_TRUNC, 0666)) == -1)
         err(1, "Error creating %s", argv[1]);
@@ -58,15 +117,17 @@ int main(int argc, char **argv)
     write_exact(fd, th_offs, nr_tracks * sizeof(uint32_t));
     file_off = sizeof(dhdr) + nr_tracks * sizeof(uint32_t);
 
-    scp = scp_open(DEFAULT_SERDEVICE);
-    scp_printinfo(scp);
-    scp_ramtest(scp);
+    scp = scp_open(sername);
+    if (!quiet)
+        scp_printinfo(scp);
+    if (ramtest)
+        scp_ramtest(scp);
     scp_selectdrive(scp, 0);
 
-    printf("Reading track ");
+    log("Reading track ");
 
     for (trk = 0; trk < nr_tracks; trk++) {
-        printf("%-4u...", trk);
+        log("%-4u...", trk);
         fflush(stdout);
 
         scp_seek_track(scp, trk);
@@ -89,10 +150,10 @@ int main(int argc, char **argv)
         write_exact(fd, flux.flux, dat_off - sizeof(thdr));
         file_off += dat_off;
 
-        printf("\b\b\b\b\b\b\b");
+        log("\b\b\b\b\b\b\b");
     }
 
-    printf("\b\b\b\b\b\b\b\b\b\b\b\b\b\b");
+    log("\b\b\b\b\b\b\b\b\b\b\b\b\b\b");
 
     scp_deselectdrive(scp, 0);
     scp_close(scp);
