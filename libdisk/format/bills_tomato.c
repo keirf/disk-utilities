@@ -1,7 +1,7 @@
 /*
- * disk/bills_tomatoe.c
+ * disk/bills_tomato.c
  *
- * Custom format as used by Savage from MicroPlay/Firebird:
+ * Custom format as used by Bill's Tomato Game by Psygnosis.
  *
  * Written in 2014 by Keith Krellwitz
  *
@@ -43,7 +43,7 @@ static void *bill_tomato_write_raw(
                 goto fail;
             mfm_decode_bytes(bc_mfm_even_odd, 4, raw, &trk);
             if ((0x50460000 | tracknr<<8 | sec) != be32toh(trk))
-                continue;
+                break;
 
             if (stream_next_bytes(s, raw, 8) == -1)
                 goto fail;
@@ -57,8 +57,12 @@ static void *bill_tomato_write_raw(
             for (i = sum = 0; i < 0x100; i++)
                 sum ^= be32toh(raw2[i]) ;
             if (be32toh(csum) != (sum & 0x55555555))
-                goto fail;
+                break;
         }
+
+        if (sec != ti->nr_sectors)
+            continue;
+
         stream_next_index(s);
         ti->total_bits = (s->track_bitlen > 102500) ? 105312 : 102300;
 
