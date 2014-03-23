@@ -431,7 +431,7 @@ static void change_bit(uint8_t *map, unsigned int bit, bool_t on)
 static void append_bit(struct tbuf *tbuf, uint16_t speed, uint8_t x)
 {
     change_bit(tbuf->raw.bits, tbuf->pos, x);
-    tbuf->raw.speed[tbuf->pos >> 3] = speed;
+    tbuf->raw.speed[tbuf->pos] = speed;
     if (++tbuf->pos >= tbuf->raw.bitlen)
         tbuf->pos = 0;
 }
@@ -453,8 +453,6 @@ static void tbuf_bit(
 
 void tbuf_init(struct tbuf *tbuf, uint32_t bitstart, uint32_t bitlen)
 {
-    unsigned int bytes = bitlen + 7 / 8;
-
     tbuf->start = tbuf->pos = bitstart;
     tbuf->prev_data_bit = 0;
     tbuf->crc16_ccitt = 0;
@@ -465,8 +463,8 @@ void tbuf_init(struct tbuf *tbuf, uint32_t bitstart, uint32_t bitlen)
 
     memset(&tbuf->raw, 0, sizeof(tbuf->raw));
     tbuf->raw.bitlen = bitlen;
-    tbuf->raw.bits = memalloc(bytes);
-    tbuf->raw.speed = memalloc(2*bytes);
+    tbuf->raw.bits = memalloc(bitlen+7/8);
+    tbuf->raw.speed = memalloc(2*bitlen);
 }
 
 static void tbuf_finalise(struct tbuf *tbuf)
@@ -494,7 +492,7 @@ static void tbuf_finalise(struct tbuf *tbuf)
         if (--pos < 0)
             pos += tbuf->raw.bitlen;
         change_bit(tbuf->raw.bits, pos, b);
-        tbuf->raw.speed[pos >> 3] = SPEED_AVG;
+        tbuf->raw.speed[pos] = SPEED_AVG;
         b = !b;
     } while (pos != tbuf->pos);
 }

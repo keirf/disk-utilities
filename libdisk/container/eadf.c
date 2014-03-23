@@ -107,7 +107,7 @@ static void eadf_close(struct disk *d)
             track_read_raw(raw[i], i);
             thdr.len = htobe32((raw[i]->bitlen+7)/8);
             thdr.bitlen = htobe32(raw[i]->bitlen);
-            for (j = 0; j < (raw[i]->bitlen+7)/8; j++) {
+            for (j = 0; j < raw[i]->bitlen; j++) {
                 if (raw[i]->speed[j] == 1000)
                     continue;
                 printf("*** T%u: Variable-density track cannot be correctly "

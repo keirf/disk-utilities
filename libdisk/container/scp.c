@@ -100,7 +100,7 @@ static void scp_close(struct disk *d)
         j = cell = 0;
 
         for (i = 0; i < raw->bitlen; i++) {
-            cell += (av_cell * raw->speed[bit>>3]) / SPEED_AVG;
+            cell += (av_cell * raw->speed[bit]) / SPEED_AVG;
             if (raw->bits[bit>>3] & (0x80 >> (bit & 7))) {
                 dat[j++] = cell / SCK_NS_PER_TICK;
                 cell %= SCK_NS_PER_TICK;

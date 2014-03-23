@@ -90,8 +90,7 @@ static int di_next_bit(struct stream *s)
         di_reset(s);
 
     dat = !!(dis->track_raw->bits[dis->pos >> 3] & (0x80u >> (dis->pos & 7)));
-    s->latency += (dis->ns_per_cell *
-                   dis->track_raw->speed[dis->pos >> 3]) / 1000u;
+    s->latency += (dis->ns_per_cell * dis->track_raw->speed[dis->pos]) / 1000u;
 
     return dat;
 }

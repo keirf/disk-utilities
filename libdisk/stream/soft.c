@@ -44,7 +44,7 @@ static int ss_next_bit(struct stream *s)
         ss_reset(s);
 
     dat = !!(ss->dat[ss->pos >> 3] & (0x80u >> (ss->pos & 7)));
-    speed = ss->speed ? ss->speed[ss->pos >> 3] : 1000u;
+    speed = ss->speed ? ss->speed[ss->pos] : 1000u;
     s->latency += (ss->ns_per_cell * speed) / 1000u;
 
     return dat;

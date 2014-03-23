@@ -31,7 +31,7 @@ static void track_load_byte(struct amiga_state *s)
 {
     s->disk.ns_per_cell =
         (s->disk.av_ns_per_cell *
-         s->disk.track_raw->speed[s->disk.input_pos/8]) / 1000u;
+         s->disk.track_raw->speed[s->disk.input_pos]) / 1000u;
     s->disk.input_byte = s->disk.track_raw->bits[s->disk.input_pos/8];
 }
 
