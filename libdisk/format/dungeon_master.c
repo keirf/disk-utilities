@@ -110,6 +110,8 @@ static void dungeon_master_weak_read_raw(
     uint8_t cyl = 0, hd = 1, no = 2;
     unsigned int sec, weak_sec = weak_sec(ti->type), i;
 
+    tbuf_disable_auto_sector_split(tbuf);
+
     for (sec = 0; sec < ti->nr_sectors; sec++) {
         /* IDAM */
         tbuf_start_crc(tbuf);
@@ -130,13 +132,19 @@ static void dungeon_master_weak_read_raw(
         tbuf_bits(tbuf, SPEED_AVG, bc_raw, 32, 0x44894489);
         tbuf_bits(tbuf, SPEED_AVG, bc_raw, 32, 0x44895545);
         if (sec == weak_sec) {
+            unsigned int j, delta;
             uint16_t crc = crc16_ccitt(&dat[sec*512], 512, tbuf->crc16_ccitt);
-            tbuf_bytes(tbuf, SPEED_AVG, bc_mfm, 32, &dat[sec*512]);
+            tbuf_bytes(tbuf, SPEED_AVG, bc_mfm, 20, &dat[sec*512]);
             /* Protection sector: randomise MSB of each byte in weak area. */
-            for (i = 0; i < 512-64; i++)
-                tbuf_bits(tbuf, SPEED_AVG, bc_mfm, 8,
-                          (tbuf_rnd16(tbuf) & 1) ? 0x68 : 0xe8);
-            tbuf_bytes(tbuf, SPEED_AVG, bc_mfm, 32, &dat[(sec+1)*512-32]);
+            for (i = 20, j = 0; i < 20+16*30; i++) {
+                delta = (((SPEED_AVG*7)/10) * (j < 15 ? j : 30 - j)) / 15;
+                if (j++ == 30)
+                    j = 0;
+                tbuf_bits(tbuf, SPEED_AVG+delta, bc_raw, 1, 1);
+                tbuf_bits(tbuf, SPEED_AVG-delta, bc_raw, 1, 0);
+                tbuf_bits(tbuf, SPEED_AVG,       bc_mfm, 7, 0x68);
+            }
+            tbuf_bytes(tbuf, SPEED_AVG, bc_mfm, 512-i, &dat[sec*512+i]);
             /* CRC is generated pre-randomisation. Restore it now. */
             tbuf->crc16_ccitt = crc;
         } else {
@@ -145,8 +153,7 @@ static void dungeon_master_weak_read_raw(
         tbuf_emit_crc16_ccitt(tbuf, SPEED_AVG);
         for (i = 0; i < 40; i++)
             tbuf_bits(tbuf, SPEED_AVG, bc_mfm, 8, 0x4e);
-        for (i = 0; i < 12; i++)
-            tbuf_bits(tbuf, SPEED_AVG, bc_mfm, 8, 0x00);
+        tbuf_gap(tbuf, SPEED_AVG, 12*8);
     }
 }
 
