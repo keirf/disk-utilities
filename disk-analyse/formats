@@ -414,11 +414,11 @@ probe_amiga
 
 "Goldrunner"
     0-1 amigados
-    2-12/2 ibm_pc_dd
-    20-34/2 ibm_pc_dd
-    60-74/2 ibm_pc_dd
+    2-12/2 ibm_pc_dd_10sec
+    20-34/2 ibm_pc_dd_10sec
+    60-74/2 ibm_pc_dd_10sec
     78-83 amigados
-    84-154/2 ibm_pc_dd
+    84-154/2 ibm_pc_dd_10sec
     * ignore
 
 "Grand Monster Slam"

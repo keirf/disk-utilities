@@ -145,7 +145,7 @@ static void *ibm_pc_write_raw(
             continue;
 
         /* DAM */
-        if ((ibm_scan_dam(s) < 0) ||
+        if (((idx_off = ibm_scan_dam(s)) < 0) ||
             (stream_next_bytes(s, dat, 2*sec_sz) == -1) ||
             (stream_next_bits(s, 32) == -1) || s->crc16_ccitt)
             continue;
@@ -182,7 +182,9 @@ static void ibm_pc_read_raw(
     for (no = 0; (128<<no) != ti->bytes_per_sector; no++)
         continue;
 
-    gap4 = (ti->type == TRKTYP_ibm_pc_dd) ? 80 : 108;
+    gap4 = ((ti->type == TRKTYP_ibm_pc_dd) ? 80
+            : (ti->type == TRKTYP_ibm_pc_dd_10sec) ? 40
+            : 108);
 
     /* IAM */
     if (iam) {
@@ -264,6 +266,20 @@ struct track_handler ibm_pc_dd_handler = {
     .density = trkden_double,
     .bytes_per_sector = 512,
     .nr_sectors = 9,
+    .write_raw = ibm_pc_write_raw,
+    .read_raw = ibm_pc_read_raw,
+    .write_sectors = ibm_pc_write_sectors,
+    .read_sectors = ibm_pc_read_sectors,
+    .extra_data = & (struct ibm_extra_data) {
+        .sector_base = 1
+    }
+};
+
+/* Non-standard 10-sector version of the above, with reduced GAP4 length. */
+struct track_handler ibm_pc_dd_10sec_handler = {
+    .density = trkden_double,
+    .bytes_per_sector = 512,
+    .nr_sectors = 10,
     .write_raw = ibm_pc_write_raw,
     .read_raw = ibm_pc_read_raw,
     .write_sectors = ibm_pc_write_sectors,
