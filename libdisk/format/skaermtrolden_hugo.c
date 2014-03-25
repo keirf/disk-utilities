@@ -19,9 +19,8 @@
  * 1 when it should be 0!
  * 
  * We detect and allow for this in the parser. When regenerating the MFM we
- * sidestep the issue by writing the second sync word as 4488. The game does
- * not check the second sync. If something else does (e.g., WHDLoad installer?)
- * then we may need to do something else.
+ * sidestep the issue by writing the second sync word as 448a. The game does
+ * not check the second sync.
  */
 
 #include <libdisk/util.h>
@@ -31,6 +30,8 @@ static void *skaermtrolden_hugo_write_raw(
     struct disk *d, unsigned int tracknr, struct stream *s)
 {
     struct track_info *ti = &d->di->track[tracknr];
+    struct disktag_disk_nr *disktag_disk_nr = (struct disktag_disk_nr *)
+        disk_get_tag_by_id(d, DSKTAG_disk_nr);
 
     while (stream_next_bit(s) != -1) {
 
@@ -39,8 +40,8 @@ static void *skaermtrolden_hugo_write_raw(
         char *block;
         int bad_original_sync;
 
-        /* Accept our own rewritten second sync word (4489 -> 4488). */
-        if ((s->word&~1) != ((tracknr & 1) ? 0x89448944 : 0x44894488))
+        /* Accept our own rewritten second sync word (4489 -> 448a). */
+        if ((s->word&~3) != ((tracknr & 1) ? 0x89448944 : 0x44894488))
             continue;
         bad_original_sync = (s->word == 0x44894489);
 
@@ -54,6 +55,12 @@ static void *skaermtrolden_hugo_write_raw(
         disk = be32toh(disk);
         mfm_decode_bytes(bc_mfm_even_odd, 4, &raw[4], &trk);
         trk = be32toh(trk);
+
+        if (!disktag_disk_nr)
+            disktag_disk_nr = (struct disktag_disk_nr *)
+                disk_set_tag(d, DSKTAG_disk_nr, 4, &disk);
+        if (disk != disktag_disk_nr->disk_nr)
+            continue;
 
         if (trk != ((tracknr<<16) | tracknr))
             continue;
@@ -84,17 +91,19 @@ static void skaermtrolden_hugo_read_raw(
     struct disk *d, unsigned int tracknr, struct tbuf *tbuf)
 {
     struct track_info *ti = &d->di->track[tracknr];
-    uint32_t csum, disk_nr = 1, *dat = (uint32_t *)ti->dat;
+    uint32_t csum, *dat = (uint32_t *)ti->dat;
     unsigned int i;
+    struct disktag_disk_nr *disktag_disk_nr = (struct disktag_disk_nr *)
+        disk_get_tag_by_id(d, DSKTAG_disk_nr);
 
     for (i = csum = 0; i < 5940/4; i++)
         csum += be32toh(dat[i]);
 
-    /* NB. Second 4489 sync word modified to 4488 to avoid sync issue above. */
+    /* NB. Second 4489 sync word modified to 448a to avoid sync issue above. */
     tbuf_bits(tbuf, SPEED_AVG, bc_raw, 32,
-              (tracknr & 1) ? 0x89448944 : 0x44894488);
+              (tracknr & 1) ? 0x89448944 : 0x4489448a);
     tbuf_bits(tbuf, SPEED_AVG, bc_mfm_even_odd, 32, csum);
-    tbuf_bits(tbuf, SPEED_AVG, bc_mfm_even_odd, 32, disk_nr);
+    tbuf_bits(tbuf, SPEED_AVG, bc_mfm_even_odd, 32, disktag_disk_nr->disk_nr);
     tbuf_bits(tbuf, SPEED_AVG, bc_mfm_even_odd, 32, (tracknr<<16) | tracknr);
 
     for (i = 0; i < 5940/4; i++)
