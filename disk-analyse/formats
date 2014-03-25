@@ -724,10 +724,13 @@ probe_amiga
     * amigados
 
 "Simpsons, Bart vs. The Space Mutants"
-     * arc_development_a copylock amigados
+    * arc_development_a copylock amigados
 
 "Simpsons, Bart vs. The World"
-     * arc_development_b copylock amigados
+    * arc_development_b copylock amigados
+
+"Skaermtrolden Hugo"
+    * amigados skaermtrolden_hugo
 
 "Skyfox"
     1 amigados_long_111000 # Actual length is almost exactly 111000 bits
