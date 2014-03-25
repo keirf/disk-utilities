@@ -16,7 +16,7 @@
 /* Track handlers can tag a disk with format metadata (e.g., encrypt keys). */
 struct disk_list_tag {
     struct disk_list_tag *next;
-    struct disk_tag tag;
+    struct disktag tag;
 };
 
 struct container;

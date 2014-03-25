@@ -49,15 +49,21 @@ struct track_info {
     uint32_t total_bits;
 };
 
-struct disk_tag {
+struct disktag {
     uint16_t id;
     uint16_t len;
 };
 
 #define DSKTAG_rnc_pdos_key 1
-struct rnc_pdos_key {
-    struct disk_tag tag;
+struct disktag_rnc_pdos_key {
+    struct disktag tag;
     uint32_t key;
+};
+
+#define DSKTAG_disk_nr 2
+struct disktag_disk_nr {
+    struct disktag tag;
+    uint32_t disk_nr;
 };
 
 #define DSKTAG_end 0xffffu
@@ -83,9 +89,9 @@ const char *disk_get_format_desc_name(enum track_type type);
 /* Valid until the disk is closed (disk_close()). */
 struct disk_info *disk_get_info(struct disk *);
 
-struct disk_tag *disk_get_tag_by_id(struct disk *d, uint16_t id);
-struct disk_tag *disk_get_tag_by_idx(struct disk *d, unsigned int idx);
-struct disk_tag *disk_set_tag(
+struct disktag *disk_get_tag_by_id(struct disk *d, uint16_t id);
+struct disktag *disk_get_tag_by_idx(struct disk *d, unsigned int idx);
+struct disktag *disk_set_tag(
     struct disk *d, uint16_t id, uint16_t len, void *dat);
 
 struct track_raw {

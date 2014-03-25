@@ -62,12 +62,17 @@ struct tag_header {
     uint16_t len;
 };
 
-static void tag_swizzle(struct disk_tag *dtag)
+static void tag_swizzle(struct disktag *dtag)
 {
     switch (dtag->id) {
     case DSKTAG_rnc_pdos_key: {
-        struct rnc_pdos_key *t = (struct rnc_pdos_key *)dtag;
+        struct disktag_rnc_pdos_key *t = (struct disktag_rnc_pdos_key *)dtag;
         t->key = be32toh(t->key);
+        break;
+    }
+    case DSKTAG_disk_nr: {
+        struct disktag_disk_nr *t = (struct disktag_disk_nr *)dtag;
+        t->disk_nr = be32toh(t->disk_nr);
         break;
     }
     }
@@ -97,7 +102,7 @@ static struct container *dsk_open(struct disk *d)
     struct track_header th;
     struct tag_header tagh;
     struct disk_list_tag *dltag, **pprevtag;
-    struct disk_tag *dtag;
+    struct disktag *dtag;
     struct disk_info *di;
     struct track_info *ti;
     unsigned int i, bytes_per_th, read_bytes_per_th;
@@ -158,7 +163,7 @@ static void dsk_close(struct disk *d)
     struct disk_info *di = d->di;
     struct track_info *ti;
     struct disk_list_tag *dltag;
-    struct disk_tag *dtag;
+    struct disktag *dtag;
     unsigned int i, datoff;
 
     lseek(d->fd, 0, SEEK_SET);

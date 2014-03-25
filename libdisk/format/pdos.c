@@ -36,7 +36,7 @@ static void *pdos_write_raw(
     struct track_info *ti = &d->di->track[tracknr];
     char *block = memalloc(512 * ti->nr_sectors);
     unsigned int i, j, nr_valid_blocks = 0;
-    struct rnc_pdos_key *keytag = (struct rnc_pdos_key *)
+    struct disktag_rnc_pdos_key *keytag = (struct disktag_rnc_pdos_key *)
         disk_get_tag_by_id(d, DSKTAG_rnc_pdos_key);
 
     while (stream_next_bit(s) != -1) {
@@ -70,7 +70,7 @@ static void *pdos_write_raw(
                 key |= (hdr[1] ^ tracknr) << 16;
                 key |= (hdr[2] ^ (uint8_t)(csum>>8)) << 8;
                 key |= hdr[3] ^ (uint8_t)csum;
-                keytag = (struct rnc_pdos_key *)
+                keytag = (struct disktag_rnc_pdos_key *)
                     disk_set_tag(d, DSKTAG_rnc_pdos_key, 4, &key);
             } else {
                 *(uint32_t *)hdr ^= be32toh(keytag->key) ^ 0x80;
@@ -122,7 +122,7 @@ static void pdos_read_raw(
     struct track_info *ti = &d->di->track[tracknr];
     uint32_t k, *dat = (uint32_t *)ti->dat;
     unsigned int i, j;
-    struct rnc_pdos_key *keytag = (struct rnc_pdos_key *)
+    struct disktag_rnc_pdos_key *keytag = (struct disktag_rnc_pdos_key *)
         disk_get_tag_by_id(d, DSKTAG_rnc_pdos_key);
 
     tbuf_bits(tbuf, SPEED_AVG, bc_raw, 16, 0x1448);

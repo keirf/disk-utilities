@@ -315,7 +315,7 @@ void track_mark_unformatted(
     ti->total_bits = TRK_WEAK;
 }
 
-struct disk_tag *disk_get_tag_by_id(struct disk *d, uint16_t id)
+struct disktag *disk_get_tag_by_id(struct disk *d, uint16_t id)
 {
     struct disk_list_tag *dltag;
     for (dltag = d->tags; dltag != NULL; dltag = dltag->next)
@@ -324,7 +324,7 @@ struct disk_tag *disk_get_tag_by_id(struct disk *d, uint16_t id)
     return NULL;
 }
 
-struct disk_tag *disk_get_tag_by_idx(struct disk *d, unsigned int idx)
+struct disktag *disk_get_tag_by_idx(struct disk *d, unsigned int idx)
 {
     struct disk_list_tag *dltag;
     unsigned int i;
@@ -335,7 +335,7 @@ struct disk_tag *disk_get_tag_by_idx(struct disk *d, unsigned int idx)
     return dltag ? &dltag->tag : NULL;
 }
 
-struct disk_tag *disk_set_tag(
+struct disktag *disk_set_tag(
     struct disk *d, uint16_t id, uint16_t len, void *dat)
 {
     struct disk_list_tag *dltag, **pprev;
