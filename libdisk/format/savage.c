@@ -42,11 +42,12 @@ static void *savage_write_raw(
         ti->data_bitoff = s->index_offset - 15;
 
         for (sec = 0; sec < ti->nr_sectors; sec++) {
+
             if (stream_next_bytes(s, raw, 8) == -1)
                 goto fail;
             mfm_decode_bytes(bc_mfm_even_odd, 4, raw, &trk);
             if (tracknr!= ((be32toh(trk) >> 16) & 0xff))
-                continue;
+                break;
 
             if (stream_next_bytes(s, raw, 8) == -1)
                 goto fail;
@@ -64,21 +65,24 @@ static void *savage_write_raw(
             for (i = sum = 0; i < 0x100; i++)
                 sum ^= be32toh(raw2[i]) ;
             if (be32toh(csum) != (sum & 0x55555555))
-                goto fail;
+                break;
 
             if (stream_next_bytes(s, raw, 8) == -1)
                 goto fail;
             mfm_decode_bytes(bc_mfm_even_odd, 4, raw, &zero);
             if (be32toh(zero) != 0)
-                continue;
+                break;
 
             if (sec < (ti->nr_sectors-1)){
                 if (stream_next_bits(s, 32) == -1)
                     goto fail;
                 if (s->word != 0x44894489)
-                    goto fail;
+                    break;
             }
-    }
+        }
+
+        if (sec != ti->nr_sectors)
+            continue;
 
         block = memalloc(ti->len);
         memcpy(block, dat, ti->len);

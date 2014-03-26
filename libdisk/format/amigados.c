@@ -1,10 +1,10 @@
 /*
  * disk/amigados.c
- * 
+ *
  * AmigaDOS disk format.
- * 
+ *
  * Written in 2011 by Keir Fraser
- * 
+ *
  * RAW TRACK LAYOUT:
  *  544 decoded bytes per sector (including sector gap).
  *  11 back-to-back sectors, as encoded below (explicit gap included).
@@ -27,10 +27,10 @@
  *  u32 hdr_csum_even,hdr_csum_odd
  *  u32 dat_csum_even,dat_csum_odd
  *  u8  data_even[512],data_odd[512]
- * 
+ *
  * TRKTYP_amigados data layout:
  *  u8 sector_data[11][512]
- * 
+ *
  * TRKTYP_amigados_extended data layout:
  *  struct sector {
  *   u32 sync;
@@ -38,7 +38,7 @@
  *   u8 label[16];
  *   u8 data[512];
  *  } sector[11];
- * 
+ *
  * The extended form is used by various games:
  *   New Zealand Story: stashes a custom data checksum in the label area
  *   Graftgold (Fire & Ice, Uridium 2, ...): store cyl# in place of track#
@@ -238,6 +238,11 @@ static void *ados_longtrack_write_raw(
     ti->typename = typename;
     return ablk;
 }
+
+struct track_handler amigados_long_103300_handler = {
+    .bytes_per_sector = 103300,
+    .write_raw = ados_longtrack_write_raw,
+};
 
 struct track_handler amigados_long_105500_handler = {
     .bytes_per_sector = 105500,
