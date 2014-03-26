@@ -19,6 +19,9 @@ probe_amiga
 ####################
 # Game List - every checked game is listed here
 
+"1000cc Turbo"
+    * amigados turbo1000cc_a turbo1000cc_b
+
 "A-10 Tank Killer" = amigados
 
 "Action Fighter (Sega)" # US version
@@ -32,7 +35,7 @@ probe_amiga
 
 "After Burner Disk B (Activision)"
     0-158/2 afterburner_data
-   * ignore
+    * ignore
 
 "After Burner (Sega)"
     0-1 amigados
@@ -104,7 +107,7 @@ probe_amiga
     * ignore
 
 "Armalyte"
-     * arc_development_a copylock amigados
+    * arc_development_a copylock amigados
 
 "Armour-Geddon Disk 1"
     0-1 psygnosis_c
@@ -160,6 +163,9 @@ probe_amiga
 
 "Battle Master" = amigados_copylock
 
+"Battle Squadron" 
+    * amigados_long_103300 battle_squadron
+
 "Beastlord Disk 1"
     0 amigados
     2-131 beastlord_a
@@ -170,7 +176,7 @@ probe_amiga
     * ignore
 
 "Beavers"
-     * arc_development_b amigados
+    * arc_development_b amigados
      
 "Beneath A Steel Sky" = amigados
 
@@ -306,7 +312,7 @@ probe_amiga
     * amigados
 
 "Dragon Breed"
-     * arc_development_a copylock amigados
+    * arc_development_a copylock amigados
 
 "Dragon Spirit" = amigados_copylock
 
@@ -532,7 +538,7 @@ probe_amiga
     * psygnosis_a
 
 "McDonald Land"
-     * arc_development_b copylock amigados
+    * arc_development_b copylock amigados
 
 # Disk 1, tracks 1 and 80 may be unformatted
 # Disk 2 track 1 should be Copylock; tracks 0 and 80 may be unformatted
@@ -561,10 +567,13 @@ probe_amiga
 "New Zealand Story" = amigados_copylock
 
 "Nick Faldo's Championship Golf"
-     * arc_development_b copylock amigados
+    * arc_development_b copylock amigados
 
 "Night Hunter"
-    *  night_hunter_a night_hunter_b amigados
+    * night_hunter_a night_hunter_b amigados
+
+"Nightdawn"
+    * amigados nightdawn nightdawn_prot
 
 "Nitro"
     1 protec_longtrack
@@ -639,7 +648,7 @@ probe_amiga
     * amigados hellwig
 
 "Predator II"
-     * arc_development_a copylock amigados
+    * arc_development_a copylock amigados
 
 "Pro Tennis Tour" = blue_byte
 
@@ -665,7 +674,7 @@ probe_amiga
     * rtype_b
 
 "R-Type II"
-     * arc_development_a copylock amigados
+    * arc_development_a copylock amigados
 
 # Hit Squad re-release has no copylock
 "Rainbow Islands" = amigados_copylock
@@ -691,10 +700,10 @@ probe_amiga
     * amigados
 
 "Robozone Disk 1"
-     * arc_development_a copylock amigados
+    * arc_development_a copylock amigados
 
 "Robozone Disk 2"
-     * arc_development_a copylock amigados
+    * arc_development_a copylock amigados
 
 "Rotox" = amigados
 
@@ -779,6 +788,12 @@ probe_amiga
     * gremlin
 # SC2: Both disks protected tracks 158-159
 "Super Cars II" = gremlin_protected
+
+"Super Hang-On" 
+    0 amigados 
+    1 super_hang_on_scores
+    2 supremacy_a 
+    * super_hang_on  
 
 "Superfrog" = rnc_pdos
 
