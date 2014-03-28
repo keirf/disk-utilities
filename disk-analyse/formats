@@ -480,6 +480,15 @@ probe_amiga
 # OCS and AGA versions
 "Jurassic Park" = rnc_pdos_copylock
 
+"Karate Kid II"
+    0-1 amigados
+    2-62 ibm_pc_dd_10sec
+    64 ibm_pc_dd_10sec
+    66 ibm_pc_dd_10sec
+    78-83 amigados
+    92-134 ibm_pc_dd_10sec
+    * ignore
+
 "Khalaan" = amigados
 
 # Many variants. Only tested 1.4e and 1.6e: both have long tracks 5 & 7.
@@ -724,6 +733,10 @@ probe_amiga
 "Shadow Of The Beast III"
     * amigados protec_longtrack psygnosis_a psygnosis_b
 
+"Shaq Fu"
+    1 amigados_long_111000
+    * amigados
+
 # Some releases are mastered with slightly long AmigaDOS tracks.
 # The resulting warnings are harmless!
 "Shinobi" = amigados_copylock
@@ -818,6 +831,8 @@ probe_amiga
     * amigados tlk_dos_2
 
 "Terrorpods" = amigados # extended amigados tracks and some empty tracks
+
+"The Black Cauldron" = amigados_copylock
 
 "The Magnetic Scrolls Collection" = amigados
 
