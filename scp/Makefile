@@ -1,7 +1,13 @@
 ROOT := ..
 include $(ROOT)/Rules.mk
 
-all: scp_dump
+TARGETS :=
+
+ifeq ($(PLATFORM),linux)
+TARGETS += scp_dump
+endif
+
+all: $(TARGETS)
 
 scp_dump: scp.o scp_dump.o
 
