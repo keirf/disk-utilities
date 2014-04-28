@@ -143,7 +143,6 @@ static int dfe2_select_track(struct stream *s, unsigned int tracknr)
     uint16_t head = 0;
     uint16_t sector = 0;
     uint32_t data_length = 0;
-    off_t cur_offst;
     
     if (dfss->dat && (dfss->track == tracknr))
         return 0;
@@ -156,7 +155,6 @@ static int dfe2_select_track(struct stream *s, unsigned int tracknr)
         if (lseek(dfss->fd, data_length, SEEK_CUR) >= dfss->filesz)
             return -1;
         read_exact(dfss->fd, header, 10);
-        cur_offst += data_length + 10;
         cyl = be16toh(*(uint16_t *)&header[0]);
         head = be16toh(*(uint16_t *)&header[2]);
         sector = be16toh(*(uint16_t *)&header[4]);
