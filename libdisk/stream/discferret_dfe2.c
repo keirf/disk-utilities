@@ -143,7 +143,7 @@ static int dfe2_select_track(struct stream *s, unsigned int tracknr)
     uint16_t head = 0;
     uint16_t sector = 0;
     uint32_t data_length = 0;
-    off_t cur_offst;
+    off_t cur_offst = 0;
     
     if (dfss->dat && (dfss->track == tracknr))
         return 0;
