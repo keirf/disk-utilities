@@ -184,6 +184,7 @@ static void ibm_pc_read_raw(
 
     gap4 = ((ti->type == TRKTYP_ibm_pc_dd) ? 80
             : (ti->type == TRKTYP_ibm_pc_dd_10sec) ? 40
+            : (ti->type == TRKTYP_ibm_dd_10sec) ? 40
             : 108);
 
     /* IAM */
