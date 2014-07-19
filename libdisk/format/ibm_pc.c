@@ -289,6 +289,20 @@ struct track_handler ibm_pc_dd_10sec_handler = {
     }
 };
 
+/* Non-standard 10-sector version of the above, with reduced GAP4 length. */
+struct track_handler ibm_dd_10sec_handler = {
+    .density = trkden_double,
+    .bytes_per_sector = 512,
+    .nr_sectors = 10,
+    .write_raw = ibm_pc_write_raw,
+    .read_raw = ibm_pc_read_raw,
+    .write_sectors = ibm_pc_write_sectors,
+    .read_sectors = ibm_pc_read_sectors,
+    .extra_data = & (struct ibm_extra_data) {
+        .sector_base = 0
+    }
+};
+
 /* IBM PC 5.25 HD 1200K */
 struct track_handler ibm_pc_hd_5_25_handler = {
     .density = trkden_high,

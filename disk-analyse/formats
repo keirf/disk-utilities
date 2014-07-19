@@ -971,6 +971,12 @@ sensible
 ibm_pc_dd
     * ibm_pc_dd
 
+ibm_pc_dd_10sec
+    * ibm_pc_dd_10sec
+
+ibm_dd_10sec
+    * ibm_dd_10sec
+
 # 3.5-inch high density (1440K)
 ibm_pc_hd
     * ibm_pc_hd
