@@ -1011,3 +1011,13 @@ acorn_adfs_d_e
 acorn_adfs_f
     * acorn_adfs_f
 
+# Generic IBM-MFM formats handling any arrangement of IBM-formatted track
+
+ibm_mfm_dd
+    * ibm_mfm_dd
+
+ibm_mfm_hd
+    * ibm_mfm_hd
+
+ibm_mfm_ed
+    * ibm_mfm_ed
