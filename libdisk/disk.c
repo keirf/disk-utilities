@@ -375,6 +375,27 @@ const char *disk_get_format_desc_name(enum track_type type)
     return track_format_names[type].desc_name;
 }
 
+void track_get_format_name(
+    struct disk *d, unsigned int tracknr, char *str, size_t size)
+{
+    struct disk_info *di = d->di;
+    struct track_info *ti;
+    const struct track_handler *thnd;
+
+    if (tracknr >= di->nr_tracks) {
+        snprintf(str, size, "???");
+        return;
+    }
+
+    ti = &di->track[tracknr];
+    thnd = handlers[ti->type];
+
+    if (thnd->get_name)
+        thnd->get_name(d, tracknr, str, size);
+    else
+        snprintf(str, size, "%s", ti->typename ?: "???");
+}
+
 int is_valid_sector(struct track_info *ti, unsigned int sector)
 {
     BUG_ON(sector >= ti->nr_sectors);

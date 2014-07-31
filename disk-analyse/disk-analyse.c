@@ -56,19 +56,19 @@ static void usage(int rc)
     exit(rc);
 }
 
-static void dump_track_list(struct disk_info *di)
+static void dump_track_list(struct disk *d)
 {
+    struct disk_info *di = disk_get_info(d);
+    char name[128], prev_name[128];
     unsigned int i, st = 0;
-    const char *prev_name;
-    struct track_info *ti;
 
     if (quiet)
         return;
 
-    prev_name = di->track[0].typename;
+    track_get_format_name(d, 0, prev_name, sizeof(name));
     for (i = 1; i < di->nr_tracks; i++) {
-        ti = &di->track[i];
-        if (ti->typename == prev_name)
+        track_get_format_name(d, i, name, sizeof(name));
+        if (!strcmp(name, prev_name))
             continue;
         if (st == i-1)
             printf("T");
@@ -76,7 +76,7 @@ static void dump_track_list(struct disk_info *di)
             printf("T%u-", st);
         printf("%u: %s\n", i-1, prev_name);
         st = i;
-        prev_name = ti->typename;
+        strcpy(prev_name, name);
     }
     if (st == i-1)
         printf("T");
@@ -143,7 +143,7 @@ static void handle_stream(void)
         printf(" missing\n");
     }
 
-    dump_track_list(di);
+    dump_track_list(d);
 
     if (unidentified)
         fprintf(stderr,"** WARNING: %u tracks are damaged or unidentified!\n",
@@ -194,7 +194,7 @@ static void handle_img(void)
     if (sectors->nr_bytes != 0)
         errx(1, "Unexpected extra data at end of IMG file");
 
-    dump_track_list(di);
+    dump_track_list(d);
 
     disk_close(d);
 

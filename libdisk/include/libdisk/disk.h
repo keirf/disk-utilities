@@ -86,6 +86,9 @@ void disk_close(struct disk *);
 const char *disk_get_format_id_name(enum track_type type);
 const char *disk_get_format_desc_name(enum track_type type);
 
+void track_get_format_name(
+    struct disk *d, unsigned int tracknr, char *str, size_t size);
+
 /* Valid until the disk is closed (disk_close()). */
 struct disk_info *disk_get_info(struct disk *);
 

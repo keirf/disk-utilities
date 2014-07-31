@@ -82,6 +82,8 @@ struct track_handler {
     enum track_density density;
     unsigned int bytes_per_sector;
     unsigned int nr_sectors;
+    void (*get_name)(
+        struct disk *, unsigned int tracknr, char *, size_t);
     void *(*write_raw)(
         struct disk *, unsigned int tracknr, struct stream *);
     void (*read_raw)(

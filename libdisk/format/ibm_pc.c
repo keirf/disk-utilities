@@ -634,20 +634,51 @@ static void ibm_mfm_read_raw(
      * Then write splice. Then ~140*0x4e, leading into 12*0x00. */
 }
 
+void ibm_mfm_get_name(
+    struct disk *d, unsigned int tracknr, char *str, size_t size)
+{
+    struct track_info *ti = &d->di->track[tracknr];
+    struct ibm_track *ibm_track = (struct ibm_track *)ti->dat;
+    struct ibm_sector *cur_sec;
+    int trk_sz, sec_sz, no, sec;
+
+    cur_sec = ibm_track->secs;
+    no = cur_sec->idam.no;
+    trk_sz = sec_sz = 128 << no;
+    for (sec = 1; sec < ti->nr_sectors; sec++) {
+        cur_sec = (struct ibm_sector *)
+            ((char *)cur_sec + sizeof(struct ibm_sector) + sec_sz);
+        trk_sz += sec_sz = 128 << cur_sec->idam.no;
+        if (no != cur_sec->idam.no)
+            no = -1;
+    }
+
+    if (no < 0)
+        snprintf(str, size, "%s (%u sectors, %u bytes)",
+                 ti->typename, ti->nr_sectors, trk_sz);
+    else
+        snprintf(str, size, "%s (%u %u-byte sectors, %u bytes)",
+                 ti->typename, ti->nr_sectors, 128 << no, trk_sz);
+}
+
+
 struct track_handler ibm_mfm_dd_handler = {
     .density = trkden_double,
+    .get_name = ibm_mfm_get_name,
     .write_raw = ibm_mfm_write_raw,
     .read_raw = ibm_mfm_read_raw
 };
 
 struct track_handler ibm_mfm_hd_handler = {
     .density = trkden_high,
+    .get_name = ibm_mfm_get_name,
     .write_raw = ibm_mfm_write_raw,
     .read_raw = ibm_mfm_read_raw
 };
 
 struct track_handler ibm_mfm_ed_handler = {
     .density = trkden_extra,
+    .get_name = ibm_mfm_get_name,
     .write_raw = ibm_mfm_write_raw,
     .read_raw = ibm_mfm_read_raw
 };
