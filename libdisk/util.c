@@ -8,6 +8,7 @@
 
 #include <libdisk/util.h>
 
+#include <ctype.h>
 #include <unistd.h>
 
 void __bug(const char *file, int line)
@@ -19,6 +20,21 @@ void __bug(const char *file, int line)
 void __warn(const char *file, int line)
 {
     warnx("WARNING at %s:%d", file, line);
+}
+
+void filename_extension(const char *filename, char *extension, size_t size)
+{
+    const char *p;
+    unsigned int i;
+
+    extension[0] = '\0';
+    if ((p = strrchr(filename, '.')) == NULL)
+        return;
+
+    for (i = 0; i < (size-1); i++)
+        if ((extension[i] = tolower(p[i+1])) == '\0')
+            break;
+    extension[i] = '\0';
 }
 
 void *memalloc(size_t size)

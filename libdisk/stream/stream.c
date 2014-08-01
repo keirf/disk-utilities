@@ -43,7 +43,8 @@ struct stream *stream_open(const char *name)
 {
     struct stat sbuf;
     const struct stream_type *st;
-    const char *suffix, *const *suffix_list;
+    const char *const *suffix_list;
+    char suffix[8];
     struct stream *s;
     unsigned int i;
 
@@ -53,9 +54,7 @@ struct stream *stream_open(const char *name)
         goto found;
     }
 
-    if ((suffix = strrchr(name, '.')) == NULL)
-        return NULL;
-    suffix++;
+    filename_extension(name, suffix, sizeof(suffix));
 
     for (i = 0; (st = stream_type[i]) != NULL; i++) {
         for (suffix_list = st->suffix; *suffix_list != NULL; suffix_list++) {

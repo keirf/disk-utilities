@@ -207,7 +207,7 @@ static void handle_img(void)
 
 int main(int argc, char **argv)
 {
-    char *p, *config = NULL, *format = NULL;
+    char suffix[8], *config = NULL, *format = NULL;
     int ch;
 
     const static char sopts[] = "hqvip:f:c:";
@@ -268,7 +268,8 @@ int main(int argc, char **argv)
 
     format_lists = parse_config(config, format);
 
-    if (((p = strrchr(in, '.')) != NULL) && !strcmp(p+1, "img"))
+    filename_extension(in, suffix, sizeof(suffix));
+    if (!strcmp(suffix, "img"))
         handle_img();
     else
         handle_stream();

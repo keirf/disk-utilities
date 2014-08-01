@@ -39,25 +39,25 @@ static void tbuf_finalise(struct tbuf *tbuf);
 static struct container *container_from_filename(
     const char *name)
 {
-    const char *p = strrchr(name, '.');
-    if (p == NULL)
-        goto fail;
-    p++;
-    if (!strcmp(p, "adf"))
+    char suffix[8];
+
+    filename_extension(name, suffix, sizeof(suffix));
+
+    if (!strcmp(suffix, "adf"))
         return &container_adf;
-    if (!strcmp(p, "eadf"))
+    if (!strcmp(suffix, "eadf"))
         return &container_eadf;
-    if (!strcmp(p, "dsk"))
+    if (!strcmp(suffix, "dsk"))
         return &container_dsk;
-    if (!strcmp(p, "imd"))
+    if (!strcmp(suffix, "imd"))
         return &container_imd;
-    if (!strcmp(p, "img"))
+    if (!strcmp(suffix, "img"))
         return &container_img;
-    if (!strcmp(p, "ipf"))
+    if (!strcmp(suffix, "ipf"))
         return &container_ipf;
-    if (!strcmp(p, "scp"))
+    if (!strcmp(suffix, "scp"))
         return &container_scp;
-fail:
+
     warnx("Unknown file suffix: %s (valid suffixes: .adf,.dsk,.ipf)", name);
     return NULL;
 }

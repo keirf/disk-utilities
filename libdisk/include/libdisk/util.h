@@ -73,6 +73,8 @@ typedef char bool_t;
 
 #pragma GCC visibility push(default)
 
+void filename_extension(const char *filename, char *extension, size_t size);
+
 void *memalloc(size_t size);
 void memfree(void *p);
 
