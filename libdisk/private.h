@@ -118,6 +118,7 @@ struct container {
 extern struct container container_adf;
 extern struct container container_eadf;
 extern struct container container_dsk;
+extern struct container container_imd;
 extern struct container container_img;
 extern struct container container_ipf;
 extern struct container container_scp;
@@ -140,6 +141,11 @@ struct ibm_idam { uint8_t cyl, head, sec, no; };
 int ibm_scan_mark(struct stream *s, uint16_t mark, unsigned int max_scan);
 int ibm_scan_idam(struct stream *s, struct ibm_idam *idam);
 int ibm_scan_dam(struct stream *s);
+
+void setup_ibm_mfm_track(
+    struct disk *d, unsigned int tracknr,
+    enum track_type type, unsigned int nr_secs, unsigned int no,
+    uint8_t *sec_map, uint8_t *cyl_map, uint8_t *head_map, uint8_t *dat);
 
 bool_t track_is_copylock(struct track_info *ti);
 

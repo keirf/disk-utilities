@@ -94,6 +94,19 @@ int ibm_scan_dam(struct stream *s)
     return ibm_scan_mark(s, 0x5545, 1000);
 }
 
+static int choose_gap4(
+    struct ibm_track *ibm_track, unsigned int gap_bits, unsigned int nr_secs)
+{
+    int gap4 = ibm_track->has_iam
+        ? (gap_bits - 16*16) / ((nr_secs+1) * 16)
+        : gap_bits / (nr_secs * 16);
+    gap4 = (gap4 > 108+2) ? 108
+        : (gap4 > 80+2) ? 80
+        : (gap4 > 40+2) ? 40
+        : 20;
+    return gap4;
+}
+
 static void *ibm_mfm_write_raw(
     struct disk *d, unsigned int tracknr, struct stream *s)
 {
@@ -101,7 +114,7 @@ static void *ibm_mfm_write_raw(
     struct ibm_psector *ibm_secs, *new_sec, *cur_sec, *next_sec, **pprev_sec;
     struct ibm_track *ibm_track = NULL;
     unsigned int dat_bytes = 0, total_distance = 0, nr_blocks = 0;
-    unsigned int sec_sz, gap4;
+    unsigned int sec_sz;
     bool_t iam = 0;
 
     /* IAM */
@@ -185,14 +198,6 @@ static void *ibm_mfm_write_raw(
     if (nr_blocks == 0)
         goto out;
 
-    gap4 = iam
-        ? (total_distance - 16*16) / ((nr_blocks+1) * 16)
-        : total_distance / (nr_blocks * 16);
-    gap4 = (gap4 > 108+2) ? 108
-        : (gap4 > 80+2) ? 80
-        : (gap4 > 40+2) ? 40
-        : 20;
-
     ti->data_bitoff = (iam ? 80 : 140) * 16;
     ti->nr_sectors = nr_blocks;
     set_all_sectors_valid(ti);
@@ -202,7 +207,7 @@ static void *ibm_mfm_write_raw(
                          + dat_bytes);
 
     ibm_track->has_iam = iam ? 1 : 0;
-    ibm_track->gap4 = gap4;
+    ibm_track->gap4 = choose_gap4(ibm_track, total_distance, nr_blocks);
 
     ti->len = sizeof(struct ibm_track);
     for (cur_sec = ibm_secs; cur_sec; cur_sec = cur_sec->next) {
@@ -272,7 +277,7 @@ static void ibm_mfm_read_raw(
      * Then write splice. Then ~140*0x4e, leading into 12*0x00. */
 }
 
-void ibm_mfm_get_name(
+static void ibm_mfm_get_name(
     struct disk *d, unsigned int tracknr, char *str, size_t size)
 {
     struct track_info *ti = &d->di->track[tracknr];
@@ -297,6 +302,51 @@ void ibm_mfm_get_name(
     else
         snprintf(str, size, "%s (%u %u-byte sectors, %u bytes)",
                  ti->typename, ti->nr_sectors, 128 << no, trk_sz);
+}
+
+void setup_ibm_mfm_track(
+    struct disk *d, unsigned int tracknr,
+    enum track_type type, unsigned int nr_secs, unsigned int no,
+    uint8_t *sec_map, uint8_t *cyl_map, uint8_t *head_map, uint8_t *dat)
+{
+    struct track_info *ti = &d->di->track[tracknr];
+    struct ibm_track *ibm_track;
+    struct ibm_sector *cur_sec;
+    unsigned int sec_sz = 128u << no, sec;
+    int gap_bits;
+
+    init_track_info(ti, type);
+
+    ti->len = (sizeof(struct ibm_track)
+               + nr_secs * (sizeof(struct ibm_sector) + sec_sz));
+    ti->dat = memalloc(ti->len);
+
+    ibm_track = (struct ibm_track *)ti->dat;
+    cur_sec = ibm_track->secs;
+    for (sec = 0; sec < nr_secs; sec++) {
+        cur_sec->idam.cyl = cyl_map[sec];
+        cur_sec->idam.head = head_map[sec];
+        cur_sec->idam.sec = sec_map[sec];
+        cur_sec->idam.no = no;
+        memcpy(cur_sec->dat, &dat[sec*sec_sz], sec_sz);
+        cur_sec = (struct ibm_sector *)
+            ((char *)cur_sec + sizeof(struct ibm_sector) + sec_sz);
+    }
+
+    ti->total_bits = DEFAULT_BITS_PER_TRACK;
+    if (handlers[type]->density == trkden_high)
+        ti->total_bits *= 2;
+
+    gap_bits = ti->total_bits - nr_secs * (62 + sec_sz) * 16;
+    if (gap_bits < 0)
+        errx(1, "Too much data for track!");
+
+    ibm_track->has_iam = 1;
+    ibm_track->gap4 = choose_gap4(ibm_track, gap_bits, nr_secs);
+
+    ti->data_bitoff = (ibm_track->has_iam ? 80 : 140) * 16;
+    ti->nr_sectors = nr_secs;
+    set_all_sectors_valid(ti);
 }
 
 

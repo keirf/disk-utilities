@@ -49,6 +49,8 @@ static struct container *container_from_filename(
         return &container_eadf;
     if (!strcmp(p, "dsk"))
         return &container_dsk;
+    if (!strcmp(p, "imd"))
+        return &container_imd;
     if (!strcmp(p, "img"))
         return &container_img;
     if (!strcmp(p, "ipf"))

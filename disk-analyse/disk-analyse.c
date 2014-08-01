@@ -44,6 +44,7 @@ static void usage(int rc)
     printf("Supported file formats (suffix => type):\n");
     printf("  .adf  => ADF\n");
     printf("  .eadf => Extended-ADF\n");
+    printf("  .imd  => ImageDisk\n");
     printf("  .img  => IBM-MFM Sector Dump\n");
     printf("  .ipf  => SPS/IPF\n");
     printf("  .dsk  => Libdisk\n");
