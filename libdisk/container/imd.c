@@ -20,6 +20,15 @@ struct track_header {
     uint8_t mode, cyl, head, nr_secs, sec_sz;
 };
 
+enum {
+    MODE_fm_500kbps = 0,
+    MODE_fm_300kbps = 1,
+    MODE_fm_250kbps = 2,
+    MODE_mfm_500kbps = 3,
+    MODE_mfm_300kbps = 4,
+    MODE_mfm_250kbps = 5
+};
+
 static struct container *imd_open(struct disk *d)
 {
     char hdr[1024], *p;
@@ -61,17 +70,17 @@ static struct container *imd_open(struct disk *d)
         off += sizeof(thdr);
 
         switch (thdr.mode) {
-        case 0: /* 500 kbps FM */
-        case 1: /* 300 kbps FM */
-        case 2: /* 250 kbps FM */
+        case MODE_fm_500kbps:
+        case MODE_fm_300kbps:
+        case MODE_fm_250kbps:
             warnx("IMD: Cannot parse FM-encoded track");
             goto cleanup_error;
-        case 3: /* 500 kbps MFM */
+        case MODE_mfm_500kbps:
             type = TRKTYP_ibm_mfm_hd;
             break;
-        case 4: /* 300 kbps MFM */
+        case MODE_mfm_300kbps:
             /* Assume this is DD written on a 360 RPM drive. Fall through. */
-        case 5: /* 250 kbps MFM */
+        case MODE_mfm_250kbps:
             type = TRKTYP_ibm_mfm_dd;
             break;
         default:
@@ -173,9 +182,14 @@ cleanup_error:
 
 static void imd_close(struct disk *d)
 {
+    struct disk_info *di = d->di;
+    struct track_info *ti;
+    struct track_header thdr;
+    uint8_t *secs, *cyls, *heads, *nos, *dat, c;
     char timestr[30], sig[128];
     struct tm tm;
     time_t t;
+    unsigned int i, trk, sec, sec_sz;
 
     lseek(d->fd, 0, SEEK_SET);
     if (ftruncate(d->fd, 0) < 0)
@@ -190,15 +204,86 @@ static void imd_close(struct disk *d)
              timestr);
     write_exact(d->fd, sig, strlen(sig));
 
-#if 0
-    for (i = 0; i < di->nr_tracks; i++) {
-        ti = &di->track[i];
-        if (ti->type == TRKTYP_unformatted) {
-        } else {
+    for (trk = 0; trk < di->nr_tracks; trk++) {
+        ti = &di->track[trk];
+
+        thdr.mode = 0;
+        switch (ti->type) {
+        case TRKTYP_ibm_mfm_dd:
+            thdr.mode = MODE_mfm_250kbps;
+            break;
+        case TRKTYP_ibm_mfm_hd:
+            thdr.mode = MODE_mfm_500kbps;
+            break;
+        case TRKTYP_unformatted:
+            break;
+        default:
+            warnx("T%u: Ignoring track format '%s' while writing IMD file",
+                  trk, ti->typename);
+            break;
         }
-        write_exact(d->fd, &thdr, sizeof(thdr));
+        if (!thdr.mode || !ti->nr_sectors)
+            continue;
+
+        if (ti->nr_sectors >= 256) {
+            warnx("T%u: Unexpected number of IBM-MFM sectors (%u)",
+                  trk, ti->nr_sectors);
+            continue;
+        }
+
+        retrieve_ibm_mfm_track(
+            d, trk, &secs, &cyls, &heads, &nos, &dat);
+
+        thdr.cyl = trk>>1;
+        thdr.head = trk&1;
+        thdr.nr_secs = ti->nr_sectors;
+        thdr.sec_sz = nos[0];
+        sec_sz = 128u << thdr.sec_sz;
+        
+        for (sec = 0; sec < ti->nr_sectors; sec++) {
+            if (nos[sec] != thdr.sec_sz) {
+                warnx("T%u: Cannot write mixed-sized sectors to IMD file",
+                      trk);
+                break;
+            }
+            if (cyls[sec] != thdr.cyl)
+                thdr.head |= 0x80;
+            if (heads[sec] != (thdr.head&1))
+                thdr.head |= 0x40;
+        }
+
+        if (sec == ti->nr_sectors) {
+            write_exact(d->fd, &thdr, sizeof(thdr));
+            write_exact(d->fd, secs, ti->nr_sectors);
+            if (thdr.head & 0x80)
+                write_exact(d->fd, cyls, ti->nr_sectors);
+            if (thdr.head & 0x40)
+                write_exact(d->fd, heads, ti->nr_sectors);
+            for (sec = 0; sec < ti->nr_sectors; sec++) {
+                /* Check for identical bytes throughout sector. */
+                for (i = 0; i < sec_sz; i++)
+                    if (dat[sec*sec_sz+i] != dat[sec*sec_sz])
+                        break;
+                if (i == sec_sz) {
+                    /* All bytes match: write compressed sector. */
+                    c = 2;
+                    write_exact(d->fd, &c, 1);
+                    write_exact(d->fd, &dat[sec*sec_sz], 1);
+                } else {
+                    /* Mismatching bytes found: write ordinary sector. */
+                    c = 1;
+                    write_exact(d->fd, &c, 1);
+                    write_exact(d->fd, &dat[sec*sec_sz], sec_sz);
+                }
+            }
+        }
+
+        memfree(secs);
+        memfree(cyls);
+        memfree(heads);
+        memfree(nos);
+        memfree(dat);
     }
-#endif
 }
 
 struct container container_imd = {

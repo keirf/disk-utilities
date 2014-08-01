@@ -349,6 +349,45 @@ void setup_ibm_mfm_track(
     set_all_sectors_valid(ti);
 }
 
+void retrieve_ibm_mfm_track(
+    struct disk *d, unsigned int tracknr,
+    uint8_t **psec_map, uint8_t **pcyl_map,
+    uint8_t **phead_map, uint8_t **pno_map,
+    uint8_t **pdat)
+{
+    struct track_info *ti = &d->di->track[tracknr];
+    struct ibm_track *ibm_track = (struct ibm_track *)ti->dat;
+    struct ibm_sector *cur_sec;
+    uint8_t *sec_map, *cyl_map, *head_map, *no_map, *dat;
+    unsigned int sec, sec_sz, dat_sz = 0;
+
+    cur_sec = ibm_track->secs;
+    for (sec = 0; sec < ti->nr_sectors; sec++) {
+        sec_sz = 128u << cur_sec->idam.no;
+        dat_sz += sec_sz;
+        cur_sec = (struct ibm_sector *)
+            ((char *)cur_sec + sizeof(struct ibm_sector) + sec_sz);
+    }
+
+    *psec_map = sec_map = memalloc(ti->nr_sectors);
+    *pcyl_map = cyl_map = memalloc(ti->nr_sectors);
+    *phead_map = head_map = memalloc(ti->nr_sectors);
+    *pno_map = no_map = memalloc(ti->nr_sectors);
+    *pdat = dat = memalloc(dat_sz);
+
+    cur_sec = ibm_track->secs;
+    for (sec = 0; sec < ti->nr_sectors; sec++) { 
+        sec_sz = 128u << cur_sec->idam.no;
+        cyl_map[sec] = cur_sec->idam.cyl;
+        head_map[sec] = cur_sec->idam.head;
+        sec_map[sec] = cur_sec->idam.sec;
+        no_map[sec] = cur_sec->idam.no;
+        memcpy(dat, cur_sec->dat, sec_sz);
+        dat += sec_sz;
+        cur_sec = (struct ibm_sector *)
+            ((char *)cur_sec + sizeof(struct ibm_sector) + sec_sz);
+    }
+}
 
 struct track_handler ibm_mfm_dd_handler = {
     .density = trkden_double,

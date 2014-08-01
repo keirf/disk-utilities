@@ -146,6 +146,11 @@ void setup_ibm_mfm_track(
     struct disk *d, unsigned int tracknr,
     enum track_type type, unsigned int nr_secs, unsigned int no,
     uint8_t *sec_map, uint8_t *cyl_map, uint8_t *head_map, uint8_t *dat);
+void retrieve_ibm_mfm_track(
+    struct disk *d, unsigned int tracknr,
+    uint8_t **psec_map, uint8_t **pcyl_map,
+    uint8_t **phead_map, uint8_t **pno_map,
+    uint8_t **pdat);
 
 bool_t track_is_copylock(struct track_info *ti);
 
