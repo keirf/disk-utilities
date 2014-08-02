@@ -2,6 +2,7 @@
 *.[oa]pic
 .*.d
 *~
+*.dylib
 *.so
 *.so.*
 *.orig
