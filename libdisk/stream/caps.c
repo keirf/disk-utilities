@@ -12,7 +12,11 @@
 #include <caps/capsimage.h>
 #include <dlfcn.h>
 
+#ifdef __APPLE__
+#define CAPSLIB_NAME    "/Library/Frameworks/CAPSImage.framework/CAPSImage"
+#else
 #define CAPSLIB_NAME    "libcapsimage.so.4"
+#endif
 
 #define CAPS_FLAGS (DI_LOCK_DENVAR|DI_LOCK_DENNOISE|DI_LOCK_NOISE|      \
                     DI_LOCK_UPDATEFD|DI_LOCK_TYPE)
