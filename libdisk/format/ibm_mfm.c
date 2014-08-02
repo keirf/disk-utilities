@@ -28,6 +28,7 @@
 
 struct ibm_sector {
     struct ibm_idam idam;
+    uint8_t mark;
     uint8_t dat[0];
 };
 
@@ -43,7 +44,7 @@ struct ibm_psector {
     struct ibm_sector s;
 };
 
-int ibm_scan_mark(struct stream *s, uint16_t mark, unsigned int max_scan)
+int ibm_scan_mark(struct stream *s, unsigned int max_scan, uint8_t *pmark)
 {
     int idx_off = -1;
 
@@ -51,11 +52,12 @@ int ibm_scan_mark(struct stream *s, uint16_t mark, unsigned int max_scan)
         if (s->word != 0x44894489)
             continue;
         stream_start_crc(s);
-        if ((stream_next_bits(s, 32) == -1) || (s->word != (0x44890000|mark)))
+        if ((stream_next_bits(s, 32) == -1) || ((s->word >> 16) != 0x4489))
             break;
         idx_off = s->index_offset - 63;
         if (idx_off < 0)
             idx_off += s->track_bitlen;
+        *pmark = (uint8_t)mfm_decode_bits(bc_mfm, s->word);
         break;
     } while ((stream_next_bit(s) != -1) && --max_scan);
 
@@ -64,8 +66,11 @@ int ibm_scan_mark(struct stream *s, uint16_t mark, unsigned int max_scan)
 
 int ibm_scan_idam(struct stream *s, struct ibm_idam *idam)
 {
-    int idx_off = ibm_scan_mark(s, 0x5554, ~0u);
-    if (idx_off < 0)
+    uint8_t mark;
+    int idx_off;
+
+    idx_off = ibm_scan_mark(s, ~0u, &mark);
+    if ((idx_off < 0) || (mark != IBM_MARK_IDAM))
         goto fail;
 
     /* cyl,head */
@@ -91,7 +96,9 @@ fail:
 
 int ibm_scan_dam(struct stream *s)
 {
-    return ibm_scan_mark(s, 0x5545, 1000);
+    uint8_t mark;
+    int idx_off = ibm_scan_mark(s, 1000, &mark);
+    return (mark == IBM_MARK_DAM) ? idx_off : -1;
 }
 
 static int choose_gap4(
@@ -133,7 +140,7 @@ static void *ibm_mfm_write_raw(
     while (stream_next_bit(s) != -1) {
 
         int idx_off;
-        uint8_t dat[2*16384];
+        uint8_t mark, dat[2*16384];
         struct ibm_idam idam;
 
         /* IDAM */
@@ -162,8 +169,9 @@ static void *ibm_mfm_write_raw(
         if (cur_sec && (abs(idx_off - cur_sec->offset) < 1000))
             continue;
 
-        /* DAM */
-        if (((idx_off = ibm_scan_dam(s)) < 0) ||
+        /* DAM/DDAM */
+        if (((idx_off = ibm_scan_mark(s, 1000, &mark)) < 0) ||
+            ((mark != IBM_MARK_DAM) && (mark != IBM_MARK_DDAM)) ||
             (stream_next_bytes(s, dat, 2*sec_sz) == -1) ||
             (stream_next_bits(s, 32) == -1) || s->crc16_ccitt)
             continue;
@@ -174,6 +182,7 @@ static void *ibm_mfm_write_raw(
         new_sec->offset = idx_off;
         memcpy(&new_sec->s.dat[0], dat, sec_sz);
         memcpy(&new_sec->s.idam, &idam, sizeof(idam));
+        new_sec->s.mark = mark;
         new_sec->next = *pprev_sec;
         *pprev_sec = new_sec;
     }
@@ -249,7 +258,8 @@ static void ibm_mfm_read_raw(
             tbuf_bits(tbuf, SPEED_AVG, bc_mfm, 8, 0x00);
         tbuf_start_crc(tbuf);
         tbuf_bits(tbuf, SPEED_AVG, bc_raw, 32, 0x44894489);
-        tbuf_bits(tbuf, SPEED_AVG, bc_raw, 32, 0x44895554);
+        tbuf_bits(tbuf, SPEED_AVG, bc_raw, 16, 0x4489);
+        tbuf_bits(tbuf, SPEED_AVG, bc_mfm, 8, IBM_MARK_IDAM);
         tbuf_bits(tbuf, SPEED_AVG, bc_mfm, 8, cur_sec->idam.cyl);
         tbuf_bits(tbuf, SPEED_AVG, bc_mfm, 8, cur_sec->idam.head);
         tbuf_bits(tbuf, SPEED_AVG, bc_mfm, 8, cur_sec->idam.sec);
@@ -263,7 +273,8 @@ static void ibm_mfm_read_raw(
             tbuf_bits(tbuf, SPEED_AVG, bc_mfm, 8, 0x00);
         tbuf_start_crc(tbuf);
         tbuf_bits(tbuf, SPEED_AVG, bc_raw, 32, 0x44894489);
-        tbuf_bits(tbuf, SPEED_AVG, bc_raw, 32, 0x44895545);
+        tbuf_bits(tbuf, SPEED_AVG, bc_raw, 16, 0x4489);
+        tbuf_bits(tbuf, SPEED_AVG, bc_mfm, 8, cur_sec->mark);
         tbuf_bytes(tbuf, SPEED_AVG, bc_mfm, sec_sz, cur_sec->dat);
         tbuf_emit_crc16_ccitt(tbuf, SPEED_AVG);
         for (i = 0; i < ibm_track->gap4; i++)
@@ -307,7 +318,8 @@ static void ibm_mfm_get_name(
 void setup_ibm_mfm_track(
     struct disk *d, unsigned int tracknr,
     enum track_type type, unsigned int nr_secs, unsigned int no,
-    uint8_t *sec_map, uint8_t *cyl_map, uint8_t *head_map, uint8_t *dat)
+    uint8_t *sec_map, uint8_t *cyl_map, uint8_t *head_map,
+    uint8_t *mark_map, uint8_t *dat)
 {
     struct track_info *ti = &d->di->track[tracknr];
     struct ibm_track *ibm_track;
@@ -328,6 +340,7 @@ void setup_ibm_mfm_track(
         cur_sec->idam.head = head_map[sec];
         cur_sec->idam.sec = sec_map[sec];
         cur_sec->idam.no = no;
+        cur_sec->mark = mark_map[sec];
         memcpy(cur_sec->dat, &dat[sec*sec_sz], sec_sz);
         cur_sec = (struct ibm_sector *)
             ((char *)cur_sec + sizeof(struct ibm_sector) + sec_sz);
@@ -353,12 +366,12 @@ void retrieve_ibm_mfm_track(
     struct disk *d, unsigned int tracknr,
     uint8_t **psec_map, uint8_t **pcyl_map,
     uint8_t **phead_map, uint8_t **pno_map,
-    uint8_t **pdat)
+    uint8_t **pmark_map, uint8_t **pdat)
 {
     struct track_info *ti = &d->di->track[tracknr];
     struct ibm_track *ibm_track = (struct ibm_track *)ti->dat;
     struct ibm_sector *cur_sec;
-    uint8_t *sec_map, *cyl_map, *head_map, *no_map, *dat;
+    uint8_t *sec_map, *cyl_map, *head_map, *no_map, *mark_map, *dat;
     unsigned int sec, sec_sz, dat_sz = 0;
 
     cur_sec = ibm_track->secs;
@@ -373,6 +386,7 @@ void retrieve_ibm_mfm_track(
     *pcyl_map = cyl_map = memalloc(ti->nr_sectors);
     *phead_map = head_map = memalloc(ti->nr_sectors);
     *pno_map = no_map = memalloc(ti->nr_sectors);
+    *pmark_map = mark_map = memalloc(ti->nr_sectors);
     *pdat = dat = memalloc(dat_sz);
 
     cur_sec = ibm_track->secs;
@@ -382,6 +396,7 @@ void retrieve_ibm_mfm_track(
         head_map[sec] = cur_sec->idam.head;
         sec_map[sec] = cur_sec->idam.sec;
         no_map[sec] = cur_sec->idam.no;
+        mark_map[sec] = cur_sec->mark;
         memcpy(dat, cur_sec->dat, sec_sz);
         dat += sec_sz;
         cur_sec = (struct ibm_sector *)

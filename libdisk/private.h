@@ -138,19 +138,23 @@ uint32_t amigados_checksum(void *dat, unsigned int bytes);
 
 /* IBM format decode helpers. */
 struct ibm_idam { uint8_t cyl, head, sec, no; };
-int ibm_scan_mark(struct stream *s, uint16_t mark, unsigned int max_scan);
+#define IBM_MARK_IDAM 0xfe
+#define IBM_MARK_DAM  0xfb
+#define IBM_MARK_DDAM 0xf8
+int ibm_scan_mark(struct stream *s, unsigned int max_scan, uint8_t *pmark);
 int ibm_scan_idam(struct stream *s, struct ibm_idam *idam);
 int ibm_scan_dam(struct stream *s);
 
 void setup_ibm_mfm_track(
     struct disk *d, unsigned int tracknr,
     enum track_type type, unsigned int nr_secs, unsigned int no,
-    uint8_t *sec_map, uint8_t *cyl_map, uint8_t *head_map, uint8_t *dat);
+    uint8_t *sec_map, uint8_t *cyl_map, uint8_t *head_map,
+    uint8_t *mark_map, uint8_t *dat);
 void retrieve_ibm_mfm_track(
     struct disk *d, unsigned int tracknr,
     uint8_t **psec_map, uint8_t **pcyl_map,
     uint8_t **phead_map, uint8_t **pno_map,
-    uint8_t **pdat);
+    uint8_t **pmark_map, uint8_t **pdat);
 
 bool_t track_is_copylock(struct track_info *ti);
 

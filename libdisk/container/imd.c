@@ -32,7 +32,7 @@ enum {
 static struct container *imd_open(struct disk *d)
 {
     char hdr[1024], *p;
-    uint8_t secs[256], cyls[256], heads[256], c, *dat = NULL;
+    uint8_t secs[256], cyls[256], heads[256], marks[256], c, *dat = NULL;
     struct track_header thdr;
     struct disk_info *di;
     unsigned int i, off, trk, sec_sz, type;
@@ -132,9 +132,9 @@ static struct container *imd_open(struct disk *d)
                 warnx("IMD: trk %u, sec %u: Data CRC error", trk, i);
                 c -= 4;
             }
+            marks[i] = IBM_MARK_DAM;
             if (c > 2) {
-                warnx("IMD: trk %u, sec %u: Deleted-Data Address Mark "
-                      "ignored", trk, i);
+                marks[i] = IBM_MARK_DDAM;
                 c -= 2;
             }
             switch (c) {
@@ -157,7 +157,7 @@ static struct container *imd_open(struct disk *d)
         }
 
         setup_ibm_mfm_track(d, trk, type, thdr.nr_secs, thdr.sec_sz,
-                            secs, cyls, heads, dat);
+                            secs, cyls, heads, marks, dat);
 
         memfree(dat);
         dat = NULL;
@@ -185,7 +185,7 @@ static void imd_close(struct disk *d)
     struct disk_info *di = d->di;
     struct track_info *ti;
     struct track_header thdr;
-    uint8_t *secs, *cyls, *heads, *nos, *dat, c;
+    uint8_t *secs, *cyls, *heads, *nos, *marks, *dat, c;
     char timestr[30], sig[128];
     struct tm tm;
     time_t t;
@@ -232,7 +232,7 @@ static void imd_close(struct disk *d)
         }
 
         retrieve_ibm_mfm_track(
-            d, trk, &secs, &cyls, &heads, &nos, &dat);
+            d, trk, &secs, &cyls, &heads, &nos, &marks, &dat);
 
         thdr.cyl = trk>>1;
         thdr.head = trk&1;
@@ -260,18 +260,18 @@ static void imd_close(struct disk *d)
             if (thdr.head & 0x40)
                 write_exact(d->fd, heads, ti->nr_sectors);
             for (sec = 0; sec < ti->nr_sectors; sec++) {
+                c = (marks[sec] == IBM_MARK_DAM) ? 1 : 3;
                 /* Check for identical bytes throughout sector. */
                 for (i = 0; i < sec_sz; i++)
                     if (dat[sec*sec_sz+i] != dat[sec*sec_sz])
                         break;
                 if (i == sec_sz) {
                     /* All bytes match: write compressed sector. */
-                    c = 2;
+                    c += 1;
                     write_exact(d->fd, &c, 1);
                     write_exact(d->fd, &dat[sec*sec_sz], 1);
                 } else {
                     /* Mismatching bytes found: write ordinary sector. */
-                    c = 1;
                     write_exact(d->fd, &c, 1);
                     write_exact(d->fd, &dat[sec*sec_sz], sec_sz);
                 }
@@ -282,6 +282,7 @@ static void imd_close(struct disk *d)
         memfree(cyls);
         memfree(heads);
         memfree(nos);
+        memfree(marks);
         memfree(dat);
     }
 }
