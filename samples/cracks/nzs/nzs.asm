@@ -132,9 +132,6 @@ main:   move.w  #$2000,sr       ; allow CPU interrupts now that we are
 
         jmp     (a5)
 
-zap_hiscore:
-        rts
-
 PATCH1_START:    
         ; (We are in place of the Copylock)
         ; Fake the Copylock by hardwiring the key and jumping straight past
