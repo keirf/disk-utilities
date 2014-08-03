@@ -25,10 +25,17 @@
 #include "common.h"
 
 int quiet, verbose;
-static int index_align;
+static int index_align, single_sided = -1;
 static enum pll_mode pll_mode = PLL_default;
 static struct format_list **format_lists;
 static char *in, *out;
+
+/* Iteration start/step for single- and double-sided modes. */
+#define TRACK_START  ((single_sided == 1) ? 1 : 0)
+#define TRACK_STEP   ((single_sided == -1) ? 1 : 2)
+/* Output track vs cylinder numbers in double- vs single-sided operation. */
+#define TRACK_ARG(t) (((t) - TRACK_START) / TRACK_STEP)
+#define TRACK_CHR    ((single_sided == -1) ? 'T' : 'C')
 
 static void usage(int rc)
 {
@@ -39,6 +46,7 @@ static void usage(int rc)
     printf("  -v, --verbose Print extra diagnostic info\n");
     printf("  -i, --index-align   Align all track starts near index mark\n");
     printf("  -p, --pll=MODE      MODE={fixed,variable,authentic}\n");
+    printf("  -s, --ss[=0|1]      Single-sided disk (default is side 0)\n");
     printf("  -f, --format=FORMAT Name of format descriptor in config file\n");
     printf("  -c, --config=FILE   Config file to parse for format info\n");
     printf("Supported file formats (suffix => type):\n");
@@ -61,29 +69,30 @@ static void dump_track_list(struct disk *d)
 {
     struct disk_info *di = disk_get_info(d);
     char name[128], prev_name[128];
-    unsigned int i, st = 0;
+    unsigned int i, st;
 
     if (quiet)
         return;
 
-    track_get_format_name(d, 0, prev_name, sizeof(name));
-    for (i = 1; i < di->nr_tracks; i++) {
+    i = st = TRACK_START;
+    track_get_format_name(d, i, prev_name, sizeof(name));
+    while ((i += TRACK_STEP) < di->nr_tracks) {
         track_get_format_name(d, i, name, sizeof(name));
         if (!strcmp(name, prev_name))
             continue;
         if (st == i-1)
-            printf("T");
+            printf("%c", TRACK_CHR);
         else
-            printf("T%u-", st);
-        printf("%u: %s\n", i-1, prev_name);
+            printf("%c%u-", TRACK_CHR, TRACK_ARG(st));
+        printf("%u: %s\n", TRACK_ARG(i-TRACK_STEP), prev_name);
         st = i;
         strcpy(prev_name, name);
     }
-    if (st == i-1)
-        printf("T");
+    if (st == i-TRACK_STEP)
+        printf("%c", TRACK_CHR);
     else
-        printf("T%u-", st);
-    printf("%u: %s\n", i-1, prev_name);
+        printf("%c%u-", TRACK_CHR, TRACK_ARG(st));
+    printf("%u: %s\n", TRACK_ARG(i-TRACK_STEP), prev_name);
 }
 
 static void handle_stream(void)
@@ -104,7 +113,7 @@ static void handle_stream(void)
 
     di = disk_get_info(d);
 
-    for (i = 0; i < di->nr_tracks; i++) {
+    for (i = TRACK_START; i < di->nr_tracks; i += TRACK_STEP) {
         struct format_list *list = format_lists[i];
         unsigned int j;
         if (list == NULL)
@@ -126,7 +135,7 @@ static void handle_stream(void)
         }
     }
 
-    for (i = 0; i < di->nr_tracks; i++) {
+    for (i = TRACK_START; i < di->nr_tracks; i += TRACK_STEP) {
         unsigned int j;
         ti = &di->track[i];
         if (index_align)
@@ -137,7 +146,7 @@ static void handle_stream(void)
         if (j == ti->nr_sectors)
             continue;
         unidentified++;
-        printf("T%u: sectors ", i);
+        printf("%c%u: sectors ", TRACK_CHR, TRACK_ARG(i));
         for (j = 0; j < ti->nr_sectors; j++)
             if (!is_valid_sector(ti, j))
                 printf("%u,", j);
@@ -181,15 +190,19 @@ static void handle_img(void)
     read_exact(fd, sectors->data, sz);
     close(fd);
 
-    for (i = 0; (i < di->nr_tracks) && sectors->nr_bytes; i++) {
+    for (i = TRACK_START;
+         (i < di->nr_tracks) && sectors->nr_bytes;
+         i += TRACK_STEP) {
         struct format_list *list = format_lists[i];
         if ((list == NULL) || (list->nr == 0))
             continue;
         if (list->nr > 1)
-            errx(1, "T%u: More than one format specified for IMG data", i);
+            errx(1, "%c%u: More than one format specified for IMG data",
+                 TRACK_CHR, TRACK_ARG(i));
         if (track_write_sectors(sectors, i, list->ent[0]) != 0)
-            errx(1, "T%u: %s: Unable to import IMG data",
-                 i, disk_get_format_desc_name(list->ent[0]));
+            errx(1, "%c%u: %s: Unable to import IMG data",
+                 TRACK_CHR, TRACK_ARG(i),
+                 disk_get_format_desc_name(list->ent[0]));
     }
 
     if (sectors->nr_bytes != 0)
@@ -210,13 +223,14 @@ int main(int argc, char **argv)
     char suffix[8], *config = NULL, *format = NULL;
     int ch;
 
-    const static char sopts[] = "hqvip:f:c:";
+    const static char sopts[] = "hqvip:s::f:c:";
     const static struct option lopts[] = {
         { "help", 0, NULL, 'h' },
         { "quiet", 0, NULL, 'q' },
         { "verbose", 0, NULL, 'v' },
         { "index-align", 0, NULL, 'i' },
         { "pll", 1, NULL, 'p' },
+        { "ss", 2, NULL, 's' },
         { "format", 1, NULL, 'f' },
         { "config",  1, NULL, 'c' },
         { 0, 0, 0, 0}
@@ -245,6 +259,13 @@ int main(int argc, char **argv)
                 pll_mode = PLL_authentic;
             else {
                 warnx("Unrecognised PLL mode '%s'", optarg);
+                usage(1);
+            }
+            break;
+        case 's':
+            single_sided = optarg ? atoi(optarg) : 0;
+            if ((single_sided < 0) || (single_sided > 1)) {
+                warnx("Bad side specifier '%s'", optarg);
                 usage(1);
             }
             break;
