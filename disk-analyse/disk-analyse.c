@@ -25,17 +25,21 @@
 #include "common.h"
 
 int quiet, verbose;
+static unsigned int start_cyl, end_cyl;
 static int index_align, single_sided = -1;
 static enum pll_mode pll_mode = PLL_default;
 static struct format_list **format_lists;
 static char *in, *out;
 
 /* Iteration start/step for single- and double-sided modes. */
-#define TRACK_START  ((single_sided == 1) ? 1 : 0)
-#define TRACK_STEP   ((single_sided == -1) ? 1 : 2)
+#define _TRACK_START ((single_sided == 1) ? 1 : 0)
+#define TRACK_START (start_cyl*2 + _TRACK_START)
+#define TRACK_END(di) ((end_cyl && (end_cyl*2 < (di)->nr_tracks))    \
+                       ? end_cyl*2+1 : (di)->nr_tracks-1)
+#define TRACK_STEP ((single_sided == -1) ? 1 : 2)
 /* Output track vs cylinder numbers in double- vs single-sided operation. */
-#define TRACK_ARG(t) (((t) - TRACK_START) / TRACK_STEP)
-#define TRACK_CHR    ((single_sided == -1) ? 'T' : 'C')
+#define TRACK_ARG(t) (((t) - _TRACK_START) / TRACK_STEP)
+#define TRACK_CHR ((single_sided == -1) ? 'T' : 'C')
 
 static void usage(int rc)
 {
@@ -46,7 +50,9 @@ static void usage(int rc)
     printf("  -v, --verbose Print extra diagnostic info\n");
     printf("  -i, --index-align   Align all track starts near index mark\n");
     printf("  -p, --pll=MODE      MODE={fixed,variable,authentic}\n");
-    printf("  -s, --ss[=0|1]      Single-sided disk (default is side 0)\n");
+    printf("  -s, --start-cyl=N   Start cylinder\n");
+    printf("  -e, --end-cyl=N     End cylinder\n");
+    printf("  -S, --ss[=0|1]      Single-sided disk (default is side 0)\n");
     printf("  -f, --format=FORMAT Name of format descriptor in config file\n");
     printf("  -c, --config=FILE   Config file to parse for format info\n");
     printf("Supported file formats (suffix => type):\n");
@@ -71,12 +77,12 @@ static void dump_track_list(struct disk *d)
     char name[128], prev_name[128];
     unsigned int i, st;
 
-    if (quiet)
+    if (quiet || (TRACK_START > TRACK_END(di)))
         return;
 
     i = st = TRACK_START;
     track_get_format_name(d, i, prev_name, sizeof(name));
-    while ((i += TRACK_STEP) < di->nr_tracks) {
+    while ((i += TRACK_STEP) <= TRACK_END(di)) {
         track_get_format_name(d, i, name, sizeof(name));
         if (!strcmp(name, prev_name))
             continue;
@@ -113,7 +119,7 @@ static void handle_stream(void)
 
     di = disk_get_info(d);
 
-    for (i = TRACK_START; i < di->nr_tracks; i += TRACK_STEP) {
+    for (i = TRACK_START; i <= TRACK_END(di); i += TRACK_STEP) {
         struct format_list *list = format_lists[i];
         unsigned int j;
         if (list == NULL)
@@ -135,7 +141,7 @@ static void handle_stream(void)
         }
     }
 
-    for (i = TRACK_START; i < di->nr_tracks; i += TRACK_STEP) {
+    for (i = TRACK_START; i <= TRACK_END(di); i += TRACK_STEP) {
         unsigned int j;
         ti = &di->track[i];
         if (index_align)
@@ -191,7 +197,7 @@ static void handle_img(void)
     close(fd);
 
     for (i = TRACK_START;
-         (i < di->nr_tracks) && sectors->nr_bytes;
+         (i <= TRACK_END(di)) && sectors->nr_bytes;
          i += TRACK_STEP) {
         struct format_list *list = format_lists[i];
         if ((list == NULL) || (list->nr == 0))
@@ -223,14 +229,16 @@ int main(int argc, char **argv)
     char suffix[8], *config = NULL, *format = NULL;
     int ch;
 
-    const static char sopts[] = "hqvip:s::f:c:";
+    const static char sopts[] = "hqvip:s:e:S::f:c:";
     const static struct option lopts[] = {
         { "help", 0, NULL, 'h' },
         { "quiet", 0, NULL, 'q' },
         { "verbose", 0, NULL, 'v' },
         { "index-align", 0, NULL, 'i' },
         { "pll", 1, NULL, 'p' },
-        { "ss", 2, NULL, 's' },
+        { "start-cyl", 1, NULL, 's' },
+        { "end-cyl", 1, NULL, 'e' },
+        { "ss", 2, NULL, 'S' },
         { "format", 1, NULL, 'f' },
         { "config",  1, NULL, 'c' },
         { 0, 0, 0, 0}
@@ -263,6 +271,12 @@ int main(int argc, char **argv)
             }
             break;
         case 's':
+            start_cyl = atoi(optarg);
+            break;
+        case 'e':
+            end_cyl = atoi(optarg);
+            break;
+        case 'S':
             single_sided = optarg ? atoi(optarg) : 0;
             if ((single_sided < 0) || (single_sided > 1)) {
                 warnx("Bad side specifier '%s'", optarg);
