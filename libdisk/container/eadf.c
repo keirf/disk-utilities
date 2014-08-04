@@ -35,7 +35,7 @@ static struct container *eadf_open(struct disk *d)
     struct track_header thdr;
     struct disk_info *di;
     struct track_info *ti;
-    unsigned int i, ext_type;
+    unsigned int i, off, ext_type;
 
     lseek(d->fd, 0, SEEK_SET);
 
@@ -83,6 +83,7 @@ static struct container *eadf_open(struct disk *d)
             init_track_info(ti, TRKTYP_raw_dd);
             ti->len = thdr.len;
             ti->total_bits = thdr.bitlen;
+            ti->data_bitoff = (ext_type == 1) ? 1024 : 0;
             break;
         default:
             warnx("Bad track type %u in Ext-ADF", thdr.type);
@@ -103,8 +104,8 @@ static struct container *eadf_open(struct disk *d)
     }
 
     for (i = 0; i < di->nr_tracks; i++) {
-        int off = (ext_type == 1) && (ti->type == TRKTYP_raw_dd) ? 2 : 0;
         ti = &di->track[i];
+        off = (ext_type == 1) && (ti->type == TRKTYP_raw_dd) ? 2 : 0;
         read_exact(d->fd, &ti->dat[off], ti->len-off);
     }
 
