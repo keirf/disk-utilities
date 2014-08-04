@@ -78,11 +78,11 @@ static void tag_swizzle(struct disktag *dtag)
     }
 }
 
-void dsk_init(struct disk *d)
+void _dsk_init(struct disk *d, unsigned int nr_tracks)
 {
     struct track_info *ti;
     struct disk_info *di;
-    unsigned int i, nr_tracks = 168;
+    unsigned int i;
 
     d->di = di = memalloc(sizeof(*di));
     di->nr_tracks = nr_tracks;
@@ -94,6 +94,11 @@ void dsk_init(struct disk *d)
 
     d->tags = memalloc(sizeof(*d->tags));
     d->tags->tag.id = DSKTAG_end;
+}
+
+void dsk_init(struct disk *d)
+{
+    _dsk_init(d, 168);
 }
 
 static struct container *dsk_open(struct disk *d)

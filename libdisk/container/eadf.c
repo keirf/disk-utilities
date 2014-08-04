@@ -24,6 +24,11 @@ struct track_header {
     uint32_t len, bitlen;
 };
 
+static void eadf_init(struct disk *d)
+{
+    _dsk_init(d, 166);
+}
+
 static struct container *eadf_open(struct disk *d)
 {
     struct disk_header dhdr;
@@ -46,18 +51,33 @@ static struct container *eadf_open(struct disk *d)
         ti = &di->track[i];
         read_exact(d->fd, &thdr, sizeof(thdr));
         thdr.type = be16toh(thdr.type);
-        if (thdr.type != 1) {
+        thdr.len = be32toh(thdr.len);
+        thdr.bitlen = be32toh(thdr.bitlen);
+        switch (thdr.type) {
+        case 0:
+            if (thdr.len != 11*512) {
+                warnx("Bad ADOS track len %u in Ext-ADF", ti->len);
+                goto cleanup_error;
+            }
+            init_track_info(ti, TRKTYP_amigados);
+            ti->data_bitoff = 1024;
+            ti->total_bits = DEFAULT_BITS_PER_TRACK;
+            set_all_sectors_valid(ti);
+            break;
+        case 1:
+            init_track_info(ti, TRKTYP_raw_dd);
+            ti->len = thdr.len;
+            ti->total_bits = thdr.bitlen;
+            break;
+        default:
             warnx("Bad track type %u in Ext-ADF", thdr.type);
             goto cleanup_error;
         }
-        init_track_info(ti, TRKTYP_raw_dd);
-        ti->len = be32toh(thdr.len);
         if (ti->len == 0) {
             init_track_info(ti, TRKTYP_unformatted);
             ti->total_bits = TRK_WEAK;
         } else {
             ti->dat = memalloc(ti->len);
-            ti->total_bits = be32toh(thdr.bitlen);
         }
     }
 
@@ -127,7 +147,7 @@ static void eadf_close(struct disk *d)
 }
 
 struct container container_eadf = {
-    .init = dsk_init,
+    .init = eadf_init,
     .open = eadf_open,
     .close = eadf_close,
     .write_raw = dsk_write_raw

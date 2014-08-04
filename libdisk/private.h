@@ -124,6 +124,7 @@ extern struct container container_ipf;
 extern struct container container_scp;
 
 /* Helpers for container implementations: defaults for init() & write_raw(). */
+void _dsk_init(struct disk *d, unsigned int nr_tracks);
 void dsk_init(struct disk *d);
 int dsk_write_raw(
     struct disk *d, unsigned int tracknr, enum track_type type,
