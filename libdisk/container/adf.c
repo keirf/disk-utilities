@@ -52,7 +52,8 @@ static struct container *adf_open(struct disk *d)
     off_t sz;
 
     read_exact(d->fd, sig, sizeof(sig));
-    if (!strncmp(sig, "UAE-1ADF", sizeof(sig)))
+    if (!strncmp(sig, "UAE--ADF", sizeof(sig)) ||
+        !strncmp(sig, "UAE-1ADF", sizeof(sig)))
         return container_eadf.open(d);
 
     sz = lseek(d->fd, 0, SEEK_END);

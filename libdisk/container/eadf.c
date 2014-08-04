@@ -35,24 +35,39 @@ static struct container *eadf_open(struct disk *d)
     struct track_header thdr;
     struct disk_info *di;
     struct track_info *ti;
-    unsigned int i;
+    unsigned int i, ext_type;
 
     lseek(d->fd, 0, SEEK_SET);
 
-    read_exact(d->fd, &dhdr, sizeof(dhdr));
-    if (strncmp(dhdr.sig, "UAE-1ADF", sizeof(dhdr.sig)))
+    read_exact(d->fd, dhdr.sig, sizeof(dhdr.sig));
+    if (!strncmp(dhdr.sig, "UAE--ADF", sizeof(dhdr.sig))) {
+        ext_type = 1;
+        dhdr.nr_tracks = 160;
+    } else if (!strncmp(dhdr.sig, "UAE-1ADF", sizeof(dhdr.sig))) {
+        ext_type = 2;
+        read_exact(d->fd, &dhdr.rsvd, 4);
+        dhdr.nr_tracks = be16toh(dhdr.nr_tracks);
+    } else {
         return NULL;
+    }
 
     d->di = di = memalloc(sizeof(*di));
-    di->nr_tracks = be16toh(dhdr.nr_tracks);
+    di->nr_tracks = dhdr.nr_tracks;
     di->track = memalloc(di->nr_tracks * sizeof(struct track_info));
 
     for (i = 0; i < di->nr_tracks; i++) {
         ti = &di->track[i];
-        read_exact(d->fd, &thdr, sizeof(thdr));
-        thdr.type = be16toh(thdr.type);
-        thdr.len = be32toh(thdr.len);
-        thdr.bitlen = be32toh(thdr.bitlen);
+        if (ext_type == 1) {
+            read_exact(d->fd, &thdr, 4);
+            thdr.len = be16toh(thdr.type);
+            thdr.type = !!thdr.rsvd;
+            thdr.bitlen = thdr.len * 8;
+        } else {
+            read_exact(d->fd, &thdr, sizeof(thdr));
+            thdr.type = be16toh(thdr.type);
+            thdr.len = be32toh(thdr.len);
+            thdr.bitlen = be32toh(thdr.bitlen);
+        }
         switch (thdr.type) {
         case 0:
             if (thdr.len != 11*512) {
@@ -76,14 +91,21 @@ static struct container *eadf_open(struct disk *d)
         if (ti->len == 0) {
             init_track_info(ti, TRKTYP_unformatted);
             ti->total_bits = TRK_WEAK;
+        } else if ((ext_type == 1) && (ti->type == TRKTYP_raw_dd)) {
+            /* RAW EXT1 tracks require the sync word to be patched in */
+            ti->len += 2;
+            ti->total_bits += 16;
+            ti->dat = memalloc(ti->len);
+            memcpy(ti->dat, &thdr.rsvd, 2);
         } else {
             ti->dat = memalloc(ti->len);
         }
     }
 
     for (i = 0; i < di->nr_tracks; i++) {
+        int off = (ext_type == 1) && (ti->type == TRKTYP_raw_dd) ? 2 : 0;
         ti = &di->track[i];
-        read_exact(d->fd, ti->dat, ti->len);
+        read_exact(d->fd, &ti->dat[off], ti->len-off);
     }
 
     return &container_eadf;
