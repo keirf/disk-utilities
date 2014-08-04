@@ -50,7 +50,7 @@ static struct container *eadf_open(struct disk *d)
             warnx("Bad track type %u in Ext-ADF", thdr.type);
             goto cleanup_error;
         }
-        init_track_info(ti, TRKTYP_raw);
+        init_track_info(ti, TRKTYP_raw_dd);
         ti->len = be32toh(thdr.len);
         if (ti->len == 0) {
             init_track_info(ti, TRKTYP_unformatted);

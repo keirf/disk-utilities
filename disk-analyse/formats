@@ -1019,3 +1019,18 @@ ibm_mfm_hd
 
 ibm_mfm_ed
     * ibm_mfm_ed
+
+##########################################################
+# Raw / Unanalysed Formats
+
+raw_sd
+    * raw_sd
+
+raw_dd
+    * raw_dd
+
+raw_hd
+    * raw_hd
+
+raw_ed
+    * raw_ed

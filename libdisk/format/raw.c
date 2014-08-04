@@ -9,10 +9,29 @@
 #include <libdisk/util.h>
 #include "../private.h"
 
+#define MAX_BLOCK 100000u
+
 static void *raw_write_raw(
     struct disk *d, unsigned int tracknr, struct stream *s)
 {
-    return NULL;
+    struct disk_info *di = d->di;
+    struct track_info *ti = &di->track[tracknr];
+    char *block = memalloc(MAX_BLOCK);
+    unsigned int i = 0;
+
+    do {
+        if ((stream_next_bits(s, 8) == -1) || (i == MAX_BLOCK)) {
+            memfree(block);
+            return NULL;
+        }
+        block[i++] = (uint8_t)s->word;
+    } while (s->index_offset >= 8);
+
+    ti->total_bits = i*8 - s->index_offset;
+    ti->len = i;
+    ti->data_bitoff = 0;
+
+    return block;
 }
 
 static void raw_read_raw(
@@ -27,7 +46,26 @@ static void raw_read_raw(
                   ti->dat[ti->total_bits/8] >> (8 - ti->total_bits%8));
 }
 
-struct track_handler raw_handler = {
+struct track_handler raw_sd_handler = {
+    .density = trkden_single,
+    .write_raw = raw_write_raw,
+    .read_raw = raw_read_raw
+};
+
+struct track_handler raw_dd_handler = {
+    .density = trkden_double,
+    .write_raw = raw_write_raw,
+    .read_raw = raw_read_raw
+};
+
+struct track_handler raw_hd_handler = {
+    .density = trkden_high,
+    .write_raw = raw_write_raw,
+    .read_raw = raw_read_raw
+};
+
+struct track_handler raw_ed_handler = {
+    .density = trkden_extra,
     .write_raw = raw_write_raw,
     .read_raw = raw_read_raw
 };
