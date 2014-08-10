@@ -548,7 +548,12 @@ void tbuf_bits(struct tbuf *tbuf, uint16_t speed,
         uint8_t b = (x >> i) & 1;
         if ((enc != bc_raw) || !(i & 1))
             tbuf->crc16_ccitt = crc16_ccitt_bit(b, tbuf->crc16_ccitt);
-        tbuf->bit(tbuf, speed, enc, b);
+        if (enc == bc_fm) {
+            tbuf->bit(tbuf, speed, bc_raw, 1);
+            tbuf->bit(tbuf, speed, bc_raw, b);
+        } else {
+            tbuf->bit(tbuf, speed, enc, b);
+        }
     }
 }
 

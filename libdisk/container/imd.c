@@ -71,10 +71,13 @@ static struct container *imd_open(struct disk *d)
 
         switch (thdr.mode) {
         case MODE_fm_500kbps:
+            type = TRKTYP_ibm_fm_dd;
+            break;
         case MODE_fm_300kbps:
+            /* Assume this is SD written on a 360 RPM drive. Fall through. */
         case MODE_fm_250kbps:
-            warnx("IMD: Cannot parse FM-encoded track");
-            goto cleanup_error;
+            type = TRKTYP_ibm_fm_sd;
+            break;
         case MODE_mfm_500kbps:
             type = TRKTYP_ibm_mfm_hd;
             break;
@@ -207,8 +210,14 @@ static void imd_close(struct disk *d)
     for (trk = 0; trk < di->nr_tracks; trk++) {
         ti = &di->track[trk];
 
-        thdr.mode = 0;
+        thdr.mode = 0xff;
         switch (ti->type) {
+        case TRKTYP_ibm_fm_sd:
+            thdr.mode = MODE_fm_250kbps;
+            break;
+        case TRKTYP_ibm_fm_dd:
+            thdr.mode = MODE_fm_500kbps;
+            break;
         case TRKTYP_ibm_mfm_dd:
             thdr.mode = MODE_mfm_250kbps;
             break;
@@ -222,7 +231,7 @@ static void imd_close(struct disk *d)
                   trk, ti->typename);
             break;
         }
-        if (!thdr.mode || !ti->nr_sectors)
+        if ((thdr.mode == 0xff) || !ti->nr_sectors)
             continue;
 
         if (ti->nr_sectors >= 256) {

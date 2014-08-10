@@ -1021,6 +1021,18 @@ ibm_mfm_ed
     * ibm_mfm_ed
 
 ##########################################################
+# IBM-FM Generic Formats (auto-detect sector arrangement)
+
+ibm_fm_sd
+    * ibm_fm_sd
+
+ibm_fm_dd
+    * ibm_fm_dd
+
+"DEC-RX01"
+    * ibm_fm_dd
+
+##########################################################
 # Raw / Unanalysed Formats
 
 raw_sd
