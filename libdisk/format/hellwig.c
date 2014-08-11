@@ -22,7 +22,7 @@
  */
 
 #include <libdisk/util.h>
-#include "../private.h"
+#include <private/disk.h>
 
 enum checksum_type { CSUM_zeroes, CSUM_ones, CSUM_data };
 

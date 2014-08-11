@@ -7,7 +7,7 @@
  */
 
 #include <libdisk/util.h>
-#include "private.h"
+#include <private/stream.h>
 
 struct soft_stream {
     struct stream s;

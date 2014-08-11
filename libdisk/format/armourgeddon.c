@@ -7,7 +7,7 @@
  */
 
 #include <libdisk/util.h>
-#include "../private.h"
+#include <private/disk.h>
 
 /* Format A:
  *  u16 4429,5552

@@ -17,7 +17,7 @@
  */
 
 #include <libdisk/util.h>
-#include "../private.h"
+#include <private/disk.h>
 
 static void *vade_retro_alienas_write_raw(
     struct disk *d, unsigned int tracknr, struct stream *s)

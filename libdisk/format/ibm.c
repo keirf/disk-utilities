@@ -12,7 +12,7 @@
  */
 
 #include <libdisk/util.h>
-#include "../private.h"
+#include <private/disk.h>
 
 struct ibm_sector {
     struct ibm_idam idam;

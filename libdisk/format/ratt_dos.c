@@ -18,7 +18,7 @@
  */
 
 #include <libdisk/util.h>
-#include "../private.h"
+#include <private/disk.h>
 
 struct ratt_file {
     uint8_t name[13];

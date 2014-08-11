@@ -8,7 +8,7 @@
 
 #include <libdisk/util.h>
 #include <libdisk/disk.h>
-#include "private.h"
+#include <private/stream.h>
 
 #include <sys/types.h>
 #include <sys/stat.h>

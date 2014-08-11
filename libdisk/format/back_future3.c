@@ -24,7 +24,7 @@
  */
 
 #include <libdisk/util.h>
-#include "../private.h"
+#include <private/disk.h>
 
 
 const static unsigned int track_array[] = {25, 27, 38, 43, 49,

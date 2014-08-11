@@ -15,7 +15,7 @@
  */
 
 #include <libdisk/util.h>
-#include "../private.h"
+#include <private/disk.h>
 
 static void *adls_write_raw(
     struct disk *d, unsigned int tracknr, struct stream *s)

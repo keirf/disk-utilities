@@ -7,7 +7,7 @@
  */
 
 #include <libdisk/util.h>
-#include "../private.h"
+#include <private/disk.h>
 
 #define SCAN_SECTOR_BITS 1000
 #define SECTOR_BAD_THRESH (SCAN_SECTOR_BITS/50)

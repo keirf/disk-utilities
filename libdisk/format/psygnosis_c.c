@@ -14,7 +14,7 @@
  */
 
 #include <libdisk/util.h>
-#include "../private.h"
+#include <private/disk.h>
 
 #define V1_METABLK_WORDS 166
 #define V2_METABLK_WORDS 154

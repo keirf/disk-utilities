@@ -22,7 +22,7 @@
  */
 
 #include <libdisk/util.h>
-#include "../private.h"
+#include <private/disk.h>
 
 #define SOS_SIG 0x534f5336u
 

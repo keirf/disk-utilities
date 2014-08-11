@@ -13,8 +13,8 @@
 #include <sys/stat.h>
 #include <unistd.h>
 #include <libdisk/util.h>
-#include "private.h"
-#include "../private.h"
+#include <private/stream.h>
+#include <private/disk.h>
 
 /* Flux-based streams */
 #define CLOCK_CENTRE  2000   /* 2000ns = 2us */

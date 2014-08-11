@@ -16,7 +16,7 @@
  */
 
 #include <libdisk/util.h>
-#include "../private.h"
+#include <private/disk.h>
 
 static void *wjs_design_1838_write_raw(
     struct disk *d, unsigned int tracknr, struct stream *s)

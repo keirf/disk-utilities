@@ -19,7 +19,7 @@
  */
 
 #include <libdisk/util.h>
-#include "../private.h"
+#include <private/disk.h>
 
 struct beast_info {
     uint16_t type;

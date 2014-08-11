@@ -29,7 +29,7 @@
  */
 
 #include <libdisk/util.h>
-#include "../private.h"
+#include <private/disk.h>
 
 static uint32_t gadgets_checksum(void *dat, unsigned int bytes, uint32_t hdr)
 {

@@ -20,7 +20,7 @@
 
 
 #include <libdisk/util.h>
-#include "../private.h"
+#include <private/disk.h>
 
 static uint16_t track_sync(uint32_t tracknr)
 {

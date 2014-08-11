@@ -26,7 +26,7 @@
  */
 
 #include <libdisk/util.h>
-#include "../private.h"
+#include <private/disk.h>
 
 struct hi_tec_info {
     uint16_t type;

@@ -15,7 +15,7 @@
  */
 
 #include <libdisk/util.h>
-#include "../private.h"
+#include <private/disk.h>
 
 static const uint16_t syncs[] = {
     0x4489, 0x548a, 0x5225, 0x5489, 0x5522, 0x5229,

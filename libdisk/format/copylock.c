@@ -38,7 +38,7 @@
  */
 
 #include <libdisk/util.h>
-#include "../private.h"
+#include <private/disk.h>
 
 static const uint16_t sync_list[] = {
     0x8a91, 0x8a44, 0x8a45, 0x8a51, 0x8912, 0x8911,

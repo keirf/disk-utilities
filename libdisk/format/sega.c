@@ -10,7 +10,7 @@
  */
 
 #include <libdisk/util.h>
-#include "../private.h"
+#include <private/disk.h>
 
 /* TRKTYP_sega_boot:
  *  u16 0xa245 :: Sync

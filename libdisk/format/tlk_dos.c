@@ -20,7 +20,7 @@
  */
 
 #include <libdisk/util.h>
-#include "../private.h"
+#include <private/disk.h>
 
 /* Sync and encoding-block-size for each group of 4 tracks. */
 struct track_param {

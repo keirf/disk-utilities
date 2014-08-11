@@ -1,5 +1,5 @@
-#ifndef __STREAM_PRIVATE_H__
-#define __STREAM_PRIVATE_H__
+#ifndef __PRIVATE_STREAM_H__
+#define __PRIVATE_STREAM_H__
 
 #include <libdisk/stream.h>
 
@@ -16,7 +16,7 @@ struct stream_type {
 void index_reset(struct stream *s);
 int flux_next_bit(struct stream *s);
 
-#endif /* __STREAM_PRIVATE_H__ */
+#endif /* __PRIVATE_STREAM_H__ */
 
 /*
  * Local variables:

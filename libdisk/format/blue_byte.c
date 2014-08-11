@@ -27,7 +27,7 @@
  */
 
 #include <libdisk/util.h>
-#include "../private.h"
+#include <private/disk.h>
 
 #define trknr(t) ((80 * !((t) & 1)) + ((t) >> 1))
 

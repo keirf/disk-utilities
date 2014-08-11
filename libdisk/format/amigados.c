@@ -46,7 +46,7 @@
  */
 
 #include <libdisk/util.h>
-#include "../private.h"
+#include <private/disk.h>
 
 /* Sector data sizes for amigados and amigados_extended handlers. */
 #define STD_SEC 512

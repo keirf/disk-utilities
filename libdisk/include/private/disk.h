@@ -1,5 +1,5 @@
-#ifndef __DISK_PRIVATE_H__
-#define __DISK_PRIVATE_H__
+#ifndef __PRIVATE_DISK_H__
+#define __PRIVATE_DISK_H__
 
 #include <libdisk/disk.h>
 #include <libdisk/stream.h>
@@ -163,7 +163,7 @@ bool_t track_is_copylock(struct track_info *ti);
 #define trk_warn(ti,trk,msg,a...) \
     printf("*** T%u: %s: " msg "\n", trk, (ti)->typename, ## a)
 
-#endif /* __DISK_PRIVATE_H__ */
+#endif /* __PRIVATE_DISK_H__ */
 
 /*
  * Local variables:

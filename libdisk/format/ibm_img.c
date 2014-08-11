@@ -8,7 +8,7 @@
  */
 
 #include <libdisk/util.h>
-#include "../private.h"
+#include <private/disk.h>
 
 struct ibm_extra_data {
     int sector_base;

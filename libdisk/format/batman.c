@@ -20,7 +20,7 @@
  */
 
 #include <libdisk/util.h>
-#include "../private.h"
+#include <private/disk.h>
 
 struct hdr {
     uint8_t track, sector, to_gap, mbz;

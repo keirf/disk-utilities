@@ -7,7 +7,7 @@
  */
 
 #include <libdisk/util.h>
-#include "../private.h"
+#include <private/disk.h>
 
 /* TRKTYP_supremacy_a: Used on Disk 1, Track 2 only.
  *  u16 0x4489,0x4489,0x2aaa

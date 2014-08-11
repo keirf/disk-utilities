@@ -28,7 +28,7 @@
  */
 
 #include <libdisk/util.h>
-#include "../private.h"
+#include <private/disk.h>
 
 struct protection_sector {
     uint16_t sync;

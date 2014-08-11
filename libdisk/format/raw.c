@@ -7,7 +7,7 @@
  */
 
 #include <libdisk/util.h>
-#include "../private.h"
+#include <private/disk.h>
 
 #define MAX_BLOCK 100000u
 

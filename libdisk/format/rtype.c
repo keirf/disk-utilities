@@ -16,7 +16,7 @@
  */
 
 #include <libdisk/util.h>
-#include "../private.h"
+#include <private/disk.h>
 
 /* R-Type (variant A): T10-62
  *  u16 0x9521 :: Sync

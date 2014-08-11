@@ -16,7 +16,7 @@
  */
 
 #include <libdisk/util.h>
-#include "../private.h"
+#include <private/disk.h>
 
 static void *pinball_dreams_write_raw(
     struct disk *d, unsigned int tracknr, struct stream *s)

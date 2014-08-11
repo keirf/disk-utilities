@@ -10,7 +10,7 @@
  */
 
 #include <libdisk/util.h>
-#include "../private.h"
+#include <private/disk.h>
 
 static int check_sequence(struct stream *s, unsigned int nr, uint8_t byte)
 {

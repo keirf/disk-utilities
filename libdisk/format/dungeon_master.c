@@ -18,7 +18,7 @@
  */
 
 #include <libdisk/util.h>
-#include "../private.h"
+#include <private/disk.h>
 
 #define weak_sec(_type) (((_type) == TRKTYP_chaos_strikes_back_weak) ? 1 : 0)
 
