@@ -1,7 +1,7 @@
 ROOT := ../..
 include $(ROOT)/Rules.mk
 
-SRCS := $(wildcard *.c)
+SRCS := $(wildcard *.c amiga/*.c)
 OBJS := $(patsubst %.c,%.o,$(SRCS))
 PICOBJS := $(patsubst %.o,%.opic,$(OBJS))
 
@@ -18,3 +18,6 @@ formats.a: $(OBJS)
 
 formats.apic: $(PICOBJS)
 	$(AR) rcs $@ $^
+
+clean::
+	$(MAKE) -C amiga clean
