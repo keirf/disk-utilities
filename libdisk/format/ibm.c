@@ -22,7 +22,7 @@ struct ibm_sector {
 
 struct ibm_track {
     uint8_t has_iam;
-    uint8_t gap4;
+    uint8_t gap3;
     struct ibm_sector secs[0];
 };
 
@@ -109,19 +109,19 @@ int ibm_scan_dam(struct stream *s)
     return (mark == IBM_MARK_DAM) ? idx_off : -1;
 }
 
-static int choose_gap4(
+static int choose_gap3(
     enum track_type type, struct ibm_track *ibm_track,
     unsigned int gap_bits, unsigned int nr_secs)
 {
     int iam_bits = (type_is_fm(type) ? 7 : 16) * 16;
-    int gap4 = ibm_track->has_iam
+    int gap3 = ibm_track->has_iam
         ? (gap_bits - iam_bits) / ((nr_secs+1) * 16)
         : gap_bits / (nr_secs * 16);
-    gap4 = (gap4 > 108+2) ? 108
-        : (gap4 > 80+2) ? 80
-        : (gap4 > 40+2) ? 40
-        : 20;
-    return gap4;
+    gap3 = (gap3 > 108+2) ? 108
+        : (gap3 > 80+2) ? 80
+        : (gap3 > 40+2) ? 40
+        : 25; /* minimum permissible is 24 */
+    return gap3;
 }
 
 static void *ibm_mfm_write_raw(
@@ -217,7 +217,7 @@ static void *ibm_mfm_write_raw(
     if (nr_blocks == 0)
         goto out;
 
-    ti->data_bitoff = (iam ? 80 : 140) * 16;
+    ti->data_bitoff = 80 * 16;
     ti->nr_sectors = nr_blocks;
     set_all_sectors_valid(ti);
 
@@ -226,7 +226,7 @@ static void *ibm_mfm_write_raw(
                          + dat_bytes);
 
     ibm_track->has_iam = iam ? 1 : 0;
-    ibm_track->gap4 = choose_gap4(ti->type, ibm_track, total_distance,
+    ibm_track->gap3 = choose_gap3(ti->type, ibm_track, total_distance,
                                   nr_blocks);
 
     ti->len = sizeof(struct ibm_track);
@@ -255,7 +255,7 @@ static void ibm_mfm_read_raw(
             tbuf_bits(tbuf, SPEED_AVG, bc_mfm, 8, 0x00);
         tbuf_bits(tbuf, SPEED_AVG, bc_raw, 32, 0x52245224);
         tbuf_bits(tbuf, SPEED_AVG, bc_raw, 32, 0x52245552);
-        for (i = 0; i < ibm_track->gap4; i++)
+        for (i = 0; i < ibm_track->gap3; i++)
             tbuf_bits(tbuf, SPEED_AVG, bc_mfm, 8, 0x4e);
     }
 
@@ -288,15 +288,14 @@ static void ibm_mfm_read_raw(
         tbuf_bits(tbuf, SPEED_AVG, bc_mfm, 8, cur_sec->mark);
         tbuf_bytes(tbuf, SPEED_AVG, bc_mfm, sec_sz, cur_sec->dat);
         tbuf_emit_crc16_ccitt(tbuf, SPEED_AVG);
-        for (i = 0; i < ibm_track->gap4; i++)
+        for (i = 0; i < ibm_track->gap3; i++)
             tbuf_bits(tbuf, SPEED_AVG, bc_mfm, 8, 0x4e);
 
         cur_sec = (struct ibm_sector *)
             ((char *)cur_sec + sizeof(struct ibm_sector) + sec_sz);
     }
 
-    /* NB. Proper track gap should be 0x4e recurring up to the index mark.
-     * Then write splice. Then ~140*0x4e, leading into 12*0x00. */
+    /* NB. Proper GAP4 should be 0x4e with write splice at index mark. */
 }
 
 static void ibm_get_name(
@@ -367,9 +366,9 @@ void setup_ibm_mfm_track(
         errx(1, "Too much data for track!");
 
     ibm_track->has_iam = 1;
-    ibm_track->gap4 = choose_gap4(type, ibm_track, gap_bits, nr_secs);
+    ibm_track->gap3 = choose_gap3(type, ibm_track, gap_bits, nr_secs);
 
-    ti->data_bitoff = (is_fm ? 40 : ibm_track->has_iam ? 80 : 140) * 16;
+    ti->data_bitoff = (is_fm ? 40 : 80) * 16;
     ti->nr_sectors = nr_secs;
     set_all_sectors_valid(ti);
 }
@@ -598,7 +597,7 @@ static void *ibm_fm_write_raw(
                          + dat_bytes);
 
     ibm_track->has_iam = iam ? 1 : 0;
-    ibm_track->gap4 = choose_gap4(ti->type, ibm_track, total_distance,
+    ibm_track->gap3 = choose_gap3(ti->type, ibm_track, total_distance,
                                   nr_blocks);
 
     ti->len = sizeof(struct ibm_track);
@@ -626,7 +625,7 @@ static void ibm_fm_read_raw(
         for (i = 0; i < 6; i++)
             tbuf_bits(tbuf, SPEED_AVG, bc_fm, 8, 0x00);
         tbuf_bits(tbuf, SPEED_AVG, bc_raw, 16, IBM_FM_IAM_RAW);
-        for (i = 0; i < ibm_track->gap4; i++)
+        for (i = 0; i < ibm_track->gap3; i++)
             tbuf_bits(tbuf, SPEED_AVG, bc_fm, 8, 0xff);
     }
 
@@ -657,7 +656,7 @@ static void ibm_fm_read_raw(
                   ? IBM_FM_DAM_RAW : IBM_FM_DDAM_RAW);
         tbuf_bytes(tbuf, SPEED_AVG, bc_fm, sec_sz, cur_sec->dat);
         tbuf_bits(tbuf, SPEED_AVG, bc_fm, 16, tbuf->crc16_ccitt);
-        for (i = 0; i < ibm_track->gap4; i++)
+        for (i = 0; i < ibm_track->gap3; i++)
             tbuf_bits(tbuf, SPEED_AVG, bc_fm, 8, 0xff);
 
         cur_sec = (struct ibm_sector *)
