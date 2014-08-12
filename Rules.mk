@@ -49,7 +49,7 @@ ifneq ($(PLATFORM),win32)
 CFLAGS += -Werror
 endif
 CFLAGS += -I$(ROOT)/libdisk/include
-CFLAGS += -MMD -MF .$(@F).d
+CFLAGS += -MMD -MF $(@D)/.$(@F).d
 CFLAGS += $(CFLAGS-y)
 
 # cc-option: Check if compiler supports first option, else fall back to second.
