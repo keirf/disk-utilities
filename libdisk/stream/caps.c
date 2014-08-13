@@ -15,7 +15,7 @@
 #ifdef __APPLE__
 #define CAPSLIB_NAME    "/Library/Frameworks/CAPSImage.framework/CAPSImage"
 #else
-#define CAPSLIB_NAME    "libcapsimage.so.4"
+#define CAPSLIB_NAME    "libcapsimage.so"
 #endif
 
 #define CAPS_FLAGS (DI_LOCK_DENVAR|DI_LOCK_DENNOISE|DI_LOCK_NOISE|      \
@@ -34,7 +34,7 @@ struct caps_stream {
 };
 
 static struct {
-    unsigned int ref;
+    unsigned int ref, version;
     void *handle;
     CapsLong (*Init)(void);
     CapsLong (*Exit)(void);
@@ -74,13 +74,30 @@ static struct {
 
 #define w(f, a...) fprintf(stderr, "*** " f, ## a)
 
+static void print_library_download_info(void)
+{
+    w("Download the library at http://www.softpres.org/download\n");
+    w("Respect the SPS Freeware License Agreement!\n");
+}
+
 static int get_capslib(void)
 {
     if (capslib.ref++)
         return 1;
 
+#ifdef __APPLE__
     if ((capslib.handle = dlopen(CAPSLIB_NAME, RTLD_LAZY)) == NULL)
         goto fail_no_handle;
+    capslib.version = 5; /* guess */
+#else
+    if ((capslib.handle = dlopen(CAPSLIB_NAME ".5", RTLD_LAZY))) {
+        capslib.version = 5;
+    } else if ((capslib.handle = dlopen(CAPSLIB_NAME ".4", RTLD_LAZY))) {
+        capslib.version = 4;
+    } else {
+        goto fail_no_handle;
+    }
+#endif
 
 #define GETSYM(sym)                                     \
     capslib.sym = dlsym(capslib.handle, "CAPS"#sym);    \
@@ -106,8 +123,7 @@ fail:
     dlclose(capslib.handle);
 fail_no_handle:
     warnx("Unable to open " CAPSLIB_NAME);
-    w("Download the library at http://www.softpres.org/download\n");
-    w("Respect the SPS Freeware License Agreement!\n");
+    print_library_download_info();
     --capslib.ref;
     return 0;
 }
@@ -123,7 +139,7 @@ static void put_capslib(void)
 static struct stream *caps_open(const char *name)
 {
     int fd;
-    char sig[4];
+    char sig[4], suffix[8];
     struct caps_stream *cpss;
 
     /* Simple signature check */
@@ -162,8 +178,14 @@ fail3:
 fail2:
     CAPSRemImage(cpss->container);
 fail1:
+    if ((capslib.version < 5) && strcmp(suffix, "ipf")) {
+        w("CT Raw image files require v5+ of the CAPS/SPS library\n");
+        print_library_download_info();
+    }
     memfree(cpss);
     put_capslib();
+    filename_extension(name, suffix, sizeof(suffix));
+        
     return NULL;
 }
 
@@ -173,6 +195,7 @@ static void caps_close(struct stream *s)
     CAPSUnlockAllTracks(cpss->container);
     CAPSUnlockImage(cpss->container);
     CAPSRemImage(cpss->container);
+    memfree(cpss->speed);
     memfree(cpss);
     put_capslib();
 }
@@ -180,24 +203,25 @@ static void caps_close(struct stream *s)
 static int caps_select_track(struct stream *s, unsigned int tracknr)
 {
     struct caps_stream *cpss = container_of(s, struct caps_stream, s);
+    struct CapsTrackInfoT1 ti;
     unsigned int i;
     int rc;
 
-    if (cpss->track == tracknr)
-        return 0;
-
-    cpss->track = ~0u;
-    memfree(cpss->speed);
-    cpss->speed = NULL;
-
-    memset(&cpss->ti, 0, sizeof(cpss->ti));
-    cpss->ti.type = 1;
-    rc = CAPSLockTrack((struct CapsTrackInfo *)&cpss->ti, cpss->container,
+    /* Attempt to load one track revolution. Modify nothing on failure. */
+    memset(&ti, 0, sizeof(ti));
+    ti.type = 1;
+    rc = CAPSLockTrack((struct CapsTrackInfo *)&ti, cpss->container,
                        tracknr / 2, tracknr & 1, CAPS_FLAGS);
     if (rc)
         return -1;
 
+    /* Commit new track info. */
+    memcpy(&cpss->ti, &ti, sizeof(ti));
     cpss->track = tracknr;
+
+    /* Commit new speed/density info. */
+    memfree(cpss->speed);
+    cpss->speed = NULL;
     if (cpss->ti.timelen) {
         cpss->speed = memalloc(cpss->ti.timelen * sizeof(uint16_t));
         for (i = 0; i < cpss->ti.timelen; i++)
@@ -210,15 +234,9 @@ static int caps_select_track(struct stream *s, unsigned int tracknr)
 static void caps_reset(struct stream *s)
 {
     struct caps_stream *cpss = container_of(s, struct caps_stream, s);
-    int rc;
 
-    if (cpss->ti.type & CTIT_FLAG_FLAKEY) {
-        memset(&cpss->ti, 0, sizeof(cpss->ti));
-        cpss->ti.type = 1;
-        rc = CAPSLockTrack((struct CapsTrackInfo *)&cpss->ti, cpss->container,
-                           cpss->track / 2, cpss->track & 1, CAPS_FLAGS);
-        BUG_ON(rc);
-    }
+    if (cpss->ti.type & CTIT_FLAG_FLAKEY)
+        (void)caps_select_track(s, cpss->track);
 
     cpss->bits = cpss->ti.trackbuf;
     cpss->bitlen = cpss->ti.tracklen * 8;
@@ -251,7 +269,7 @@ struct stream_type caps = {
     .select_track = caps_select_track,
     .reset = caps_reset,
     .next_bit = caps_next_bit,
-    .suffix = { "ipf", NULL }
+    .suffix = { "ipf", "ctr", "raw", NULL }
 };
 
 /*
