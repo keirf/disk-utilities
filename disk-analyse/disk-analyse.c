@@ -90,7 +90,7 @@ static void dump_track_list(struct disk *d)
         track_get_format_name(d, i, name, sizeof(name));
         if (!strcmp(name, prev_name))
             continue;
-        if (st == i-1)
+        if (st == i-TRACK_STEP)
             printf("%c", TRACK_CHR);
         else
             printf("%c%u-", TRACK_CHR, TRACK_ARG(st));
