@@ -27,6 +27,7 @@
 int quiet, verbose;
 static unsigned int start_cyl, end_cyl;
 static int index_align, single_sided = -1;
+static unsigned int rpm = 300;
 static enum pll_mode pll_mode = PLL_default;
 static struct format_list **format_lists;
 static char *in, *out;
@@ -50,6 +51,7 @@ static void usage(int rc)
     printf("  -v, --verbose Print extra diagnostic info\n");
     printf("  -i, --index-align   Align all track starts near index mark\n");
     printf("  -p, --pll=MODE      MODE={fixed,variable,authentic}\n");
+    printf("  -r, --rpm=N         Drive rpm (default 300)\n");
     printf("  -s, --start-cyl=N   Start cylinder\n");
     printf("  -e, --end-cyl=N     End cylinder\n");
     printf("  -S, --ss[=0|1]      Single-sided disk (default is side 0)\n");
@@ -116,7 +118,7 @@ static void handle_stream(void)
 
     if ((d = disk_create(out)) == NULL)
         errx(1, "Unable to create new disk file: %s", out);
-
+    disk_set_rpm(d, rpm);
     di = disk_get_info(d);
 
     for (i = TRACK_START; i <= TRACK_END(di); i += TRACK_STEP) {
@@ -186,7 +188,7 @@ static void handle_img(void)
 
     if ((d = disk_create(out)) == NULL)
         errx(1, "Unable to create new disk file: %s", out);
-
+    disk_set_rpm(d, rpm);
     di = disk_get_info(d);
 
     sectors = track_alloc_sector_buffer(d);
@@ -229,13 +231,14 @@ int main(int argc, char **argv)
     char suffix[8], *config = NULL, *format = NULL;
     int ch;
 
-    const static char sopts[] = "hqvip:s:e:S::f:c:";
+    const static char sopts[] = "hqvip:r:s:e:S::f:c:";
     const static struct option lopts[] = {
         { "help", 0, NULL, 'h' },
         { "quiet", 0, NULL, 'q' },
         { "verbose", 0, NULL, 'v' },
         { "index-align", 0, NULL, 'i' },
         { "pll", 1, NULL, 'p' },
+        { "rpm", 1, NULL, 'r' },
         { "start-cyl", 1, NULL, 's' },
         { "end-cyl", 1, NULL, 'e' },
         { "ss", 2, NULL, 'S' },
@@ -267,6 +270,13 @@ int main(int argc, char **argv)
                 pll_mode = PLL_authentic;
             else {
                 warnx("Unrecognised PLL mode '%s'", optarg);
+                usage(1);
+            }
+            break;
+        case 'r':
+            rpm = atoi(optarg);
+            if ((rpm < 100) || (rpm > 500)) {
+                warnx("Bad RPM value '%s'", optarg);
                 usage(1);
             }
             break;

@@ -79,6 +79,7 @@ struct disk *disk_create(const char *name)
     d = memalloc(sizeof(*d));
     d->fd = fd;
     d->read_only = 0;
+    d->rpm = DEFAULT_RPM;
     d->container = c;
 
     c->init(d);
@@ -103,6 +104,7 @@ struct disk *disk_open(const char *name, int read_only)
     d = memalloc(sizeof(*d));
     d->fd = fd;
     d->read_only = read_only;
+    d->rpm = DEFAULT_RPM;
     d->container = c->open(d);
 
     if (!d->container) {
@@ -136,6 +138,11 @@ void disk_close(struct disk *d)
     memfree(di);
     close(d->fd);
     memfree(d);
+}
+
+void disk_set_rpm(struct disk *d, unsigned int rpm)
+{
+    d->rpm = rpm;
 }
 
 struct disk_info *disk_get_info(struct disk *d)
@@ -291,7 +298,7 @@ int track_write_sectors(
     case trkden_extra: ns_per_cell = 500u; break;
     default: BUG();
     }
-    ti->total_bits = (DEFAULT_BITS_PER_TRACK * 2000u) / ns_per_cell;
+    ti->total_bits = (DEFAULT_BITS_PER_TRACK(d) * 2000u) / ns_per_cell;
 
     ti->dat = thnd->write_sectors(d, tracknr, track_sectors);
     if (ti->dat == NULL)

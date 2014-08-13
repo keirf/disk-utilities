@@ -76,7 +76,7 @@ static struct container *eadf_open(struct disk *d)
             }
             init_track_info(ti, TRKTYP_amigados);
             ti->data_bitoff = 1024;
-            ti->total_bits = DEFAULT_BITS_PER_TRACK;
+            ti->total_bits = DEFAULT_BITS_PER_TRACK(d);
             set_all_sectors_valid(ti);
             break;
         case 1:

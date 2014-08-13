@@ -236,7 +236,7 @@ int dsk_write_raw(
     default: BUG();
     }
     stream_set_density(s, ns_per_cell);
-    default_len = (DEFAULT_BITS_PER_TRACK * 2000u) / ns_per_cell;
+    default_len = (DEFAULT_BITS_PER_TRACK(d) * 2000u) / ns_per_cell;
     ti->total_bits = default_len;
 
     if (stream_select_track(s, tracknr) == 0)

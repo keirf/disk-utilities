@@ -357,7 +357,7 @@ void setup_ibm_mfm_track(
             ((char *)cur_sec + sizeof(struct ibm_sector) + sec_sz);
     }
 
-    ti->total_bits = DEFAULT_BITS_PER_TRACK;
+    ti->total_bits = DEFAULT_BITS_PER_TRACK(d);
     if (handlers[type]->density == trkden_high)
         ti->total_bits *= 2;
 

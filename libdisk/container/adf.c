@@ -14,14 +14,14 @@
 #include <fcntl.h>
 #include <unistd.h>
 
-static void adf_init_track(struct track_info *ti)
+static void adf_init_track(struct disk *d, struct track_info *ti)
 {
     unsigned int i;
 
     init_track_info(ti, TRKTYP_amigados);
     ti->dat = memalloc(ti->len);
     ti->data_bitoff = 1024;
-    ti->total_bits = DEFAULT_BITS_PER_TRACK;
+    ti->total_bits = DEFAULT_BITS_PER_TRACK(d);
 
     set_all_sectors_invalid(ti);
 
@@ -40,7 +40,7 @@ static void adf_init(struct disk *d)
     di->track = memalloc(di->nr_tracks * sizeof(struct track_info));
 
     for (i = 0; i < di->nr_tracks; i++)
-        adf_init_track(&di->track[i]);
+        adf_init_track(d, &di->track[i]);
 }
 
 static struct container *adf_open(struct disk *d)
@@ -113,7 +113,7 @@ static int adf_write_raw(
     }
 
     if (ti->dat == NULL)
-        adf_init_track(ti);
+        adf_init_track(d, ti);
 
     return 0;
 }

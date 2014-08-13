@@ -10,8 +10,10 @@
  */
 #define SPEED_AVG 1000u
 
+#define DEFAULT_RPM 300
+
 /* Determined empirically -- larger than expected for 2us bitcell @ 300rpm */
-#define DEFAULT_BITS_PER_TRACK       100150
+#define DEFAULT_BITS_PER_TRACK(d) (100150*300/(d)->rpm)
 
 /* Track handlers can tag a disk with format metadata (e.g., encrypt keys). */
 struct disk_list_tag {
@@ -25,6 +27,7 @@ struct container;
 struct disk {
     int fd;
     bool_t read_only;
+    unsigned int rpm;
     struct container *container;
     struct disk_info *di;
     struct disk_list_tag *tags;

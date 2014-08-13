@@ -83,6 +83,8 @@ struct disk *disk_create(const char *name);
 struct disk *disk_open(const char *name, int read_only);
 void disk_close(struct disk *);
 
+void disk_set_rpm(struct disk *d, unsigned int rpm);
+
 const char *disk_get_format_id_name(enum track_type type);
 const char *disk_get_format_desc_name(enum track_type type);
 
