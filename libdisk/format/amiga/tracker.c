@@ -38,7 +38,7 @@ static void *tracker_write_raw(
         if (s->word != 0x44894489)
             continue;
 
-        ti->data_bitoff = s->index_offset - 63;
+        ti->data_bitoff = s->index_offset_bc - 63;
 
         if (stream_next_bytes(s, raw, 8) == -1)
             goto fail;

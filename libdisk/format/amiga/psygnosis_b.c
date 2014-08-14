@@ -43,7 +43,7 @@ static void *psygnosis_b_write_raw(
         if ((uint16_t)s->word != 0x4489)
             continue;
 
-        idx_off = s->index_offset - 15;
+        idx_off = s->index_offset_bc - 15;
 
         if (stream_next_bits(s, 32) == -1)
             goto done;

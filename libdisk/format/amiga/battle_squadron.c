@@ -56,7 +56,7 @@ static void *battle_squadron_write_raw(
         if (s->word != ((uint32_t)sync<<16 | sync))
             continue;
 
-        ti->data_bitoff = s->index_offset - 31;
+        ti->data_bitoff = s->index_offset_bc - 31;
 
         /* The next long is never used and is either
          * 0x2aaaaaaa or 0xaaaaaaaa on the NTSC release
@@ -83,7 +83,7 @@ static void *battle_squadron_write_raw(
 
         /* Some releases use long tracks  */
         stream_next_index(s);
-        ti->total_bits = (s->track_bitlen > 101000) ? 103200
+        ti->total_bits = (s->track_len_bc > 101000) ? 103200
             : 100500;
 
         block = memalloc(ti->len);

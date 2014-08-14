@@ -46,7 +46,7 @@ static void *pdos_write_raw(
 
         if ((uint16_t)s->word != 0x1448)
             continue;
-        ti->data_bitoff = s->index_offset - 15;
+        ti->data_bitoff = s->index_offset_bc - 15;
 
         for (i = 0; i < ti->nr_sectors; i++) {
             /* Check per-sector sync. */

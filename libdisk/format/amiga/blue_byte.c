@@ -45,7 +45,7 @@ static void *blue_byte_write_raw(
         if (s->word != 0x5542aaaa)
             continue;
 
-        ti->data_bitoff = s->index_offset - 31;
+        ti->data_bitoff = s->index_offset_bc - 31;
 
         stream_start_crc(s);
         if (stream_next_bytes(s, dat, sizeof(dat)) == -1)

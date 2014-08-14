@@ -32,7 +32,7 @@ static void *wjs_design_1838_write_raw(
         if ((uint16_t)s->word != 0x4489)
             continue;
 
-        ti->data_bitoff = s->index_offset - 15;
+        ti->data_bitoff = s->index_offset_bc - 15;
 
         switch (ti->type) {
         case TRKTYP_anarchy:

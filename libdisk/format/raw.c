@@ -25,9 +25,9 @@ static void *raw_write_raw(
             return NULL;
         }
         block[i++] = (uint8_t)s->word;
-    } while (s->index_offset >= 8);
+    } while (s->index_offset_bc >= 8);
 
-    ti->total_bits = i*8 - s->index_offset;
+    ti->total_bits = i*8 - s->index_offset_bc;
     ti->len = i;
     ti->data_bitoff = 0;
 

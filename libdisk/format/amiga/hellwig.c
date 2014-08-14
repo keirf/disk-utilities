@@ -41,7 +41,7 @@ static void *hellwig_write_raw(
         if ((uint16_t)s->word != 0x4489)
             continue;
 
-        ti->data_bitoff = s->index_offset - 15;
+        ti->data_bitoff = s->index_offset_bc - 15;
 
         if (stream_next_bits(s, 16) == -1)
             goto fail;

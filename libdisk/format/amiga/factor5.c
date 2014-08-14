@@ -31,7 +31,7 @@ static void *turrican_write_raw(
         if ((uint16_t)s->word != 0x9521)
             continue;
 
-        ti->data_bitoff = s->index_offset - 15;
+        ti->data_bitoff = s->index_offset_bc - 15;
 
         if (stream_next_bits(s, 16) == -1)
             goto fail;
@@ -118,7 +118,7 @@ static void *denaris_a_write_raw(
         if ((uint16_t)s->word != 0x9521)
             continue;
 
-        ti->data_bitoff = s->index_offset - 15;
+        ti->data_bitoff = s->index_offset_bc - 15;
 
         if (stream_next_bits(s, 16) == -1)
             goto fail;
@@ -206,7 +206,7 @@ static void *denaris_b_write_raw(
         if ((uint16_t)s->word != 0x9521)
             continue;
 
-        ti->data_bitoff = s->index_offset - 15;
+        ti->data_bitoff = s->index_offset_bc - 15;
 
         if (stream_next_bits(s, 16) == -1)
             goto fail;
@@ -316,7 +316,7 @@ static void *factor5_hiscore_write_raw(
             set_all_sectors_valid(ti);
         }
         stream_next_index(s);
-        ti->total_bits = (s->track_bitlen > 102000) ? 102500
+        ti->total_bits = (s->track_len_bc > 102000) ? 102500
             : 100150;
 
         return block;

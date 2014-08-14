@@ -123,7 +123,7 @@ static void copylock_decode(
            (info->nr_valid_blocks != ti->nr_sectors)) {
 
         uint8_t dat[2*512];
-        uint32_t lfsr, lfsr_sec, idx_off = s->index_offset - 15;
+        uint32_t lfsr, lfsr_sec, idx_off = s->index_offset_bc - 15;
         unsigned int i, sec;
 
         /* Are we at the start of a sector we have not yet analysed? */

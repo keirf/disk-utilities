@@ -30,7 +30,7 @@ static void *gladiators_write_raw(
 
         if ((uint16_t)s->word != 0x8915)
             continue;
-        ti->data_bitoff = s->index_offset - 15;
+        ti->data_bitoff = s->index_offset_bc - 15;
 
         for (i = csum = 0; i < ARRAY_SIZE(dat); i++) {
             if (stream_next_bytes(s, raw, 8) == -1)

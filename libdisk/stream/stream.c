@@ -101,7 +101,7 @@ void stream_reset(struct stream *s)
 
     s->nr_index = 0;
     s->latency = 0;
-    s->index_offset = ~0u>>1; /* bad */
+    s->index_offset_bc = s->index_offset_ns = ~0u>>1; /* bad */
 
     s->type->reset(s);
 
@@ -114,7 +114,7 @@ void stream_next_index(struct stream *s)
     do {
         if (stream_next_bit(s) == -1)
             break;
-    } while (s->index_offset != 0);
+    } while (s->index_offset_bc != 0);
 }
 
 void stream_start_crc(struct stream *s)
@@ -126,12 +126,14 @@ void stream_start_crc(struct stream *s)
 
 int stream_next_bit(struct stream *s)
 {
+    uint64_t lat = s->latency;
     int b;
     if (s->nr_index >= 5)
         return -1;
-    s->index_offset++;
+    s->index_offset_bc++;
     if ((b = s->type->next_bit(s)) == -1)
         return -1;
+    s->index_offset_ns += s->latency - lat;
     s->word = (s->word << 1) | b;
     if (++s->crc_bitoff == 16) {
         uint8_t b = mfm_decode_bits(bc_mfm, s->word);
@@ -179,8 +181,9 @@ void stream_set_density(struct stream *s, unsigned int ns_per_cell)
 
 void index_reset(struct stream *s)
 {
-    s->track_bitlen = s->index_offset;
-    s->index_offset = 0;
+    s->track_len_bc = s->index_offset_bc;
+    s->track_len_ns = s->index_offset_ns;
+    s->index_offset_bc = s->index_offset_ns = 0;
     s->nr_index++;
 }
 

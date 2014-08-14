@@ -62,7 +62,7 @@ static void *albedo_protection_write_raw(
             continue;
 
         if (sec == 0)
-            ti->data_bitoff = s->index_offset - 15;
+            ti->data_bitoff = s->index_offset_bc - 15;
 
         if (stream_next_bits(s, 32) == -1)
             goto fail;
@@ -131,7 +131,7 @@ static void *albedo_data_write_raw(
         if ((uint16_t)s->word != 0x5122)
             continue;
 
-        ti->data_bitoff = s->index_offset - 15;
+        ti->data_bitoff = s->index_offset_bc - 15;
 
         if (stream_next_bits(s, 32) == -1)
             goto fail;

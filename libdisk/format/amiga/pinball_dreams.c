@@ -33,7 +33,7 @@ static void *pinball_dreams_write_raw(
         if (s->word != 0x448a448a)
             continue;
 
-        ti->data_bitoff = s->index_offset - 31;
+        ti->data_bitoff = s->index_offset_bc - 31;
 
         if (stream_next_bytes(s, csum, sizeof(csum)) == -1)
             goto fail;

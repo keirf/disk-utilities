@@ -36,7 +36,7 @@ static void *bill_tomato_write_raw(
         if (s->word != 0x44894489)
             continue;
 
-        ti->data_bitoff = s->index_offset - 31;
+        ti->data_bitoff = s->index_offset_bc - 31;
 
         for (sec = 0; sec < ti->nr_sectors; sec++) {
             if (stream_next_bytes(s, raw, 8) == -1)
@@ -64,7 +64,7 @@ static void *bill_tomato_write_raw(
             continue;
 
         stream_next_index(s);
-        ti->total_bits = (s->track_bitlen > 102500) ? 105312 : 102300;
+        ti->total_bits = (s->track_len_bc > 102500) ? 105312 : 102300;
 
         block = memalloc(ti->len);
         memcpy(block, dat, ti->len);

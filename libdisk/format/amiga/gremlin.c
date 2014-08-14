@@ -35,7 +35,7 @@ static void *gremlin_write_raw(
     while (stream_next_bit(s) != -1) {
 
         uint16_t raw[2], dat, csum = 0, trk;
-        uint32_t idx_off = s->index_offset - 15;
+        uint32_t idx_off = s->index_offset_bc - 15;
 
         if ((uint16_t)s->word != 0x4489)
             continue;

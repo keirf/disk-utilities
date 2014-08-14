@@ -37,7 +37,7 @@ static void *kickoff2_write_raw(
     }
 
     stream_next_index(s);
-    if (s->track_bitlen >= 104500) {
+    if (s->track_len_bc >= 104500) {
         init_track_info(ti, TRKTYP_kickoff2);
         ti->total_bits += 5312;
     }

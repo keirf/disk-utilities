@@ -65,7 +65,7 @@ static void *batman_write_raw(
         if (s->word != 0x8944aaaa)
             continue;
 
-        idx_off = s->index_offset - 31;
+        idx_off = s->index_offset_bc - 31;
 
         if (stream_next_bytes(s, dat, 8) == -1)
             break;

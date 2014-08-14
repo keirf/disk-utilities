@@ -48,7 +48,7 @@ static void *tlk_dos_write_raw(
         if (s->word != sync)
             continue;
 
-        ti->data_bitoff = s->index_offset - 31;
+        ti->data_bitoff = s->index_offset_bc - 31;
 
         if (stream_next_bytes(s, dat, sizeof(dat)) == -1)
             goto fail;

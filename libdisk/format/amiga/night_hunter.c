@@ -34,7 +34,7 @@ static void *night_hunter_write_raw(
         if ((uint16_t)s->word != sync)
             continue;
 
-        ti->data_bitoff = s->index_offset - 15;
+        ti->data_bitoff = s->index_offset_bc - 15;
 
         for (i = sum = 0; i < ARRAY_SIZE(dat); i++) {
             if (stream_next_bytes(s, raw, 4) == -1)

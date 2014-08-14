@@ -25,7 +25,7 @@ static int check_sequence(struct stream *s, unsigned int nr, uint8_t byte)
 static int check_length(struct stream *s, unsigned int min_bits)
 {
     stream_next_index(s);
-    return (s->track_bitlen >= min_bits);
+    return (s->track_len_bc >= min_bits);
 }
 
 /* TRKTYP_protec_longtrack: PROTEC protection track, used on many releases
@@ -41,7 +41,7 @@ static void *protec_longtrack_write_raw(
     struct track_info *ti = &d->di->track[tracknr];
 
     while (stream_next_bit(s) != -1) {
-        ti->data_bitoff = s->index_offset - 31;
+        ti->data_bitoff = s->index_offset_bc - 31;
         if ((s->word != 0x4454a525) || !check_sequence(s, 1000, 0x33))
             continue;
         if (!check_length(s, 107200))
@@ -85,7 +85,7 @@ static void *gremlin_longtrack_write_raw(
     struct track_info *ti = &d->di->track[tracknr];
 
     while (stream_next_bit(s) != -1) {
-        ti->data_bitoff = s->index_offset - 31;
+        ti->data_bitoff = s->index_offset_bc - 31;
         if ((s->word != 0x41244124) || !check_sequence(s, 8, 0x00))
             continue;
         if (ti->type != TRKTYP_tiertex_longtrack)
@@ -139,7 +139,7 @@ static void *crystals_of_arborea_longtrack_write_raw(
     uint32_t raw[2];
 
     while (stream_next_bit(s) != -1) {
-        ti->data_bitoff = s->index_offset - 15;
+        ti->data_bitoff = s->index_offset_bc - 15;
         if (s->word != 0xaaaaa144)
             continue;
         stream_next_bytes(s, raw, 8);
@@ -186,7 +186,7 @@ static void *infogrames_longtrack_write_raw(
     struct track_info *ti = &d->di->track[tracknr];
 
     while (stream_next_bit(s) != -1) {
-        ti->data_bitoff = s->index_offset - 15;
+        ti->data_bitoff = s->index_offset_bc - 15;
         if ((uint16_t)s->word != 0xa144)
             continue;
         if (!check_sequence(s, 6510, 0x00))
@@ -228,7 +228,7 @@ static void *bat_longtrack_write_raw(
     struct track_info *ti = &d->di->track[tracknr];
 
     while (stream_next_bit(s) != -1) {
-        ti->data_bitoff = s->index_offset - 31;
+        ti->data_bitoff = s->index_offset_bc - 31;
         if ((s->word != 0xaaaa8945) || !check_sequence(s, 6826, 0x00))
             continue;
         if (!check_length(s, 109500))

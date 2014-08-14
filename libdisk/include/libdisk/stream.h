@@ -28,10 +28,12 @@ struct stream {
     uint64_t latency;
 
     /* N = last bitcell returned was Nth full bitcell after index pulse. */
-    uint32_t index_offset;
+    uint32_t index_offset_bc; /* offset in bitcells (=N) */
+    uint32_t index_offset_ns; /* offset in nanoseconds */
 
-    /* Distance in bitcells between the most recent two index pulses. */
-    uint32_t track_bitlen;
+    /* Distance between the most recent two index pulses. */
+    uint32_t track_len_bc; /* in bitcells */
+    uint32_t track_len_ns; /* in nanoseconds */
 
     /* Number of index pulses seen so far. */
     uint32_t nr_index;

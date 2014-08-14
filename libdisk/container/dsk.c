@@ -252,13 +252,13 @@ int dsk_write_raw(
     stream_next_index(s);
 
     if (ti->total_bits == 0) {
-        ti->total_bits = s->track_bitlen ? : default_len;
+        ti->total_bits = s->track_len_bc ? : default_len;
     } else if (ti->total_bits == TRK_WEAK) {
         /* nothing */
-    } else if (((s->track_bitlen - (s->track_bitlen/50)) > ti->total_bits) ||
-               ((s->track_bitlen + (s->track_bitlen/50)) < ti->total_bits)) {
+    } else if (((s->track_len_bc - (s->track_len_bc/50)) > ti->total_bits) ||
+               ((s->track_len_bc + (s->track_len_bc/50)) < ti->total_bits)) {
         printf("*** T%u: Unexpected track length (seen %u, "
-               "expected %u)\n", tracknr, s->track_bitlen, ti->total_bits);
+               "expected %u)\n", tracknr, s->track_len_bc, ti->total_bits);
     }
 
     ti->data_bitoff = (int32_t)ti->data_bitoff % (int32_t)ti->total_bits;

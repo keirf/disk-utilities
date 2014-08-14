@@ -34,7 +34,7 @@ static void *jinks_write_raw(
 
         if (s->word != 0x92429242)
             continue;
-        ti->data_bitoff = s->index_offset - 31;
+        ti->data_bitoff = s->index_offset_bc - 31;
 
         if (tracknr == 161)
             ti->data_bitoff -= 1000;

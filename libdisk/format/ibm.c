@@ -62,9 +62,9 @@ int ibm_scan_mark(struct stream *s, unsigned int max_scan, uint8_t *pmark)
         stream_start_crc(s);
         if ((stream_next_bits(s, 32) == -1) || ((s->word >> 16) != 0x4489))
             break;
-        idx_off = s->index_offset - 63;
+        idx_off = s->index_offset_bc - 63;
         if (idx_off < 0)
-            idx_off += s->track_bitlen;
+            idx_off += s->track_len_bc;
         *pmark = (uint8_t)mfm_decode_bits(bc_mfm, s->word);
         break;
     } while ((stream_next_bit(s) != -1) && --max_scan);
@@ -202,7 +202,7 @@ static void *ibm_mfm_write_raw(
         next_sec = cur_sec->next ?: ibm_secs;
         distance = next_sec->offset - cur_sec->offset;
         if (distance <= 0)
-            distance += s->track_bitlen;
+            distance += s->track_len_bc;
         sec_sz = 128 << cur_sec->s.idam.no;
         cur_size = 62 + sec_sz;
         if ((distance -= cur_size * 16) < 0) {
@@ -458,9 +458,9 @@ static int ibm_fm_scan_mark(
         if (((s->word>>16) != 0xaaaa) ||
             ((uint8_t)mfm_decode_bits(bc_mfm, s->word>>1) != IBM_FM_SYNC_CLK))
             continue;
-        idx_off = s->index_offset - 111;
+        idx_off = s->index_offset_bc - 111;
         if (idx_off < 0)
-            idx_off += s->track_bitlen;
+            idx_off += s->track_len_bc;
         *pmark = (uint8_t)mfm_decode_bits(bc_mfm, s->word);
         stream_start_crc(s);
         s->crc16_ccitt = crc16_ccitt(pmark, 1, 0xffff);
@@ -573,7 +573,7 @@ static void *ibm_fm_write_raw(
         next_sec = cur_sec->next ?: ibm_secs;
         distance = next_sec->offset - cur_sec->offset;
         if (distance <= 0)
-            distance += s->track_bitlen;
+            distance += s->track_len_bc;
         sec_sz = 128 << cur_sec->s.idam.no;
         cur_size = 33 + sec_sz;
         if ((distance -= cur_size * 16) < 0) {

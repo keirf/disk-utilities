@@ -36,7 +36,7 @@ static void *federation_of_free_traders_write_raw(
     while ((stream_next_bit(s) != -1) &&
            (nr_valid_blocks != ti->nr_sectors)) {
 
-        uint32_t idx_off = s->index_offset - 31;
+        uint32_t idx_off = s->index_offset_bc - 31;
         uint16_t csum;
         uint8_t sec, *p;
 

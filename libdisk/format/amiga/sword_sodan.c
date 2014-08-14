@@ -55,7 +55,7 @@ static void *sword_sodan_write_raw(
             if (s->word != (0xaaaa0000 | sync))
                 continue;
 
-            ti->data_bitoff = s->index_offset - 15;
+            ti->data_bitoff = s->index_offset_bc - 15;
 
             if (stream_next_bytes(s, craw, 4) == -1)
                 break;
@@ -107,7 +107,7 @@ static void *sword_sodan_write_raw(
             dat[0xc42] = sync;
 
             stream_next_index(s);
-            ti->total_bits = (s->track_bitlen > 102500) ? 104300
+            ti->total_bits = (s->track_len_bc > 102500) ? 104300
                 : 102300;
 
             block = memalloc(ti->len+6);

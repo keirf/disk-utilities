@@ -81,7 +81,7 @@ static void *ados_write_raw(
 
         struct ados_hdr ados_hdr;
         char dat[STD_SEC], raw[2*(sizeof(struct ados_hdr)+STD_SEC)];
-        uint32_t sync = s->word, idx_off = s->index_offset - 31;
+        uint32_t sync = s->word, idx_off = s->index_offset_bc - 31;
 
         for (i = 0; i < ARRAY_SIZE(syncs); i++)
             if (sync == syncs[i])

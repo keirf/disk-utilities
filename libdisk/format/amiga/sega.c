@@ -50,7 +50,7 @@ static void *sega_write_raw(
         /* Check for sync mark */
         if ((uint16_t)s->word != sync)
             continue;
-        ti->data_bitoff = s->index_offset - 15;
+        ti->data_bitoff = s->index_offset_bc - 15;
 
         /* Check for optional second sync mark */
         if (stream_next_bits(s, 16) == -1)
@@ -157,7 +157,7 @@ static void *afterburner_sega_write_raw(
         if (s->word != 0xa245a245)
             continue;
 
-        ti->data_bitoff = s->index_offset - 31;
+        ti->data_bitoff = s->index_offset_bc - 31;
 
         for (i = csum = 0; i < ARRAY_SIZE(dat); i++) {
             if (stream_next_bytes(s, raw, 8) == -1)

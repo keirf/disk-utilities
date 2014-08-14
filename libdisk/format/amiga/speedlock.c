@@ -37,7 +37,7 @@ static void *speedlock_write_raw(
         if (stream_next_bits(s, 32) == -1)
             goto fail;
     } while (s->latency < ((latency * 108) / 100));
-    offs[0] = s->index_offset;
+    offs[0] = s->index_offset_bc;
 
     /* Scan for short bitcells (shorter than -8%). */
     do {
@@ -45,7 +45,7 @@ static void *speedlock_write_raw(
         if (stream_next_bits(s, 32) == -1)
             goto fail;
     } while (s->latency > ((latency * 92) / 100));
-    offs[1] = s->index_offset;
+    offs[1] = s->index_offset_bc;
 
     /* Scan for normal bitcells (longer than -2%). */
     do {
@@ -53,7 +53,7 @@ static void *speedlock_write_raw(
         if (stream_next_bits(s, 32) == -1)
             goto fail;
     } while (s->latency < ((latency * 98) / 100));
-    offs[2] = s->index_offset;
+    offs[2] = s->index_offset_bc;
 
     /* Check that each of the above regions is in correct relative order. */
     if ((offs[1] < offs[0]) || (offs[2] < offs[1]))

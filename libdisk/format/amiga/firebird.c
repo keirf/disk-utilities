@@ -33,7 +33,7 @@ static void *firebird_write_raw(
 
     while (stream_next_bit(s) != -1) {
 
-        uint32_t idx_off = s->index_offset - 31;
+        uint32_t idx_off = s->index_offset_bc - 31;
         uint8_t dat[2*(ti->len+2)];
 
         if (s->word != 0x89448944)
@@ -157,9 +157,9 @@ static void *firebird_b_write_raw(
                 goto fail;
             if ((uint16_t)s->word != 0x8944)
                 continue;
-            ti->data_bitoff = s->index_offset - 47;
+            ti->data_bitoff = s->index_offset_bc - 47;
          } else
-            ti->data_bitoff = s->index_offset - 31;
+            ti->data_bitoff = s->index_offset_bc - 31;
 
 
         for (i = sum = 0; i < ti->len; i++) {

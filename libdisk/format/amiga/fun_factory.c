@@ -52,7 +52,7 @@ static void *fun_factory_write_raw(
 
         if (s->word != 0x44894489)
             continue;
-        ti->data_bitoff = s->index_offset - 31;
+        ti->data_bitoff = s->index_offset_bc - 31;
 
         if (ti->type == TRKTYP_gadgetslostintime_a)
             trackhdr = 0xffff0000u | (tracknr&~1);

@@ -41,7 +41,7 @@ static void *psygnosis_a_write_raw(
         if ((sync != 0x4489) && (sync != 0x4429))
             continue;
 
-        ti->data_bitoff = s->index_offset - 15;
+        ti->data_bitoff = s->index_offset_bc - 15;
 
         /* Check for second sync mark */
         if (stream_next_bits(s, 16) == -1)
@@ -72,7 +72,7 @@ static void *psygnosis_a_write_raw(
 
         /* Some titles (Armourgeddon, Obitus...) mastered with long tracks. */
         stream_next_index(s);
-        if (s->track_bitlen > 103000)
+        if (s->track_len_bc > 103000)
             ti->total_bits = 105500;
 
         block = memalloc(ti->len + 4);

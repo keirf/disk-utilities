@@ -35,7 +35,7 @@ static void *archipelagos_write_raw(
     while ((stream_next_bit(s) != -1) &&
            (nr_valid_blocks != ti->nr_sectors)) {
 
-        uint32_t idx_off = s->index_offset - 31;
+        uint32_t idx_off = s->index_offset_bc - 31;
         uint16_t csum, w, *p;
         uint8_t sec;
 
@@ -89,7 +89,7 @@ done:
 
     /* Some releases use long tracks (for no good reason). */
     stream_next_index(s);
-    ti->total_bits = (s->track_bitlen > 102000) ? 105500 : 100150;
+    ti->total_bits = (s->track_len_bc > 102000) ? 105500 : 100150;
 
     return block;
 }

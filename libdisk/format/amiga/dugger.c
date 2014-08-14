@@ -32,7 +32,7 @@ static void *dugger_write_raw(
 
         if (s->word != 0x44894489)
             continue;
-        ti->data_bitoff = s->index_offset - 31;
+        ti->data_bitoff = s->index_offset_bc - 31;
 
         if (stream_next_bytes(s, raw, 8) == -1)
             goto fail;

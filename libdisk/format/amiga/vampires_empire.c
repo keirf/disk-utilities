@@ -38,12 +38,12 @@ static void *vampires_empire_write_raw(
 
         if ((uint16_t)s->word != 0x4489)
             continue;
-        ti->data_bitoff = s->index_offset - 15;
+        ti->data_bitoff = s->index_offset_bc - 15;
 
        if (s->word == 0x44894489) {
             /* Two sync words is format C. */
             ti->type = TRKTYP_vampires_empire_c;
-            ti->data_bitoff = s->index_offset - 31;
+            ti->data_bitoff = s->index_offset_bc - 31;
         } else if (ti->type == TRKTYP_vampires_empire_c) {
             /* Format B must have two sync words. */
             continue;

@@ -39,7 +39,7 @@ static void *savage_write_raw(
         if (s->word != 0x44894489)
             continue;
 
-        ti->data_bitoff = s->index_offset - 15;
+        ti->data_bitoff = s->index_offset_bc - 15;
 
         for (sec = 0; sec < ti->nr_sectors; sec++) {
 

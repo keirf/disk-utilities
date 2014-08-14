@@ -58,7 +58,7 @@ static void *psygnosis_c_track0_write_raw(
 
             if ((uint16_t)s->word != 0x428a)
                 continue;
-            ti->data_bitoff = s->index_offset - 15;
+            ti->data_bitoff = s->index_offset_bc - 15;
 
             if ((ver == 2) &&
                 ((stream_next_bits(s, 16) == -1) ||
@@ -198,7 +198,7 @@ static void *psygnosis_c_custom_rll_write_raw(
 
         if ((uint16_t)s->word != 0x4429)
             continue;
-        ti->data_bitoff = s->index_offset - 15;
+        ti->data_bitoff = s->index_offset_bc - 15;
 
         if ((mdat.version == 2) && (stream_next_bits(s, 16) == -1))
             break;
@@ -340,7 +340,7 @@ static void *psygnosis_c_write_raw(
 
         if ((uint16_t)s->word != 0x4429)
             continue;
-        ti->data_bitoff = s->index_offset - 15;
+        ti->data_bitoff = s->index_offset_bc - 15;
 
         for (i = 0; i < (nr_bytes+2+3)/4; i++) {
             if (stream_next_bytes(s, raw, 8) == -1)

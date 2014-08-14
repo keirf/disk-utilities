@@ -41,7 +41,7 @@ retry:
                 || ((uint16_t)s->word != syncs[sec]))
                 goto retry;
             if (sec == 0)
-                ti->data_bitoff = s->index_offset - 31;
+                ti->data_bitoff = s->index_offset_bc - 31;
 
             /* Header */
             if (stream_next_bytes(s, dat, 8) == -1)

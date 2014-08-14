@@ -32,7 +32,7 @@ static void *vade_retro_alienas_write_raw(
         if ((uint16_t)s->word != 0x4142)
             continue;
 
-        ti->data_bitoff = s->index_offset - 15;
+        ti->data_bitoff = s->index_offset_bc - 15;
 
         for (i = sum = 0; i < 0xc58; i++) {
             if (stream_next_bytes(s, raw, 4) == -1)

@@ -33,7 +33,7 @@ static void *supremacy_a_write_raw(
         if (s->word != 0x44894489)
             continue;
 
-        ti->data_bitoff = s->index_offset - 31;
+        ti->data_bitoff = s->index_offset_bc - 31;
 
         if (stream_next_bits(s, 16) == -1)
             break;
@@ -118,7 +118,7 @@ static void *supremacy_b_write_raw(
         if (s->word != 0x44894489)
             continue;
 
-        idx_off = s->index_offset - 31;
+        idx_off = s->index_offset_bc - 31;
 
         if (stream_next_bits(s, 16) == -1)
             break;

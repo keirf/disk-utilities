@@ -55,12 +55,12 @@ static void *arc_development_write_raw(
         /* Both formats have at least one sync word. */
         if ((uint16_t)s->word != 0x4489)
             continue;
-        ti->data_bitoff = s->index_offset - 15;
+        ti->data_bitoff = s->index_offset_bc - 15;
 
         if (s->word == 0x44894489) {
             /* Two sync words is format B. */
             ti->type = TRKTYP_arc_development_b;
-            ti->data_bitoff = s->index_offset - 31;
+            ti->data_bitoff = s->index_offset_bc - 31;
         } else if (ti->type == TRKTYP_arc_development_b) {
             /* Format B must have two sync words. */
             continue;
@@ -90,8 +90,8 @@ static void *arc_development_write_raw(
 
         /* Some releases use long tracks (for no good reason). */
         stream_next_index(s);
-        ti->total_bits = (s->track_bitlen > 107000) ? 111000
-            : (s->track_bitlen > 102000) ? 105500
+        ti->total_bits = (s->track_len_bc > 107000) ? 111000
+            : (s->track_len_bc > 102000) ? 105500
             : 100000;
 
         block = memalloc(ti->len);
@@ -156,7 +156,7 @@ static void *forgotten_worlds_write_raw(
         if (s->word != 0x44894489)
             continue;
 
-        ti->data_bitoff = s->index_offset - 31;
+        ti->data_bitoff = s->index_offset_bc - 31;
 
         if (stream_next_bytes(s, raw, 4) == -1)
             goto fail;

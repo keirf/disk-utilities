@@ -38,7 +38,7 @@ static void *grand_monster_slam_write_raw(
             goto fail;
         if (s->word != 0x44892aaa)
             continue;
-        ti->data_bitoff = s->index_offset - 47;
+        ti->data_bitoff = s->index_offset_bc - 47;
 
         if (stream_next_bytes(s, dat, sizeof(dat)) == -1)
             goto fail;

@@ -35,7 +35,7 @@ static void *bat_write_raw(
         if ((uint16_t)s->word != 0x8945)
             continue;
 
-        ti->data_bitoff = s->index_offset - 15;
+        ti->data_bitoff = s->index_offset_bc - 15;
 
         if (stream_next_bytes(s, dat, sizeof(dat)) == -1)
             break;

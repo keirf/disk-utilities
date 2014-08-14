@@ -34,7 +34,7 @@ static void *alienbreed_protection_write_raw(
         if (s->word != 0x89248924)
             continue;
 
-        ti->data_bitoff = s->index_offset - 31;
+        ti->data_bitoff = s->index_offset_bc - 31;
 
         /* Get the data longs. */
         for (i = 0; i < 3; i++) {

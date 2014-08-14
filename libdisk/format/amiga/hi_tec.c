@@ -71,7 +71,7 @@ static void *hi_tec_a_write_raw(
         if ((uint16_t)s->word != hi_tec_info->syncs[tracknr & 0xf])
             continue;
 
-        ti->data_bitoff = s->index_offset - 15;
+        ti->data_bitoff = s->index_offset_bc - 15;
 
         if (stream_next_bits(s, 32) == -1)
             goto fail;
@@ -160,7 +160,7 @@ static void *hi_tec_b_write_raw(
         if (s->word != 0x44894489)
             continue;
 
-        ti->data_bitoff = s->index_offset - 31;
+        ti->data_bitoff = s->index_offset_bc - 31;
 
         if (stream_next_bits(s, 32) == -1)
             goto fail;

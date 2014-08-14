@@ -56,7 +56,7 @@ static void *elite_write_raw(
         if (s->word != 0xa2454489)
             continue;
 
-        ti->data_bitoff = s->index_offset - 31;
+        ti->data_bitoff = s->index_offset_bc - 31;
 
         if (ti->type != TRKTYP_elite_d) {
             if (stream_next_bytes(s, dat, 4) == -1)
