@@ -1030,7 +1030,10 @@ ibm_fm_dd
     * ibm_fm_dd
 
 "DEC-RX01"
-    * ibm_fm_dd
+    * dec_rx01
+
+"DEC-RX02"
+    * dec_rx02
 
 ##########################################################
 # Raw / Unanalysed Formats

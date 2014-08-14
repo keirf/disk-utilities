@@ -164,6 +164,13 @@ static void *ibm_mfm_write_raw(
 
         sec_sz = 128 << idam.no;
 
+        /* DAM/DDAM */
+        if ((ibm_scan_mark(s, 1000, &mark) < 0) ||
+            ((mark != IBM_MARK_DAM) && (mark != IBM_MARK_DDAM)) ||
+            (stream_next_bytes(s, dat, 2*sec_sz) == -1) ||
+            (stream_next_bits(s, 32) == -1) || s->crc16_ccitt)
+            continue;
+
         /* Find correct place for this sector in our linked list of sectors 
          * that we have decoded so far. */
         pprev_sec = &ibm_secs;
@@ -177,13 +184,6 @@ static void *ibm_mfm_write_raw(
          * then it is the same sector: we decoded it already on an earlier 
          * revolution and can skip it this time round. */
         if (cur_sec && (abs(idx_off - cur_sec->offset) < 1000))
-            continue;
-
-        /* DAM/DDAM */
-        if (((idx_off = ibm_scan_mark(s, 1000, &mark)) < 0) ||
-            ((mark != IBM_MARK_DAM) && (mark != IBM_MARK_DDAM)) ||
-            (stream_next_bytes(s, dat, 2*sec_sz) == -1) ||
-            (stream_next_bits(s, 32) == -1) || s->crc16_ccitt)
             continue;
 
         mfm_decode_bytes(bc_mfm, sec_sz, dat, dat);
@@ -445,9 +445,9 @@ struct track_handler ibm_mfm_ed_handler = {
 #define IBM_FM_IAM_RAW 0xf77a
 
 #define IBM_FM_SYNC_CLK 0xc7
-#define IBM_FM_IDAM_RAW 0xf57e
-#define IBM_FM_DAM_RAW 0xf56f
-#define IBM_FM_DDAM_RAW 0xf56a
+
+#define DEC_RX02_MMFM_DAM_DAT 0xfd
+#define DEC_RX02_MMFM_DDAM_DAT 0xf9
 
 static int ibm_fm_scan_mark(
     struct stream *s, unsigned int max_scan, uint8_t *pmark)
@@ -510,6 +510,9 @@ static void *ibm_fm_write_raw(
     unsigned int sec_sz;
     bool_t iam = 0;
 
+    if (ti->type == TRKTYP_dec_rx02)
+        stream_set_density(s, 2000u);
+
     /* IAM */
     while (!iam && (stream_next_bit(s) != -1))
         iam = (s->word == (0xaaaa0000|IBM_FM_IAM_RAW));
@@ -535,6 +538,45 @@ static void *ibm_fm_write_raw(
 
         sec_sz = 128 << idam.no;
 
+        /* DAM/DDAM */
+        if (ibm_fm_scan_mark(s, 1000, &mark) < 0)
+            continue;
+        if ((ti->type == TRKTYP_dec_rx02)
+            && ((mark == DEC_RX02_MMFM_DAM_DAT)
+                || (mark == DEC_RX02_MMFM_DDAM_DAT))) {
+            int i, rc;
+            uint16_t crc = s->crc16_ccitt, x = 1;
+            idam.no = 1;
+            sec_sz = 256;
+            stream_set_density(s, 1000u);
+            stream_next_bit(s); /* Skip second half of last 2us bitcell? */
+            rc = stream_next_bytes(s, dat, 2*(sec_sz+2));
+            stream_set_density(s, 2000u);
+            if (rc == -1)
+                continue;
+            /* Undo RX02 modified MFM rule... */
+            for (i = 0; i < 2*(sec_sz+2); i++) {
+                x = (x << 8) | dat[i];
+                if (!(x & 0x1c0)) { dat[i-1] |= 1; x |= 0x40; }
+                if (!(x & 0x070)) x |= 0x50;
+                if (!(x & 0x01c)) x |= 0x14;
+                if (!(x & 0x007)) x |= 0x05;
+                dat[i] = x;
+            }
+            /* ...then extract data bits as usual. */
+            mfm_decode_bytes(bc_mfm, sec_sz+2, dat, dat);
+            if (crc16_ccitt(dat, sec_sz+2, crc))
+                continue;
+        } else if ((mark == IBM_MARK_DAM) || (mark == IBM_MARK_DDAM)) {
+            if (stream_next_bytes(s, dat, 2*sec_sz) == -1)
+                continue;
+            if ((stream_next_bits(s, 32) == -1) || s->crc16_ccitt)
+                continue;
+            mfm_decode_bytes(bc_mfm, sec_sz, dat, dat);
+        } else {
+            continue;
+        }
+
         /* Find correct place for this sector in our linked list of sectors 
          * that we have decoded so far. */
         pprev_sec = &ibm_secs;
@@ -549,15 +591,6 @@ static void *ibm_fm_write_raw(
          * revolution and can skip it this time round. */
         if (cur_sec && (abs(idx_off - cur_sec->offset) < 1000))
             continue;
-
-        /* DAM/DDAM */
-        if (((idx_off = ibm_fm_scan_mark(s, 1000, &mark)) < 0) ||
-            ((mark != IBM_MARK_DAM) && (mark != IBM_MARK_DDAM)) ||
-            (stream_next_bytes(s, dat, 2*sec_sz) == -1) ||
-            (stream_next_bits(s, 32) == -1) || s->crc16_ccitt)
-            continue;
-
-        mfm_decode_bytes(bc_mfm, sec_sz, dat, dat);
 
         new_sec = memalloc(sizeof(*new_sec) + sec_sz);
         new_sec->offset = idx_off;
@@ -612,52 +645,103 @@ out:
     return ibm_track;
 }
 
+#define ENC_RAW      (1u<<0)
+#define ENC_HALFRATE (1u<<1)
+static void fm_bits(struct tbuf *tbuf, unsigned int flags,
+                    unsigned int bits, uint32_t x)
+{
+    int i;
+
+    for (i = bits-1; i >= 0; i--) {
+        uint8_t b = (x >> i) & 1;
+        if (!(flags & ENC_RAW) || !(i & 1))
+            tbuf->crc16_ccitt = crc16_ccitt_bit(b, tbuf->crc16_ccitt);
+        if (!(flags & ENC_RAW)) {
+            if (flags & ENC_HALFRATE)
+                tbuf->bit(tbuf, SPEED_AVG, bc_raw, 0);
+            tbuf->bit(tbuf, SPEED_AVG, bc_raw, 1);
+        }
+        if (flags & ENC_HALFRATE)
+            tbuf->bit(tbuf, SPEED_AVG, bc_raw, 0);
+        tbuf->bit(tbuf, SPEED_AVG, bc_raw, b);
+    }
+}
+
+static uint16_t fm_sync(uint8_t dat, uint8_t clk)
+{
+    unsigned int i;
+    uint16_t sync = 0;
+    for (i = 0; i < 8; i++) {
+        sync <<= 2;
+        sync |= ((clk & 0x80) ? 2 : 0) | ((dat & 0x80) ? 1 : 0);
+        clk <<= 1; dat <<= 1;
+    }
+    return sync;
+}
+
 static void ibm_fm_read_raw(
     struct disk *d, unsigned int tracknr, struct tbuf *tbuf)
 {
     struct track_info *ti = &d->di->track[tracknr];
     struct ibm_track *ibm_track = (struct ibm_track *)ti->dat;
     struct ibm_sector *cur_sec;
-    unsigned int sec, i, sec_sz;
+    unsigned int sec, i, sec_sz, flags = 0;
+
+    if (ti->type == TRKTYP_dec_rx02)
+        flags |= ENC_HALFRATE;
 
     /* IAM */
     if (ibm_track->has_iam) {
         for (i = 0; i < 6; i++)
-            tbuf_bits(tbuf, SPEED_AVG, bc_fm, 8, 0x00);
-        tbuf_bits(tbuf, SPEED_AVG, bc_raw, 16, IBM_FM_IAM_RAW);
+            fm_bits(tbuf, flags, 8, 0x00);
+        fm_bits(tbuf, flags|ENC_RAW, 16, IBM_FM_IAM_RAW);
         for (i = 0; i < ibm_track->gap3; i++)
-            tbuf_bits(tbuf, SPEED_AVG, bc_fm, 8, 0xff);
+            fm_bits(tbuf, flags, 8, 0xff);
     }
 
     cur_sec = ibm_track->secs;
     for (sec = 0; sec < ti->nr_sectors; sec++) {
 
         sec_sz = 128 << cur_sec->idam.no;
+        if (ti->type == TRKTYP_dec_rx02)
+            cur_sec->idam.no = 0;
 
         /* IDAM */
         for (i = 0; i < 6; i++)
-            tbuf_bits(tbuf, SPEED_AVG, bc_fm, 8, 0x00);
+            fm_bits(tbuf, flags, 8, 0x00);
         tbuf_start_crc(tbuf);
-        tbuf_bits(tbuf, SPEED_AVG, bc_raw, 16, IBM_FM_IDAM_RAW);
-        tbuf_bits(tbuf, SPEED_AVG, bc_fm, 8, cur_sec->idam.cyl);
-        tbuf_bits(tbuf, SPEED_AVG, bc_fm, 8, cur_sec->idam.head);
-        tbuf_bits(tbuf, SPEED_AVG, bc_fm, 8, cur_sec->idam.sec);
-        tbuf_bits(tbuf, SPEED_AVG, bc_fm, 8, cur_sec->idam.no);
-        tbuf_bits(tbuf, SPEED_AVG, bc_fm, 16, tbuf->crc16_ccitt);
+        fm_bits(tbuf, flags|ENC_RAW, 16,
+                fm_sync(IBM_MARK_IDAM, IBM_FM_SYNC_CLK));
+        fm_bits(tbuf, flags, 8, cur_sec->idam.cyl);
+        fm_bits(tbuf, flags, 8, cur_sec->idam.head);
+        fm_bits(tbuf, flags, 8, cur_sec->idam.sec);
+        fm_bits(tbuf, flags, 8, cur_sec->idam.no);
+        fm_bits(tbuf, flags, 16, tbuf->crc16_ccitt);
         for (i = 0; i < 11; i++)
-            tbuf_bits(tbuf, SPEED_AVG, bc_fm, 8, 0xff);
+            fm_bits(tbuf, flags, 8, 0xff);
 
         /* DAM */
         for (i = 0; i < 6; i++)
-            tbuf_bits(tbuf, SPEED_AVG, bc_fm, 8, 0x00);
+            fm_bits(tbuf, flags, 8, 0x00);
         tbuf_start_crc(tbuf);
-        tbuf_bits(tbuf, SPEED_AVG, bc_raw, 16,
-                  (cur_sec->mark == IBM_MARK_DAM)
-                  ? IBM_FM_DAM_RAW : IBM_FM_DDAM_RAW);
-        tbuf_bytes(tbuf, SPEED_AVG, bc_fm, sec_sz, cur_sec->dat);
-        tbuf_bits(tbuf, SPEED_AVG, bc_fm, 16, tbuf->crc16_ccitt);
+        fm_bits(tbuf, flags|ENC_RAW, 16,
+                fm_sync(cur_sec->mark, IBM_FM_SYNC_CLK));
+        if ((cur_sec->mark == DEC_RX02_MMFM_DAM_DAT)
+            || (cur_sec->mark == DEC_RX02_MMFM_DDAM_DAT)) {
+            flags &= ~ENC_HALFRATE;
+            fm_bits(tbuf, flags|ENC_RAW, 1, 0); /* 1us of delay to next flux */
+            for (i = 0; i < sec_sz; i++)
+                fm_bits(tbuf, flags, 8, cur_sec->dat[i]);
+            fm_bits(tbuf, flags, 16, tbuf->crc16_ccitt);
+            fm_bits(tbuf, flags, 16, 0xffff);
+            flags |= ENC_HALFRATE;
+        } else {
+            for (i = 0; i < sec_sz; i++)
+                fm_bits(tbuf, flags, 8, cur_sec->dat[i]);
+            fm_bits(tbuf, flags, 16, tbuf->crc16_ccitt);
+        }
         for (i = 0; i < ibm_track->gap3; i++)
-            tbuf_bits(tbuf, SPEED_AVG, bc_fm, 8, 0xff);
+            fm_bits(tbuf, flags, 8, 0xff);
 
         cur_sec = (struct ibm_sector *)
             ((char *)cur_sec + sizeof(struct ibm_sector) + sec_sz);
@@ -673,6 +757,20 @@ struct track_handler ibm_fm_sd_handler = {
 
 struct track_handler ibm_fm_dd_handler = {
     .density = trkden_double,
+    .get_name = ibm_get_name,
+    .write_raw = ibm_fm_write_raw,
+    .read_raw = ibm_fm_read_raw
+};
+
+struct track_handler dec_rx01_handler = {
+    .density = trkden_double,
+    .get_name = ibm_get_name,
+    .write_raw = ibm_fm_write_raw,
+    .read_raw = ibm_fm_read_raw
+};
+
+struct track_handler dec_rx02_handler = {
+    .density = trkden_high,
     .get_name = ibm_get_name,
     .write_raw = ibm_fm_write_raw,
     .read_raw = ibm_fm_read_raw
