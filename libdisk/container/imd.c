@@ -227,32 +227,32 @@ static void imd_close(struct disk *d)
         case TRKTYP_unformatted:
             break;
         default:
-            warnx("T%u: Ignoring track format '%s' while writing IMD file",
-                  trk, ti->typename);
+            warnx("T%u.%u: Ignoring track format '%s' while writing IMD file",
+                  cyl(trk), hd(trk), ti->typename);
             break;
         }
         if ((thdr.mode == 0xff) || !ti->nr_sectors)
             continue;
 
         if (ti->nr_sectors >= 256) {
-            warnx("T%u: Unexpected number of IBM-MFM sectors (%u)",
-                  trk, ti->nr_sectors);
+            warnx("T%u.%u: Unexpected number of IBM-MFM sectors (%u)",
+                  cyl(trk), hd(trk), ti->nr_sectors);
             continue;
         }
 
         retrieve_ibm_mfm_track(
             d, trk, &secs, &cyls, &heads, &nos, &marks, &dat);
 
-        thdr.cyl = trk>>1;
-        thdr.head = trk&1;
+        thdr.cyl = cyl(trk);
+        thdr.head = hd(trk);
         thdr.nr_secs = ti->nr_sectors;
         thdr.sec_sz = nos[0];
         sec_sz = 128u << thdr.sec_sz;
         
         for (sec = 0; sec < ti->nr_sectors; sec++) {
             if (nos[sec] != thdr.sec_sz) {
-                warnx("T%u: Cannot write mixed-sized sectors to IMD file",
-                      trk);
+                warnx("T%u.%u: Cannot write mixed-sized sectors to IMD file",
+                      cyl(trk), hd(trk));
                 break;
             }
             if (cyls[sec] != thdr.cyl)

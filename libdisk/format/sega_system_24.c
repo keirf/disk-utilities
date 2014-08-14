@@ -37,8 +37,8 @@ static void *sega_system_24_write_raw(
 
         idam.sec--;
         if ((idam.sec >= ti->nr_sectors) ||
-            (idam.cyl != (tracknr/2)) ||
-            (idam.head != (tracknr&1)) ||
+            (idam.cyl != cyl(tracknr)) ||
+            (idam.head != hd(tracknr)) ||
             (idam.no != sec_no(idam.sec))) {
             trk_warn(ti, tracknr, "Unexpected IDAM sec=%02x cyl=%02x hd=%02x "
                      "no=%02x", idam.sec+1, idam.cyl, idam.head, idam.no);
@@ -77,7 +77,7 @@ static void sega_system_24_read_raw(
 {
     struct track_info *ti = &d->di->track[tracknr];
     uint8_t *dat = (uint8_t *)ti->dat;
-    uint8_t cyl = tracknr/2, hd = tracknr&1;
+    uint8_t cyl = cyl(tracknr), hd = hd(tracknr);
     unsigned int sec, i;
 
     for (sec = 0; sec < ti->nr_sectors; sec++) {

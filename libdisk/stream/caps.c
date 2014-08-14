@@ -211,7 +211,7 @@ static int caps_select_track(struct stream *s, unsigned int tracknr)
     memset(&ti, 0, sizeof(ti));
     ti.type = 1;
     rc = CAPSLockTrack((struct CapsTrackInfo *)&ti, cpss->container,
-                       tracknr / 2, tracknr & 1, CAPS_FLAGS);
+                       cyl(tracknr), hd(tracknr), CAPS_FLAGS);
     if (rc)
         return -1;
 

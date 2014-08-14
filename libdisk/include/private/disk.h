@@ -3,6 +3,7 @@
 
 #include <libdisk/disk.h>
 #include <libdisk/stream.h>
+#include <private/util.h>
 
 /*
  * Average bitcell timing: <time-per-revolution>/<#-bitcells>. Non-uniform
@@ -162,9 +163,6 @@ void retrieve_ibm_mfm_track(
     uint8_t **pmark_map, uint8_t **pdat);
 
 bool_t track_is_copylock(struct track_info *ti);
-
-#define trk_warn(ti,trk,msg,a...) \
-    printf("*** T%u: %s: " msg "\n", trk, (ti)->typename, ## a)
 
 #endif /* __PRIVATE_DISK_H__ */
 

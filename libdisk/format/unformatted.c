@@ -53,8 +53,8 @@ static void *unformatted_write_raw(
         unsigned int pc = (bad_sectors*1000)/nr_sectors;
         if ((pc/10) <= 90)
             return NULL;
-        printf("*** T%u: Almost certainly unformatted/empty (%u.%u%%)\n",
-               tracknr, pc/10, pc%10);
+        printf("*** T%u.%u: Almost certainly unformatted/empty (%u.%u%%)\n",
+               cyl(tracknr), hd(tracknr), pc/10, pc%10);
     }
 
     ti->total_bits = TRK_WEAK;

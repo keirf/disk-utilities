@@ -299,7 +299,7 @@ static bool_t __ipf_close(struct disk *d, uint32_t encoder)
     info.encoder = encoder;
     info.encrev = 1;
     info.release = info.revision = info.userid = IPF_ID;
-    info.maxcyl = di->nr_tracks/2 - 1;
+    info.maxcyl = cyl(di->nr_tracks) - 1;
     info.maxhead = 1;
     info.date = (tm.tm_year+1900)*10000 + (tm.tm_mon+1)*100 + tm.tm_mday;
     info.time = tm.tm_hour*10000000 + tm.tm_min*100000 + tm.tm_sec*1000;

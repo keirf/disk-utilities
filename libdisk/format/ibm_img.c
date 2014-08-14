@@ -50,8 +50,8 @@ static void *ibm_img_write_raw(
         idam.sec -= extra_data->sector_base;
 
         if ((idam.sec >= ti->nr_sectors) ||
-            (idam.cyl != (tracknr/2)) ||
-            (idam.head != (tracknr&1)) ||
+            (idam.cyl != cyl(tracknr)) ||
+            (idam.head != hd(tracknr)) ||
             (idam.no > 7)) {
             trk_warn(ti, tracknr, "Unexpected IDAM sec=%02x cyl=%02x hd=%02x "
                      "no=%02x", idam.sec+extra_data->sector_base,
@@ -103,7 +103,7 @@ static void ibm_img_read_raw(
     struct track_info *ti = &d->di->track[tracknr];
     struct ibm_extra_data *extra_data = handlers[ti->type]->extra_data;
     uint8_t *dat = (uint8_t *)ti->dat;
-    uint8_t cyl = tracknr/2, hd = tracknr&1, no;
+    uint8_t cyl = cyl(tracknr), hd = hd(tracknr), no;
     bool_t iam = dat[ti->len-1];
     unsigned int sec, i, gap3;
 

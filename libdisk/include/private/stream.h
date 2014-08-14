@@ -2,6 +2,7 @@
 #define __PRIVATE_STREAM_H__
 
 #include <libdisk/stream.h>
+#include <private/util.h>
 
 struct stream_type {
     struct stream *(*open)(const char *name);

@@ -38,9 +38,11 @@ static char *in, *out;
 #define TRACK_END(di) ((end_cyl && (end_cyl*2 < (di)->nr_tracks))    \
                        ? end_cyl*2+1 : (di)->nr_tracks-1)
 #define TRACK_STEP ((single_sided == -1) ? 1 : 2)
-/* Output track vs cylinder numbers in double- vs single-sided operation. */
-#define TRACK_ARG(t) (((t) - _TRACK_START) / TRACK_STEP)
-#define TRACK_CHR ((single_sided == -1) ? 'T' : 'C')
+
+/* Output track as cyl.head */
+#define cyl(trk) ((trk)/2)
+#define hd(trk) ((trk)&1)
+#define TRACK_ARG(t) cyl(t),hd(t)
 
 static void usage(int rc)
 {
@@ -91,18 +93,18 @@ static void dump_track_list(struct disk *d)
         if (!strcmp(name, prev_name))
             continue;
         if (st == i-TRACK_STEP)
-            printf("%c", TRACK_CHR);
+            printf("T");
         else
-            printf("%c%u-", TRACK_CHR, TRACK_ARG(st));
-        printf("%u: %s\n", TRACK_ARG(i-TRACK_STEP), prev_name);
+            printf("T%u.%u-", TRACK_ARG(st));
+        printf("%u.%u: %s\n", TRACK_ARG(i-TRACK_STEP), prev_name);
         st = i;
         strcpy(prev_name, name);
     }
     if (st == i-TRACK_STEP)
-        printf("%c", TRACK_CHR);
+        printf("T");
     else
-        printf("%c%u-", TRACK_CHR, TRACK_ARG(st));
-    printf("%u: %s\n", TRACK_ARG(i-TRACK_STEP), prev_name);
+        printf("T%u.%u-", TRACK_ARG(st));
+    printf("%u.%u: %s\n", TRACK_ARG(i-TRACK_STEP), prev_name);
 }
 
 static void handle_stream(void)
@@ -156,7 +158,7 @@ static void handle_stream(void)
         if (j == ti->nr_sectors)
             continue;
         unidentified++;
-        printf("%c%u: sectors ", TRACK_CHR, TRACK_ARG(i));
+        printf("T%u.%u: sectors ", TRACK_ARG(i));
         for (j = 0; j < ti->nr_sectors; j++)
             if (!is_valid_sector(ti, j))
                 printf("%u,", j);
@@ -207,11 +209,11 @@ static void handle_img(void)
         if ((list == NULL) || (list->nr == 0))
             continue;
         if (list->nr > 1)
-            errx(1, "%c%u: More than one format specified for IMG data",
-                 TRACK_CHR, TRACK_ARG(i));
+            errx(1, "T%u.%u: More than one format specified for IMG data",
+                 TRACK_ARG(i));
         if (track_write_sectors(sectors, i, list->ent[0]) != 0)
-            errx(1, "%c%u: %s: Unable to import IMG data",
-                 TRACK_CHR, TRACK_ARG(i),
+            errx(1, "T%u.%u: %s: Unable to import IMG data",
+                 TRACK_ARG(i),
                  disk_get_format_desc_name(list->ent[0]));
     }
 
