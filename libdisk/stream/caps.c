@@ -269,7 +269,7 @@ struct stream_type caps = {
     .select_track = caps_select_track,
     .reset = caps_reset,
     .next_bit = caps_next_bit,
-    .suffix = { "ipf", "ctr", "raw", NULL }
+    .suffix = { "ipf", "ct", "ctr", "raw", NULL }
 };
 
 /*

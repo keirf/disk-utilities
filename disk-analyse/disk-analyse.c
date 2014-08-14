@@ -68,11 +68,10 @@ static void usage(int rc)
     printf("  .dsk  => Libdisk\n");
     printf("  .scp  => Supercard Pro\n");
     printf("Read-only support:\n");
-    printf("  .ctr  => CAPS/SPS CT Raw\n");
     printf("  .dat  => Diskread\n");
     printf("  .dfi  => DiscFerret DFE2\n");
-    printf("  .raw  => CAPS/SPS CT Raw\n");
     printf("  *.raw => Kryoflux STREAM\n");
+    printf("  .{ct,ctr,raw} => CAPS/SPS CT Raw\n");
 
     exit(rc);
 }
