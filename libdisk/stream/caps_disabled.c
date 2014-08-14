@@ -39,7 +39,7 @@ static struct stream *caps_open(const char *name)
 
 struct stream_type caps = {
     .open = caps_open,
-    .suffix = { "ipf", NULL }
+    .suffix = { "ipf", "ct", "ctr", "raw", NULL }
 };
 
 /*
