@@ -78,6 +78,7 @@ static void print_library_download_info(void)
 {
     w("Download the library at http://www.softpres.org/download\n");
     w("Respect the SPS Freeware License Agreement!\n");
+    w("See the Disk-Utilities/README for more help.\n");
 }
 
 static int get_capslib(void)
@@ -86,8 +87,10 @@ static int get_capslib(void)
         return 1;
 
 #ifdef __APPLE__
-    if ((capslib.handle = dlopen(CAPSLIB_NAME, RTLD_LAZY)) == NULL)
+    if ((capslib.handle = dlopen(CAPSLIB_NAME, RTLD_LAZY)) == NULL) {
+        warnx("Unable to open " CAPSLIB_NAME);
         goto fail_no_handle;
+    }
     capslib.version = 5; /* guess */
 #else
     if ((capslib.handle = dlopen(CAPSLIB_NAME ".5", RTLD_LAZY))) {
@@ -95,6 +98,7 @@ static int get_capslib(void)
     } else if ((capslib.handle = dlopen(CAPSLIB_NAME ".4", RTLD_LAZY))) {
         capslib.version = 4;
     } else {
+        warnx("Unable to open " CAPSLIB_NAME ".5 or " CAPSLIB_NAME ".4");
         goto fail_no_handle;
     }
 #endif
@@ -122,7 +126,6 @@ static int get_capslib(void)
 fail:
     dlclose(capslib.handle);
 fail_no_handle:
-    warnx("Unable to open " CAPSLIB_NAME);
     print_library_download_info();
     --capslib.ref;
     return 0;
