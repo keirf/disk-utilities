@@ -110,17 +110,24 @@ int ibm_scan_dam(struct stream *s)
 }
 
 static int choose_gap3(
-    enum track_type type, struct ibm_track *ibm_track,
-    unsigned int gap_bits, unsigned int nr_secs)
+    struct track_info *ti, struct ibm_track *ibm_track,
+    int gap_bits, unsigned int nr_secs)
 {
-    int iam_bits = (type_is_fm(type) ? 7 : 16) * 16;
-    int gap3 = ibm_track->has_iam
-        ? (gap_bits - iam_bits) / ((nr_secs+1) * 16)
-        : gap_bits / (nr_secs * 16);
-    gap3 = (gap3 > 108+2) ? 108
-        : (gap3 > 80+2) ? 80
-        : (gap3 > 40+2) ? 40
-        : 25; /* minimum permissible is 24 */
+    int gap3, iam_bits = (type_is_fm(ti->type) ? 7 : 16) * 16;
+    int gap4a = 40, gap4b = type_is_fm(ti->type) ? 40 : 80;
+    for (;;) {
+        /* Don't include gap 4a and 4b (before/after index mark). */
+        gap3 = gap_bits - (gap4a + gap4b) * 16;
+        /* Account for IAM and distribute gap evenly across sectors and IAM. */
+        gap3 = (ibm_track->has_iam
+                ? (gap3 - iam_bits) / ((nr_secs+1) * 16)
+                : gap3 / (nr_secs * 16));
+        if (gap3 >= 25) /* minimum permissible is 24 */
+            break;
+        /* Inter-sector gap is too small: lengthen the track to make space. */
+        gap_bits += 1000;
+        ti->total_bits += 1000;
+    }
     return gap3;
 }
 
@@ -130,7 +137,7 @@ static void *ibm_mfm_write_raw(
     struct track_info *ti = &d->di->track[tracknr];
     struct ibm_psector *ibm_secs, *new_sec, *cur_sec, *next_sec, **pprev_sec;
     struct ibm_track *ibm_track = NULL;
-    unsigned int dat_bytes = 0, total_distance = 0, nr_blocks = 0;
+    unsigned int dat_bytes = 0, gap_bits, nr_blocks = 0;
     unsigned int sec_sz;
     bool_t iam = 0;
 
@@ -197,6 +204,7 @@ static void *ibm_mfm_write_raw(
         *pprev_sec = new_sec;
     }
 
+    gap_bits = ti->total_bits - s->track_len_bc;
     for (cur_sec = ibm_secs; cur_sec; cur_sec = cur_sec->next) {
         int distance, cur_size;
         next_sec = cur_sec->next ?: ibm_secs;
@@ -209,7 +217,7 @@ static void *ibm_mfm_write_raw(
             trk_warn(ti, tracknr, "Overlapping sectors");
             goto out;
         }
-        total_distance += distance;
+        gap_bits += distance;
         nr_blocks++;
         dat_bytes += sec_sz;
     }
@@ -226,8 +234,7 @@ static void *ibm_mfm_write_raw(
                          + dat_bytes);
 
     ibm_track->has_iam = iam ? 1 : 0;
-    ibm_track->gap3 = choose_gap3(ti->type, ibm_track, total_distance,
-                                  nr_blocks);
+    ibm_track->gap3 = choose_gap3(ti, ibm_track, gap_bits, nr_blocks);
 
     ti->len = sizeof(struct ibm_track);
     for (cur_sec = ibm_secs; cur_sec; cur_sec = cur_sec->next) {
@@ -366,7 +373,7 @@ void setup_ibm_mfm_track(
         errx(1, "Too much data for track!");
 
     ibm_track->has_iam = 1;
-    ibm_track->gap3 = choose_gap3(type, ibm_track, gap_bits, nr_secs);
+    ibm_track->gap3 = choose_gap3(ti, ibm_track, gap_bits, nr_secs);
 
     ti->data_bitoff = (is_fm ? 40 : 80) * 16;
     ti->nr_sectors = nr_secs;
@@ -506,7 +513,7 @@ static void *ibm_fm_write_raw(
     struct track_info *ti = &d->di->track[tracknr];
     struct ibm_psector *ibm_secs, *new_sec, *cur_sec, *next_sec, **pprev_sec;
     struct ibm_track *ibm_track = NULL;
-    unsigned int dat_bytes = 0, total_distance = 0, nr_blocks = 0;
+    unsigned int dat_bytes = 0, gap_bits, nr_blocks = 0;
     unsigned int sec_sz;
     bool_t iam = 0;
 
@@ -601,6 +608,7 @@ static void *ibm_fm_write_raw(
         *pprev_sec = new_sec;
     }
 
+    gap_bits = ti->total_bits - s->track_len_bc;
     for (cur_sec = ibm_secs; cur_sec; cur_sec = cur_sec->next) {
         int distance, cur_size;
         next_sec = cur_sec->next ?: ibm_secs;
@@ -613,7 +621,7 @@ static void *ibm_fm_write_raw(
             trk_warn(ti, tracknr, "Overlapping sectors");
             goto out;
         }
-        total_distance += distance;
+        gap_bits += distance;
         nr_blocks++;
         dat_bytes += sec_sz;
     }
@@ -630,8 +638,7 @@ static void *ibm_fm_write_raw(
                          + dat_bytes);
 
     ibm_track->has_iam = iam ? 1 : 0;
-    ibm_track->gap3 = choose_gap3(ti->type, ibm_track, total_distance,
-                                  nr_blocks);
+    ibm_track->gap3 = choose_gap3(ti, ibm_track, gap_bits, nr_blocks);
 
     ti->len = sizeof(struct ibm_track);
     for (cur_sec = ibm_secs; cur_sec; cur_sec = cur_sec->next) {
