@@ -19,7 +19,7 @@ static void *unformatted_write_raw(
     struct disk_info *di = d->di;
     struct track_info *ti = &di->track[tracknr];
     unsigned int scan_bits = 0, bad = 0, nr_zero = 0;
-    unsigned int lat = s->latency, clk = 2000;
+    unsigned int lat = s->latency, clk = s->clock;
     unsigned int bad_sectors = 0, nr_sectors = 0;
 
     /* Scan for bit sequences that break the MFM encoding rules.

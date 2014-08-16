@@ -58,7 +58,7 @@ static struct stream_type stream_soft = {
 };
 
 struct stream *stream_soft_open(
-    uint8_t *data, uint16_t *speed, uint32_t bitlen)
+    uint8_t *data, uint16_t *speed, uint32_t bitlen, unsigned int rpm)
 {
     struct soft_stream *ss;
 
@@ -66,9 +66,10 @@ struct stream *stream_soft_open(
     ss->dat = data;
     ss->speed = speed;
     ss->bitlen = bitlen;
-    ss->ns_per_cell = 200000000u / ss->bitlen;
+    ss->ns_per_cell = track_nsecs_from_rpm(rpm) / ss->bitlen;
 
     ss->s.type = &stream_soft;
+    ss->s.rpm = rpm;
 
     return &ss->s;
 }

@@ -39,7 +39,7 @@ const static struct stream_type *stream_type[] = {
     NULL
 };
 
-struct stream *stream_open(const char *name)
+struct stream *stream_open(const char *name, unsigned int rpm)
 {
     struct stat sbuf;
     const struct stream_type *st;
@@ -66,10 +66,11 @@ struct stream *stream_open(const char *name)
     return NULL;
 
 found:
-    if ((s = st->open(name)) == NULL)
+    if ((s = st->open(name, rpm)) == NULL)
         return NULL;
 
     s->type = st;
+    s->rpm = rpm;
 
     /* Flux-based streams */
     s->pll_mode = PLL_default;

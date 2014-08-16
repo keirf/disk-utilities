@@ -114,7 +114,7 @@ static void handle_stream(void)
     struct track_info *ti;
     unsigned int i, unidentified = 0;
 
-    if ((s = stream_open(in)) == NULL)
+    if ((s = stream_open(in, rpm)) == NULL)
         errx(1, "Failed to probe input file: %s", in);
 
     stream_pll_mode(s, pll_mode);

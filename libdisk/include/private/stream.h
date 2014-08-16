@@ -5,7 +5,7 @@
 #include <private/util.h>
 
 struct stream_type {
-    struct stream *(*open)(const char *name);
+    struct stream *(*open)(const char *name, unsigned int rpm);
     void (*close)(struct stream *);
     int (*select_track)(struct stream *, unsigned int tracknr);
     void (*reset)(struct stream *);

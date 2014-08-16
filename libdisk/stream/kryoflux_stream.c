@@ -35,7 +35,7 @@ struct kfs_stream {
 #define ICK_FREQ (MCK_FREQ / 16)
 #define SCK_PS_PER_TICK (1000000000/(SCK_FREQ/1000))
 
-static struct stream *kfs_open(const char *name)
+static struct stream *kfs_open(const char *name, unsigned int rpm)
 {
     char track0[strlen(name) + 9];
     struct stat sbuf;

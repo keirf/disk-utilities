@@ -110,7 +110,8 @@ void track_free_raw_buffer(struct track_raw *);
 void track_purge_raw_buffer(struct track_raw *);
 void track_read_raw(struct track_raw *, unsigned int tracknr);
 int track_write_raw(
-    struct track_raw *, unsigned int tracknr, enum track_type);
+    struct track_raw *, unsigned int tracknr, enum track_type,
+    unsigned int rpm);
 int track_write_raw_from_stream(
     struct disk *, unsigned int tracknr, enum track_type, struct stream *s);
 

@@ -96,7 +96,7 @@ static void scp_close(struct disk *d)
         /* Rotate the track so gap is at index. */
         bit = max_t(int, di->track[trk].data_bitoff - 128, 0);
 
-        av_cell = 200000000u / raw->bitlen;
+        av_cell = track_nsecs_from_rpm(d->rpm) / raw->bitlen;
         j = cell = 0;
 
         for (i = 0; i < raw->bitlen; i++) {

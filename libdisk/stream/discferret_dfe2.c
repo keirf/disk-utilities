@@ -37,7 +37,7 @@ struct dfe2_stream {
 #define MHZ(x) ((x) * 1000000)
 #define SCK_PS_PER_TICK (1000000000/(dfss->acq_freq/1000))
 
-static struct stream *dfe2_open(const char *name)
+static struct stream *dfe2_open(const char *name, unsigned int rpm)
 {
     struct stat sbuf;
     struct dfe2_stream *dfss;

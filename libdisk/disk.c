@@ -197,10 +197,12 @@ void track_read_raw(struct track_raw *track_raw, unsigned int tracknr)
 }
 
 int track_write_raw(
-    struct track_raw *raw, unsigned int tracknr, enum track_type type)
+    struct track_raw *raw, unsigned int tracknr, enum track_type type,
+    unsigned int rpm)
 {
     struct tbuf *tbuf = container_of(raw, struct tbuf, raw);
-    struct stream *s = stream_soft_open(raw->bits, raw->speed, raw->bitlen);
+    struct stream *s = stream_soft_open(
+        raw->bits, raw->speed, raw->bitlen, rpm);
     int rc = track_write_raw_from_stream(tbuf->disk, tracknr, type, s);
     stream_close(s);
     return rc;

@@ -34,7 +34,7 @@ struct scp_stream {
 
 #define SCK_NS_PER_TICK (25u)
 
-static struct stream *scp_open(const char *name)
+static struct stream *scp_open(const char *name, unsigned int rpm)
 {
     struct stat sbuf;
     struct scp_stream *scss;
