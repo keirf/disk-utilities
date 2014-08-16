@@ -638,7 +638,9 @@ static void *ibm_fm_write_raw(
                          + dat_bytes);
 
     ibm_track->has_iam = iam ? 1 : 0;
-    ibm_track->gap3 = choose_gap3(ti, ibm_track, gap_bits, nr_blocks);
+    ibm_track->gap3 = ((ti->type == TRKTYP_dec_rx01)
+                       || (ti->type == TRKTYP_dec_rx02)) ? 27
+        : choose_gap3(ti, ibm_track, gap_bits, nr_blocks);
 
     ti->len = sizeof(struct ibm_track);
     for (cur_sec = ibm_secs; cur_sec; cur_sec = cur_sec->next) {
@@ -649,6 +651,8 @@ static void *ibm_fm_write_raw(
     }
 
 out:
+    if (ti->type == TRKTYP_dec_rx02)
+        stream_set_density(s, 1000u);
     return ibm_track;
 }
 
@@ -692,7 +696,7 @@ static void ibm_fm_read_raw(
     struct track_info *ti = &d->di->track[tracknr];
     struct ibm_track *ibm_track = (struct ibm_track *)ti->dat;
     struct ibm_sector *cur_sec;
-    unsigned int sec, i, sec_sz, flags = 0;
+    unsigned int sec, i, j, sec_sz, flags = 0;
 
     if (ti->type == TRKTYP_dec_rx02)
         flags |= ENC_HALFRATE;
@@ -735,12 +739,41 @@ static void ibm_fm_read_raw(
                 fm_sync(cur_sec->mark, IBM_FM_SYNC_CLK));
         if ((cur_sec->mark == DEC_RX02_MMFM_DAM_DAT)
             || (cur_sec->mark == DEC_RX02_MMFM_DDAM_DAT)) {
+            uint8_t w8, dat[256+2+2];
+            uint16_t w16, mmfm[256+2+2], crc;
+            uint32_t w32;
+            crc = crc16_ccitt(cur_sec->dat, 256, tbuf->crc16_ccitt);
             flags &= ~ENC_HALFRATE;
             fm_bits(tbuf, flags|ENC_RAW, 1, 0); /* 1us of delay to next flux */
-            for (i = 0; i < sec_sz; i++)
-                fm_bits(tbuf, flags, 8, cur_sec->dat[i]);
-            fm_bits(tbuf, flags, 16, tbuf->crc16_ccitt);
-            fm_bits(tbuf, flags, 16, 0xffff);
+            /* MMFM area: Data, CRC, lead-out. */
+            memcpy(dat, cur_sec->dat, 256);
+            dat[256+0] = crc >> 8; dat[256+1] = crc;
+            dat[256+2+0] = dat[256+2+1] = 0xff;
+            /* Normal MFM encoding. */
+            for (i = w16 = 0; i < sizeof(dat); i++) {
+                w8 = dat[i];
+                for (j = 0; j < 8; j++) {
+                    w16 <<= 2;
+                    w16 |= (w8 >> (7-j)) & 1;
+                    if (!(w16 & 5))
+                        w16 |= 2;
+                }
+                mmfm[i] = w16;
+            }
+            /* Apply the extra DEC-RX02 rule: 011110 -> 01000100010. */
+            for (i = w32 = 0; i < sizeof(dat); i++) {
+                w32 = (w32 << 16) | mmfm[i];
+                for (j = 0; j < 16; j += 2) {
+                    if ((w32 & (0x555u << (14-j))) == (0x154u << (14-j))) {
+                        w32 &= ~(0x7ffu << (14-j));
+                        w32 |= 0x222u << (14-j);
+                    }
+                }
+                if (i)
+                    mmfm[i-1] = w32 >> 16;
+            }
+            for (i = 0; i < sizeof(dat); i++)
+                fm_bits(tbuf, flags|ENC_RAW, 16, mmfm[i]);
             flags |= ENC_HALFRATE;
         } else {
             for (i = 0; i < sec_sz; i++)
