@@ -9,13 +9,11 @@ struct stream_type {
     void (*close)(struct stream *);
     int (*select_track)(struct stream *, unsigned int tracknr);
     void (*reset)(struct stream *);
-    int (*next_bit)(struct stream *);
     int (*next_flux)(struct stream *);
     const char *suffix[];
 };
 
 void index_reset(struct stream *s);
-int flux_next_bit(struct stream *s);
 
 #endif /* __PRIVATE_STREAM_H__ */
 

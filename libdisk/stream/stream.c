@@ -39,6 +39,8 @@ const static struct stream_type *stream_type[] = {
     NULL
 };
 
+static int flux_next_bit(struct stream *s);
+
 struct stream *stream_open(const char *name, unsigned int rpm)
 {
     struct stat sbuf;
@@ -132,7 +134,7 @@ int stream_next_bit(struct stream *s)
     if (s->nr_index >= 5)
         return -1;
     s->index_offset_bc++;
-    if ((b = s->type->next_bit(s)) == -1)
+    if ((b = flux_next_bit(s)) == -1)
         return -1;
     s->index_offset_ns += s->latency - lat;
     s->word = (s->word << 1) | b;
@@ -188,7 +190,7 @@ void index_reset(struct stream *s)
     s->nr_index++;
 }
 
-int flux_next_bit(struct stream *s)
+static int flux_next_bit(struct stream *s)
 {
     int new_flux;
 

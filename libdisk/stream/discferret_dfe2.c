@@ -240,7 +240,6 @@ struct stream_type discferret_dfe2 = {
     .close = dfe2_close,
     .select_track = dfe2_select_track,
     .reset = dfe2_reset,
-    .next_bit = flux_next_bit,
     .next_flux = dfe2_next_flux,
     .suffix = { "dfi", NULL }
 

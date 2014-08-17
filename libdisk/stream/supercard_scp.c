@@ -172,7 +172,6 @@ struct stream_type supercard_scp = {
     .close = scp_close,
     .select_track = scp_select_track,
     .reset = scp_reset,
-    .next_bit = flux_next_bit,
     .next_flux = scp_next_flux,
     .suffix = { "scp", NULL }
 };

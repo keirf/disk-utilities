@@ -94,30 +94,32 @@ static void dr_reset(struct stream *s)
     drs->bpos = 0;
 }
 
-static int dr_next_bit(struct stream *s)
+static int dr_next_flux(struct stream *s)
 {
     struct dr_stream *drs = container_of(s, struct dr_stream, s);
-    int bit;
+    int bit, flux = 0;
 
-    if ((drs->bpos & 7) == 0) {
-        if (drs->dat_idx >= BYTES_PER_TRACK/2)
-            return -1;
-        if ((drs->byte_latency = drs->dat[2*drs->dat_idx]) & 0x80)
-            index_reset(s);
-        drs->byte_latency &= 0x7f;
-        drs->byte_latency *= CIA_NS_PER_TICK;
-        drs->b = drs->dat[2*drs->dat_idx+1];
-        drs->dat_idx++;
-        drs->bpos = 0;
-    }
+    do {
+        if ((drs->bpos & 7) == 0) {
+            if (drs->dat_idx >= BYTES_PER_TRACK/2)
+                return -1;
+            if ((drs->byte_latency = drs->dat[2*drs->dat_idx]) & 0x80)
+                index_reset(s);
+            drs->byte_latency &= 0x7f;
+            drs->byte_latency *= CIA_NS_PER_TICK;
+            drs->b = drs->dat[2*drs->dat_idx+1];
+            drs->dat_idx++;
+            drs->bpos = 0;
+        }
 
-    bit = (drs->b >> (7 - drs->bpos)) & 1;
+        bit = (drs->b >> (7 - drs->bpos)) & 1;
 
-    s->latency += drs->byte_latency >> 3;
-    if (drs->bpos++ == 7)
-        s->latency += drs->byte_latency & 7;
+        flux += drs->byte_latency >> 3;
+        if (drs->bpos++ == 7)
+            flux += drs->byte_latency & 7;
+    } while (!bit && (flux < 1000000 /* 1ms */));
 
-    return bit;
+    return flux;
 }
 
 struct stream_type diskread = {
@@ -125,7 +127,7 @@ struct stream_type diskread = {
     .close = dr_close,
     .select_track = dr_select_track,
     .reset = dr_reset,
-    .next_bit = dr_next_bit,
+    .next_flux = dr_next_flux,
     .suffix = { "dat", NULL }
 };
 

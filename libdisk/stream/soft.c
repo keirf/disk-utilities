@@ -34,27 +34,29 @@ static void ss_reset(struct stream *s)
     ss->pos = 0;
 }
 
-static int ss_next_bit(struct stream *s)
+static int ss_next_flux(struct stream *s)
 {
     struct soft_stream *ss = container_of(s, struct soft_stream, s);
     uint16_t speed;
     uint8_t dat;
+    int flux = 0;
 
-    if (++ss->pos >= ss->bitlen)
-        ss_reset(s);
+    do {
+        if (++ss->pos >= ss->bitlen)
+            ss_reset(s);
+        dat = !!(ss->dat[ss->pos >> 3] & (0x80u >> (ss->pos & 7)));
+        speed = ss->speed ? ss->speed[ss->pos] : 1000u;
+        flux += (ss->ns_per_cell * speed) / 1000u;
+    } while (!dat && (flux < 1000000 /* 1ms */));
 
-    dat = !!(ss->dat[ss->pos >> 3] & (0x80u >> (ss->pos & 7)));
-    speed = ss->speed ? ss->speed[ss->pos] : 1000u;
-    s->latency += (ss->ns_per_cell * speed) / 1000u;
-
-    return dat;
+    return flux;
 }
 
 static struct stream_type stream_soft = {
     .close = ss_close,
     .select_track = ss_select_track,
     .reset = ss_reset,
-    .next_bit = ss_next_bit
+    .next_flux = ss_next_flux
 };
 
 struct stream *stream_soft_open(

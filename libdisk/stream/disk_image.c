@@ -82,18 +82,23 @@ static void di_reset(struct stream *s)
     dis->pos = 0;
 }
 
-static int di_next_bit(struct stream *s)
+static int di_next_flux(struct stream *s)
 {
     struct di_stream *dis = container_of(s, struct di_stream, s);
+    uint16_t speed;
     uint8_t dat;
+    int flux = 0;
 
-    if (++dis->pos >= dis->track_raw->bitlen)
-        di_reset(s);
+    do {
+        if (++dis->pos >= dis->track_raw->bitlen)
+            di_reset(s);
+        dat = !!(dis->track_raw->bits[dis->pos >> 3]
+                 & (0x80u >> (dis->pos & 7)));
+        speed = dis->track_raw->speed[dis->pos];
+        flux += (dis->ns_per_cell * speed) / 1000u;
+    } while (!dat && (flux < 1000000 /* 1ms */));
 
-    dat = !!(dis->track_raw->bits[dis->pos >> 3] & (0x80u >> (dis->pos & 7)));
-    s->latency += (dis->ns_per_cell * dis->track_raw->speed[dis->pos]) / 1000u;
-
-    return dat;
+    return flux;
 }
 
 struct stream_type disk_image = {
@@ -101,7 +106,7 @@ struct stream_type disk_image = {
     .close = di_close,
     .select_track = di_select_track,
     .reset = di_reset,
-    .next_bit = di_next_bit,
+    .next_flux = di_next_flux,
     .suffix = { "adf", "eadf", "dsk", "imd", "img", NULL }
 };
 
