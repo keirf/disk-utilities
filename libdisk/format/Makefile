@@ -1,4 +1,5 @@
 ROOT := ../..
+DEPS := amiga/.*.d
 include $(ROOT)/Rules.mk
 
 SRCS := $(wildcard *.c amiga/*.c)
