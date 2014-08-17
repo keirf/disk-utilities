@@ -208,7 +208,6 @@ static int flux_next_bit(struct stream *s)
         if ((new_flux = s->type->next_flux(s)) == -1)
             return -1;
         s->flux += new_flux;
-        s->clocked_zeros = 0;
     }
 
     s->latency += s->clock;
@@ -242,6 +241,7 @@ static int flux_next_bit(struct stream *s)
     s->latency += s->flux - new_flux;
     s->flux = new_flux;
 
+    s->clocked_zeros = 0;
     return 1;
 }
 
