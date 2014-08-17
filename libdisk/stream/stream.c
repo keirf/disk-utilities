@@ -204,11 +204,9 @@ static int flux_next_bit(struct stream *s)
 {
     int new_flux;
 
-    while (s->flux < (s->clock/2)) {
-        if ((new_flux = s->type->next_flux(s)) == -1)
+    while (s->flux < (s->clock/2))
+        if (s->type->next_flux(s) != 0)
             return -1;
-        s->flux += new_flux;
-    }
 
     s->latency += s->clock;
     s->flux -= s->clock;

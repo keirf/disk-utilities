@@ -141,7 +141,7 @@ static void scp_reset(struct stream *s)
 static int scp_next_flux(struct stream *s)
 {
     struct scp_stream *scss = container_of(s, struct scp_stream, s);
-    uint32_t val = 0, flux, t;
+    uint32_t val = 0, t;
 
     for (;;) {
         if (scss->dat_idx >= scss->index_pos) {
@@ -163,8 +163,8 @@ static int scp_next_flux(struct stream *s)
         break;
     }
 
-    flux = val * SCK_NS_PER_TICK;
-    return (int)flux;
+    s->flux += val * SCK_NS_PER_TICK;
+    return 0;
 }
 
 struct stream_type supercard_scp = {

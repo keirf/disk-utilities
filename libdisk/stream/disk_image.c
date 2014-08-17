@@ -99,7 +99,8 @@ static int di_next_flux(struct stream *s)
         flux += (dis->ns_per_cell * speed) / 1000u;
     } while (!dat && (flux < 1000000 /* 1ms */));
 
-    return flux;
+    s->flux += flux;
+    return 0;
 }
 
 struct stream_type disk_image = {

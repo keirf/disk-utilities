@@ -194,7 +194,7 @@ static int dfe2_next_flux(struct stream *s)
     uint32_t carry = 0;
     uint32_t abspos = dfss->stream_idx;
 
-    uint32_t val = 0, flux;
+    uint32_t val = 0;
     bool_t done = 0;
 
     if ((dfss->stream_idx >= dfss->index_pos) || (i == 0)) {
@@ -231,8 +231,8 @@ static int dfe2_next_flux(struct stream *s)
     if (!done)
         return -1;
 
-    flux = (val * (uint32_t)SCK_PS_PER_TICK) / 1000u;
-    return (int)flux;
+    s->flux += (val * (uint32_t)SCK_PS_PER_TICK) / 1000u;
+    return 0;
 }
 
 struct stream_type discferret_dfe2 = {

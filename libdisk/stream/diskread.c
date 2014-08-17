@@ -119,7 +119,8 @@ static int dr_next_flux(struct stream *s)
             flux += drs->byte_latency & 7;
     } while (!bit && (flux < 1000000 /* 1ms */));
 
-    return flux;
+    s->flux += flux;
+    return 0;
 }
 
 struct stream_type diskread = {

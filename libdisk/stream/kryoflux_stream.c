@@ -109,7 +109,7 @@ static int kfs_next_flux(struct stream *s)
     struct kfs_stream *kfss = container_of(s, struct kfs_stream, s);
     unsigned int i = kfss->dat_idx;
     unsigned char *dat = kfss->dat;
-    uint32_t val = 0, flux;
+    uint32_t val = 0;
     bool_t done = 0;
 
     if (kfss->stream_idx >= kfss->index_pos) {
@@ -172,8 +172,8 @@ static int kfs_next_flux(struct stream *s)
     if (!done)
         return -1;
 
-    flux = (val * (uint32_t)SCK_PS_PER_TICK) / 1000u;
-    return (int)flux;
+    s->flux += (val * (uint32_t)SCK_PS_PER_TICK) / 1000u;
+    return 0;
 }
 
 struct stream_type kryoflux_stream = {
