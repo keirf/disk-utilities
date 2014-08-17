@@ -222,7 +222,7 @@ static int flux_next_bit(struct stream *s)
 
     if (s->pll_mode != PLL_fixed_clock) {
         /* PLL: Adjust clock frequency according to phase mismatch. */
-        if ((s->clocked_zeros >= 1) && (s->clocked_zeros <= 3)) {
+        if (s->clocked_zeros <= 3) {
             /* In sync: adjust base clock by a fraction of phase mismatch. */
             int diff = s->flux / (int)(s->clocked_zeros + 1);
             s->clock += diff * PERIOD_ADJ_PCT / 100;

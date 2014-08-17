@@ -34,8 +34,6 @@ static void *unformatted_write_raw(
                 bad++;
             clk = new_clk;
             lat = s->latency;
-            if (!nr_zero)
-                bad++;
             nr_zero = 0;
         } else if (++nr_zero > 3) {
             bad++;
