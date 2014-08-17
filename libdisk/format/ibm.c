@@ -714,8 +714,6 @@ static void ibm_fm_read_raw(
     for (sec = 0; sec < ti->nr_sectors; sec++) {
 
         sec_sz = 128 << cur_sec->idam.no;
-        if (ti->type == TRKTYP_dec_rx02)
-            cur_sec->idam.no = 0;
 
         /* IDAM */
         for (i = 0; i < 6; i++)
@@ -726,7 +724,8 @@ static void ibm_fm_read_raw(
         fm_bits(tbuf, flags, 8, cur_sec->idam.cyl);
         fm_bits(tbuf, flags, 8, cur_sec->idam.head);
         fm_bits(tbuf, flags, 8, cur_sec->idam.sec);
-        fm_bits(tbuf, flags, 8, cur_sec->idam.no);
+        fm_bits(tbuf, flags, 8, ((ti->type == TRKTYP_dec_rx02)
+                                 ? 0 : cur_sec->idam.no));
         fm_bits(tbuf, flags, 16, tbuf->crc16_ccitt);
         for (i = 0; i < 11; i++)
             fm_bits(tbuf, flags, 8, 0xff);
