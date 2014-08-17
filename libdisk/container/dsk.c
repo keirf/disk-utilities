@@ -37,6 +37,8 @@ struct track_header {
     uint16_t flags;
 
     /* Bitmap of valid sectors. */
+    uint16_t nr_sectors;
+    uint16_t bytes_per_sector;
     uint8_t valid_sectors[8];
 
     /* Offset and length of type-specific track data in container file. */
@@ -132,6 +134,8 @@ static struct container *dsk_open(struct disk *d)
         ti = &di->track[i];
         init_track_info(ti, be16toh(th.type));
         ti->flags = be16toh(th.flags);
+        ti->nr_sectors = be16toh(th.nr_sectors);
+        ti->bytes_per_sector = be16toh(th.bytes_per_sector);
         memcpy(ti->valid_sectors, th.valid_sectors, sizeof(th.valid_sectors));
         ti->len = be32toh(th.len);
         ti->data_bitoff = be32toh(th.data_bitoff);
@@ -190,6 +194,8 @@ static void dsk_close(struct disk *d)
         ti = &di->track[i];
         th.type = htobe16(ti->type);
         th.flags = htobe16(ti->flags);
+        th.nr_sectors = htobe16(ti->nr_sectors);
+        th.bytes_per_sector = htobe16(ti->bytes_per_sector);
         memcpy(th.valid_sectors, ti->valid_sectors, sizeof(th.valid_sectors));
         th.off = htobe32(datoff);
         th.len = htobe32(ti->len);
