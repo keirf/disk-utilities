@@ -249,21 +249,22 @@ static void caps_reset(struct stream *s)
     index_reset(s);
 }
 
-static int caps_next_bit(struct stream *s)
+static int caps_next_flux(struct stream *s)
 {
     struct caps_stream *cpss = container_of(s, struct caps_stream, s);
     uint16_t speed;
-    uint8_t dat;
+    int flux = 0;
 
-    if (++cpss->pos >= cpss->bitlen)
-        caps_reset(s);
+    do {
+        if (++cpss->pos >= cpss->bitlen)
+            caps_reset(s);
+        speed = ((cpss->pos >> 3) < cpss->ti.timelen)
+            ? cpss->speed[cpss->pos >> 3] : 1000u;
+        flux += (cpss->ns_per_cell * speed) / 1000u;
+    } while (!(cpss->bits[cpss->pos >> 3] & (0x80u >> (cpss->pos & 7)))
+             && (flux < 1000000 /* 1ms */));
 
-    dat = !!(cpss->bits[cpss->pos >> 3] & (0x80u >> (cpss->pos & 7)));
-    speed = ((cpss->pos >> 3) < cpss->ti.timelen)
-        ? cpss->speed[cpss->pos >> 3] : 1000u;
-    s->latency += (cpss->ns_per_cell * speed) / 1000u;
-
-    return dat;
+    return flux;
 }
 
 struct stream_type caps = {
@@ -271,7 +272,8 @@ struct stream_type caps = {
     .close = caps_close,
     .select_track = caps_select_track,
     .reset = caps_reset,
-    .next_bit = caps_next_bit,
+    .next_bit = flux_next_bit,
+    .next_flux = caps_next_flux,
     .suffix = { "ipf", "ct", "ctr", "raw", NULL }
 };
 
