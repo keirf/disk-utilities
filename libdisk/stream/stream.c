@@ -23,6 +23,10 @@
 #define CLOCK_MIN(_c) (((_c) * (100 - CLOCK_MAX_ADJ)) / 100)
 #define CLOCK_MAX(_c) (((_c) * (100 + CLOCK_MAX_ADJ)) / 100)
 
+/* Amount to adjust phase/period of our clock based on each observed flux. */
+#define PERIOD_ADJ_PCT 10
+#define PHASE_ADJ_PCT  50
+
 extern struct stream_type kryoflux_stream;
 extern struct stream_type diskread;
 extern struct stream_type disk_image;
@@ -219,12 +223,12 @@ static int flux_next_bit(struct stream *s)
     if (s->pll_mode != PLL_fixed_clock) {
         /* PLL: Adjust clock frequency according to phase mismatch. */
         if ((s->clocked_zeros >= 1) && (s->clocked_zeros <= 3)) {
-            /* In sync: adjust base clock by 10% of phase mismatch. */
+            /* In sync: adjust base clock by a fraction of phase mismatch. */
             int diff = s->flux / (int)(s->clocked_zeros + 1);
-            s->clock += diff / 10;
+            s->clock += diff * PERIOD_ADJ_PCT / 100;
         } else {
             /* Out of sync: adjust base clock towards centre. */
-            s->clock += (s->clock_centre - s->clock) / 10;
+            s->clock += (s->clock_centre - s->clock) * PERIOD_ADJ_PCT / 100;
         }
 
         /* Clamp the clock's adjustment range. */
@@ -235,7 +239,8 @@ static int flux_next_bit(struct stream *s)
     }
 
     /* Authentic PLL: Do not snap the timing window to each flux transition. */
-    new_flux = (s->pll_mode == PLL_authentic) ? s->flux / 2 : 0;
+    new_flux = ((s->pll_mode == PLL_authentic)
+                ? s->flux * (100 - PHASE_ADJ_PCT) / 100 : 0);
     s->latency += s->flux - new_flux;
     s->flux = new_flux;
 
