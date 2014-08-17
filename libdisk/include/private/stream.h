@@ -13,7 +13,8 @@ struct stream_type {
     const char *suffix[];
 };
 
-void index_reset(struct stream *s);
+void stream_setup(
+    struct stream *s, const struct stream_type *st, unsigned int rpm);
 
 #endif /* __PRIVATE_STREAM_H__ */
 

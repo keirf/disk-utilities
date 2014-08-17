@@ -6,6 +6,7 @@
  * Written in 2011 by Keir Fraser
  */
 
+#include <limits.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -41,6 +42,16 @@ const static struct stream_type *stream_type[] = {
 
 static int flux_next_bit(struct stream *s);
 
+void stream_setup(
+    struct stream *s, const struct stream_type *st, unsigned int rpm)
+{
+    memset(s, 0, sizeof(*s));
+    s->type = st;
+    s->rpm = rpm;
+    s->pll_mode = PLL_default;
+    s->clock = s->clock_centre = CLOCK_CENTRE;
+}
+
 struct stream *stream_open(const char *name, unsigned int rpm)
 {
     struct stat sbuf;
@@ -68,15 +79,8 @@ struct stream *stream_open(const char *name, unsigned int rpm)
     return NULL;
 
 found:
-    if ((s = st->open(name, rpm)) == NULL)
-        return NULL;
-
-    s->type = st;
-    s->rpm = rpm;
-
-    /* Flux-based streams */
-    s->pll_mode = PLL_default;
-    s->clock = s->clock_centre = CLOCK_CENTRE;
+    if ((s = st->open(name, rpm)) != NULL)
+        stream_setup(s, st, rpm);
 
     return s;
 }
@@ -104,7 +108,12 @@ void stream_reset(struct stream *s)
 
     s->nr_index = 0;
     s->latency = 0;
-    s->index_offset_bc = s->index_offset_ns = ~0u>>1; /* bad */
+    s->index_offset_bc
+        = s->index_offset_ns
+        = s->track_len_bc
+        = s->track_len_ns
+        = (1u<<31)-1; /* bad */
+    s->ns_to_index = INT_MAX;
 
     s->type->reset(s);
 
@@ -136,7 +145,16 @@ int stream_next_bit(struct stream *s)
     s->index_offset_bc++;
     if ((b = flux_next_bit(s)) == -1)
         return -1;
-    s->index_offset_ns += s->latency - lat;
+    lat = s->latency - lat;
+    s->index_offset_ns += lat;
+    s->ns_to_index -= lat;
+    if (s->ns_to_index <= 0) {
+        s->track_len_bc = s->index_offset_bc;
+        s->track_len_ns = s->index_offset_ns;
+        s->ns_to_index = INT_MAX;
+        s->index_offset_bc = s->index_offset_ns = 0;
+        s->nr_index++;
+    }
     s->word = (s->word << 1) | b;
     if (++s->crc_bitoff == 16) {
         uint8_t b = mfm_decode_bits(bc_mfm, s->word);
@@ -180,14 +198,6 @@ void stream_set_density(struct stream *s, unsigned int ns_per_cell)
 {
     /* Flux-based streams */
     s->clock = s->clock_centre = ns_per_cell;
-}
-
-void index_reset(struct stream *s)
-{
-    s->track_len_bc = s->index_offset_bc;
-    s->track_len_ns = s->index_offset_ns;
-    s->index_offset_bc = s->index_offset_ns = 0;
-    s->nr_index++;
 }
 
 static int flux_next_bit(struct stream *s)

@@ -148,7 +148,7 @@ static int scp_next_flux(struct stream *s)
             uint32_t rev = s->nr_index % scss->revs;
             scss->index_pos = scss->index_off[rev];
             scss->dat_idx = rev ? scss->index_off[rev-1] : 0;
-            index_reset(s);
+            s->ns_to_index = s->flux;
             val = 0;
         }
 

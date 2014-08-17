@@ -78,7 +78,6 @@ static void di_reset(struct stream *s)
             BUG();
     }
 
-    index_reset(s);
     dis->pos = 0;
 }
 
@@ -90,8 +89,10 @@ static int di_next_flux(struct stream *s)
     int flux = 0;
 
     do {
-        if (++dis->pos >= dis->track_raw->bitlen)
+        if (++dis->pos >= dis->track_raw->bitlen) {
             di_reset(s);
+            s->ns_to_index = s->flux + flux;
+        }
         dat = !!(dis->track_raw->bits[dis->pos >> 3]
                  & (0x80u >> (dis->pos & 7)));
         speed = dis->track_raw->speed[dis->pos];

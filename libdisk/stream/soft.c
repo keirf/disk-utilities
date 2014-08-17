@@ -30,7 +30,6 @@ static int ss_select_track(struct stream *s, unsigned int tracknr)
 static void ss_reset(struct stream *s)
 {
     struct soft_stream *ss = container_of(s, struct soft_stream, s);
-    index_reset(s);
     ss->pos = 0;
 }
 
@@ -42,8 +41,10 @@ static int ss_next_flux(struct stream *s)
     int flux = 0;
 
     do {
-        if (++ss->pos >= ss->bitlen)
+        if (++ss->pos >= ss->bitlen) {
             ss_reset(s);
+            s->ns_to_index = s->flux + flux;
+        }
         dat = !!(ss->dat[ss->pos >> 3] & (0x80u >> (ss->pos & 7)));
         speed = ss->speed ? ss->speed[ss->pos] : 1000u;
         flux += (ss->ns_per_cell * speed) / 1000u;
@@ -70,8 +71,7 @@ struct stream *stream_soft_open(
     ss->bitlen = bitlen;
     ss->ns_per_cell = track_nsecs_from_rpm(rpm) / ss->bitlen;
 
-    ss->s.type = &stream_soft;
-    ss->s.rpm = rpm;
+    stream_setup(&ss->s, &stream_soft, rpm);
 
     return &ss->s;
 }

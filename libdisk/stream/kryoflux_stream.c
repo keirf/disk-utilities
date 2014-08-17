@@ -114,7 +114,7 @@ static int kfs_next_flux(struct stream *s)
 
     if (kfss->stream_idx >= kfss->index_pos) {
         kfss->index_pos = ~0u;
-        index_reset(s);
+        s->ns_to_index = s->flux;
     }
 
     while (!done && (i < kfss->datsz)) {

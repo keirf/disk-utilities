@@ -245,8 +245,6 @@ static void caps_reset(struct stream *s)
     cpss->bitlen = cpss->ti.tracklen * 8;
     cpss->pos = 0;
     cpss->ns_per_cell = track_nsecs_from_rpm(s->rpm) / cpss->bitlen;
-
-    index_reset(s);
 }
 
 static int caps_next_flux(struct stream *s)
@@ -257,8 +255,10 @@ static int caps_next_flux(struct stream *s)
     int flux = 0;
 
     do {
-        if (++cpss->pos >= cpss->bitlen)
+        if (++cpss->pos >= cpss->bitlen) {
             caps_reset(s);
+            s->ns_to_index = s->flux + flux;
+        }
         dat = !!(cpss->bits[cpss->pos >> 3] & (0x80u >> (cpss->pos & 7)));
         speed = ((cpss->pos >> 3) < cpss->ti.timelen)
             ? cpss->speed[cpss->pos >> 3] : 1000u;

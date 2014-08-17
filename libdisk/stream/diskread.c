@@ -104,7 +104,7 @@ static int dr_next_flux(struct stream *s)
             if (drs->dat_idx >= BYTES_PER_TRACK/2)
                 return -1;
             if ((drs->byte_latency = drs->dat[2*drs->dat_idx]) & 0x80)
-                index_reset(s);
+                s->ns_to_index = s->flux + flux;
             drs->byte_latency &= 0x7f;
             drs->byte_latency *= CIA_NS_PER_TICK;
             drs->b = drs->dat[2*drs->dat_idx+1];

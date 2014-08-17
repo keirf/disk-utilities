@@ -199,7 +199,7 @@ static int dfe2_next_flux(struct stream *s)
 
     if ((dfss->stream_idx >= dfss->index_pos) || (i == 0)) {
         dfss->index_pos = ~0u;
-        index_reset(s);
+        s->ns_to_index = s->flux;
     }
 
     while (!done && (i < dfss->datsz)) {
