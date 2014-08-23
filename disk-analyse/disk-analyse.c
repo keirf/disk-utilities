@@ -231,7 +231,7 @@ static void handle_img(void)
 
 int main(int argc, char **argv)
 {
-    char suffix[8], *config = NULL, *format = NULL;
+    char in_suffix[8], out_suffix[8], *config = NULL, *format = NULL;
     int ch;
 
     const static char sopts[] = "hqvip:r:s:e:S::f:c:";
@@ -313,14 +313,21 @@ int main(int argc, char **argv)
 
     in = argv[optind];
     out = argv[optind+1];
-    filename_extension(in, suffix, sizeof(suffix));
 
-    if (!format && !strcmp(suffix, "imd"))
-        format = "ibm";
+    filename_extension(in, in_suffix, sizeof(in_suffix));
+    filename_extension(out, out_suffix, sizeof(out_suffix));
+
+    /* Pick a sane default format for certain sector image formats. */
+    if (!format) {
+        if (!strcmp(in_suffix, "imd") || !strcmp(out_suffix, "imd"))
+            format = "ibm";
+        else if (!strcmp(out_suffix, "adf"))
+            format = "amigados";
+    }
 
     format_lists = parse_config(config, format);
 
-    if (!strcmp(suffix, "img"))
+    if (!strcmp(in_suffix, "img"))
         handle_img();
     else
         handle_stream();
