@@ -313,10 +313,13 @@ int main(int argc, char **argv)
 
     in = argv[optind];
     out = argv[optind+1];
+    filename_extension(in, suffix, sizeof(suffix));
+
+    if (!format && !strcmp(suffix, "imd"))
+        format = "ibm";
 
     format_lists = parse_config(config, format);
 
-    filename_extension(in, suffix, sizeof(suffix));
     if (!strcmp(suffix, "img"))
         handle_img();
     else

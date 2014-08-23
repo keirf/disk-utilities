@@ -1035,6 +1035,9 @@ ibm_fm_dd
 "DEC-RX02"
     * dec_rx02
 
+ibm
+    * ibm_fm_sd ibm_fm_dd ibm_mfm_dd ibm_mfm_hd ibm_mfm_ed
+
 ##########################################################
 # Raw / Unanalysed Formats
 
