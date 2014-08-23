@@ -62,11 +62,12 @@ static struct container *container_from_filename(
     return NULL;
 }
 
-struct disk *disk_create(const char *name)
+struct disk *disk_create(const char *name, unsigned int flags)
 {
     struct disk *d;
     struct container *c;
     int fd;
+    unsigned int rpm = flags >> DISKFL_rpm_shift;
 
     if ((c = container_from_filename(name)) == NULL)
         return NULL;
@@ -79,7 +80,7 @@ struct disk *disk_create(const char *name)
     d = memalloc(sizeof(*d));
     d->fd = fd;
     d->read_only = 0;
-    d->rpm = DEFAULT_RPM;
+    d->rpm = rpm ?: DEFAULT_RPM;
     d->container = c;
 
     c->init(d);
@@ -87,11 +88,12 @@ struct disk *disk_create(const char *name)
     return d;
 }
 
-struct disk *disk_open(const char *name, int read_only)
+struct disk *disk_open(const char *name, unsigned int flags)
 {
     struct disk *d;
     struct container *c;
-    int fd;
+    int fd, read_only = !!(flags & DISKFL_read_only);
+    unsigned int rpm = flags >> DISKFL_rpm_shift;
 
     if ((c = container_from_filename(name)) == NULL)
         return NULL;
@@ -104,7 +106,7 @@ struct disk *disk_open(const char *name, int read_only)
     d = memalloc(sizeof(*d));
     d->fd = fd;
     d->read_only = read_only;
-    d->rpm = DEFAULT_RPM;
+    d->rpm = rpm ?: DEFAULT_RPM;
     d->container = c->open(d);
 
     if (!d->container) {
@@ -138,11 +140,6 @@ void disk_close(struct disk *d)
     memfree(di);
     close(d->fd);
     memfree(d);
-}
-
-void disk_set_rpm(struct disk *d, unsigned int rpm)
-{
-    d->rpm = rpm;
 }
 
 struct disk_info *disk_get_info(struct disk *d)

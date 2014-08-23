@@ -119,9 +119,8 @@ static void handle_stream(void)
 
     stream_pll_mode(s, pll_mode);
 
-    if ((d = disk_create(out)) == NULL)
+    if ((d = disk_create(out, DISKFL_rpm(rpm))) == NULL)
         errx(1, "Unable to create new disk file: %s", out);
-    disk_set_rpm(d, rpm);
     di = disk_get_info(d);
 
     for (i = TRACK_START; i <= TRACK_END(di); i += TRACK_STEP) {
@@ -189,9 +188,8 @@ static void handle_img(void)
     sz = lseek(fd, 0, SEEK_END);
     lseek(fd, 0, SEEK_SET);
 
-    if ((d = disk_create(out)) == NULL)
+    if ((d = disk_create(out, DISKFL_rpm(rpm))) == NULL)
         errx(1, "Unable to create new disk file: %s", out);
-    disk_set_rpm(d, rpm);
     di = disk_get_info(d);
 
     sectors = track_alloc_sector_buffer(d);

@@ -79,11 +79,13 @@ struct stream;
 
 #pragma GCC visibility push(default)
 
-struct disk *disk_create(const char *name);
-struct disk *disk_open(const char *name, int read_only);
-void disk_close(struct disk *);
+#define DISKFL_read_only (1u<<0)
+#define DISKFL_rpm_shift 1
+#define DISKFL_rpm(rpm)  ((rpm)<<DISKFL_rpm_shift)
 
-void disk_set_rpm(struct disk *d, unsigned int rpm);
+struct disk *disk_create(const char *name, unsigned int flags);
+struct disk *disk_open(const char *name, unsigned int flags);
+void disk_close(struct disk *);
 
 const char *disk_get_format_id_name(enum track_type type);
 const char *disk_get_format_desc_name(enum track_type type);

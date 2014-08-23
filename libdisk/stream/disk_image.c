@@ -30,9 +30,8 @@ static struct stream *di_open(const char *name, unsigned int rpm)
     struct di_stream *dis;
     struct disk *d;
 
-    if ((d = disk_open(name, 1)) == NULL)
+    if ((d = disk_open(name, DISKFL_rpm(rpm) | DISKFL_read_only)) == NULL)
         return NULL;
-    disk_set_rpm(d, rpm);
 
     dis = memalloc(sizeof(*dis));
     dis->d = d;

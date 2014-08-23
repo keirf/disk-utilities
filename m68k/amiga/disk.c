@@ -244,7 +244,7 @@ void disk_dsklen_changed(struct amiga_state *s)
 
 void disk_init(struct amiga_state *s)
 {
-    s->disk.df0_disk = disk_open(df0_filename, 1);
+    s->disk.df0_disk = disk_open(df0_filename, DISKFL_read_only);
     if (s->disk.df0_disk == NULL)
         errx(1, "%s", df0_filename);
     s->disk.track_raw = track_alloc_raw_buffer(s->disk.df0_disk);
