@@ -75,6 +75,13 @@ path for many of these tools to run. There are a few ways to ensure this:
 
 Brief Descriptions:
 -------------------
+disk-analyse/
+    Disk image conversion tool.
+    Converts From: Kryoflux STREAM, DiscFerret (.DFI), Amiga diskread (.DAT)
+    Converts From & To: SPS/IPF, SPS/CTRaw, ADF, Extended ADF,
+                   LibDisk (.DSK), Supercard Pro (.SCP),
+                   ImageDisk (.IMD), Sector Image (.IMG),
+
 libdisk/
     A library for converting and manipulating disk images. It can create
     disk images in a range of formats from Kryoflux STREAM and SPS/IPF images
@@ -106,19 +113,8 @@ m68k/
     Run a given RNC Copylock routine in emulated environment, copying
     decrypted code to a shadow buffer for subsequent disassembly and dump
 
-disk-analyse/
-    Disk file conversion tool.
-    Converts From: Kryoflux STREAM, SPS/IPF, ADF, .DSK, .DFI,
-                   output from Amiga diskread tool.
-    Converts To: ADF, SPS/IPF, .DSK
+ipfinfo/
+    Dump information about an SPS/IPF image file.
 
-e-uae-patches/
-    A set of patches to fix and improve vanilla E-UAE-0.8.29-WIP4.
-    Improvements include disk track counters and save/restore dialogs for
-    the GTK-based UI, and support for reading libdisk .DSK images.
-
-    To use these patches, create a plain e-uae-0.8.29-wip4 tree, and then,
-    from within the e-uae-patches/ directory:
-    # for i in `cat series`; do patch -d xxx -p1 <$i ; done
-    where 'xxx' above is the path to your e-uae-0.8.29-wip4 tree!
-    You can now configure/build/install e-uae as usual.
+scp/
+    Dump floppy flux data from Supercard Pro to a .SCP image file.
