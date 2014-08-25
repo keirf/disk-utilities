@@ -28,6 +28,7 @@ struct container;
 struct disk {
     int fd;
     bool_t read_only;
+    bool_t kryoflux_hack;
     unsigned int rpm;
     struct container *container;
     struct disk_info *di;

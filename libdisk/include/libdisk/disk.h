@@ -79,9 +79,10 @@ struct stream;
 
 #pragma GCC visibility push(default)
 
-#define DISKFL_read_only (1u<<0)
-#define DISKFL_rpm_shift 1
-#define DISKFL_rpm(rpm)  ((rpm)<<DISKFL_rpm_shift)
+#define DISKFL_read_only     (1u<<0)
+#define DISKFL_kryoflux_hack (1u<<1)
+#define DISKFL_rpm_shift     2
+#define DISKFL_rpm(rpm)      ((rpm)<<DISKFL_rpm_shift)
 
 struct disk *disk_create(const char *name, unsigned int flags);
 struct disk *disk_open(const char *name, unsigned int flags);

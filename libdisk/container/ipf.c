@@ -313,8 +313,20 @@ static bool_t __ipf_close(struct disk *d, uint32_t encoder)
 
     for (i = 0; i < di->nr_tracks; i++) {
         ti = &di->track[i];
+
         memset(&ibuf, 0, sizeof(ibuf));
         ibuf.encoder = encoder;
+
+        if (((int)ti->total_bits < 0) && (i != 0) && d->kryoflux_hack) {
+            /* Fill empty track from previous track. Fixes writeback to floppy
+             * using DTC, which ignore single-sided and max-cyl parameters. */
+            memcpy(img, img-1, sizeof(*img));
+            memcpy(idata, idata-1, sizeof(*idata));
+            ibuf.len = idata->size - img->blkcnt * sizeof(*blk);
+            memcpy(dat, dat - ibuf.len, ibuf.len * sizeof(*dat));
+            memcpy(blk, blk - img->blkcnt, img->blkcnt * sizeof(*blk));
+        }
+
         img->cyl = i / 2;
         img->head = i & 1;
         img->sigtype = 1; /* 2us bitcell */
@@ -322,7 +334,7 @@ static bool_t __ipf_close(struct disk *d, uint32_t encoder)
 
         if ((int)ti->total_bits < 0) {
             /* Unformatted tracks are handled by the IPF decoder library. */
-            img->dentype = denNoise;
+            img->dentype = img->dentype ?: denNoise;
         } else {
             /* Basic track metadata. */
             img->dentype = 

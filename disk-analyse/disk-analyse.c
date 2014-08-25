@@ -25,7 +25,7 @@
 #include "common.h"
 
 int quiet, verbose;
-static unsigned int start_cyl, end_cyl;
+static unsigned int start_cyl, end_cyl, disk_flags;
 static int index_align, single_sided = -1;
 static unsigned int rpm = 300;
 static enum pll_mode pll_mode = PLL_default;
@@ -57,6 +57,7 @@ static void usage(int rc)
     printf("  -s, --start-cyl=N   Start cylinder\n");
     printf("  -e, --end-cyl=N     End cylinder\n");
     printf("  -S, --ss[=0|1]      Single-sided disk (default is side 0)\n");
+    printf("  -k, --kryoflux-hack Fill empty tracks with prev track's data\n");
     printf("  -f, --format=FORMAT Name of format descriptor in config file\n");
     printf("  -c, --config=FILE   Config file to parse for format info\n");
     printf("Supported file formats (suffix => type):\n");
@@ -119,7 +120,7 @@ static void handle_stream(void)
 
     stream_pll_mode(s, pll_mode);
 
-    if ((d = disk_create(out, DISKFL_rpm(rpm))) == NULL)
+    if ((d = disk_create(out, disk_flags | DISKFL_rpm(rpm))) == NULL)
         errx(1, "Unable to create new disk file: %s", out);
     di = disk_get_info(d);
 
@@ -188,7 +189,7 @@ static void handle_img(void)
     sz = lseek(fd, 0, SEEK_END);
     lseek(fd, 0, SEEK_SET);
 
-    if ((d = disk_create(out, DISKFL_rpm(rpm))) == NULL)
+    if ((d = disk_create(out, disk_flags | DISKFL_rpm(rpm))) == NULL)
         errx(1, "Unable to create new disk file: %s", out);
     di = disk_get_info(d);
 
@@ -232,7 +233,7 @@ int main(int argc, char **argv)
     char in_suffix[8], out_suffix[8], *config = NULL, *format = NULL;
     int ch;
 
-    const static char sopts[] = "hqvip:r:s:e:S::f:c:";
+    const static char sopts[] = "hqvip:r:s:e:S::kf:c:";
     const static struct option lopts[] = {
         { "help", 0, NULL, 'h' },
         { "quiet", 0, NULL, 'q' },
@@ -243,6 +244,7 @@ int main(int argc, char **argv)
         { "start-cyl", 1, NULL, 's' },
         { "end-cyl", 1, NULL, 'e' },
         { "ss", 2, NULL, 'S' },
+        { "kryoflux-hack", 0, NULL, 'k' },
         { "format", 1, NULL, 'f' },
         { "config",  1, NULL, 'c' },
         { 0, 0, 0, 0}
@@ -293,6 +295,9 @@ int main(int argc, char **argv)
                 warnx("Bad side specifier '%s'", optarg);
                 usage(1);
             }
+            break;
+        case 'k':
+            disk_flags |= DISKFL_kryoflux_hack;
             break;
         case 'f':
             format = optarg;
