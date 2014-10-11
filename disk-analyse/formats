@@ -292,6 +292,16 @@ probe_amiga
 
 "Death Knights Of Krynn" = amigados
 
+"Deep Core Disk 1"
+    0 amigados
+    * deep_core_disk1
+
+"Deep Core Disk 2"
+    * deep_core_disk2
+
+"Deep Core Disk 3"
+    * deep_core_disk3
+
 "Denaris Disk 1" #NTSC - Hard Wired Release
     * amigados denaris_a  
 
