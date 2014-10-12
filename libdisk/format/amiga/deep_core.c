@@ -248,7 +248,60 @@ static void sec_4_read_raw(
     sec_N_read_raw(d, tracknr, tbuf, syncs);
 }
 
-/* DISK 1 */
+static void *diskid_write_raw(
+    struct disk *d, unsigned int tracknr, struct stream *s)
+{
+    struct track_info *ti = &d->di->track[tracknr];
+    uint8_t raw[8];
+    uint8_t *block;
+
+    ti->nr_sectors = 1;
+    ti->bytes_per_sector = 1;
+    ti->len = ti->nr_sectors * ti->bytes_per_sector;
+
+    while (stream_next_bit(s) != -1) {
+
+        if (s->word != 0xaaaa448a)
+            continue;
+
+        ti->data_bitoff = s->index_offset_bc - 31;
+
+        if (stream_next_bits(s, 16) == -1)
+            goto fail;
+        if (mfm_decode_bits(bc_mfm, (uint16_t)s->word) != 0)
+            continue;
+        if (stream_next_bytes(s, raw, sizeof(raw)) == -1)
+            goto fail;
+        mfm_decode_bytes(bc_mfm_even_odd, 4, raw, raw);
+        if (strncmp((char *)raw, "DSK", 3)
+            || (raw[3] < 0x31) || (raw[3] > 0x33))
+            continue;
+
+        /* Disk 1 has a normal-length track 1. */
+        stream_next_index(s);
+        ti->total_bits = (s->track_len_bc > 102500) ? 105500 : 100500;
+        block = memalloc(ti->len);
+        block[0] = raw[3] - 0x30;
+        set_all_sectors_valid(ti);
+        return block;
+    }
+
+fail:
+    return NULL;
+    
+}
+
+static void diskid_read_raw(
+    struct disk *d, unsigned int tracknr, struct tbuf *tbuf)
+{
+    struct track_info *ti = &d->di->track[tracknr];
+    uint32_t dat = ('D'<<24) | ('S'<<16) | ('K'<<8) | (ti->dat[0] + 0x30);
+
+    tbuf_bits(tbuf, SPEED_AVG, bc_mfm, 8, 0);
+    tbuf_bits(tbuf, SPEED_AVG, bc_raw, 16, 0x448a);
+    tbuf_bits(tbuf, SPEED_AVG, bc_mfm, 8, 0);
+    tbuf_bits(tbuf, SPEED_AVG, bc_mfm_even_odd, 32, dat);
+}
 
 static uint16_t disk1_sync(unsigned int tracknr)
 {
@@ -263,26 +316,6 @@ static uint16_t disk1_sync(unsigned int tracknr)
     return 0;
 }
 
-static void *deep_core_disk1_write_raw(
-    struct disk *d, unsigned int tracknr, struct stream *s)
-{
-    return sec_1_write_raw(d, tracknr, s, disk1_sync(tracknr));
-}
-
-static void deep_core_disk1_read_raw(
-    struct disk *d, unsigned int tracknr, struct tbuf *tbuf)
-{
-    sec_1_read_raw(d, tracknr, tbuf, disk1_sync(tracknr));
-}
-
-struct track_handler deep_core_disk1_handler = {
-    .write_raw = deep_core_disk1_write_raw,
-    .read_raw = deep_core_disk1_read_raw
-};
-
-
-/* DISK 2 */
-
 static uint16_t disk2_sync(unsigned int tracknr)
 {
     if (tracknr == 0)
@@ -291,26 +324,6 @@ static uint16_t disk2_sync(unsigned int tracknr)
         return 0x4242;
     return 0;
 }
-
-static void *deep_core_disk2_write_raw(
-    struct disk *d, unsigned int tracknr, struct stream *s)
-{
-    return sec_1_write_raw(d, tracknr, s, disk2_sync(tracknr));
-}
-
-static void deep_core_disk2_read_raw(
-    struct disk *d, unsigned int tracknr, struct tbuf *tbuf)
-{
-    sec_1_read_raw(d, tracknr, tbuf, disk2_sync(tracknr));
-}
-
-struct track_handler deep_core_disk2_handler = {
-    .write_raw = deep_core_disk2_write_raw,
-    .read_raw = deep_core_disk2_read_raw
-};
-
-
-/* DISK 3 */
 
 static const uint16_t d3_t2_syncs[] = {
     0x4211, 0x4212, 0x4215, 0x4221, 0x4222, 0x4225, 0x4229,
@@ -328,38 +341,75 @@ static const uint16_t d3_t5_syncs[] = {
     0x4542, 0x4842, 0x4845, 0x4849
 };
 
-static void *deep_core_disk3_write_raw(
+static unsigned int disknr(struct disk *d, unsigned int tracknr)
+{
+    struct track_info *ti = &d->di->track[1];
+    return (ti->type == TRKTYP_deep_core) ? ti->dat[0] : (tracknr < 2) ? 2 : 0;
+}
+
+static void *deep_core_write_raw(
     struct disk *d, unsigned int tracknr, struct stream *s)
 {
-    if (tracknr == 2)
-        return sec_13_write_raw(d, tracknr, s, d3_t2_syncs);
-    if (tracknr == 3)
-        return sec_13_write_raw(d, tracknr, s, d3_t3_syncs);
-    if (tracknr == 4)
-        return sec_13_write_raw(d, tracknr, s, d3_t4_syncs);
-    if (tracknr == 5)
-        return sec_4_write_raw(d, tracknr, s, d3_t5_syncs);
-    return sec_2_write_raw(d, tracknr, s);
+    if (tracknr == 1)
+        return diskid_write_raw(d, tracknr, s);
+
+    switch (disknr(d, tracknr)) {
+    case 1:
+        return sec_1_write_raw(d, tracknr, s, disk1_sync(tracknr));
+
+    case 2:
+        return sec_1_write_raw(d, tracknr, s, disk2_sync(tracknr));
+
+    case 3:
+        if (tracknr == 2)
+            return sec_13_write_raw(d, tracknr, s, d3_t2_syncs);
+        if (tracknr == 3)
+            return sec_13_write_raw(d, tracknr, s, d3_t3_syncs);
+        if (tracknr == 4)
+            return sec_13_write_raw(d, tracknr, s, d3_t4_syncs);
+        if (tracknr == 5)
+            return sec_4_write_raw(d, tracknr, s, d3_t5_syncs);
+        return sec_2_write_raw(d, tracknr, s);
+    }
+
+    return NULL;
 }
 
-static void deep_core_disk3_read_raw(
+static void deep_core_read_raw(
     struct disk *d, unsigned int tracknr, struct tbuf *tbuf)
 {
-    if (tracknr == 2)
-        sec_13_read_raw(d, tracknr, tbuf, d3_t2_syncs);
-    else if (tracknr == 3)
-        sec_13_read_raw(d, tracknr, tbuf, d3_t3_syncs);
-    else if (tracknr == 4)
-        sec_13_read_raw(d, tracknr, tbuf, d3_t4_syncs);
-    else if (tracknr == 5)
-        sec_4_read_raw(d, tracknr, tbuf, d3_t5_syncs);
-    else
-        sec_2_read_raw(d, tracknr, tbuf);
+    if (tracknr == 1) {
+        diskid_read_raw(d, tracknr, tbuf);
+        return;
+    }
+
+    switch (disknr(d, tracknr)) {
+    case 1:
+        sec_1_read_raw(d, tracknr, tbuf, disk1_sync(tracknr));
+        break;
+
+    case 2:
+        sec_1_read_raw(d, tracknr, tbuf, disk2_sync(tracknr));
+        break;
+
+    case 3:
+        if (tracknr == 2)
+            sec_13_read_raw(d, tracknr, tbuf, d3_t2_syncs);
+        else if (tracknr == 3)
+            sec_13_read_raw(d, tracknr, tbuf, d3_t3_syncs);
+        else if (tracknr == 4)
+            sec_13_read_raw(d, tracknr, tbuf, d3_t4_syncs);
+        else if (tracknr == 5)
+            sec_4_read_raw(d, tracknr, tbuf, d3_t5_syncs);
+        else
+            sec_2_read_raw(d, tracknr, tbuf);
+        break;
+    }
 }
 
-struct track_handler deep_core_disk3_handler = {
-    .write_raw = deep_core_disk3_write_raw,
-    .read_raw = deep_core_disk3_read_raw
+struct track_handler deep_core_handler = {
+    .write_raw = deep_core_write_raw,
+    .read_raw = deep_core_read_raw
 };
 
 /*

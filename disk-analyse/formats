@@ -294,13 +294,17 @@ probe_amiga
 
 "Deep Core Disk 1"
     0 amigados
-    * deep_core_disk1
+    1-127 deep_core
+    * ignore
 
 "Deep Core Disk 2"
-    * deep_core_disk2
+    0-109 deep_core
+    * ignore
 
 "Deep Core Disk 3"
-    * deep_core_disk3
+    1-106 deep_core
+    108-152/2 deep_core
+    * ignore
 
 "Denaris Disk 1" #NTSC - Hard Wired Release
     * amigados denaris_a  
