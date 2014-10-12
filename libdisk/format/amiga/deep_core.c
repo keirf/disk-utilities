@@ -72,7 +72,7 @@ static void *sec_1_write_raw(
 
         ti->data_bitoff = s->index_offset_bc - 15;
 
-        if (!block_write_raw(s, block, ti->len))
+        if (!block_write_raw(s, block, ti->bytes_per_sector))
             continue;
 
         ti->total_bits = 105500;
@@ -90,11 +90,67 @@ static void sec_1_read_raw(
     struct track_info *ti = &d->di->track[tracknr];
 
     tbuf_bits(tbuf, SPEED_AVG, bc_raw, 16, sync);
-
-    block_read_raw(tbuf, ti->dat, ti->len);
+    block_read_raw(tbuf, ti->dat, ti->bytes_per_sector);
 }
 
-static void *sec_13_write_raw(
+static void *sec_2_write_raw(
+    struct disk *d, unsigned int tracknr, struct stream *s)
+{
+    struct track_info *ti = &d->di->track[tracknr];
+    unsigned int i;
+    uint8_t *block;
+
+    ti->nr_sectors = 2;
+    ti->bytes_per_sector = 3276;
+    ti->len = ti->nr_sectors * ti->bytes_per_sector;
+    block = memalloc(ti->len);
+
+    while (stream_next_bit(s) != -1) {
+
+        if ((uint16_t)s->word != 0x4211)
+            continue;
+
+        ti->data_bitoff = s->index_offset_bc - 15;
+
+        if (!block_write_raw(s, &block[0], ti->bytes_per_sector))
+            continue;
+
+        for (i = 0; i < 128; i++) {
+            if (stream_next_bit(s) == -1)
+                goto fail;
+            if ((uint16_t)s->word != 0x4212)
+                continue;
+            if (block_write_raw(s, &block[ti->bytes_per_sector],
+                                ti->bytes_per_sector))
+                break;
+        }
+
+        ti->total_bits = 105500;
+        set_all_sectors_valid(ti);
+        return block;
+    }
+
+fail:
+    memfree(block);
+    return NULL;
+}
+
+static void sec_2_read_raw(
+    struct disk *d, unsigned int tracknr, struct tbuf *tbuf)
+{
+    struct track_info *ti = &d->di->track[tracknr];
+
+    tbuf_bits(tbuf, SPEED_AVG, bc_raw, 16, 0x4211);
+    block_read_raw(tbuf, &ti->dat[0], ti->bytes_per_sector);
+    tbuf_bits(tbuf, SPEED_AVG, bc_mfm, 16, 0);
+    tbuf_bits(tbuf, SPEED_AVG, bc_raw, 16, 0x4212);
+    block_read_raw(tbuf, &ti->dat[ti->bytes_per_sector],
+                   ti->bytes_per_sector);
+    tbuf_bits(tbuf, SPEED_AVG, bc_raw, 32, 0x44894489);
+    tbuf_bits(tbuf, SPEED_AVG, bc_raw, 16, 0x448a);
+}
+
+static void *sec_N_write_raw(
     struct disk *d, unsigned int tracknr, struct stream *s,
     const uint16_t *syncs)
 {
@@ -102,8 +158,6 @@ static void *sec_13_write_raw(
     uint8_t *block;
     unsigned int sec;
 
-    ti->nr_sectors = 13;
-    ti->bytes_per_sector = 496;
     ti->len = ti->nr_sectors * ti->bytes_per_sector;
     block = memalloc(ti->len);
 
@@ -144,7 +198,7 @@ fail:
     return NULL;
 }
 
-static void sec_13_read_raw(
+static void sec_N_read_raw(
     struct disk *d, unsigned int tracknr, struct tbuf *tbuf,
     const uint16_t *syncs)
 {
@@ -158,6 +212,40 @@ static void sec_13_read_raw(
                        ti->bytes_per_sector);
         tbuf_bits(tbuf, SPEED_AVG, bc_mfm, 16, 0);
     }
+}
+
+static void *sec_13_write_raw(
+    struct disk *d, unsigned int tracknr, struct stream *s,
+    const uint16_t *syncs)
+{
+    struct track_info *ti = &d->di->track[tracknr];
+    ti->nr_sectors = 13;
+    ti->bytes_per_sector = 496;
+    return sec_N_write_raw(d, tracknr, s, syncs);
+}
+
+static void sec_13_read_raw(
+    struct disk *d, unsigned int tracknr, struct tbuf *tbuf,
+    const uint16_t *syncs)
+{
+    sec_N_read_raw(d, tracknr, tbuf, syncs);
+}
+
+static void *sec_4_write_raw(
+    struct disk *d, unsigned int tracknr, struct stream *s,
+    const uint16_t *syncs)
+{
+    struct track_info *ti = &d->di->track[tracknr];
+    ti->nr_sectors = 4;
+    ti->bytes_per_sector = 496;
+    return sec_N_write_raw(d, tracknr, s, syncs);
+}
+
+static void sec_4_read_raw(
+    struct disk *d, unsigned int tracknr, struct tbuf *tbuf,
+    const uint16_t *syncs)
+{
+    sec_N_read_raw(d, tracknr, tbuf, syncs);
 }
 
 /* DISK 1 */
@@ -236,6 +324,9 @@ static const uint16_t d3_t4_syncs[] = {
     0x4422, 0x4425, 0x4429, 0x4442, 0x4485, 0x4489, 0x448a,
     0x44a1, 0x44a2, 0x4509, 0x450a, 0x4521, 0x4522
 };
+static const uint16_t d3_t5_syncs[] = {
+    0x4542, 0x4842, 0x4845, 0x4849
+};
 
 static void *deep_core_disk3_write_raw(
     struct disk *d, unsigned int tracknr, struct stream *s)
@@ -246,7 +337,9 @@ static void *deep_core_disk3_write_raw(
         return sec_13_write_raw(d, tracknr, s, d3_t3_syncs);
     if (tracknr == 4)
         return sec_13_write_raw(d, tracknr, s, d3_t4_syncs);
-    return NULL;
+    if (tracknr == 5)
+        return sec_4_write_raw(d, tracknr, s, d3_t5_syncs);
+    return sec_2_write_raw(d, tracknr, s);
 }
 
 static void deep_core_disk3_read_raw(
@@ -254,10 +347,14 @@ static void deep_core_disk3_read_raw(
 {
     if (tracknr == 2)
         sec_13_read_raw(d, tracknr, tbuf, d3_t2_syncs);
-    if (tracknr == 3)
+    else if (tracknr == 3)
         sec_13_read_raw(d, tracknr, tbuf, d3_t3_syncs);
-    if (tracknr == 4)
+    else if (tracknr == 4)
         sec_13_read_raw(d, tracknr, tbuf, d3_t4_syncs);
+    else if (tracknr == 5)
+        sec_4_read_raw(d, tracknr, tbuf, d3_t5_syncs);
+    else
+        sec_2_read_raw(d, tracknr, tbuf);
 }
 
 struct track_handler deep_core_disk3_handler = {
