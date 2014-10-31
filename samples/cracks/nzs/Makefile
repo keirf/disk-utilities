@@ -1,11 +1,14 @@
 .PHONY: all clean
 
-all: nzs_crack.adf
+all:
+	$(MAKE) -C gnu
+	$(MAKE) nzs_crack.adf
 
-nzs_crack.adf: nzs.adf code/nzs.o code/nzs_bootblock.o
+nzs_crack.adf: nzs.adf gnu/nzs.bin gnu/nzs_bootblock.bin
 	cp nzs.adf $@
-	adfbb $@ -gcode/nzs_bootblock.o
-	adfwrite $@ code/nzs.o 2 10 -f -e46414d45
+	adfbb $@ -rgnu/nzs_bootblock.bin
+	adfwrite $@ gnu/nzs.bin 2 10 -r -f -e46414d45
 
 clean:
-	$(RM) -f nzs_crack.adf
+	$(MAKE) -C gnu clean
+	$(RM) nzs_crack.adf
