@@ -21,7 +21,7 @@
 /* read_exact, write_exact */
 #include "../libdisk/util.c"
 
-static void *decode_dat(const char *filename, unsigned int *psz)
+static void *decode_dat(const char *filename, int raw, unsigned int *psz)
 {
     uint32_t *p, type, longs;
     void *buf;
@@ -33,12 +33,18 @@ static void *decode_dat(const char *filename, unsigned int *psz)
 
     if ((sz = lseek(fd, 0, SEEK_END)) < 0)
         err(1, NULL);
+    sz = (sz+3)&~3; /* round to longword */
 
     if ((buf = malloc(sz)) == NULL)
         err(1, NULL);
     lseek(fd, 0, SEEK_SET);
     read_exact(fd, buf, sz);
     close(fd);
+
+    if (raw) {
+        *psz = sz;
+        return buf;
+    }
 
     p = buf;
     type = longs = 0;
@@ -73,7 +79,7 @@ uint32_t next_key(uint32_t w)
 
 int main(int argc, char **argv)
 {
-    int fd, postfill = 0;
+    int fd, postfill = 0, raw = 0;
     off_t sz;
     char *dat, zero[512] = { 0 };
     unsigned int fsec, lsec, csec, datsz;
@@ -82,6 +88,8 @@ int main(int argc, char **argv)
     while (argc > 5) {
         if (!strcmp(argv[argc-1], "-f"))
             postfill = 1;
+        else if (!strcmp(argv[argc-1], "-r"))
+            raw = 1;
         else if (!strncmp(argv[argc-1], "-e", 2))
             key = strtol(argv[argc-1]+2, NULL, 16);
         else
@@ -92,8 +100,8 @@ int main(int argc, char **argv)
     if (argc != 5) {
     usage:
         errx(1, "Usage: adfwrite <adffile> <datfile> <startsec> "
-             "<endsec> [-f] [-e<key>]\n"
-             " <datfile> must be a valid Amiga hunk file\n"
+             "<endsec> [-f] [-e<key>] [-r]\n"
+             " <datfile> must be a valid Amiga hunk file unless -r specified\n"
              " <startsec>-<endsec> range is *inclusive* and *decimal*\n"
              " -f: Postfill up to <endsec> with zeroes\n"
              " -e: Encrypt with given hex key");
@@ -112,7 +120,7 @@ int main(int argc, char **argv)
     if (sz != (160*11*512))
         errx(1, "Bad ADF image size (%u bytes)", (unsigned int)sz);
 
-    dat = decode_dat(argv[2], &datsz);
+    dat = decode_dat(argv[2], raw, &datsz);
     if (datsz > ((lsec - fsec + 1) * 512))
         errx(1, "Data too big (%u bytes > %u bytes)",
              datsz, (lsec - fsec + 1) * 512);

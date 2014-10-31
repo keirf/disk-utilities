@@ -53,9 +53,8 @@ static void copy_bb(char *bb, const char *tmpl, unsigned int sz)
     *(uint32_t *)&bb[4] = htobe32(checksum(bb));
 }
 
-static void decode_new_bb(char *bb, const char *filename)
+static void *load_file(const char *filename, off_t *p_sz)
 {
-    uint32_t *p, type, longs;
     void *buf;
     off_t sz;
     int fd;
@@ -71,6 +70,18 @@ static void decode_new_bb(char *bb, const char *filename)
     lseek(fd, 0, SEEK_SET);
     read_exact(fd, buf, sz);
     close(fd);
+
+    *p_sz = sz;
+    return buf;
+}
+
+static void decode_new_bb(char *bb, const char *filename)
+{
+    uint32_t *p, type, longs;
+    void *buf;
+    off_t sz;
+
+    buf = load_file(filename, &sz);
 
     p = buf;
     type = longs = 0;
@@ -91,6 +102,22 @@ static void decode_new_bb(char *bb, const char *filename)
 
     memset(bb, 0, 1024);
     memcpy(bb, p, longs*4);
+
+    free(buf);
+}
+
+static void decode_new_raw_bb(char *bb, const char *filename)
+{
+    void *buf;
+    off_t sz;
+
+    buf = load_file(filename, &sz);
+
+    if (sz > 1024)
+        errx(1, "Raw file too large (%lu bytes)", (unsigned long)sz);
+
+    memset(bb, 0, 1024);
+    memcpy(bb, buf, sz);
 
     free(buf);
 }
@@ -141,6 +168,8 @@ int main(int argc, char **argv)
             fixup = 2;
         else if (!strncmp(argv[2], "-g", 2))
             fixup = 3;
+        else if (!strncmp(argv[2], "-r", 2))
+            fixup = 4;
         else
             goto usage;
         argc--;
@@ -148,9 +177,10 @@ int main(int argc, char **argv)
 
     if (argc != 2) {
     usage:
-        errx(1, "Usage: adfbb <filename> [-w] [-f] [-g<new block>]\n"
+        errx(1, "Usage: adfbb <filename> [-w] [-f] [-{g,r}<new block>]\n"
              " -w: Overwrite bootblock with Kick 1.3 block\n"
              " -f: Fix up bootblock checksum\n"
+             " -r: New raw file to decode and poke\n"
              " -g: New Amiga hunk file to decode and poke");
     }
 
@@ -199,6 +229,8 @@ out:
             copy_bb(bb, kick13_bootable, sizeof(kick13_bootable));
         else if (fixup == 3)
             decode_new_bb(bb, argv[2]+2);
+        else if (fixup == 4)
+            decode_new_raw_bb(bb, argv[2]+2);
         *(uint32_t *)&bb[4] = 0;
         *(uint32_t *)&bb[4] = htobe32(checksum(bb));
         lseek(fd, 0, SEEK_SET);
