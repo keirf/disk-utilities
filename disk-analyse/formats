@@ -475,6 +475,10 @@ probe_amiga
 "Interphase"
     * amigados rainbird
 
+"Into The Eagle's Nest"
+    2-3 interceptor_software
+    * amigados
+
 "Jaguar XJ220"
     * amigados core_design
 
@@ -483,6 +487,9 @@ probe_amiga
 "Jinks"
     158-161 amigados jinks
     * amigados
+
+# Actually developed/published by Interceptor Software on Players label.
+"Joe Blade" = infogrames_protected
 
 # Budget re-release
 "Journey To The Center Of The Earth" = amigados
@@ -916,6 +923,10 @@ probe_amiga
 "Voyager" = amigados_copylock
 
 "Walker" = amigados_copylock
+
+"War Machine"
+    2-3 interceptor_software
+    * amigados
 
 "Warlock: The Avenger" = amigados_copylock
 
