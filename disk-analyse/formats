@@ -491,6 +491,12 @@ probe_amiga
 # Actually developed/published by Interceptor Software on Players label.
 "Joe Blade" = infogrames_protected
 
+# Odd tracks 5+ are empty
+"Joe Blade 2"
+    0-1 amigados
+    2-3 infogrames_longtrack
+    * ibm_pc_dd_10sec
+
 # Budget re-release
 "Journey To The Center Of The Earth" = amigados
 
