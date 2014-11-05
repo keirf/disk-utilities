@@ -36,6 +36,8 @@
 #define posix_mkdir(p,m) mkdir(p)
 #endif
 
+#define __initcall __attribute__((constructor))
+
 #ifndef offsetof
 #define offsetof(a,b) __builtin_offsetof(a,b)
 #endif
