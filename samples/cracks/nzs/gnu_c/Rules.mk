@@ -56,6 +56,6 @@ LDFLAGS += $(FLAGS) -Wl,--gc-sections -Tamiga.ld
 	@chmod a-x $@
 
 clean:
-	$(RM) *~ *.o *.elf *.bin $(DEPS)
+	$(RM) *~ *.o *.elf *.bin *.gz $(DEPS)
 
 -include $(DEPS)

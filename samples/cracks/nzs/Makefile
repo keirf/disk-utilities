@@ -1,6 +1,6 @@
 .PHONY: all clean
 
-SUBDIR := gnu_c
+SUBDIR := gnu
 
 all:
 	$(MAKE) -C $(SUBDIR)
