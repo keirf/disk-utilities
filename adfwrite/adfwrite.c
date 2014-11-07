@@ -77,9 +77,22 @@ uint32_t next_key(uint32_t w)
     return w = w ^ (w >> 19) ^ (t ^ (t >> 8));
 }
 
+static uint32_t checksum(void *dat)
+{
+    uint32_t csum = 0, *bb = dat;
+    unsigned int i;
+    for (i = 0; i < 1024/4; i++) {
+        uint32_t x = be32toh(bb[i]);
+        if ((csum + x) < csum)
+            csum++;
+        csum += x;
+    }
+    return ~csum;
+}
+
 int main(int argc, char **argv)
 {
-    int fd, postfill = 0, raw = 0;
+    int fd, postfill = 0, raw = 0, fix_csum = 0;
     off_t sz;
     char *dat, zero[512] = { 0 };
     unsigned int fsec, lsec, csec, datsz;
@@ -90,6 +103,8 @@ int main(int argc, char **argv)
             postfill = 1;
         else if (!strcmp(argv[argc-1], "-r"))
             raw = 1;
+        else if (!strcmp(argv[argc-1], "-c"))
+            fix_csum = 1;
         else if (!strncmp(argv[argc-1], "-e", 2))
             key = strtol(argv[argc-1]+2, NULL, 16);
         else
@@ -100,11 +115,12 @@ int main(int argc, char **argv)
     if (argc != 5) {
     usage:
         errx(1, "Usage: adfwrite <adffile> <datfile> <startsec> "
-             "<endsec> [-f] [-e<key>] [-r]\n"
+             "<endsec> [-f] [-e<key>] [-r] [-c]\n"
              " <datfile> must be a valid Amiga hunk file unless -r specified\n"
              " <startsec>-<endsec> range is *inclusive* and *decimal*\n"
              " -f: Postfill up to <endsec> with zeroes\n"
-             " -e: Encrypt with given hex key");
+             " -e: Encrypt with given hex key\n"
+             " -c: Fix bootblock checksum\n");
     }
 
     fd = file_open(argv[1], O_RDWR);
@@ -113,7 +129,7 @@ int main(int argc, char **argv)
 
     fsec = atoi(argv[3]);
     lsec = atoi(argv[4]);
-    if ((fsec < 2) || (lsec >= (160*11)) || (fsec > lsec))
+    if ((lsec >= (160*11)) || (fsec > lsec))
         errx(1, "Bad sector range %u-%u", fsec, lsec);
 
     sz = lseek(fd, 0, SEEK_END);
@@ -135,6 +151,13 @@ int main(int argc, char **argv)
             key = next_key(key);
             *(uint32_t *)&zero[i] ^= key;
         }
+    }
+
+    if (fix_csum) {
+        if (datsz < 1024)
+            errx(1, "Data too short for bootblock");
+        *(uint32_t *)&dat[4] = 0;
+        *(uint32_t *)&dat[4] = htobe32(checksum(dat));
     }
 
     lseek(fd, fsec*512, SEEK_SET);
