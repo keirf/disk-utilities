@@ -7,16 +7,16 @@ VPOS runs from 0-312 (PAL) / 0-262 (NTSC)
 300-312: bottom border
 
 NTSC total 263 lines
-NTSC 277.5 color clocks / line
+NTSC 227.5 color clocks / line
 
 PAL total 313 lines
-PAL 277 color clocks / line
+PAL 227 color clocks / line
 
 1 color clock is 2 CPU cycles
 1 PAL color clock is 2/7.09379 us (282ns)
 
 Screen blank period is:
-(2/7.09379) * 277 * 313 us
+(2/7.09379) * 227 * 313 us
  = 20032 us (49.92Hz)
 
 PAL LONG frame is 313 lines
