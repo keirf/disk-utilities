@@ -10,12 +10,10 @@
  *  u32 dat[6144/4]
  *  u32 checksum
  *  Check sum is calculated EOR.L D1,D0 ROR.L #1,D0 over all data
- *
  */
 
 #include <libdisk/util.h>
 #include <private/disk.h>
-
 
 static uint32_t gate_sum(uint32_t w, uint32_t s)
 {
@@ -38,7 +36,6 @@ static void *behind_the_iron_gate_write_raw(
             continue;
 
         ti->data_bitoff = s->index_offset_bc - 31;
-
 
         for (i = sum = 0; i < ti->len/4; i++) {
             if (stream_next_bytes(s, raw, 8) == -1)
@@ -88,7 +85,6 @@ struct track_handler behind_the_iron_gate_handler = {
     .write_raw = behind_the_iron_gate_write_raw,
     .read_raw = behind_the_iron_gate_read_raw
 };
-
 
 /*
  * Local variables:

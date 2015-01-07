@@ -9,12 +9,11 @@
  *  u32 0xaaaa8914 ::  Sync
  *  u32 dat[6148/4]
  *
+ * No checksum?? [KAF]
  */
 
 #include <libdisk/util.h>
 #include <private/disk.h>
-
-
 
 static void *sink_or_swim_write_raw(
     struct disk *d, unsigned int tracknr, struct stream *s)
@@ -32,7 +31,6 @@ static void *sink_or_swim_write_raw(
 
         ti->data_bitoff = s->index_offset_bc - 31;
 
-
         for (i = 0; i < ti->len/4; i++) {
             if (stream_next_bytes(s, raw, 8) == -1)
                 goto fail;
@@ -47,7 +45,6 @@ static void *sink_or_swim_write_raw(
 
 fail:
     return NULL;
-
 }
 
 static void sink_or_swim_read_raw(
@@ -69,7 +66,6 @@ struct track_handler sink_or_swim_handler = {
     .write_raw = sink_or_swim_write_raw,
     .read_raw = sink_or_swim_read_raw
 };
-
 
 /*
  * Local variables:
