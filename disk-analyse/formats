@@ -178,6 +178,9 @@ probe_amiga
 "Beavers"
     * arc_development_b amigados
      
+"Behind The Iron Gate"
+    * behind_the_iron_gate amigados
+
 "Beneath A Steel Sky" = amigados
 
 "Bermuda Project" = amigados
@@ -777,6 +780,9 @@ probe_amiga
 
 "Simpsons, Bart vs. The World"
     * arc_development_b copylock amigados
+
+"Sink Or Swim"
+    * sink_or_swim amigados
 
 "Skaermtrolden Hugo"
     * amigados skaermtrolden_hugo
