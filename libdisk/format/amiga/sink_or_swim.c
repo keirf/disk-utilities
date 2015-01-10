@@ -8,8 +8,9 @@
  * RAW TRACK LAYOUT:
  *  u32 0xaaaa8914 ::  Sync
  *  u32 dat[6148/4]
- *
- * No checksum?? [KAF]
+ * 
+ * There is no checksum of any kind (all undecoded track content is
+ * gap filler).
  */
 
 #include <libdisk/util.h>
