@@ -101,8 +101,8 @@ int main(int argc, char **argv)
         usage(1);
     }
 
-    if ((fd = file_open(argv[1], O_WRONLY|O_CREAT|O_TRUNC, 0666)) == -1)
-        err(1, "Error creating %s", argv[1]);
+    if ((fd = file_open(argv[optind], O_WRONLY|O_CREAT|O_TRUNC, 0666)) == -1)
+        err(1, "Error creating %s", argv[optind]);
 
     memset(&dhdr, 0, sizeof(dhdr));
     memcpy(dhdr.sig, "SCP", sizeof(dhdr.sig));
