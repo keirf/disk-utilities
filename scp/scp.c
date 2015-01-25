@@ -120,7 +120,7 @@ struct scp_handle *scp_open(const char *sername)
         err(1, "%s", sername);
 
     memcpy(&scp->newtio, &scp->oldtio, sizeof(scp->oldtio));
-    scp->newtio.c_cflag = B3000000 | CRTSCTS | CS8 | CLOCAL | CREAD;
+    scp->newtio.c_cflag = B38400 | CRTSCTS | CS8 | CLOCAL | CREAD;
     scp->newtio.c_iflag = IGNBRK | IGNPAR;
     scp->newtio.c_oflag = 0; 
     scp->newtio.c_lflag = 0;
