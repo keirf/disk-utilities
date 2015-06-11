@@ -70,17 +70,19 @@ static struct container *eadf_open(struct disk *d)
         }
         switch (thdr.type) {
         case 0:
-            if (thdr.len != 11*512) {
+            if (thdr.len < 11*512) {
                 warnx("Bad ADOS track len %u in Ext-ADF", ti->len);
                 goto cleanup_error;
             }
             init_track_info(ti, TRKTYP_amigados);
+            ti->len = thdr.len;
             ti->data_bitoff = 1024;
             ti->total_bits = DEFAULT_BITS_PER_TRACK(d);
             set_all_sectors_valid(ti);
             break;
         case 1:
-            init_track_info(ti, TRKTYP_raw_dd);
+            init_track_info(
+                ti, thdr.bitlen ? TRKTYP_raw_dd : TRKTYP_unformatted);
             ti->len = thdr.len;
             ti->total_bits = thdr.bitlen;
             ti->data_bitoff = (ext_type == 1) ? 1024 : 0;
