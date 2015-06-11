@@ -885,6 +885,9 @@ probe_amiga
 
 "Titanic Blinky" = amigados_copylock
 
+"Tony & Friends In Kellogg's Land"
+    * amigados kelloggs_land
+
 "Total Eclipse" = amigados_copylock
 
 "Tower Of Babel" = amigados
