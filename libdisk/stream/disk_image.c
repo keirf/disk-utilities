@@ -108,7 +108,7 @@ struct stream_type disk_image = {
     .select_track = di_select_track,
     .reset = di_reset,
     .next_flux = di_next_flux,
-    .suffix = { "adf", "eadf", "dsk", "imd", "img", NULL }
+    .suffix = { "adf", "eadf", "dsk", "hfe", "imd", "img", NULL }
 };
 
 /*

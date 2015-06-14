@@ -123,6 +123,7 @@ struct container {
 extern struct container container_adf;
 extern struct container container_eadf;
 extern struct container container_dsk;
+extern struct container container_hfe;
 extern struct container container_imd;
 extern struct container container_img;
 extern struct container container_ipf;
