@@ -37,7 +37,7 @@ struct dfe2_stream {
 #define MHZ(x) ((x) * 1000000)
 #define SCK_PS_PER_TICK (1000000000/(dfss->acq_freq/1000))
 
-static struct stream *dfe2_open(const char *name, unsigned int rpm)
+static struct stream *dfe2_open(const char *name, unsigned int data_rpm)
 {
     struct stat sbuf;
     struct dfe2_stream *dfss;
@@ -231,7 +231,9 @@ static int dfe2_next_flux(struct stream *s)
     if (!done)
         return -1;
 
-    s->flux += (val * (uint32_t)SCK_PS_PER_TICK) / 1000u;
+    val = (val * (uint32_t)SCK_PS_PER_TICK) / 1000u;
+    val = (val * s->drive_rpm) / s->data_rpm;
+    s->flux += val;
     return 0;
 }
 

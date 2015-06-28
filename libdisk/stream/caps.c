@@ -139,7 +139,7 @@ static void put_capslib(void)
     dlclose(capslib.handle);
 }
 
-static struct stream *caps_open(const char *name, unsigned int rpm)
+static struct stream *caps_open(const char *name, unsigned int data_rpm)
 {
     int fd;
     char sig[4], suffix[8];
@@ -244,7 +244,7 @@ static void caps_reset(struct stream *s)
     cpss->bits = cpss->ti.trackbuf;
     cpss->bitlen = cpss->ti.tracklen * 8;
     cpss->pos = 0;
-    cpss->ns_per_cell = track_nsecs_from_rpm(s->rpm) / cpss->bitlen;
+    cpss->ns_per_cell = track_nsecs_from_rpm(s->data_rpm) / cpss->bitlen;
 }
 
 static int caps_next_flux(struct stream *s)

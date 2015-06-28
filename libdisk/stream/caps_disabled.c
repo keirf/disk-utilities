@@ -16,7 +16,7 @@
 
 #define w(f, a...) fprintf(stderr, "*** " f, ## a)
 
-static struct stream *caps_open(const char *name, unsigned int rpm)
+static struct stream *caps_open(const char *name, unsigned int data_rpm)
 {
     int fd;
     char sig[4];

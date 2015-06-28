@@ -5,7 +5,7 @@
 #include <private/util.h>
 
 struct stream_type {
-    struct stream *(*open)(const char *name, unsigned int rpm);
+    struct stream *(*open)(const char *name, unsigned int data_rpm);
     void (*close)(struct stream *);
     int (*select_track)(struct stream *, unsigned int tracknr);
     void (*reset)(struct stream *);
@@ -14,7 +14,8 @@ struct stream_type {
 };
 
 void stream_setup(
-    struct stream *s, const struct stream_type *st, unsigned int rpm);
+    struct stream *s, const struct stream_type *st,
+    unsigned int drive_rpm, unsigned int data_rpm);
 
 #endif /* __PRIVATE_STREAM_H__ */
 

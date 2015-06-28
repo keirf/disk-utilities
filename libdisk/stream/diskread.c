@@ -37,7 +37,7 @@ struct dr_stream {
 #define CIA_FREQ 709379u
 #define CIA_NS_PER_TICK (1000000000u/CIA_FREQ)
 
-static struct stream *dr_open(const char *name, unsigned int rpm)
+static struct stream *dr_open(const char *name, unsigned int data_rpm)
 {
     struct stat sbuf;
     struct dr_stream *drs;

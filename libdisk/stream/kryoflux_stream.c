@@ -35,7 +35,7 @@ struct kfs_stream {
 #define ICK_FREQ (MCK_FREQ / 16)
 #define SCK_PS_PER_TICK (1000000000/(SCK_FREQ/1000))
 
-static struct stream *kfs_open(const char *name, unsigned int rpm)
+static struct stream *kfs_open(const char *name, unsigned int data_rpm)
 {
     char track0[strlen(name) + 9];
     struct stat sbuf;
@@ -172,7 +172,9 @@ static int kfs_next_flux(struct stream *s)
     if (!done)
         return -1;
 
-    s->flux += (val * (uint32_t)SCK_PS_PER_TICK) / 1000u;
+    val = (val * (uint32_t)SCK_PS_PER_TICK) / 1000u;
+    val = (val * s->drive_rpm) / s->data_rpm;
+    s->flux += val;
     return 0;
 }
 

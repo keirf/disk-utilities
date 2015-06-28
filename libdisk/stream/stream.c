@@ -47,16 +47,19 @@ const static struct stream_type *stream_type[] = {
 static int flux_next_bit(struct stream *s);
 
 void stream_setup(
-    struct stream *s, const struct stream_type *st, unsigned int rpm)
+    struct stream *s, const struct stream_type *st,
+    unsigned int drive_rpm, unsigned int data_rpm)
 {
     memset(s, 0, sizeof(*s));
     s->type = st;
-    s->rpm = rpm;
+    s->drive_rpm = drive_rpm ?: data_rpm ?: 300;
+    s->data_rpm = data_rpm ?: drive_rpm ?: 300;
     s->pll_mode = PLL_default;
     s->clock = s->clock_centre = CLOCK_CENTRE;
 }
 
-struct stream *stream_open(const char *name, unsigned int rpm)
+struct stream *stream_open(
+    const char *name, unsigned int drive_rpm, unsigned int data_rpm)
 {
     struct stat sbuf;
     const struct stream_type *st;
@@ -83,8 +86,8 @@ struct stream *stream_open(const char *name, unsigned int rpm)
     return NULL;
 
 found:
-    if ((s = st->open(name, rpm)) != NULL)
-        stream_setup(s, st, rpm);
+    if ((s = st->open(name, data_rpm)) != NULL)
+        stream_setup(s, st, drive_rpm, data_rpm);
 
     return s;
 }

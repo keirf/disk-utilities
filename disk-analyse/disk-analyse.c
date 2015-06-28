@@ -27,7 +27,7 @@
 int quiet, verbose;
 static unsigned int start_cyl, end_cyl, disk_flags;
 static int index_align, single_sided = -1;
-static unsigned int rpm = 300;
+static unsigned int drive_rpm = 300, data_rpm = 300;
 static enum pll_mode pll_mode = PLL_default;
 static struct format_list **format_lists;
 static char *in, *out;
@@ -53,7 +53,8 @@ static void usage(int rc)
     printf("  -v, --verbose Print extra diagnostic info\n");
     printf("  -i, --index-align   Align all track starts near index mark\n");
     printf("  -p, --pll=MODE      MODE={fixed,variable,authentic}\n");
-    printf("  -r, --rpm=N         Drive rpm (default 300)\n");
+    printf("  -r, --rpm=DRIVE[:DATA] RPM of drive that created the input,\n");
+    printf("                         Original recording RPM of data [300]\n");
     printf("  -s, --start-cyl=N   Start cylinder\n");
     printf("  -e, --end-cyl=N     End cylinder\n");
     printf("  -S, --ss[=0|1]      Single-sided disk (default is side 0)\n");
@@ -116,12 +117,12 @@ static void handle_stream(void)
     struct track_info *ti;
     unsigned int i, unidentified = 0;
 
-    if ((s = stream_open(in, rpm)) == NULL)
+    if ((s = stream_open(in, drive_rpm, data_rpm)) == NULL)
         errx(1, "Failed to probe input file: %s", in);
 
     stream_pll_mode(s, pll_mode);
 
-    if ((d = disk_create(out, disk_flags | DISKFL_rpm(rpm))) == NULL)
+    if ((d = disk_create(out, disk_flags | DISKFL_rpm(data_rpm))) == NULL)
         errx(1, "Unable to create new disk file: %s", out);
     di = disk_get_info(d);
 
@@ -190,7 +191,7 @@ static void handle_img(void)
     sz = lseek(fd, 0, SEEK_END);
     lseek(fd, 0, SEEK_SET);
 
-    if ((d = disk_create(out, disk_flags | DISKFL_rpm(rpm))) == NULL)
+    if ((d = disk_create(out, disk_flags | DISKFL_rpm(data_rpm))) == NULL)
         errx(1, "Unable to create new disk file: %s", out);
     di = disk_get_info(d);
 
@@ -277,13 +278,17 @@ int main(int argc, char **argv)
                 usage(1);
             }
             break;
-        case 'r':
-            rpm = atoi(optarg);
-            if ((rpm < 100) || (rpm > 500)) {
+        case 'r': {
+            char *p;
+            drive_rpm = strtol(optarg, &p, 10);
+            data_rpm = (*p++ == ':') ? strtol(p, &p, 10) : drive_rpm;
+            if ((drive_rpm < 100) || (drive_rpm > 500)
+                || (data_rpm < 100) || (data_rpm > 500)) {
                 warnx("Bad RPM value '%s'", optarg);
                 usage(1);
             }
             break;
+        }
         case 's':
             start_cyl = atoi(optarg);
             break;

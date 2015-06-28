@@ -25,12 +25,13 @@ struct di_stream {
     uint32_t pos, ns_per_cell;
 };
 
-static struct stream *di_open(const char *name, unsigned int rpm)
+static struct stream *di_open(const char *name, unsigned int data_rpm)
 {
     struct di_stream *dis;
     struct disk *d;
 
-    if ((d = disk_open(name, DISKFL_rpm(rpm) | DISKFL_read_only)) == NULL)
+    d = disk_open(name, DISKFL_rpm(data_rpm) | DISKFL_read_only);
+    if (d == NULL)
         return NULL;
 
     dis = memalloc(sizeof(*dis));
@@ -61,7 +62,8 @@ static int di_select_track(struct stream *s, unsigned int tracknr)
     if (dis->track_raw->bits == NULL)
         return -1;
     dis->track = tracknr;
-    dis->ns_per_cell = track_nsecs_from_rpm(s->rpm) / dis->track_raw->bitlen;
+    dis->ns_per_cell = (track_nsecs_from_rpm(s->data_rpm)
+                        / dis->track_raw->bitlen);
 
     return 0;
 }

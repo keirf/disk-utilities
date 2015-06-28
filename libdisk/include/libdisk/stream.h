@@ -45,8 +45,11 @@ struct stream {
     uint16_t crc16_ccitt;
     uint8_t  crc_bitoff;
 
-    /* RPM of drive which retrieved this stream. */
-    unsigned int rpm;
+    /* RPM of drive which created this stream. */
+    unsigned int drive_rpm;
+
+    /* Recording RPM of floppy data. */
+    unsigned int data_rpm;
 
     /* Flux-based streams: Authentic emulation of FDC PLL behaviour? */
     enum pll_mode pll_mode;
@@ -59,9 +62,10 @@ struct stream {
 };
 
 #pragma GCC visibility push(default)
-struct stream *stream_open(const char *name, unsigned int rpm);
+struct stream *stream_open(
+    const char *name, unsigned int drive_rpm, unsigned int data_rpm);
 struct stream *stream_soft_open(
-    uint8_t *data, uint16_t *speed, uint32_t bitlen, unsigned int rpm);
+    uint8_t *data, uint16_t *speed, uint32_t bitlen, unsigned int data_rpm);
 void stream_close(struct stream *s);
 int stream_select_track(struct stream *s, unsigned int tracknr);
 void stream_reset(struct stream *s);

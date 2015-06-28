@@ -34,7 +34,7 @@ struct scp_stream {
 
 #define SCK_NS_PER_TICK (25u)
 
-static struct stream *scp_open(const char *name, unsigned int rpm)
+static struct stream *scp_open(const char *name, unsigned int data_rpm)
 {
     struct stat sbuf;
     struct scp_stream *scss;
@@ -163,7 +163,8 @@ static int scp_next_flux(struct stream *s)
         break;
     }
 
-    s->flux += val * SCK_NS_PER_TICK;
+    val = (val * SCK_NS_PER_TICK * s->drive_rpm) / s->data_rpm;
+    s->flux += val;
     return 0;
 }
 
