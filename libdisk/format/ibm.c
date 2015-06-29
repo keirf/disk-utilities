@@ -37,6 +37,54 @@ struct ibm_psector {
 
 
 /***********************************
+ * In-order sector retrieval
+ */
+
+static int ibm_secno_compare(const void *_a, const void *_b)
+{
+    const struct ibm_sector *a = *(const struct ibm_sector **)_a;
+    const struct ibm_sector *b = *(const struct ibm_sector **)_b;
+    return ((a->idam.sec < b->idam.sec) ? -1
+            : (a->idam.sec > b->idam.sec) ? 1 : 0);
+}
+
+void ibm_read_sectors(
+    struct disk *d, unsigned int tracknr, struct track_sectors *sectors)
+{
+    struct track_info *ti = &d->di->track[tracknr];
+    struct ibm_track *ibm_track = (struct ibm_track *)ti->dat;
+    struct ibm_sector *sec, **secs = memalloc(ti->nr_sectors * sizeof(*secs));
+    unsigned int i, sec_sz;
+    char *p;
+
+    sectors->nr_bytes = (ti->len
+                         - sizeof(struct ibm_track)
+                         - ti->nr_sectors * sizeof(struct ibm_sector));
+    sectors->data = memalloc(sectors->nr_bytes);
+
+    sec = ibm_track->secs;
+    for (i = 0; i < ti->nr_sectors; i++) {
+        secs[i] = sec;
+        sec_sz = 128 << sec->idam.no;
+        sec = (struct ibm_sector *)
+            ((char *)sec + sizeof(struct ibm_sector) + sec_sz);
+    }
+
+    qsort(secs, ti->nr_sectors, sizeof(*secs), ibm_secno_compare);
+
+    p = (char *)sectors->data;
+    for (i = 0; i < ti->nr_sectors; i++) {
+        sec = secs[i];
+        sec_sz = 128 << sec->idam.no;
+        memcpy(p, sec->dat, sec_sz);
+        p += sec_sz;
+    }
+
+    memfree(secs);
+}
+
+
+/***********************************
  * Double-density (IBM-MFM) handlers
  * 
  * Index Address Mark (IAM):
@@ -426,21 +474,24 @@ struct track_handler ibm_mfm_dd_handler = {
     .density = trkden_double,
     .get_name = ibm_get_name,
     .write_raw = ibm_mfm_write_raw,
-    .read_raw = ibm_mfm_read_raw
+    .read_raw = ibm_mfm_read_raw,
+    .read_sectors = ibm_read_sectors
 };
 
 struct track_handler ibm_mfm_hd_handler = {
     .density = trkden_high,
     .get_name = ibm_get_name,
     .write_raw = ibm_mfm_write_raw,
-    .read_raw = ibm_mfm_read_raw
+    .read_raw = ibm_mfm_read_raw,
+    .read_sectors = ibm_read_sectors
 };
 
 struct track_handler ibm_mfm_ed_handler = {
     .density = trkden_extra,
     .get_name = ibm_get_name,
     .write_raw = ibm_mfm_write_raw,
-    .read_raw = ibm_mfm_read_raw
+    .read_raw = ibm_mfm_read_raw,
+    .read_sectors = ibm_read_sectors
 };
 
 
@@ -791,28 +842,32 @@ struct track_handler ibm_fm_sd_handler = {
     .density = trkden_single,
     .get_name = ibm_get_name,
     .write_raw = ibm_fm_write_raw,
-    .read_raw = ibm_fm_read_raw
+    .read_raw = ibm_fm_read_raw,
+    .read_sectors = ibm_read_sectors
 };
 
 struct track_handler ibm_fm_dd_handler = {
     .density = trkden_double,
     .get_name = ibm_get_name,
     .write_raw = ibm_fm_write_raw,
-    .read_raw = ibm_fm_read_raw
+    .read_raw = ibm_fm_read_raw,
+    .read_sectors = ibm_read_sectors
 };
 
 struct track_handler dec_rx01_handler = {
     .density = trkden_double,
     .get_name = ibm_get_name,
     .write_raw = ibm_fm_write_raw,
-    .read_raw = ibm_fm_read_raw
+    .read_raw = ibm_fm_read_raw,
+    .read_sectors = ibm_read_sectors
 };
 
 struct track_handler dec_rx02_handler = {
     .density = trkden_high,
     .get_name = ibm_get_name,
     .write_raw = ibm_fm_write_raw,
-    .read_raw = ibm_fm_read_raw
+    .read_raw = ibm_fm_read_raw,
+    .read_sectors = ibm_read_sectors
 };
 
 /*
