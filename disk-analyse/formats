@@ -663,6 +663,9 @@ probe_amiga
 
 "Parasol Stars" = amigados_copylock
 
+"Persian Gulf Inferno"
+    * amigados persian_gulf_inferno
+
 "Phantom Fighter" # Track 1 may be empty
     * amigados phantom_fighter
 
