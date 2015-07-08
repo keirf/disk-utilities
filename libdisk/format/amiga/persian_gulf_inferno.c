@@ -8,11 +8,9 @@
  * RAW TRACK LAYOUT:
  *  u16 0x8845 :: Sync
  *  u32 csum
- *  u8[6383][2] :: Interleaved even/odd bytes
+ *  u8[6384][2] :: Interleaved even/odd bytes
  * 
- * NB. There may be a few bytes more data beyond the checksummed region.
- * Need a good dump of this disk to confirm. Hence explicitly checksum
- * 6383 bytes below, but data decode/encode follows ti->bytes_per_sector.
+ * NB. Checksum does not include final byte of data region.
  * 
  * TRKTYP_persian_gulf_inferno data layout:
  *  u8 sector_data[6384]
@@ -108,7 +106,7 @@ static void persian_gulf_inferno_read_raw(
 }
 
 struct track_handler persian_gulf_inferno_handler = {
-    .bytes_per_sector = 6383,
+    .bytes_per_sector = 6384,
     .nr_sectors = 1,
     .write_raw = persian_gulf_inferno_write_raw,
     .read_raw = persian_gulf_inferno_read_raw
