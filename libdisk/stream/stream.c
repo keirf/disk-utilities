@@ -99,9 +99,14 @@ void stream_close(struct stream *s)
 
 int stream_select_track(struct stream *s, unsigned int tracknr)
 {
-    int rc = s->type->select_track(s, tracknr);
+    int rc;
+
+    s->max_revolutions = 0;
+    rc = s->type->select_track(s, tracknr);
     if (rc)
         return rc;
+    s->max_revolutions = max_t(uint32_t, s->max_revolutions, 4);
+
     stream_reset(s);
     return 0;
 }
@@ -147,7 +152,7 @@ int stream_next_bit(struct stream *s)
 {
     uint64_t lat = s->latency;
     int b;
-    if (s->nr_index >= 5)
+    if (s->nr_index > s->max_revolutions)
         return -1;
     s->index_offset_bc++;
     if ((b = flux_next_bit(s)) == -1)

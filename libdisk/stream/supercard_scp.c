@@ -127,6 +127,7 @@ static int scp_select_track(struct stream *s, unsigned int tracknr)
 
     scss->track = tracknr;
 
+    s->max_revolutions = scss->revs + 1;
     return 0;
 }
 

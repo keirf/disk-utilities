@@ -93,6 +93,7 @@ static int kfs_select_track(struct stream *s, unsigned int tracknr)
     kfss->datsz = sz;
     kfss->track = tracknr;
 
+    s->max_revolutions = ~0u;
     return 0;
 }
 

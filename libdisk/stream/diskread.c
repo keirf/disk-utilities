@@ -79,6 +79,7 @@ static int dr_select_track(struct stream *s, unsigned int tracknr)
     read_exact(drs->fd, drs->dat, BYTES_PER_TRACK);
     drs->track = tracknr;
 
+    s->max_revolutions = ~0u;
     return 0;
 }
 

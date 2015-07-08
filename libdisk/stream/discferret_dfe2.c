@@ -172,6 +172,7 @@ static int dfe2_select_track(struct stream *s, unsigned int tracknr)
     dfss->track = tracknr;
     dfss->acq_freq = dfe2_find_acq_freq(&dfss->s);
 
+    s->max_revolutions = ~0u;
     return 0;
 }
 

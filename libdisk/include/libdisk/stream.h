@@ -38,6 +38,9 @@ struct stream {
     /* Number of index pulses seen so far. */
     uint32_t nr_index;
 
+    /* Maximum number of full revolutions to read. */
+    uint32_t max_revolutions;
+
     /* Most recent 32 bits read from the stream. */
     uint32_t word;
 
