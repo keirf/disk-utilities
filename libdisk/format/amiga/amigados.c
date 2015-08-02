@@ -50,7 +50,7 @@
 
 /* Sector data sizes for amigados and amigados_extended handlers. */
 #define STD_SEC 512
-#define EXT_SEC (STD_SEC + 24)
+#define EXT_SEC (STD_SEC + offsetof(struct ados_ext, dat))
 
 const static uint32_t syncs[] = {
     0x44894489,
@@ -64,13 +64,22 @@ struct ados_hdr {
     uint32_t dat_checksum;
 };
 
+struct ados_ext {
+    uint32_t sync;
+    uint8_t hdr[20];
+    uint16_t speed;
+    uint8_t dat[0];
+};
+
 static void *ados_write_raw(
     struct disk *d, unsigned int tracknr, struct stream *s)
 {
     struct track_info *ti = &d->di->track[tracknr];
-    char *block, *p;
+    char *block;
+    struct ados_ext *ext;
     unsigned int i, nr_valid_blocks = 0, has_extended_blocks = 0;
     unsigned int least_block = ~0u;
+    uint64_t lat, latency[ti->nr_sectors];
 
     block = memalloc(EXT_SEC * ti->nr_sectors);
     for (i = 0; i < EXT_SEC * ti->nr_sectors / 4; i++)
@@ -89,8 +98,10 @@ static void *ados_write_raw(
         if (i == ARRAY_SIZE(syncs))
             continue;
 
+        lat = s->latency;
         if (stream_next_bytes(s, raw, sizeof(raw)) == -1)
             break;
+        lat = s->latency - lat;
 
         mfm_decode_bytes(bc_mfm_even_odd, 4, &raw[2*0], &ados_hdr);
         mfm_decode_bytes(bc_mfm_even_odd, 16, &raw[2*4], ados_hdr.lbl);
@@ -119,10 +130,11 @@ static void *ados_write_raw(
             if (ados_hdr.lbl[i] != 0)
                 has_extended_blocks = 1;
 
-        p = block + ados_hdr.sector * EXT_SEC;
-        *(uint32_t *)p = htobe32(sync);
-        memcpy(p+4, &ados_hdr, 20);
-        memcpy(p+24, dat, STD_SEC);
+        ext = (struct ados_ext *)(block + ados_hdr.sector * EXT_SEC);
+        ext->sync = htobe32(sync);
+        memcpy(ext->hdr, &ados_hdr, sizeof(ext->hdr));
+        memcpy(ext->dat, dat, STD_SEC);
+        latency[ados_hdr.sector] = lat;
 
         set_sector_valid(ti, ados_hdr.sector);
         nr_valid_blocks++;
@@ -137,10 +149,41 @@ static void *ados_write_raw(
         return NULL;
     }
 
+    /* Calculate average block latency. */
+    lat = 0;
+    for (i = 0; i < ti->nr_sectors; i++) {
+        ext = (struct ados_ext *)(block + i * EXT_SEC);
+        if (is_valid_sector(ti, i)) 
+            lat += latency[i];
+    }
+    lat /= nr_valid_blocks;
+
+    /* Check if we have any long or short blocks. */
+    for (i = 0; i < ti->nr_sectors; i++) {
+        ext = (struct ados_ext *)(block + i * EXT_SEC);
+        if (!is_valid_sector(ti, i)) {
+            ext->speed = SPEED_AVG;
+            continue;
+        }
+        ext->speed = (latency[i] * SPEED_AVG) / lat;
+        if (ext->speed > (SPEED_AVG*102)/100) {
+            /* Long block: normalise to +5% */
+            ext->speed = (SPEED_AVG*105)/100;
+            has_extended_blocks = 1;
+        } else if (ext->speed < (SPEED_AVG*98)/100) {
+            /* Short block: normalise to -5% */
+            ext->speed = (SPEED_AVG*95)/100;
+            has_extended_blocks = 1;
+        } else {
+            /* Roughly average block: make it dead on */
+            ext->speed = SPEED_AVG;
+        }
+    }
+
     if (!has_extended_blocks)
         for (i = 0; i < ti->nr_sectors; i++)
             memmove(block + i * STD_SEC,
-                    block + i * EXT_SEC + (EXT_SEC - STD_SEC),
+                    block + i * EXT_SEC + offsetof(struct ados_ext, dat),
                     STD_SEC);
 
     init_track_info(
@@ -150,6 +193,7 @@ static void *ados_write_raw(
         if (is_valid_sector(ti, i))
             break;
     ti->data_bitoff -= i * 544*8*2;
+    ti->data_bitoff -= 32; /* initial gap */
 
     return block;
 }
@@ -160,44 +204,47 @@ static void ados_read_raw(
     struct track_info *ti = &d->di->track[tracknr];
     struct ados_hdr ados_hdr;
     uint8_t *dat = ti->dat;
-    unsigned int i;
+    unsigned int i, speed;
     uint32_t sync, csum;
 
     for (i = 0; i < ti->nr_sectors; i++) {
 
+        speed = SPEED_AVG;
         sync = syncs[0];
         memset(&ados_hdr, 0, sizeof(ados_hdr));
         ados_hdr.format = 0xffu;
         ados_hdr.track = tracknr;
 
         if (ti->type == TRKTYP_amigados_extended) {
-            sync = be32toh(*(uint32_t *)&dat[0]);
-            memcpy(&ados_hdr, &dat[4], 20);
-            dat += 24;
+            struct ados_ext *ext = (struct ados_ext *)dat;
+            speed = ext->speed;
+            sync = be32toh(ext->sync);
+            memcpy(&ados_hdr, ext->hdr, sizeof(ext->hdr));
+            dat += offsetof(struct ados_ext, dat);
         }
 
         ados_hdr.sector = i;
         ados_hdr.sectors_to_gap = 11 - i;
 
+        /* gap */
+        tbuf_bits(tbuf, speed, bc_mfm, 16, 0);
         /* sync mark */
-        tbuf_bits(tbuf, SPEED_AVG, bc_raw, 32, sync);
+        tbuf_bits(tbuf, speed, bc_raw, 32, sync);
         /* info */
-        tbuf_bytes(tbuf, SPEED_AVG, bc_mfm_even_odd, 4, &ados_hdr);
+        tbuf_bytes(tbuf, speed, bc_mfm_even_odd, 4, &ados_hdr);
         /* lbl */
-        tbuf_bytes(tbuf, SPEED_AVG, bc_mfm_even_odd, 16, ados_hdr.lbl);
+        tbuf_bytes(tbuf, speed, bc_mfm_even_odd, 16, ados_hdr.lbl);
         /* header checksum */
         csum = amigados_checksum(&ados_hdr, 20);
-        tbuf_bits(tbuf, SPEED_AVG, bc_mfm_even_odd, 32, csum);
+        tbuf_bits(tbuf, speed, bc_mfm_even_odd, 32, csum);
         /* data checksum */
         csum = amigados_checksum(dat, STD_SEC);
         if (!is_valid_sector(ti, i))
             csum ^= 1; /* bad checksum for an invalid sector */
-        tbuf_bits(tbuf, SPEED_AVG, bc_mfm_even_odd, 32, csum);
+        tbuf_bits(tbuf, speed, bc_mfm_even_odd, 32, csum);
         /* data */
-        tbuf_bytes(tbuf, SPEED_AVG, bc_mfm_even_odd, STD_SEC, dat);
+        tbuf_bytes(tbuf, speed, bc_mfm_even_odd, STD_SEC, dat);
         dat += STD_SEC;
-        /* gap */
-        tbuf_bits(tbuf, SPEED_AVG, bc_mfm, 16, 0);
     }
 }
 
