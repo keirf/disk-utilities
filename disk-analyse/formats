@@ -672,6 +672,10 @@ probe_amiga
 "Pinball Dreams" # Tracks 1, 66-155, 158+ may be empty on either disk
     * amigados pinball_dreams
 
+"Plutos"
+    1 amigados_long_111000
+    * amigados
+
 "Pools Of Darkness" = amigados
 
 # Old Copylock on original release
