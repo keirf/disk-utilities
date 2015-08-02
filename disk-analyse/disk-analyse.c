@@ -26,7 +26,7 @@
 
 int quiet, verbose;
 static unsigned int start_cyl, end_cyl, disk_flags;
-static int index_align, single_sided = -1;
+static int index_align, clear_bad_sectors, single_sided = -1;
 static unsigned int drive_rpm = 300, data_rpm = 300;
 static enum pll_mode pll_mode = PLL_default;
 static struct format_list **format_lists;
@@ -48,10 +48,11 @@ static void usage(int rc)
 {
     printf("Usage: disk-analyse [options] in_file out_file\n");
     printf("Options:\n");
-    printf("  -h, --help    Display this information\n");
-    printf("  -q, --quiet   Quiesce normal informational output\n");
-    printf("  -v, --verbose Print extra diagnostic info\n");
+    printf("  -h, --help          Display this information\n");
+    printf("  -q, --quiet         Quiesce normal informational output\n");
+    printf("  -v, --verbose       Print extra diagnostic info\n");
     printf("  -i, --index-align   Align all track starts near index mark\n");
+    printf("  -C, --clear-bad-sectors Clear bad sectors in output\n");
     printf("  -p, --pll=MODE      MODE={fixed,variable,authentic}\n");
     printf("  -r, --rpm=DRIVE[:DATA] RPM of drive that created the input,\n");
     printf("                         Original recording RPM of data [300]\n");
@@ -115,7 +116,7 @@ static void handle_stream(void)
     struct disk *d;
     struct disk_info *di;
     struct track_info *ti;
-    unsigned int i, unidentified = 0;
+    unsigned int i, unidentified = 0, bad_secs = 0;
 
     if ((s = stream_open(in, drive_rpm, data_rpm)) == NULL)
         errx(1, "Failed to probe input file: %s", in);
@@ -160,17 +161,26 @@ static void handle_stream(void)
             continue;
         unidentified++;
         printf("T%u.%u: sectors ", TRACK_ARG(i));
-        for (j = 0; j < ti->nr_sectors; j++)
-            if (!is_valid_sector(ti, j))
-                printf("%u,", j);
+        for (j = 0; j < ti->nr_sectors; j++) {
+            if (is_valid_sector(ti, j))
+                continue;
+            printf("%u,", j);
+            bad_secs++;
+        }
         printf(" missing\n");
+        if (clear_bad_sectors)
+            set_all_sectors_valid(ti);
     }
+
+    if (clear_bad_sectors && bad_secs)
+        printf("** %u bad sector%s fixed up\n",
+               bad_secs, (bad_secs > 1) ? "s" : "");
 
     dump_track_list(d);
 
     if (unidentified)
-        fprintf(stderr,"** WARNING: %u tracks are damaged or unidentified!\n",
-                unidentified);
+        fprintf(stderr,"** WARNING: %u track%s damaged or unidentified!\n",
+                unidentified, (unidentified > 1) ? "s are" : " is");
 
     disk_close(d);
     stream_close(s);
@@ -235,12 +245,13 @@ int main(int argc, char **argv)
     char in_suffix[8], out_suffix[8], *config = NULL, *format = NULL;
     int ch;
 
-    const static char sopts[] = "hqvip:r:s:e:S::kf:c:";
+    const static char sopts[] = "hqviCp:r:s:e:S::kf:c:";
     const static struct option lopts[] = {
         { "help", 0, NULL, 'h' },
         { "quiet", 0, NULL, 'q' },
         { "verbose", 0, NULL, 'v' },
         { "index-align", 0, NULL, 'i' },
+        { "clear-bad-sectors", 0, NULL, 'C' },
         { "pll", 1, NULL, 'p' },
         { "rpm", 1, NULL, 'r' },
         { "start-cyl", 1, NULL, 's' },
@@ -265,6 +276,9 @@ int main(int argc, char **argv)
             break;
         case 'i':
             index_align = 1;
+            break;
+        case 'C':
+            clear_bad_sectors = 1;
             break;
         case 'p':
             if (!strcmp(optarg, "fixed"))
