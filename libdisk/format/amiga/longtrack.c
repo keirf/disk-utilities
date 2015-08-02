@@ -255,6 +255,44 @@ struct track_handler bat_longtrack_handler = {
     .read_raw = bat_longtrack_read_raw
 };
 
+/* TRKTYP_app_longtrack: Amiga Power Pack by Softgang
+ *  u16 0x924a :: MFM sync
+ *  u8 0xdc (6600 times, = 105600 MFM bits)
+ *  Track gap is zeroes. Track total length is ~111000 bits. */
+
+static void *app_longtrack_write_raw(
+    struct disk *d, unsigned int tracknr, struct stream *s)
+{
+    struct track_info *ti = &d->di->track[tracknr];
+
+    while (stream_next_bit(s) != -1) {
+        ti->data_bitoff = s->index_offset_bc - 15;
+        if (((uint16_t)s->word != 0x924a) || !check_sequence(s, 6600, 0xdc))
+            continue;
+        if (!check_length(s, 110000))
+            break;
+        ti->total_bits = 111000;
+        return memalloc(0);
+    }
+
+    return NULL;
+}
+
+static void app_longtrack_read_raw(
+    struct disk *d, unsigned int tracknr, struct tbuf *tbuf)
+{
+    unsigned int i;
+
+    tbuf_bits(tbuf, SPEED_AVG, bc_raw, 16, 0x924a);
+    for (i = 0; i < 6600; i++)
+        tbuf_bits(tbuf, SPEED_AVG, bc_mfm, 8, 0xdc);
+}
+
+struct track_handler app_longtrack_handler = {
+    .write_raw = app_longtrack_write_raw,
+    .read_raw = app_longtrack_read_raw
+};
+
 /* TRKTYP_empty_longtrack:
  *  Entire track is (MFM-encoded) zeroes
  *  Track is only checked to be of a certain length. */

@@ -67,6 +67,10 @@ probe_amiga
 "Alien World"
     * amigados alien_world
 
+"Amiga Power Pack"
+    1 app_longtrack amigados
+    * amigados
+
 "Amnios Disk 1" # Tracks 155-159 may be empty
     0 amigados
     1 protec_longtrack
