@@ -770,6 +770,11 @@ probe_amiga
     1 amigados_long_111000
     * amigados
 
+"She-Fox"
+    2-78/2 amigados_long_105500
+    84-158/2 amigados_long_105500
+    * amigados
+
 # Some releases are mastered with slightly long AmigaDOS tracks.
 # The resulting warnings are harmless!
 "Shinobi" = amigados_copylock
