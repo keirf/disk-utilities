@@ -130,6 +130,7 @@ struct ipf_tbuf {
     unsigned int nr_blks, nr_sync;
     uint32_t encoder;
     bool_t need_sps_encoder;
+    bool_t is_var_density;
     struct ipf_block *blk;
 };
 
@@ -199,6 +200,9 @@ static void ipf_tbuf_bit(
     struct ipf_tbuf *ibuf = container_of(tbuf, struct ipf_tbuf, tbuf);
     unsigned int chunktype = (enc == bc_raw) ? chkSync : chkData;
 
+    if (speed != SPEED_AVG)
+        ibuf->is_var_density = 1;
+
     if (chunktype != ibuf->chunktype)
         ipf_tbuf_finish_chunk(ibuf, chunktype);
 
@@ -215,6 +219,9 @@ static void ipf_tbuf_gap(
 {
     struct ipf_tbuf *ibuf = container_of(tbuf, struct ipf_tbuf, tbuf);
     struct ipf_block *blk = &ibuf->blk[ibuf->nr_blks];
+
+    if (speed != SPEED_AVG)
+        ibuf->is_var_density = 1;
 
     /* Store the gap size in block metadata. */
     blk->gapbits = bits*2;
@@ -365,6 +372,9 @@ static bool_t __ipf_close(struct disk *d, uint32_t encoder)
 
             BUG_ON(ibuf.nr_blks > MAX_BLOCKS_PER_TRACK);
             BUG_ON(ibuf.len > MAX_DATA_PER_TRACK);
+
+            if (ibuf.is_var_density && img->dentype == denUniform)
+                trk_warn(ti, i, "IPF: unsupported variable density!");
 
             if (ibuf.need_sps_encoder) {
                 BUG_ON(encoder != ENC_CAPS);
