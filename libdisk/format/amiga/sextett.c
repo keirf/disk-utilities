@@ -3,9 +3,17 @@
  * 
  * Sextett compilation by Kingsoft
  *
- * u16 0x92459245
- * u8 key[3] :: raw bytes
- * Track gap is zeroes.
+ * Track 158:
+ *  u16 0x92459245
+ *  u8 key[3] :: raw bytes
+ *  Track gap is zeroes.
+ * Track 159:
+ *  u16 0x92459245
+ * Protection check synchronises on T159, then steps to T161 while
+ * simultaneously starting an unsynchronised read DMA. The key from T158 is
+ * used as an offset into the read buffer, which must contain a 0x9245 sync
+ * word at that offset.
+ * We simulate this by filling tracks 160 and 161 with 0x9245.
  */
 
 #include <libdisk/util.h>
@@ -18,9 +26,12 @@ static void *sextett_protection_write_raw(
     uint32_t *block;
 
     while (stream_next_bit(s) != -1) {
-        ti->data_bitoff = s->index_offset_bc - 31;
         if (s->word != 0x92459245)
             continue;
+        if (tracknr == 158)
+            ti->data_bitoff = s->index_offset_bc - 31;
+        else /* Tracks 159-161: no data, all same data_bitoff (==0) */
+            return memalloc(0);
         if (stream_next_bits(s, 32) == -1)
             break;
         block = memalloc(4);
@@ -36,9 +47,20 @@ static void sextett_protection_read_raw(
 {
     struct track_info *ti = &d->di->track[tracknr];
     uint32_t *dat = (uint32_t *)ti->dat;
+    unsigned int i;
 
-    tbuf_bits(tbuf, SPEED_AVG, bc_raw, 32, 0x92459245);
-    tbuf_bits(tbuf, SPEED_AVG, bc_raw, 32, be32toh(*dat));
+    if (tracknr == 158) {
+        /* Key track */
+        tbuf_bits(tbuf, SPEED_AVG, bc_raw, 32, 0x92459245);
+        tbuf_bits(tbuf, SPEED_AVG, bc_raw, 32, be32toh(*dat));
+    } else if (tracknr == 159) {
+        /* Sync track */
+        tbuf_bits(tbuf, SPEED_AVG, bc_raw, 32, 0x92459245);
+    } else {
+        /* Landing track */
+        for (i = 0; i < 3000; i++)
+            tbuf_bits(tbuf, SPEED_AVG, bc_raw, 32, 0x92459245);
+    }
 }
 
 struct track_handler sextett_protection_handler = {
