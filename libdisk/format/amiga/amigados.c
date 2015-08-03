@@ -161,12 +161,10 @@ static void *ados_write_raw(
     /* Check if we have any long or short blocks. */
     for (i = 0; i < ti->nr_sectors; i++) {
         ext = (struct ados_ext *)(block + i * EXT_SEC);
+        ext->speed = (latency[i] * SPEED_AVG) / lat;
         if (!is_valid_sector(ti, i)) {
             ext->speed = SPEED_AVG;
-            continue;
-        }
-        ext->speed = (latency[i] * SPEED_AVG) / lat;
-        if (ext->speed > (SPEED_AVG*102)/100) {
+        } else if (ext->speed > (SPEED_AVG*102)/100) {
             /* Long block: normalise to +5% */
             ext->speed = (SPEED_AVG*105)/100;
             has_extended_blocks = 1;
@@ -178,6 +176,7 @@ static void *ados_write_raw(
             /* Roughly average block: make it dead on */
             ext->speed = SPEED_AVG;
         }
+        ext->speed = htobe16(ext->speed);
     }
 
     if (!has_extended_blocks)
@@ -217,7 +216,7 @@ static void ados_read_raw(
 
         if (ti->type == TRKTYP_amigados_extended) {
             struct ados_ext *ext = (struct ados_ext *)dat;
-            speed = ext->speed;
+            speed = be16toh(ext->speed);
             sync = be32toh(ext->sync);
             memcpy(&ados_hdr, ext->hdr, sizeof(ext->hdr));
             dat += offsetof(struct ados_ext, dat);
