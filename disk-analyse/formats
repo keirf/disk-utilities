@@ -765,6 +765,10 @@ probe_amiga
 
 "Sensible Soccer" = sensible
 
+"Sextett"
+    158-159 sextett_protection amigados
+    * amigados
+
 "Shadow Of The Beast"
     * amigados protec_longtrack shadow_beast
 
