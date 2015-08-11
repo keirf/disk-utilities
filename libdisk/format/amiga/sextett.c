@@ -25,13 +25,17 @@ static void *sextett_protection_write_raw(
     struct track_info *ti = &d->di->track[tracknr];
     uint32_t *block;
 
+    /* Tracks 159-161: no data, all same data_bitoff (==0) */
+    if ((tracknr >= 159) && (tracknr <= 161)) {
+        struct track_info *t158 = &d->di->track[158];
+        return (t158->type == TRKTYP_sextett_protection) ? memalloc(0) : NULL;
+    }
+
+    /* Track 158: find the key */
     while (stream_next_bit(s) != -1) {
         if (s->word != 0x92459245)
             continue;
-        if (tracknr == 158)
-            ti->data_bitoff = s->index_offset_bc - 31;
-        else /* Tracks 159-161: no data, all same data_bitoff (==0) */
-            return memalloc(0);
+        ti->data_bitoff = s->index_offset_bc - 31;
         if (stream_next_bits(s, 32) == -1)
             break;
         block = memalloc(4);
