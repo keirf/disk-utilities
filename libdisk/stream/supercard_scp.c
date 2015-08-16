@@ -143,6 +143,7 @@ static int scp_next_flux(struct stream *s)
 {
     struct scp_stream *scss = container_of(s, struct scp_stream, s);
     uint32_t val = 0, t;
+    unsigned int nr_index_seen = 0;
 
     for (;;) {
         if (scss->dat_idx >= scss->index_pos) {
@@ -150,6 +151,10 @@ static int scp_next_flux(struct stream *s)
             scss->index_pos = scss->index_off[rev];
             scss->dat_idx = rev ? scss->index_off[rev-1] : 0;
             s->ns_to_index = s->flux;
+            /* Some drives return no flux transitions for tracks >= 160.
+             * Bail if we see no flux transitions in a complete revolution. */
+            if (nr_index_seen++)
+                break;
             val = 0;
         }
 
