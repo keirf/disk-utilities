@@ -517,17 +517,20 @@ static void tbuf_finalise(struct tbuf *tbuf)
         tbuf_bits(tbuf, SPEED_AVG, bc_mfm, 1, 0);
 
     /* Write splice. Write an MFM-illegal string of zeroes. */
-    tbuf_bits(tbuf, SPEED_AVG, bc_raw, 5, 0);
+    nr_bits = tbuf->start - tbuf->pos;
+    if (nr_bits < 0)
+        nr_bits += tbuf->raw.bitlen;
+    nr_bits = min(nr_bits, 5); /* up to 5 bits */
+    tbuf_bits(tbuf, SPEED_AVG, bc_raw, nr_bits, 0);
 
     /* Reverse fill the remainder */
-    pos = tbuf->start;
-    do {
+    for (pos = tbuf->start; pos != tbuf->pos; ) {
         if (--pos < 0)
             pos += tbuf->raw.bitlen;
         change_bit(tbuf->raw.bits, pos, b);
         tbuf->raw.speed[pos] = SPEED_AVG;
         b = !b;
-    } while (pos != tbuf->pos);
+    }
 }
 
 void tbuf_bits(struct tbuf *tbuf, uint16_t speed,
