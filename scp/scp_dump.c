@@ -23,6 +23,7 @@
 
 #define DEFAULT_SERDEVICE  "/dev/ttyUSB0"
 #define DEFAULT_NRTRACKS   164
+#define DEFAULT_REVS       2
 
 #define log(_f, _a...) do { if (!quiet) printf(_f, ##_a); } while (0)
 
@@ -43,7 +44,8 @@ static void usage(int rc)
     printf("  -h, --help    Display this information\n");
     printf("  -q, --quiet   Quiesce normal informational output\n");
     printf("  -d, --device  Name of serial device (%s)\n", DEFAULT_SERDEVICE);
-    printf("  -r, --ramtest Test SCP on-board SRAM before dumping\n");
+    printf("  -r, --revs    Nr revolutions per track (%d)\n", DEFAULT_REVS);
+    printf("  -R, --ramtest Test SCP on-board SRAM before dumping\n");
     printf("  -t, --tracks  Nr tracks to dump (%d)\n", DEFAULT_NRTRACKS);
 
     exit(rc);
@@ -55,17 +57,20 @@ int main(int argc, char **argv)
     struct scp_flux flux;
     struct disk_header dhdr;
     struct track_header thdr;
-    unsigned int rev, trk, nr_tracks = DEFAULT_NRTRACKS;
+    unsigned int rev, nr_revs = DEFAULT_REVS;
+    unsigned int trk, nr_tracks = DEFAULT_NRTRACKS;
+    unsigned int sizeof_thdr;
     uint32_t *th_offs, file_off, dat_off;
     int ch, fd, quiet = 0, ramtest = 0;
     char *sername = DEFAULT_SERDEVICE;
 
-    const static char sopts[] = "hqd:rt:";
+    const static char sopts[] = "hqd:r:Rt:";
     const static struct option lopts[] = {
         { "help", 0, NULL, 'h' },
         { "quiet", 0, NULL, 'q' },
         { "device", 1, NULL, 'd' },
-        { "ramtest", 0, NULL, 'r' },
+        { "revs", 1, NULL, 'r' },
+        { "ramtest", 0, NULL, 'R' },
         { "tracks", 1, NULL, 't' },
         { 0, 0, 0, 0 }
     };
@@ -82,6 +87,9 @@ int main(int argc, char **argv)
             sername = optarg;
             break;
         case 'r':
+            nr_revs = atoi(optarg);
+            break;
+        case 'R':
             ramtest = 1;
             break;
         case 't':
@@ -101,6 +109,12 @@ int main(int argc, char **argv)
         usage(1);
     }
 
+    if (nr_revs > ARRAY_SIZE(flux.info)) {
+        warnx("Too many revolutions specified (%u, max %u)\n",
+              nr_revs, (unsigned int)ARRAY_SIZE(flux.info));
+        usage(1);
+    }
+
     if ((fd = file_open(argv[optind], O_WRONLY|O_CREAT|O_TRUNC, 0666)) == -1)
         err(1, "Error creating %s", argv[optind]);
 
@@ -108,7 +122,7 @@ int main(int argc, char **argv)
     memcpy(dhdr.sig, "SCP", sizeof(dhdr.sig));
     dhdr.version = 0x10; /* taken from existing images */
     dhdr.disk_type = DISKTYPE_amiga;
-    dhdr.nr_revolutions = 5;
+    dhdr.nr_revolutions = nr_revs;
     dhdr.end_track = nr_tracks - 1;
     dhdr.flags = (1u<<_FLAG_writable); /* avoids need for checksum */
     write_exact(fd, &dhdr, sizeof(dhdr));
@@ -126,28 +140,29 @@ int main(int argc, char **argv)
 
     log("Reading track ");
 
+    sizeof_thdr = 4 + 12*nr_revs;
     for (trk = 0; trk < nr_tracks; trk++) {
         log("%-4u...", trk);
         fflush(stdout);
 
         scp_seek_track(scp, trk);
-        scp_read_flux(scp, &flux);
+        scp_read_flux(scp, nr_revs, &flux);
 
         th_offs[trk] = htole32(file_off);
 
-        memset(&thdr, 0, sizeof(thdr));
+        memset(&thdr, 0, sizeof_thdr);
         memcpy(thdr.sig, "TRK", sizeof(thdr.sig));
         thdr.tracknr = trk;
 
-        dat_off = sizeof(thdr);
-        for (rev = 0; rev < ARRAY_SIZE(thdr.rev); rev++) {
+        dat_off = sizeof_thdr;
+        for (rev = 0; rev < nr_revs; rev++) {
             thdr.rev[rev].duration = htole32(flux.info[rev].index_time);
             thdr.rev[rev].nr_samples = htole32(flux.info[rev].nr_bitcells);
             thdr.rev[rev].offset = htole32(dat_off);
             dat_off += flux.info[rev].nr_bitcells * sizeof(uint16_t);
         }
-        write_exact(fd, &thdr, sizeof(thdr));
-        write_exact(fd, flux.flux, dat_off - sizeof(thdr));
+        write_exact(fd, &thdr, sizeof_thdr);
+        write_exact(fd, flux.flux, dat_off - sizeof_thdr);
         file_off += dat_off;
 
         log("\b\b\b\b\b\b\b");

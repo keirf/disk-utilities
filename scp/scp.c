@@ -210,9 +210,10 @@ void scp_seek_track(struct scp_handle *scp, unsigned int track)
     scp_send(scp, SCPCMD_SIDE, &side, 1);
 }
 
-void scp_read_flux(struct scp_handle *scp, struct scp_flux *flux)
+void scp_read_flux(struct scp_handle *scp, unsigned int nr_revs,
+                   struct scp_flux *flux)
 {
-    uint8_t info[2] = { ARRAY_SIZE(flux->info), 1 /* wait for index */};
+    uint8_t info[2] = { nr_revs, 1 /* wait for index */};
     unsigned int i;
 
     scp_send(scp, SCPCMD_READFLUX, &info, 2);

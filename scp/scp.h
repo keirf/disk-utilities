@@ -72,7 +72,8 @@ void scp_ramtest(struct scp_handle *scp);
 void scp_selectdrive(struct scp_handle *scp, unsigned int drv);
 void scp_deselectdrive(struct scp_handle *scp, unsigned int drv);
 void scp_seek_track(struct scp_handle *scp, unsigned int track);
-void scp_read_flux(struct scp_handle *scp, struct scp_flux *flux);
+void scp_read_flux(struct scp_handle *scp, unsigned int nr_revs,
+                   struct scp_flux *flux);
 
 struct disk_header {
     uint8_t sig[3];
