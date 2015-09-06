@@ -976,6 +976,9 @@ probe_amiga
 "Worms" = amigados
 "Worms: The Director's Cut" = amigados
 
+"X-Out"
+    * amigados x_out
+
 "Xenon 2" = amigados_copylock
 
 "Yogi's Big Clean Up"
