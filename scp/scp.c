@@ -159,8 +159,13 @@ void scp_send(
 
     write_exact(scp->fd, buf, len + 3);
 
-    if (cmd == SCPCMD_SENDRAM_USB)
+    if (cmd == SCPCMD_SENDRAM_USB) {
         read_exact(scp->fd, dat, 512*1024);
+    } else if (cmd == SCPCMD_LOADRAM_USB) {
+        uint32_t *ramcmd = dat;
+        uint32_t len = be32toh(ramcmd[1]);
+        write_exact(scp->fd, &ramcmd[2], len);
+    }
 
     read_exact(scp->fd, buf, 2);
     if (buf[0] != cmd)
@@ -169,7 +174,6 @@ void scp_send(
     if (buf[1] != 0x4f)
         errx(1, "Command %02x (%s) failed: %02x (%s)",
              cmd, scp_cmdstr(cmd), buf[1], scp_errstr(buf[1]));
-
 
     memfree(buf);
 }
@@ -230,3 +234,18 @@ void scp_read_flux(struct scp_handle *scp, unsigned int nr_revs,
     *(uint32_t *)&flux->flux[2] = htobe32(512*1024);
     scp_send(scp, SCPCMD_SENDRAM_USB, flux->flux, 8);
 }
+
+void scp_write_flux(struct scp_handle *scp, void *dat, unsigned int nr_dat)
+{
+    uint32_t ramcmd[256*1024/4];
+
+    ramcmd[0] = htobe32(0);
+    ramcmd[1] = htobe32(nr_dat * 2);
+    memcpy(&ramcmd[2], dat, nr_dat * 2);
+    scp_send(scp, SCPCMD_LOADRAM_USB, ramcmd, 8);
+
+    ramcmd[0] = htobe32(nr_dat);
+    *(uint8_t *)(&ramcmd[1]) = 5; /* wait for index, wipe track */
+    scp_send(scp, SCPCMD_WRITEFLUX, ramcmd, 5);
+}
+

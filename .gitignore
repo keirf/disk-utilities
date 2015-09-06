@@ -15,3 +15,4 @@ ipfinfo/ipfinfo
 m68k/disassemble
 m68k/copylock
 scp/scp_dump
+scp/scp_write
