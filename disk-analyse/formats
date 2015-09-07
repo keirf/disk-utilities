@@ -1001,6 +1001,8 @@ probe_amiga
 
 amigados
     * amigados
+amigados_varrate
+    * amigados_varrate
 # Copylock sometimes later replaced with no protection, or PROTEC
 amigados_copylock
     1 amigados copylock protec_longtrack copylock_old

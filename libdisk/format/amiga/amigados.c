@@ -158,11 +158,13 @@ static void *ados_write_raw(
     }
     lat /= nr_valid_blocks;
 
-    /* Check if we have any long or short blocks. */
+    /* Check if we have any long or short blocks. 
+     * We only record them for TRKTYP_amigados_varrate. */
     for (i = 0; i < ti->nr_sectors; i++) {
         ext = (struct ados_ext *)(block + i * EXT_SEC);
         ext->speed = (latency[i] * SPEED_AVG) / lat;
-        if (!is_valid_sector(ti, i)) {
+        if (!is_valid_sector(ti, i)
+            || ti->type != TRKTYP_amigados_varrate) {
             ext->speed = SPEED_AVG;
         } else if (ext->speed > (SPEED_AVG*102)/100) {
             /* Long block: normalise to +5% */
@@ -247,7 +249,49 @@ static void ados_read_raw(
     }
 }
 
+static void ados_get_name(
+    struct disk *d, unsigned int tracknr, char *str, size_t size)
+{
+    struct track_info *ti = &d->di->track[tracknr];
+    uint8_t *dat = ti->dat;
+    struct ados_hdr ados_hdr;
+    unsigned int i, j;
+    bool_t speed_flag = 0, sync_flag = 0, hdr_flag = 0;
+
+    for (i = 0; i < ti->nr_sectors; i++) {
+
+        struct ados_ext *ext = (struct ados_ext *)dat;
+        memcpy(&ados_hdr, ext->hdr, sizeof(ext->hdr));
+        dat += offsetof(struct ados_ext, dat) + 512;
+
+        if (be16toh(ext->speed) != SPEED_AVG)
+            speed_flag = 1;
+        if (be32toh(ext->sync) != syncs[0])
+            sync_flag = 1;
+        if ((ados_hdr.format != 0xffu) ||
+            (ados_hdr.track != tracknr))
+            hdr_flag = 1;
+        for (j = 0; j < 16; j++)
+            if (ados_hdr.lbl[j] != 0)
+                hdr_flag = 1;
+    }
+
+    snprintf(str, size, "%s (%s%s%s%s%s)", ti->typename,
+             speed_flag ? "Variable-Rate" : "",
+             speed_flag && (sync_flag || hdr_flag) ? ", " : "",
+             sync_flag ? "Sync" : "",
+             sync_flag && hdr_flag ? ", " : "",
+             hdr_flag ? "Header" : "");
+}
+
 struct track_handler amigados_handler = {
+    .bytes_per_sector = STD_SEC,
+    .nr_sectors = 11,
+    .write_raw = ados_write_raw,
+    .read_raw = ados_read_raw
+};
+
+struct track_handler amigados_varrate_handler = {
     .bytes_per_sector = STD_SEC,
     .nr_sectors = 11,
     .write_raw = ados_write_raw,
@@ -258,7 +302,8 @@ struct track_handler amigados_extended_handler = {
     .bytes_per_sector = EXT_SEC,
     .nr_sectors = 11,
     .write_raw = ados_write_raw,
-    .read_raw = ados_read_raw
+    .read_raw = ados_read_raw,
+    .get_name = ados_get_name
 };
 
 /* AmigaDOS Long Tracks:

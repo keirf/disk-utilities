@@ -1,6 +1,7 @@
 X(unformatted, "Unformatted")
 X(amigados, "AmigaDOS")
 X(amigados_extended, "AmigaDOS Extended")
+X(amigados_varrate, "AmigaDOS Variable Rate")
 X(amigados_long_103300, "AmigaDOS Long Track (103300 Bits)")
 X(amigados_long_105500, "AmigaDOS Long Track (105500 Bits)")
 X(amigados_long_111000, "AmigaDOS Long Track (111000 Bits)")
