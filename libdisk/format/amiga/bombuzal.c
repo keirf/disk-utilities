@@ -49,7 +49,7 @@ static void *bombuzal_write_raw(
         }
 
         /* Our own checksum over the data. */
-        if (crc16_ccitt(dat, sizeof(dat), 0xffff) != 0x1285)
+        if (crc16_ccitt(dat, sizeof(dat), 0xffff) != 0x423c)
             continue;
 
         init_track_info(ti, TRKTYP_bombuzal);
