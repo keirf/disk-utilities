@@ -24,8 +24,8 @@
 #define CLOCK_MAX(_c) (((_c) * (100 + CLOCK_MAX_ADJ)) / 100)
 
 /* Amount to adjust phase/period of our clock based on each observed flux. */
-#define PERIOD_ADJ_PCT 10
-#define PHASE_ADJ_PCT  50
+#define PERIOD_ADJ_PCT 5
+#define PHASE_ADJ_PCT  60
 
 extern struct stream_type kryoflux_stream;
 extern struct stream_type diskread;
@@ -232,8 +232,7 @@ static int flux_next_bit(struct stream *s)
         /* PLL: Adjust clock frequency according to phase mismatch. */
         if (s->clocked_zeros <= 3) {
             /* In sync: adjust base clock by a fraction of phase mismatch. */
-            int diff = s->flux / (int)(s->clocked_zeros + 1);
-            s->clock += diff * PERIOD_ADJ_PCT / 100;
+            s->clock += s->flux * PERIOD_ADJ_PCT / 100;
         } else {
             /* Out of sync: adjust base clock towards centre. */
             s->clock += (s->clock_centre - s->clock) * PERIOD_ADJ_PCT / 100;
