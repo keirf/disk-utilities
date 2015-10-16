@@ -14,6 +14,13 @@
  * 
  * TRKTYP_cyberblast data layout:
  *  u8 sector_data[12*512]
+ * 
+ * PROTECTION TRACKS:
+ * Tracks 6 & 7 (cylinder 3) contain 4448 sync words at precise distances
+ * from each other. The protection check reads 0x15fe MFM words from track 6
+ * then immediately switches head (i.e. to track 7) and issues a short
+ * 16-word read: this must be satisfied almost immediately (iterations of the
+ * "wait for disk DMA done" loop are counted and checked).
  */
 
 #include <libdisk/util.h>
@@ -29,6 +36,25 @@ static void *cyberblast_write_raw(
     while (stream_next_bit(s) != -1) {
 
         uint32_t csum, dat[0x602], raw[2], enctrk;
+
+        if (((tracknr&~1) == 6) && (s->word == 0x44484448)) {
+            if (stream_next_bits(s, 32) == -1)
+                goto fail;
+            if (tracknr == 6) {
+                /* Trk 6: 0x44484448 55555555... */
+                if (s->word != 0x55555555)
+                    continue;
+                ti->data_bitoff = 1024;
+            } else {
+                /* Trk 7: 0x44484448 54aa54aa 54aa54aa 44895555... */
+                if (s->word != 0x54aa54aa)
+                    continue;
+                /* trk6 offset + trk6 read len + small offset */
+                ti->data_bitoff = 1024 + 90080 + 200;
+            }
+            ti->total_bits = 95500;
+            goto success;
+        }
 
         if (s->word != 0x4448a5a4)
             continue;
@@ -51,6 +77,7 @@ static void *cyberblast_write_raw(
             continue;
 
         memcpy(block, &dat[2], ti->len);
+    success:
         set_all_sectors_valid(ti);
         return block;
     }
@@ -66,6 +93,22 @@ static void cyberblast_read_raw(
     struct track_info *ti = &d->di->track[tracknr];
     uint32_t enctrk, sum, *dat = (uint32_t *)ti->dat;
     unsigned int i;
+
+    if (tracknr == 6) {
+        tbuf_bits(tbuf, SPEED_AVG, bc_raw, 32, 0x44484448);
+        for (i = 0; i < 2900; i++)
+            tbuf_bits(tbuf, SPEED_AVG, bc_mfm, 16, 0xffff);
+        return;
+    }
+
+    if (tracknr == 7) {
+        tbuf_bits(tbuf, SPEED_AVG, bc_raw, 32, 0x44484448);
+        for (i = 0; i < 2; i++)
+            tbuf_bits(tbuf, SPEED_AVG, bc_raw, 32, 0x54aa54aa);
+        for (i = 0; i < 16; i++)
+            tbuf_bits(tbuf, SPEED_AVG, bc_raw, 32, 0x44895555);
+        return;
+    }
 
     tbuf_bits(tbuf, SPEED_AVG, bc_raw, 16, 0x4448);
     tbuf_bits(tbuf, SPEED_AVG, bc_raw, 32, 0xa5a4a5a4);
