@@ -234,7 +234,7 @@ static void imd_close(struct disk *d)
         if ((thdr.mode == 0xff) || !ti->nr_sectors)
             continue;
 
-        if (ti->nr_sectors >= 256) {
+        if ((uint32_t)ti->nr_sectors >= 256) {
             warnx("T%u.%u: Unexpected number of IBM-MFM sectors (%u)",
                   cyl(trk), hd(trk), ti->nr_sectors);
             continue;
