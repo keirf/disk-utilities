@@ -293,6 +293,67 @@ struct track_handler app_longtrack_handler = {
     .read_raw = app_longtrack_read_raw
 };
 
+/* TRKTYP_sevencities_longtrack: Seven Cities Of Gold by Electronic Arts
+ * Not really a long track.
+ *  9251 sync; 122 bytes MFM data; MFM-encoded zeroes...; 924a sync.
+ * MFM data string is combined with gap between sync words to compute a key. */
+#define SEVENCITIES_DATSZ 122
+static void *sevencities_longtrack_write_raw(
+    struct disk *d, unsigned int tracknr, struct stream *s)
+{
+    struct track_info *ti = &d->di->track[tracknr];
+    uint8_t *dat = memalloc(SEVENCITIES_DATSZ);
+    unsigned int i;
+
+    /* Check for 924a sync word */
+    while (stream_next_bit(s) != -1)
+        if ((uint16_t)s->word == 0x924a)
+            break;
+
+    while (stream_next_bit(s) != -1) {
+        /* Check for 9251 sync word */
+        if ((uint16_t)s->word != 0x9251)
+            continue;
+        /* Next 122 bytes are used by protection check. They have a known 
+         * CRC which we check here, and save the bytes as track data. */
+        stream_start_crc(s);
+        for (i = 0; i < SEVENCITIES_DATSZ; i++) {
+            stream_next_bits(s, 8);
+            dat[i] = (uint8_t)s->word;
+        }
+        if (s->crc16_ccitt != 0x010a)
+            continue;
+        /* Done. */
+        ti->len = SEVENCITIES_DATSZ;
+        ti->data_bitoff = 76000;
+        ti->total_bits = 101500;
+        return dat;
+    }
+
+    memfree(dat);
+    return NULL;
+}
+
+static void sevencities_longtrack_read_raw(
+    struct disk *d, unsigned int tracknr, struct tbuf *tbuf)
+{
+    struct track_info *ti = &d->di->track[tracknr];
+    uint8_t *dat = (uint8_t *)ti->dat;
+    unsigned int i;
+
+    tbuf_bits(tbuf, SPEED_AVG, bc_raw, 16, 0x9251);
+    for (i = 0; i < ti->len; i++)
+        tbuf_bits(tbuf, SPEED_AVG, bc_raw, 8, dat[i]);
+    for (i = 0; i < 6052-(ti->len/2); i++)
+        tbuf_bits(tbuf, SPEED_AVG, bc_mfm, 8, 0);
+    tbuf_bits(tbuf, SPEED_AVG, bc_mfm, 16, 0x0480);
+}
+
+struct track_handler sevencities_longtrack_handler = {
+    .write_raw = sevencities_longtrack_write_raw,
+    .read_raw = sevencities_longtrack_read_raw
+};
+
 /* TRKTYP_empty_longtrack:
  *  Entire track is (MFM-encoded) zeroes
  *  Track is only checked to be of a certain length. */

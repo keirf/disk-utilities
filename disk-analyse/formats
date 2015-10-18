@@ -768,6 +768,10 @@ probe_amiga
 
 "Sensible Soccer" = sensible
 
+"Seven Cities Of Gold"
+    1 sevencities_longtrack amigados
+    * amigados
+
 "Sextett"
     158-161 sextett_protection amigados
     * amigados
