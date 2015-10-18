@@ -367,12 +367,15 @@ static void *empty_longtrack_write_raw(
         return NULL;
 
     ti->total_bits = 110000;
+    ti->data_bitoff = ti->total_bits / 2; /* write splice at index */
     return memalloc(0);
 }
 
 static void empty_longtrack_read_raw(
     struct disk *d, unsigned int tracknr, struct tbuf *tbuf)
 {
+    /* Emit some data: prevents IPF handler from barfing on no data blocks. */
+    tbuf_bits(tbuf, SPEED_AVG, bc_mfm, 32, 0);
 }
 
 struct track_handler empty_longtrack_handler = {
