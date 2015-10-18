@@ -33,21 +33,32 @@ static int check_length(struct stream *s, unsigned int min_bits)
  *  u8 0x33 (encoded in-place, 1000+ times, to track gap)
  *  Track is checked to be >= 107200 bits long
  *  Specifically, protection checks for >= 6700 raw words between successive
- *  sync marks. Track contents are not otherwise checked or tested. */
+ *  sync marks. Track contents are not otherwise checked or tested. 
+ * NOTES: 
+ *  1. Repeated pattern byte can differ (e.g. SPS 1352, Robocod, uses pattern
+ *     byte 0x44). We simply check for any repeated value, and use that same
+ *     value when regenerating the MFM data. */
 
 static void *protec_longtrack_write_raw(
     struct disk *d, unsigned int tracknr, struct stream *s)
 {
     struct track_info *ti = &d->di->track[tracknr];
+    uint8_t byte, *data;
 
     while (stream_next_bit(s) != -1) {
         ti->data_bitoff = s->index_offset_bc - 31;
-        if ((s->word != 0x4454a525) || !check_sequence(s, 1000, 0x33))
+        if ((s->word >> 16) != 0x4454)
+            continue;
+        byte = (uint8_t)mfm_decode_bits(bc_mfm, s->word);
+        if (!check_sequence(s, 1000, byte))
             continue;
         if (!check_length(s, 107200))
             break;
         ti->total_bits = 110000; /* long enough */
-        return memalloc(0);
+        ti->len = 1;
+        data = memalloc(ti->len);
+        *data = byte;
+        return data;
     }
 
     return NULL;
@@ -56,11 +67,13 @@ static void *protec_longtrack_write_raw(
 static void protec_longtrack_read_raw(
     struct disk *d, unsigned int tracknr, struct tbuf *tbuf)
 {
+    struct track_info *ti = &d->di->track[tracknr];
+    uint8_t *dat = (uint8_t *)ti->dat, byte = *dat;
     unsigned int i;
 
     tbuf_bits(tbuf, SPEED_AVG, bc_raw, 16, 0x4454);
     for (i = 0; i < 6000; i++)
-        tbuf_bits(tbuf, SPEED_AVG, bc_mfm, 8, 0x33);
+        tbuf_bits(tbuf, SPEED_AVG, bc_mfm, 8, byte);
 }
 
 struct track_handler protec_longtrack_handler = {
