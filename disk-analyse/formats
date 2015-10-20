@@ -640,6 +640,10 @@ probe_amiga
 "Ikari Warriors"
     * amigados elite_d
 
+"Insanity Fight"
+    1 ignore
+    * amigados
+
 # Tracks 76+ are unused
 "Interphase"
     * amigados rainbird
@@ -654,6 +658,13 @@ probe_amiga
 
 "Jaguar XJ220"
     * amigados core_design
+
+"James Pond"
+    0 amigados
+    2-77 ibm_pc_dd_10sec
+    78-81 amigados
+    82-159 ibm_pc_dd_10sec
+    * ignore
 
 # AGA version is AmigaDOS, hard disk installable
 "James Pond II: Codename Robocod" = Robocod
@@ -1166,6 +1177,17 @@ probe_amiga
     2 supremacy_a 
     * super_hang_on  
 
+"Super Monaco GP"
+    0 amigados
+    1 supremacy_b
+    2 supremacy_a
+    3-47 supremacy_b
+    48-154/2 ignore
+    49-155 supremacy_b
+    158 tiertex_longtrack
+    159 gremlin_longtrack
+    * ignore
+
 "Superfrog" = rnc_pdos
 
 "Supremacy" # Disk 1 Tracks 138,140,142,144+, Disk 2 Tracks 130+, may be empty
@@ -1203,6 +1225,8 @@ probe_amiga
 
 # Same version as Tenstar Pack Game 8
 "Terrorpods" = amigados # extended amigados tracks and some empty tracks
+
+"The Addams Family" = amigados_copylock
 
 # Tenstar Pack Game 2
 "The Art Of Chess"
