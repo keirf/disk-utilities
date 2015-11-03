@@ -1,13 +1,10 @@
 /*
- * disk/lure_temptress.c
+ * disk/pdos_old.c
  * 
  * Custom format as used by Lure Of The Temptress by Revolution / Virgin.
  * Also used by Bill's Tomato Game by Psygnosis.
  * 
- * I'm not sure what the link is between the above two games. They even
- * both have their AmigaDOS boot track mastered long. So for now I call this
- * the "Lure" track format and Bill borrows it. I will rename it if the common
- * factor becomes apparent.
+ * The format appears to be an early variant of Rob Northen's PDOS.
  * 
  * Written in 2015 by Keir Fraser
  * 
@@ -18,14 +15,14 @@
  *  u32 csum :: Even/Odd AmigaDOS-style checksum
  *  u32 data[512/4] :: Even/Odd
  * 
- * TRKTYP_lure_temptress data layout:
+ * TRKTYP_rnc_pdos_old data layout:
  *  u8 sector_data[12][512]
  */
 
 #include <libdisk/util.h>
 #include <private/disk.h>
 
-static void *lure_temptress_write_raw(
+static void *rnc_pdos_old_write_raw(
     struct disk *d, unsigned int tracknr, struct stream *s)
 {
     struct track_info *ti = &d->di->track[tracknr];
@@ -76,7 +73,7 @@ fail:
     return NULL;
 }
 
-static void lure_temptress_read_raw(
+static void rnc_pdos_old_read_raw(
     struct disk *d, unsigned int tracknr, struct tbuf *tbuf)
 {
     struct track_info *ti = &d->di->track[tracknr];
@@ -96,11 +93,11 @@ static void lure_temptress_read_raw(
     }
 }
 
-struct track_handler lure_temptress_handler = {
+struct track_handler rnc_pdos_old_handler = {
     .bytes_per_sector = 512,
     .nr_sectors = 12,
-    .write_raw = lure_temptress_write_raw,
-    .read_raw = lure_temptress_read_raw
+    .write_raw = rnc_pdos_old_write_raw,
+    .read_raw = rnc_pdos_old_read_raw
 };
 
 /*
