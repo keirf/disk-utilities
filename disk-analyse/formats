@@ -10,7 +10,7 @@ all
 probe_amiga
     * amigados copylock psygnosis_a psygnosis_b rnc_pdos core_design \
       gremlin rainbird blue_byte ikplus firebird \
-      archipelagos sensible \
+      archipelagos sensible lure_temptress \
       bat batman menace elite_a elite_b elite_c elite_d turrican \
       federation_of_free_traders \
       phantom_fighter supremacy_a supremacy_b \
@@ -228,7 +228,7 @@ probe_amiga
 "Bio Challenge" = rnc_hidden
 
 "Bill's Tomato Game"
-    * amigados_long_105500 bill_tomato
+    * amigados_long_105500 lure_temptress
 
 "Bionic Commando" = amigados
 

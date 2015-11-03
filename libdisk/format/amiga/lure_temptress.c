@@ -2,6 +2,12 @@
  * disk/lure_temptress.c
  * 
  * Custom format as used by Lure Of The Temptress by Revolution / Virgin.
+ * Also used by Bill's Tomato Game by Psygnosis.
+ * 
+ * I'm not sure what the link is between the above two games. They even
+ * both have their AmigaDOS boot track mastered long. So for now I call this
+ * the "Lure" track format and Bill borrows it. I will rename it if the common
+ * factor becomes apparent.
  * 
  * Written in 2015 by Keir Fraser
  * 
