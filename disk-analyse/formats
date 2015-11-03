@@ -777,6 +777,10 @@ probe_amiga
 "Lotus III"
     * amigados gremlin
 
+# Boot Disk Track 0 only is AmigaDOS, mastered long same as all data tracks.
+"Lure Of The Temptress"
+    * amigados_long_105500 lure_temptress
+
 "Magicland Dizzy" = amigados_copylock
 
 "Matrix Marauders"
