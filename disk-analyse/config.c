@@ -287,12 +287,6 @@ found:
                     parse_err("'ignore' must be sole format specifier");
                 memfree(list);
                 list = &ignore_list;
-            } else if (!strcmp("all", t.u.str)) {
-                for (i = 0; disk_get_format_id_name(i) != NULL; i++) {
-                    if (list->nr == list->max)
-                        list = realloc_format_list(list);
-                    list->ent[list->nr++] = i;
-                }
             } else {
                 for (i = 0;
                      (fmtname = disk_get_format_id_name(i)) != NULL;
