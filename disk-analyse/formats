@@ -193,6 +193,8 @@ probe_amiga
     157-159 ignore
     * amigados
 
+"Bards Tale II" = amigados
+
 "Batman The Caped Crusader" # Tracks 132+ may be empty
     0-1 amigados
     * batman
@@ -329,6 +331,8 @@ probe_amiga
 "Conqueror"
     * amigados spherical conqueror
 
+"Conquests Of Camelot" = amigados
+
 "Continental Circus"
     0 amigados
     1 protec_longtrack
@@ -415,6 +419,8 @@ probe_amiga
 
 "Dizzy Collection" = amigados_copylock
 
+"Dizzy Prince Of The Yolkfolk" = amigados_copylock
+
 "Dragon's Breath"
     158 amigados speedlock
     * amigados
@@ -435,6 +441,9 @@ probe_amiga
 
 "Dugger" # No empty tracks
     * amigados dugger
+
+# 'The Greats' Compilation
+"Dune" = amigados
 
 # Psygnosis release has no disk protection (amigados only)
 "Dungeon Master"
@@ -495,6 +504,10 @@ probe_amiga
 "F-29 Retaliator" = rnc_hidden
 
 "Faery Tale Adventure" = amigados # novella protection
+
+"Falcon Mission Disk Vol 1" = amigados_copylock
+
+"Falcon V2" = rnc_hidden
 
 "Fantastic Dizzy" = amigados_copylock
 
@@ -591,10 +604,14 @@ probe_amiga
 "Harlequin"
     * amigados gremlin
 
+"Heart Of China" = amigados
+
 "Heimdall" = amigados_copylock
 
 # Tracks 154-157 may be empty
 "Hero Quest" = amigados_gremlin_longtrack
+
+"Historyline 1914-1918" = amigados
 
 # Hit Disks Volume 1 - Jupiter Probe + Goldrunner
 "Hit Disks JP+G"
@@ -768,6 +785,8 @@ probe_amiga
 
 # Tracks may be mastered long, causing harmless warnings
 "Lombard RAC Rally" = amigados
+
+"Lords Of The Rising Sun" = amigados_copylock
 
 "Lorna"
     * amigados lorna ibm_pc_dd
@@ -1230,6 +1249,9 @@ probe_amiga
 # Same version as Tenstar Pack Game 8
 "Terrorpods" = amigados # extended amigados tracks and some empty tracks
 
+# 'Triad Volume 2' Compilation
+"Tetris" = amigados
+
 "The Addams Family" = amigados_copylock
 
 # Tenstar Pack Game 2
@@ -1252,11 +1274,18 @@ probe_amiga
 
 "The Keys To Maramon" = amigados
 
+"The Killing Cloud"
+    * amigados ibm_pc_dd
+
+"The Kristal = amigados_copylock
+
 "The Legend Of Kyrandia" = amigados
 
 "The Magnetic Scrolls Collection" = amigados
 
 "The Munsters" = amigados_copylock
+
+"The Pawn" = amigados
 
 "The Ultimate Ride" = amigados
 
@@ -1324,6 +1353,8 @@ probe_amiga
 "Uninvited"
     1 amigados_long_111000
     * amigados
+
+"Universal Military Simulator" = amigados
 
 "Uridium 2" = amigados_copylock
 
