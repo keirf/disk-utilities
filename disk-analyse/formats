@@ -1268,6 +1268,17 @@ probe_amiga
 
 "The Curse Of Enchantia" = amigados_copylock
 
+# Disk 1, Track 151 (75.1) is corrupt in the disk dump I have. Bad bitcells.
+# However this is at the very end of data on the disk: all later sectors
+# on the track are empty; all later tracks contain only empty sectors.
+# So this may be bad mastering. Or copy protection. For now we simply detect
+# it as a bad track and ignore it.
+# Disk 2, Track 0 (0.0) is empty / unformatted.
+"The Games: Summer Edition"
+    158 tiertex_longtrack
+    159 gremlin_longtrack
+    * amigados summer_games
+
 "The Guild Of Thieves" = amigados
 
 "The Immortal" = amigados
@@ -1277,7 +1288,7 @@ probe_amiga
 "The Killing Cloud"
     * amigados ibm_pc_dd
 
-"The Kristal = amigados_copylock
+"The Kristal" = amigados_copylock
 
 "The Legend Of Kyrandia" = amigados
 
