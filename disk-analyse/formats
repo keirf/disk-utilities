@@ -711,6 +711,8 @@ probe_amiga
 # OCS and AGA versions
 "Jurassic Park" = rnc_pdos_copylock
 
+"K240" = amigados
+
 "Karate Kid II"
     0-1 amigados
     2-62 ibm_pc_dd_10sec
@@ -1292,6 +1294,8 @@ probe_amiga
 "The Munsters" = amigados_copylock
 
 "The Pawn" = amigados
+
+"The Settlers" = amigados
 
 "The Ultimate Ride" = amigados
 
