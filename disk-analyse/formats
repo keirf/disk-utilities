@@ -1108,6 +1108,11 @@ probe_amiga
 # The resulting warnings are harmless!
 "Shinobi" = amigados_copylock
 
+"Shockwave"
+    0 amigados
+    1 copylock  # empty/unformatted on some versions
+    * digital_magic
+
 # Astra Pack Game 8
 "Shufflepuck Cafe"
     0 amigados_long_105500

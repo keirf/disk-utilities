@@ -87,6 +87,14 @@ struct track_handler rainbird_handler = {
     .read_raw = rainbird_read_raw
 };
 
+/* As used on Shockwave by Digital Magic Software. Different data length. */
+struct track_handler digital_magic_handler = {
+    .bytes_per_sector = 6080,
+    .nr_sectors = 1,
+    .write_raw = rainbird_write_raw,
+    .read_raw = rainbird_read_raw
+};
+
 /*
  * Local variables:
  * mode: C
