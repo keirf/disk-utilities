@@ -76,6 +76,14 @@ static void dfe2_close(struct stream *s)
     memfree(dfss);
 }
 
+static bool_t check_freq(uint32_t index_pos, uint32_t freq)
+{
+    return (abs((int)((index_pos * 5) - freq)) /* check 300rpm */
+            < (freq * DRIVE_SPEED_UNCERTAINTY))
+        || (abs((int)((index_pos * 6) - freq)) /* check 360rpm */
+            < (freq * DRIVE_SPEED_UNCERTAINTY));
+}
+
 /* Ugly heuristic to guess acq frequency */
 static unsigned int dfe2_find_acq_freq(struct stream *s)
 {
@@ -109,24 +117,12 @@ static unsigned int dfe2_find_acq_freq(struct stream *s)
     if (index_pos == 0)
         index_pos = abspos;
     
-    /* 25MHz, 300RPM or 360RPM? */
-    if (abs((index_pos * 5) - MHZ(25)) < (MHZ(25) * DRIVE_SPEED_UNCERTAINTY))
+    if (check_freq(index_pos, MHZ(25)))
         return MHZ(25);
-    if (abs((index_pos * 6) - MHZ(25)) < (MHZ(25) * DRIVE_SPEED_UNCERTAINTY))
-        return MHZ(25);
-
-    /* 50MHz, 300RPM or 360RPM? */
-    if (abs((index_pos * 5) - MHZ(50)) < (MHZ(50) * DRIVE_SPEED_UNCERTAINTY))
+    if (check_freq(index_pos, MHZ(50)))
         return MHZ(50);
-    if (abs((index_pos * 6) - MHZ(50)) < (MHZ(50) * DRIVE_SPEED_UNCERTAINTY))
-        return MHZ(50);
-
-    /* 100MHz, 300RPM or 360RPM? */
-    if (abs((index_pos * 5) - MHZ(100)) < (MHZ(100) * DRIVE_SPEED_UNCERTAINTY))
+    if (check_freq(index_pos, MHZ(100)))
         return MHZ(100);
-    if (abs((index_pos * 6) - MHZ(100)) < (MHZ(100) * DRIVE_SPEED_UNCERTAINTY))
-        return MHZ(100);
-
     printf("Cannot determine acq frequency! Maybe you used a "
            "nonstandard drive! Using default of 50MHz.\n");
     return MHZ(50);
