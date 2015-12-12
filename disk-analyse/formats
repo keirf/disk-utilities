@@ -442,8 +442,10 @@ probe_amiga
 "Dugger" # No empty tracks
     * amigados dugger
 
-# 'The Greats' Compilation
+# 'The Greatest' Compilation
 "Dune" = amigados
+
+"Dune II" = amigados
 
 # Psygnosis release has no disk protection (amigados only)
 "Dungeon Master"
@@ -465,7 +467,7 @@ probe_amiga
 
 "Emerald Mine II" = amigados
 
-# Disk 1 has first 30 tracks mastered long!
+# Disk 1 may have first 30 tracks mastered long!
 "Epic" = amigados
 
 "Exile" = amigados_copylock
@@ -492,6 +494,7 @@ probe_amiga
     133-153/2 ignore
     155-159 ignore
     * rainbird
+
 "F-19 Stealth Fighter Disk B"
     5-19/2 ignore
     104-106/2 ignore
@@ -657,6 +660,8 @@ probe_amiga
 "Ikari Warriors"
     * amigados elite_d
 
+"Indiana Jones And The Fate Of Atlantis" = amigados
+
 "Insanity Fight"
     1 ignore
     * amigados
@@ -765,6 +770,8 @@ probe_amiga
     0-1 amigados protec_longtrack
     * psygnosis_b
 
+"Legend" = amigados_copylock
+
 "Legend Of Djel" = amigados
 
 "Legend Of The Lost" = amigados
@@ -822,6 +829,8 @@ probe_amiga
 # Disk 2 track 1 should be Copylock; tracks 0 and 80 may be unformatted
 "Mega Lo Mania" = sensible
 
+"MegaTraveller 1" = amigados
+
 "Menace"
     159 protec_longtrack
     * amigados menace
@@ -837,6 +846,8 @@ probe_amiga
 "Midwinter II" = amigados
 
 "Might And Magic III" = amigados
+
+"Monkey Island 2" = amigados
 
 "Monopoly" = amigados
 
@@ -1026,6 +1037,8 @@ probe_amiga
     0 amigados
     1 copylock rnc_hidden
     * amigados
+
+"Rise Of The Dragon" = amigados
 
 # No empty tracks on any disk.
 # All disks are SmartDOS except install disk (AmigaDOS).
@@ -1250,8 +1263,7 @@ probe_amiga
 "Tecnoball.Z"
     * amigados tlk_dos_2
 
-# Teenage Mutant Hero Turtles
-"TMHT" amigados_copylock
+"Teenage Mutant Hero Turtles" = amigados_copylock
 
 # Same version as Tenstar Pack Game 8
 "Terrorpods" = amigados # extended amigados tracks and some empty tracks
@@ -1306,6 +1318,8 @@ probe_amiga
 
 "Theatre Of Death" = amigados
 
+"Their Finest Hour" = amigados
+
 # Sega: (Sega-style tracks): Tracks 134+ may be empty
 # US Gold: (Commando-style tracks): Tracks 135+ may be empty
 "Thunder Blade"
@@ -1315,6 +1329,8 @@ probe_amiga
 "Thundercats" = amigados_copylock
 
 "Time" = rnc_hidden
+
+"Time And Magik" = amigados
 
 "Time Machine" = amigados_copylock
 
@@ -1362,6 +1378,9 @@ probe_amiga
 "Typhoon Thompson" 
     * amigados typhoon
 
+"Ultima V"
+    * amigados core_design
+
 # Protection checks for track gap of at least 12800 bits (and hence total
 # track length of 95744+12800=108544 bits). Does not care about gap contents.
 # Actual track length is just over 111000 bits.
@@ -1403,6 +1422,8 @@ probe_amiga
 
 "Ween" = amigados
 
+"Where In The USA Is Carmen Sandiego" = amigados
+
 "Wings" = amigados
 
 "Wiz N Liz" = amigados_copylock
@@ -1420,11 +1441,19 @@ probe_amiga
 
 "World Class Rugby '95" = amigados_copylock
 
+"Worlds Of Legend" = amigados_copylock
+
 "Worms" = amigados
 "Worms: The Director's Cut" = amigados
 
+# Tracks 158-159 on Disk 1 appear unused, ignore warning!
+"WWF European Rampage Tour"
+    * amigados copylock arc_development_b
+
 "X-Out"
     * amigados x_out
+
+"Xenomorph" = infogrames_protected
 
 # Precious Metal Compilation
 "Xenon" = amigados_copylock
