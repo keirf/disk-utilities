@@ -227,6 +227,8 @@ probe_amiga
 
 "Bermuda Project" = amigados
 
+"Big Nose The Caveman" = amigados_copylock
+
 "Bio Challenge" = rnc_hidden
 
 "Bill's Tomato Game"
@@ -322,6 +324,8 @@ probe_amiga
 "Chess Player 2150" = amigados
 
 "Chuck Rock" = amigados_copylock
+
+"CJ's Elephant Antics" = amigados_copylock
 
 "Combat Air Patrol" = amigados
 
@@ -955,6 +959,8 @@ probe_amiga
 
 "Pinkie" = amigados
 
+"Pioneer Plague" = amigados
+
 # Arcade Action Game 6, No copylock!
 # Disk label says "Copylock(tm) Amiga" so original may be copylock!
 "Pipe Mania" = amigados
@@ -1050,6 +1056,8 @@ probe_amiga
 "Road Raider"
     1 amigados_long_111000
     * amigados
+
+"Robin Hood Legend Quest" = amigados_copylock
 
 "Robocod"
     1 protec_longtrack robocod amigados
@@ -1198,6 +1206,8 @@ probe_amiga
 "Starglider 2"
     * amigados firebird adls
 
+"Star Trek 25th Anniversary" = amigados
+
 "Steel Empire" = amigados
 
 "Strider II"
@@ -1240,6 +1250,8 @@ probe_amiga
 
 "Sword of Sodan"
     * amigados sword_sodan
+
+"Syndicate" = amigados
 
 # Protection checks for track length X, where 104448 < X <= 105984, and does
 # not care about gap contents. Actual length is almost exactly 105500 bits.
@@ -1357,6 +1369,11 @@ probe_amiga
 
 "Tracon II" = amigados
 
+"Treasure Trap"
+    0 amigados
+    1 speedlock
+    * amigados
+
 # Arcade Action Game 10
 "Trivial Pursuit A New Beginning" = amigados
 
@@ -1470,6 +1487,8 @@ probe_amiga
 "Z-Out" = amigados
 
 "Zeewolf" = amigados
+
+"Zeewolf 2" = amigados
 
 "Zool"
     * amigados gremlin
