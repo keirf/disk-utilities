@@ -44,10 +44,42 @@ struct track_header {
 
 #define SCK_NS_PER_TICK (25u)
 
+/* Threshold beyond which we generate weak bits */
+#define WEAK_THRESH_NS  (100000u) /* 100us */
+
 static struct container *scp_open(struct disk *d)
 {
     /* not supported */
     return NULL;
+}
+
+static void emit(uint16_t *dat, unsigned int *p_j, uint32_t cell)
+{
+    unsigned int j = *p_j;
+
+    /* Generate 3-6us weak bitcells at 100ns intervals. */
+    if (cell >= WEAK_THRESH_NS/SCK_NS_PER_TICK) {
+        uint32_t delta = 3000/SCK_NS_PER_TICK;
+        while (2*delta < cell) {
+            dat[j++] = delta;
+            cell -= delta;
+            delta += 100/SCK_NS_PER_TICK;
+            if (delta > 6000/SCK_NS_PER_TICK)
+                delta = 3000/SCK_NS_PER_TICK;
+        }
+    }
+
+    /* Handle 16-bit overflow (should never happen, since we subdivide long
+     * empty regions with weak bits). */
+    while (cell >= 0x10000u) {
+        dat[j++] = 0;
+        cell -= 0x10000u;
+    }
+
+    /* Final sample: everything else; mbnz (zero is special). */
+    dat[j++] = cell ?: 1;
+
+    *p_j = j;
 }
 
 static void scp_close(struct disk *d)
@@ -105,11 +137,7 @@ static void scp_close(struct disk *d)
             } else {
                 cell += (av_cell * raw->speed[bit]) / SPEED_AVG;
                 if (raw->bits[bit>>3] & (0x80 >> (bit & 7))) {
-                    while (cell >= SCK_NS_PER_TICK << 16) {
-                        dat[j++] = 0;
-                        cell -= SCK_NS_PER_TICK << 16;
-                    }
-                    dat[j++] = cell / SCK_NS_PER_TICK ?: 1;
+                    emit(dat, &j, cell / SCK_NS_PER_TICK);
                     cell %= SCK_NS_PER_TICK;
                 }
             }
@@ -118,20 +146,19 @@ static void scp_close(struct disk *d)
         }
 
         cell /= SCK_NS_PER_TICK;
-        if (dat[0] && ((dat[0] + cell) < (1u<<16))) {
-            /* Place remainder in first bitcell if it fits. */
+        if (dat[0]
+            && (cell < (WEAK_THRESH_NS / SCK_NS_PER_TICK))
+            && ((dat[0] + cell) < 0x10000u)) {
+            /* Place remainder in first bitcell if the result is small. */
             dat[0] += cell;
         } else if (cell) {
-            /* Place remainder in its own final bitcell. */
-            while (cell >= 0x10000u) {
-                dat[j++] = 0;
-                cell -= 0x10000u;
-            }
-            dat[j++] = cell ?: 1;
+            /* Place remainder in its own final bitcell. It may be too
+             * significant to merge with first bitcell (eg. a weak region). */
+            emit(dat, &j, cell);
         }
 
         for (i = 0; i < j; i++) {
-            thdr.duration += dat[i] ?: 1u<<16;
+            thdr.duration += dat[i] ?: 0x10000u;
             dat[i] = htobe16(dat[i]);
         }
 

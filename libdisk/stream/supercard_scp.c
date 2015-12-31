@@ -28,6 +28,7 @@ struct scp_stream {
     unsigned int revs;       /* stored disk revolutions */
     unsigned int dat_idx;    /* current index into dat[] */
     unsigned int index_pos;  /* next index offset */
+    int jitter;              /* accumulated injected jitter */
 
     unsigned int index_off[]; /* data offsets of each index */
 };
@@ -135,6 +136,7 @@ static void scp_reset(struct stream *s)
 {
     struct scp_stream *scss = container_of(s, struct scp_stream, s);
 
+    scss->jitter = 0;
     scss->dat_idx = 0;
     scss->index_pos = 0;
 }
@@ -167,6 +169,25 @@ static int scp_next_flux(struct stream *s)
 
         val += t;
         break;
+    }
+
+    /* If we are replaying a single revolution then jitter it a little to
+     * trigger weak-bit variations. */
+    if (scss->revs == 1) {
+        int32_t jitter = rnd16(&s->prng_seed) & 3;
+        if ((scss->jitter >= 4) || (scss->jitter <= -4)) {
+            /* Already accumulated significant jitter; adjust for it. */
+            jitter = scss->jitter / 2;
+        } else if (jitter & 1) {
+            /* Add one bit of jitter. */
+            jitter >>= 1;
+        } else {
+            /* Subtract one bit of jitter. */
+            jitter >>= 1;
+            jitter = -jitter;
+        }
+        scss->jitter -= jitter;
+        val += jitter;
     }
 
     val = ((uint64_t)val * SCK_NS_PER_TICK * s->drive_rpm) / s->data_rpm;
