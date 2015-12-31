@@ -56,6 +56,7 @@ void stream_setup(
     s->data_rpm = data_rpm ?: drive_rpm ?: 300;
     s->pll_mode = PLL_default;
     s->clock = s->clock_centre = CLOCK_CENTRE;
+    s->prng_seed = 0xae659201u;
 }
 
 struct stream *stream_open(
@@ -225,6 +226,12 @@ static int flux_next_bit(struct stream *s)
 
     if (s->flux >= (s->clock/2)) {
         s->clocked_zeros++;
+        if (s->clocked_zeros > 16) {
+            /* If we see no flux transitions then we are within our rights 
+             * to emit random junk, emulating a drive with its gain control 
+             * turned up such that it amplifies noise. */
+            return !(rnd16(&s->prng_seed) & 0x1f);
+        }
         return 0;
     }
 

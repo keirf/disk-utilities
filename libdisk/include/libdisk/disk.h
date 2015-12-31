@@ -102,9 +102,16 @@ struct disktag *disk_get_tag_by_idx(struct disk *d, unsigned int idx);
 struct disktag *disk_set_tag(
     struct disk *d, uint16_t id, uint16_t len, void *dat);
 
+/* Average bitcell timing: <time-per-revolution>/<#-bitcells>. Non-uniform
+ * track timings are represented by fractional multiples of this average. */
+#define SPEED_AVG 1000u
+
+/* Weak bits. Regions of weak bits are timed at SPEED_AVG. */
+#define SPEED_WEAK 0xfffeu
+
 struct track_raw {
     uint8_t *bits;
-    uint16_t *speed;
+    uint16_t *speed; /* SPEED_... */
     uint32_t bitlen;
     uint8_t has_weak_bits;
 };

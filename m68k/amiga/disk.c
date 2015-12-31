@@ -29,10 +29,14 @@ static const char *df0_filename =
 
 static void track_load_byte(struct amiga_state *s)
 {
-    s->disk.ns_per_cell =
-        (s->disk.av_ns_per_cell *
-         s->disk.track_raw->speed[s->disk.input_pos]) / 1000u;
-    s->disk.input_byte = s->disk.track_raw->bits[s->disk.input_pos/8];
+    uint16_t speed = s->disk.track_raw->speed[s->disk.input_pos];
+    if (speed == SPEED_WEAK) {
+        s->disk.ns_per_cell = s->disk.av_ns_per_cell;
+        s->disk.input_byte = (uint8_t)random();
+    } else {
+        s->disk.ns_per_cell = (s->disk.av_ns_per_cell * speed) / SPEED_AVG;
+        s->disk.input_byte = s->disk.track_raw->bits[s->disk.input_pos/8];
+    }
 }
 
 static void disk_dma_word(struct amiga_state *s, uint16_t w)

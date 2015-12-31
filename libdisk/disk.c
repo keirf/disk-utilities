@@ -594,14 +594,14 @@ void tbuf_gap(struct tbuf *tbuf, uint16_t speed, unsigned int bits)
     }
 }
 
-void tbuf_weak(struct tbuf *tbuf, uint16_t speed, unsigned int bits)
+void tbuf_weak(struct tbuf *tbuf, unsigned int bits)
 {
     tbuf->raw.has_weak_bits = 1;
     if (tbuf->weak != NULL) {
-        tbuf->weak(tbuf, speed, bits);
+        tbuf->weak(tbuf, bits);
     } else {
         while (bits--)
-            tbuf->bit(tbuf, speed, bc_mfm, tbuf_rnd16(tbuf) & 1);
+            tbuf->bit(tbuf, SPEED_WEAK, bc_mfm, tbuf_rnd16(tbuf) & 1);
     }
 }
 

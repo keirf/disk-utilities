@@ -100,18 +100,38 @@ static void scp_close(struct disk *d)
         j = cell = 0;
 
         for (i = 0; i < raw->bitlen; i++) {
-            cell += (av_cell * raw->speed[bit]) / SPEED_AVG;
-            if (raw->bits[bit>>3] & (0x80 >> (bit & 7))) {
-                dat[j++] = cell / SCK_NS_PER_TICK;
-                cell %= SCK_NS_PER_TICK;
+            if (raw->speed[bit] == SPEED_WEAK) {
+                cell += av_cell;
+            } else {
+                cell += (av_cell * raw->speed[bit]) / SPEED_AVG;
+                if (raw->bits[bit>>3] & (0x80 >> (bit & 7))) {
+                    while (cell >= SCK_NS_PER_TICK << 16) {
+                        dat[j++] = 0;
+                        cell -= SCK_NS_PER_TICK << 16;
+                    }
+                    dat[j++] = cell / SCK_NS_PER_TICK ?: 1;
+                    cell %= SCK_NS_PER_TICK;
+                }
             }
             if (++bit >= raw->bitlen)
                 bit = 0;
         }
-        dat[0] += cell / SCK_NS_PER_TICK;
+
+        cell /= SCK_NS_PER_TICK;
+        if (dat[0] && ((dat[0] + cell) < (1u<<16))) {
+            /* Place remainder in first bitcell if it fits. */
+            dat[0] += cell;
+        } else if (cell) {
+            /* Place remainder in its own final bitcell. */
+            while (cell >= 0x10000u) {
+                dat[j++] = 0;
+                cell -= 0x10000u;
+            }
+            dat[j++] = cell ?: 1;
+        }
 
         for (i = 0; i < j; i++) {
-            thdr.duration += dat[i];
+            thdr.duration += dat[i] ?: 1u<<16;
             dat[i] = htobe16(dat[i]);
         }
 

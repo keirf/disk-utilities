@@ -22,7 +22,8 @@
 #include "scp.h"
 
 #define DEFAULT_SERDEVICE  "/dev/ttyUSB0"
-#define DEFAULT_NRTRACKS   164
+#define DEFAULT_STARTTRK   0
+#define DEFAULT_ENDTRK     163
 
 #define log(_f, _a...) do { if (!quiet) printf(_f, ##_a); } while (0)
 
@@ -41,7 +42,8 @@ static void usage(int rc)
     printf("  -h, --help    Display this information\n");
     printf("  -q, --quiet   Quiesce normal informational output\n");
     printf("  -d, --device  Name of serial device (%s)\n", DEFAULT_SERDEVICE);
-    printf("  -t, --tracks  Nr tracks to write (%d)\n", DEFAULT_NRTRACKS);
+    printf("  -s, --start   First track to write (%d)\n", DEFAULT_STARTTRK);
+    printf("  -e, --end     Last track to write (%d)\n", DEFAULT_ENDTRK);
 
     exit(rc);
 }
@@ -52,18 +54,19 @@ int main(int argc, char **argv)
     struct disk_header dhdr;
     struct track_header thdr;
     struct scp_flux flux;
-    unsigned int trk, nr_tracks = DEFAULT_NRTRACKS;
-    uint32_t *th_offs, th_off, dat_off, drvtime, imtime, i;
-    uint16_t dat[256*1024/2];
+    unsigned int trk, start_trk = DEFAULT_STARTTRK, end_trk = DEFAULT_ENDTRK;
+    uint32_t *th_offs, th_off, dat_off, drvtime, imtime, i, j;
+    uint16_t dat[256*1024/2], odat[256*1024/2];
     int ch, fd, quiet = 0;
     char *sername = DEFAULT_SERDEVICE;
 
-    const static char sopts[] = "hqd:t:";
+    const static char sopts[] = "hqd:s:e:";
     const static struct option lopts[] = {
         { "help", 0, NULL, 'h' },
         { "quiet", 0, NULL, 'q' },
         { "device", 1, NULL, 'd' },
-        { "tracks", 1, NULL, 't' },
+        { "start", 1, NULL, 's' },
+        { "end", 1, NULL, 'e' },
         { 0, 0, 0, 0 }
     };
 
@@ -78,8 +81,11 @@ int main(int argc, char **argv)
         case 'd':
             sername = optarg;
             break;
-        case 't':
-            nr_tracks = atoi(optarg);
+        case 's':
+            start_trk = atoi(optarg);
+            break;
+        case 'e':
+            end_trk = atoi(optarg);
             break;
         default:
             usage(1);
@@ -90,8 +96,8 @@ int main(int argc, char **argv)
     if (argc != (optind + 1))
         usage(1);
 
-    if (nr_tracks > 168) {
-        warnx("Too many tracks specified (%u)", nr_tracks);
+    if ((end_trk >= 168) || (start_trk > end_trk)) {
+        warnx("Bad track range (%u-%u)", start_trk, end_trk);
         usage(1);
     }
 
@@ -102,8 +108,8 @@ int main(int argc, char **argv)
     if (memcmp(dhdr.sig, "SCP", 3))
         errx(1, "%s: Not an SCP image", argv[optind]);
 
-    th_offs = memalloc(nr_tracks * sizeof(uint32_t));
-    read_exact(fd, th_offs, nr_tracks * sizeof(uint32_t));
+    th_offs = memalloc((end_trk+1) * sizeof(uint32_t));
+    read_exact(fd, th_offs, (end_trk+1) * sizeof(uint32_t));
 
     scp = scp_open(sername);
     if (!quiet)
@@ -118,9 +124,9 @@ int main(int argc, char **argv)
 
     log("Writing track ");
 
-    for (trk = 0; trk < nr_tracks; trk++) {
+    for (trk = start_trk; trk <= end_trk; trk++) {
 
-        uint64_t x = 0;
+        uint64_t x = 0, y;
 
         if ((trk < dhdr.start_track) || (trk > dhdr.end_track))
             continue;
@@ -143,14 +149,25 @@ int main(int argc, char **argv)
         read_exact(fd, dat, le32toh(thdr.nr_samples) * 2);
 
         /* Resample data to match target drive speed */
-        for (i = 0; i < le32toh(thdr.nr_samples); i++) {
-            x += (uint64_t)be16toh(dat[i]) * drvtime;
-            dat[i] = htobe16(x / imtime);
+        for (i = j = 0; i < le32toh(thdr.nr_samples); i++) {
+            if (dat[i]) {
+                x += (uint64_t)be16toh(dat[i]) * drvtime;
+            } else {
+                x += (uint64_t)0x10000u * drvtime;
+                if (i < (le32toh(thdr.nr_samples)-1))
+                    continue;
+            }
+            y = x / imtime;
+            while (y >= 0x10000u) {
+                odat[j++] = 0;
+                y -= 0x10000u;
+            }
+            odat[j++] = htobe16(y ?: 1);
             x %= imtime; /* carry the fractional part */
         }
 
         scp_seek_track(scp, trk);
-        scp_write_flux(scp, dat, le32toh(thdr.nr_samples));
+        scp_write_flux(scp, odat, j);
 
         log("\b\b\b\b\b\b\b");
     }

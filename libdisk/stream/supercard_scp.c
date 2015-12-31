@@ -169,7 +169,7 @@ static int scp_next_flux(struct stream *s)
         break;
     }
 
-    val = (val * SCK_NS_PER_TICK * s->drive_rpm) / s->data_rpm;
+    val = ((uint64_t)val * SCK_NS_PER_TICK * s->drive_rpm) / s->data_rpm;
     s->flux += val;
     return 0;
 }

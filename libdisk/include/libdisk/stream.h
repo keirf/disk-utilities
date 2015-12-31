@@ -62,6 +62,8 @@ struct stream {
     int clock, clock_centre; /* Clock base value in nanoseconds */
     unsigned int clocked_zeros;
     int ns_to_index;         /* Distance to next index pulse */
+
+    uint32_t prng_seed;
 };
 
 #pragma GCC visibility push(default)

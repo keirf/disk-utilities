@@ -235,7 +235,7 @@ static void ipf_tbuf_gap(
 }
 
 static void ipf_tbuf_weak(
-    struct tbuf *tbuf, uint16_t speed, unsigned int bits)
+    struct tbuf *tbuf, unsigned int bits)
 {
     struct ipf_tbuf *ibuf = container_of(tbuf, struct ipf_tbuf, tbuf);
 

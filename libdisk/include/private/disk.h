@@ -5,12 +5,6 @@
 #include <libdisk/stream.h>
 #include <private/util.h>
 
-/*
- * Average bitcell timing: <time-per-revolution>/<#-bitcells>. Non-uniform
- * track timings are represented by fractional multiples of this average.
- */
-#define SPEED_AVG 1000u
-
 #define DEFAULT_RPM 300
 
 /* Determined empirically -- larger than expected for 2us bitcell @ 300rpm */
@@ -57,7 +51,7 @@ struct tbuf {
     void (*bit)(struct tbuf *, uint16_t speed,
                 enum bitcell_encoding enc, uint8_t dat);
     void (*gap)(struct tbuf *, uint16_t speed, unsigned int bits);
-    void (*weak)(struct tbuf *, uint16_t speed, unsigned int bits);
+    void (*weak)(struct tbuf *, unsigned int bits);
 };
 
 /* Append new raw track data into a track buffer. */
@@ -67,7 +61,7 @@ void tbuf_bits(struct tbuf *, uint16_t speed,
 void tbuf_bytes(struct tbuf *, uint16_t speed,
                 enum bitcell_encoding enc, unsigned int bytes, void *data);
 void tbuf_gap(struct tbuf *, uint16_t speed, unsigned int bits);
-void tbuf_weak(struct tbuf *, uint16_t speed, unsigned int bits);
+void tbuf_weak(struct tbuf *, unsigned int bits);
 void tbuf_start_crc(struct tbuf *tbuf);
 void tbuf_emit_crc16_ccitt(struct tbuf *tbuf, uint16_t speed);
 void tbuf_disable_auto_sector_split(struct tbuf *tbuf);

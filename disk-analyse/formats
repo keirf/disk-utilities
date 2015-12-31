@@ -993,6 +993,10 @@ probe_amiga
 "Predator II"
     * arc_development_a copylock amigados
 
+"Prison"
+    70 amigados prison
+    * amigados
+
 "Pro Tennis Tour" = blue_byte
 
 "Project X" = amigados_copylock

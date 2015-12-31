@@ -97,7 +97,9 @@ static int di_next_flux(struct stream *s)
         dat = !!(dis->track_raw->bits[dis->pos >> 3]
                  & (0x80u >> (dis->pos & 7)));
         speed = dis->track_raw->speed[dis->pos];
-        flux += (dis->ns_per_cell * speed) / 1000u;
+        if (speed == SPEED_WEAK)
+            speed = SPEED_AVG;
+        flux += (dis->ns_per_cell * speed) / SPEED_AVG;
     } while (!dat && (flux < 1000000 /* 1ms */));
 
     s->flux += flux;
