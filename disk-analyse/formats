@@ -187,6 +187,9 @@ probe_amiga
 
 "Banshee" = amigados_copylock
 
+"Barbarian: The Ultimate Warrior"
+    * barbarian_ultimate_warrior
+
 # Same version as in Triad Volume 1 Compilation
 "Barbarian / Psygnosis"
     153-155/2 ignore
