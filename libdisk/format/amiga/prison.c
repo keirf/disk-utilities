@@ -45,7 +45,7 @@ static void *prison_write_raw(
         mfm_decode_bytes(bc_mfm, 18, dat[seen], dat[seen]);
         for (i = 0; i < 18; i++)
             if (dat[seen][i]) break;
-        if (i != 18)
+        if (i < 17) /* allow corrupted final byte */
             continue;
 
         /* Check for flaky bits changing across two revolutions. */
