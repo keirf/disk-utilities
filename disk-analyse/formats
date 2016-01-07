@@ -1205,6 +1205,8 @@ probe_amiga
 
 "Stack Up" = amigados_copylock
 
+"Star Trek 25th Anniversary" = amigados
+
 "Starglider" = amigados
 
 # Track 158 may be empty.
@@ -1213,7 +1215,8 @@ probe_amiga
 "Starglider 2"
     * amigados firebird adls
 
-"Star Trek 25th Anniversary" = amigados
+"StarRay"
+    * starray
 
 "Steel Empire" = amigados
 
