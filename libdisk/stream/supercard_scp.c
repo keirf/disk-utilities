@@ -191,6 +191,14 @@ static int scp_next_flux(struct stream *s)
     }
 
     val = ((uint64_t)val * SCK_NS_PER_TICK * s->drive_rpm) / s->data_rpm;
+
+    /* If we are replaying a single revolution then randomly ignore 
+     * very short pulses (<1us). */
+    if ((scss->revs == 1) && (val < 1000) && (rnd16(&s->prng_seed) & 1)) {
+        scss->jitter += val;
+        val = 0;
+    }
+
     s->flux += val;
     return 0;
 }

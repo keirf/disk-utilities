@@ -45,7 +45,8 @@ struct track_header {
 #define SCK_NS_PER_TICK (25u)
 
 /* Threshold beyond which we generate weak bits */
-#define WEAK_THRESH_NS  (100000u) /* 100us */
+#define LONG_WEAK_THRESH (1000000u/SCK_NS_PER_TICK) /* 1000us */
+#define SHORT_WEAK_THRESH (100000u/SCK_NS_PER_TICK) /* 100us */
 
 static struct container *scp_open(struct disk *d)
 {
@@ -56,16 +57,33 @@ static struct container *scp_open(struct disk *d)
 static void emit(uint16_t *dat, unsigned int *p_j, uint32_t cell)
 {
     unsigned int j = *p_j;
+    const uint32_t one_us = 1000 / SCK_NS_PER_TICK;
 
-    /* Generate 3-6us weak bitcells at 100ns intervals. */
-    if (cell >= WEAK_THRESH_NS/SCK_NS_PER_TICK) {
-        uint32_t delta = 3000/SCK_NS_PER_TICK;
-        while (2*delta < cell) {
-            dat[j++] = delta;
-            cell -= delta;
-            delta += 100/SCK_NS_PER_TICK;
-            if (delta > 6000/SCK_NS_PER_TICK)
-                delta = 3000/SCK_NS_PER_TICK;
+    /* A long pattern which transitions between 000101 and 010001. */
+    if (cell >= LONG_WEAK_THRESH) {
+        uint32_t min = 42 * one_us/10;
+        uint32_t max = 78 * one_us/10;
+        uint32_t delta = 0;
+        while (max*2 < cell) {
+            cell -= dat[j++] = max - delta;
+            cell -= dat[j++] = min + delta;
+            delta += 2 * one_us/10;
+            if (delta > max-min)
+                delta = 0;
+        }
+    }
+
+    /* A short pattern that seems to be good at losing sync: 
+     * 25us, 0.5us*6, 19us, 0.5us*4 
+     * The intention is to let the timing drift and weaken the eventual 
+     * flux transitions by placing read pulses very close together. */
+    if (cell >= SHORT_WEAK_THRESH) {
+        int delta = 0;
+        while (32*one_us < cell) {
+            delta = !delta;
+            cell -= dat[j++] = (19 + delta*6) * one_us;
+            for (int i = 0; i < (delta ? 6 : 4); i++)
+                cell -= dat[j++] = 5*one_us/10;
         }
     }
 
@@ -126,7 +144,7 @@ static void scp_close(struct disk *d)
         track_read_raw(raw, trk);
 
         /* Rotate the track so gap is at index. */
-        bit = max_t(int, di->track[trk].data_bitoff - 128, 0);
+        bit = max_t(int, di->track[trk].data_bitoff - 256, 0);
 
         av_cell = track_nsecs_from_rpm(d->rpm) / raw->bitlen;
         j = cell = 0;
@@ -147,7 +165,7 @@ static void scp_close(struct disk *d)
 
         cell /= SCK_NS_PER_TICK;
         if (dat[0]
-            && (cell < (WEAK_THRESH_NS / SCK_NS_PER_TICK))
+            && (cell < SHORT_WEAK_THRESH)
             && ((dat[0] + cell) < 0x10000u)) {
             /* Place remainder in first bitcell if the result is small. */
             dat[0] += cell;
