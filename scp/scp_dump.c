@@ -22,7 +22,9 @@
 #include "scp.h"
 
 #define DEFAULT_SERDEVICE  "/dev/ttyUSB0"
-#define DEFAULT_NRTRACKS   164
+#define DEFAULT_STARTTRK   0
+#define DEFAULT_ENDTRK     163
+#define MAX_TRACKS         166
 #define DEFAULT_REVS       2
 
 #define log(_f, _a...) do { if (!quiet) printf(_f, ##_a); } while (0)
@@ -46,7 +48,8 @@ static void usage(int rc)
     printf("  -d, --device  Name of serial device (%s)\n", DEFAULT_SERDEVICE);
     printf("  -r, --revs    Nr revolutions per track (%d)\n", DEFAULT_REVS);
     printf("  -R, --ramtest Test SCP on-board SRAM before dumping\n");
-    printf("  -t, --tracks  Nr tracks to dump (%d)\n", DEFAULT_NRTRACKS);
+    printf("  -s, --start   First track to dump (%d)\n", DEFAULT_STARTTRK);
+    printf("  -e, --end     Last track to dump (%d)\n", DEFAULT_ENDTRK);
 
     exit(rc);
 }
@@ -58,20 +61,21 @@ int main(int argc, char **argv)
     struct disk_header dhdr;
     struct track_header thdr;
     unsigned int rev, nr_revs = DEFAULT_REVS;
-    unsigned int trk, nr_tracks = DEFAULT_NRTRACKS;
+    unsigned int trk, start_trk = DEFAULT_STARTTRK, end_trk = DEFAULT_ENDTRK;
     unsigned int sizeof_thdr;
     uint32_t *th_offs, file_off, dat_off;
     int ch, fd, quiet = 0, ramtest = 0;
     char *sername = DEFAULT_SERDEVICE;
 
-    const static char sopts[] = "hqd:r:Rt:";
+    const static char sopts[] = "hqd:r:Rs:e:";
     const static struct option lopts[] = {
         { "help", 0, NULL, 'h' },
         { "quiet", 0, NULL, 'q' },
         { "device", 1, NULL, 'd' },
         { "revs", 1, NULL, 'r' },
         { "ramtest", 0, NULL, 'R' },
-        { "tracks", 1, NULL, 't' },
+        { "start", 1, NULL, 's' },
+        { "end", 1, NULL, 'e' },
         { 0, 0, 0, 0 }
     };
 
@@ -92,8 +96,11 @@ int main(int argc, char **argv)
         case 'R':
             ramtest = 1;
             break;
-        case 't':
-            nr_tracks = atoi(optarg);
+        case 's':
+            start_trk = atoi(optarg);
+            break;
+        case 'e':
+            end_trk = atoi(optarg);
             break;
         default:
             usage(1);
@@ -104,8 +111,8 @@ int main(int argc, char **argv)
     if (argc != (optind + 1))
         usage(1);
 
-    if (nr_tracks > 168) {
-        warnx("Too many tracks specified (%u)", nr_tracks);
+    if ((end_trk >= MAX_TRACKS) || (start_trk > end_trk)) {
+        warnx("Bad track range (%u-%u)", start_trk, end_trk);
         usage(1);
     }
 
@@ -123,13 +130,14 @@ int main(int argc, char **argv)
     dhdr.version = 0x10; /* taken from existing images */
     dhdr.disk_type = DISKTYPE_amiga;
     dhdr.nr_revolutions = nr_revs;
-    dhdr.end_track = nr_tracks - 1;
+    dhdr.start_track = start_trk;
+    dhdr.end_track = end_trk;
     dhdr.flags = (1u<<_FLAG_writable); /* avoids need for checksum */
     write_exact(fd, &dhdr, sizeof(dhdr));
 
-    th_offs = memalloc(nr_tracks * sizeof(uint32_t));
-    write_exact(fd, th_offs, nr_tracks * sizeof(uint32_t));
-    file_off = sizeof(dhdr) + nr_tracks * sizeof(uint32_t);
+    th_offs = memalloc(MAX_TRACKS * sizeof(uint32_t));
+    write_exact(fd, th_offs, MAX_TRACKS * sizeof(uint32_t));
+    file_off = sizeof(dhdr) + MAX_TRACKS * sizeof(uint32_t);
 
     scp = scp_open(sername);
     if (!quiet)
@@ -141,7 +149,7 @@ int main(int argc, char **argv)
     log("Reading track ");
 
     sizeof_thdr = 4 + 12*nr_revs;
-    for (trk = 0; trk < nr_tracks; trk++) {
+    for (trk = start_trk; trk <= end_trk; trk++) {
         log("%-4u...", trk);
         fflush(stdout);
 
@@ -174,7 +182,7 @@ int main(int argc, char **argv)
     scp_close(scp);
 
     lseek(fd, sizeof(dhdr), SEEK_SET);
-    write_exact(fd, th_offs, nr_tracks * sizeof(uint32_t));
+    write_exact(fd, th_offs, MAX_TRACKS * sizeof(uint32_t));
 
     return 0;
 }
