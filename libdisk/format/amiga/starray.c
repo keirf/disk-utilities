@@ -25,7 +25,7 @@ static void *starray_write_raw(
     struct track_info *ti = &d->di->track[tracknr];
     unsigned int distance[5];
     uint16_t pattern[5];
-    unsigned int i, nr;
+    unsigned int i, nr, corrupted_sync = 0;
     char *ablk;
 
     init_track_info(ti, TRKTYP_amigados);
@@ -39,8 +39,10 @@ static void *starray_write_raw(
     stream_reset(s);
     nr = 0;
     while ((stream_next_bit(s) != -1) && (nr < 5)) {
-        if ((s->word>>16) != 0xa144)
+        /* Allow a144 and a145 but warn on latter (corrupted sync). */
+        if ((s->word>>17) != (0xa144>>1))
             continue;
+        corrupted_sync |= ((s->word>>16) != 0xa144);
         /* Remember the weak pattern */
         pattern[nr] = (uint16_t)s->word;
         /* Find distance to next 44894489 sync */
@@ -52,6 +54,9 @@ static void *starray_write_raw(
         }
         nr++;
     }
+
+    if (corrupted_sync)
+        trk_warn(ti, tracknr, "Sync pattern corrupted by weak byte");
 
     /* If any of the scanned patterns differ then we have weak bits. 
      * Mark this as a 'StarRay' special track. */
@@ -65,7 +70,8 @@ static void *starray_write_raw(
     /* If we did not find a changing pattern, allow this track anyway if 
      * the 44894489 sync word is close by. */
     if (nr && i==nr && (distance[0] < 256)) {
-        trk_warn(ti, tracknr, "Weak byte not changing as expected");
+        trk_warn(ti, tracknr, "Weak byte not changing as expected "
+                 "(%u identical occurrences)", nr);
         init_track_info(ti, TRKTYP_starray);
     }
 
