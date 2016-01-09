@@ -557,6 +557,11 @@ probe_amiga
 
 "Fun School Spelling" = amigados
 
+"Fusion"
+    0 amigados
+    1 amigados_long_106600
+    * amigados
+
 "Future Basketball" = amigados_copylock
 
 "Future Bike Simulator"
