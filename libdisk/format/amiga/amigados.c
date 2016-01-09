@@ -340,6 +340,11 @@ struct track_handler amigados_long_105500_handler = {
     .write_raw = ados_longtrack_write_raw,
 };
 
+struct track_handler amigados_long_106600_handler = {
+    .bytes_per_sector = 106600,
+    .write_raw = ados_longtrack_write_raw,
+};
+
 struct track_handler amigados_long_111000_handler = {
     .bytes_per_sector = 111000,
     .write_raw = ados_longtrack_write_raw,
