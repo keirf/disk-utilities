@@ -325,6 +325,24 @@ static void *ados_longtrack_write_raw(
     if (ablk == NULL)
         return NULL;
 
+    if (total_bits == 0) {
+        uint16_t type = 0;
+        stream_next_index(s);
+        if (s->track_len_bc >= 108800) {
+            type = TRKTYP_amigados_long_111000;
+        } else if (s->track_len_bc >= 106000) {
+            type = TRKTYP_amigados_long_106600;
+        } else if (s->track_len_bc >= 104400) {
+            type = TRKTYP_amigados_long_105500;
+        } else if (s->track_len_bc >= 102000) {
+            type = TRKTYP_amigados_long_103300;
+        } else {
+            return ablk; /* not long */
+        }
+        total_bits = handlers[type]->bytes_per_sector;
+        typename = disk_get_format_desc_name(type);
+    }
+
     ti->total_bits = total_bits;
     ti->typename = typename;
     return ablk;
@@ -347,6 +365,10 @@ struct track_handler amigados_long_106600_handler = {
 
 struct track_handler amigados_long_111000_handler = {
     .bytes_per_sector = 111000,
+    .write_raw = ados_longtrack_write_raw,
+};
+
+struct track_handler amigados_unknown_length_handler = {
     .write_raw = ados_longtrack_write_raw,
 };
 
