@@ -276,6 +276,10 @@ probe_amiga
 "Buggy Boy" # speed Buggy also # also Tenstar Pack Game 4
     * amigados elite_c
 
+# SPS IPF has normal-length tracks. Barry's dump has long tracks.
+"Bump 'n' Burn"
+    * amigados_unknown_length bump_n_burn
+
 "Cadaver" = amigados_copylock
 
 "California Games Disk 1"
