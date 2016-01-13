@@ -330,6 +330,8 @@ probe_amiga
 # Arcade Action Game 2
 "Chess Player 2150" = amigados
 
+"Chrono Quest" = amigados
+
 "Chuck Rock" = amigados_copylock
 
 "CJ's Elephant Antics" = amigados_copylock
@@ -1344,6 +1346,8 @@ probe_amiga
 "The Kristal" = amigados_copylock
 
 "The Legend Of Kyrandia" = amigados
+
+"The Lurking Horror" = amigados
 
 "The Magnetic Scrolls Collection" = amigados
 
