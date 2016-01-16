@@ -631,6 +631,8 @@ probe_amiga
 
 "Heimdall" = amigados_copylock
 
+"Heimdall 2" = amigados_copylock
+
 # Tracks 154-157 may be empty
 "Hero Quest" = amigados_gremlin_longtrack
 
@@ -1466,11 +1468,16 @@ probe_amiga
 
 "Warlock: The Avenger" = amigados_copylock
 
+# A1200 / A4000
+"Watchtower" = amigados
+
 "Waxworks" = amigados
 
 "Ween" = amigados
 
 "Where In The USA Is Carmen Sandiego" = amigados
+
+"Wing Commander" = amigados
 
 "Wings" = amigados
 
