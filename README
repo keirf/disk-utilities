@@ -62,16 +62,13 @@ path for many of these tools to run. There are a few ways to ensure this:
     # LD_LIBRARY_PATH=libdisk disk-analyse/disk-analyse # Linux
     # DYLD_LIBRARY_PATH=libdisk disk-analyse/disk-analyse # Mac OS X
     # PATH=$PATH:`pwd`/libdisk disk-analyse/disk-analyse # Cygwin
- 2. Install to a location on the system-wide search path. Unfortunately
- the default install location for libdisk (/usr/local/lib64) on 64-bit
- Linux is often not searched by default. If this is the case on your system,
- you will need to add the path to /etc/ld.so.conf (or to a file in
- /etc/ld.so.conf.d/ in some Linux distros). Then try the following as root:
-    # echo "/usr/local/lib64" >>/etc/ld.so.conf
+ 2. Install to a location on the system-wide search path. If the default
+ install location for libdisk (/usr/local/lib) is not searched by default
+ then you will need to add the path to /etc/ld.so.conf (or to a file in
+ /etc/ld.so.conf.d/ in some Linux distros). For example:
+    # echo "/usr/local/lib" >>/etc/ld.so.conf
     # ldconfig
  You should now be able to run disk-analyse and other tools just fine.
- 
- This should not be necessary on 32-bit Linux, Windows, or Mac OS X.
 
 Brief Descriptions:
 -------------------

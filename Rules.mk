@@ -18,14 +18,7 @@ endif
 PREFIX ?= /usr/local
 BINDIR = $(PREFIX)/bin
 INCLUDEDIR = $(PREFIX)/include
-ifeq ($(ARCH),x86_64)
-LIBDIR = $(PREFIX)/lib64
-else
 LIBDIR = $(PREFIX)/lib
-endif
-ifeq ($(PLATFORM),osx)
-LIBDIR = $(PREFIX)/lib
-endif
 
 $(ARCH) := y
 CFLAGS-$(x86_32) += -m32 -march=i686
