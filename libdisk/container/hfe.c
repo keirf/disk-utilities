@@ -148,7 +148,9 @@ static void write_bits(
     uint8_t x;
 
     /* Rotate the track so gap is at index. */
-    bit = max_t(int, raw->data_start_bc - 128, 0);
+    bit = raw->write_splice_bc;
+    if (bit > raw->data_start_bc)
+        bit = 0; /* don't mess with an already-aligned track */
 
     i = x = 0;
     while (i < len*8) {

@@ -144,7 +144,9 @@ static void scp_close(struct disk *d)
         track_read_raw(raw, trk);
 
         /* Rotate the track so gap is at index. */
-        bit = max_t(int, di->track[trk].data_bitoff - 256, 0);
+        bit = raw->write_splice_bc;
+        if (bit > raw->data_start_bc)
+            bit = 0; /* don't mess with an already-aligned track */
 
         av_cell = track_nsecs_from_rpm(d->rpm) / raw->bitlen;
         j = cell = 0;
