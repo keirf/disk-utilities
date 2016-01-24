@@ -140,7 +140,6 @@ static struct container *hfe_open(struct disk *d)
 }
 
 static void write_bits(
-    struct track_info *ti,
     struct track_raw *raw,
     uint8_t *dst,
     unsigned int len)
@@ -149,7 +148,7 @@ static void write_bits(
     uint8_t x;
 
     /* Rotate the track so gap is at index. */
-    bit = max_t(int, ti->data_bitoff - 128, 0);
+    bit = max_t(int, raw->data_start_bc - 128, 0);
 
     i = x = 0;
     while (i < len*8) {
@@ -240,8 +239,8 @@ static void hfe_close(struct disk *d)
         len = (bytelen + 0x1ff) & ~0x1ff;
         tbuf = memalloc(len);
 
-        write_bits(&di->track[i*2], raw[0], &tbuf[0], len/2);
-        write_bits(&di->track[i*2+1], raw[1], &tbuf[256], len/2);
+        write_bits(raw[0], &tbuf[0], len/2);
+        write_bits(raw[1], &tbuf[256], len/2);
 
         bit_reverse(tbuf, len);
         write_exact(d->fd, tbuf, len);

@@ -110,9 +110,17 @@ struct disktag *disk_set_tag(
 #define SPEED_WEAK 0xfffeu
 
 struct track_raw {
+    /* Index-aligned bitcells. bitcell[i] = bits[i/8] >> -(i-7). */
     uint8_t *bits;
-    uint16_t *speed; /* SPEED_... */
+    /* Index-aligned per-bitcell speed, relative to SPEED_AVG. */
+    uint16_t *speed;
+    /* Number of bitcells in this track. */
     uint32_t bitlen;
+    /* First and list bitcells written by the format handler. */
+    uint32_t data_start_bc, data_end_bc;
+    /* Bitcell offset of the write splice. */
+    uint32_t write_splice_bc;
+    /* Any weak/random bits in this track? */
     uint8_t has_weak_bits;
 };
 struct track_raw *track_alloc_raw_buffer(struct disk *d);

@@ -500,28 +500,38 @@ void tbuf_init(struct tbuf *tbuf, uint32_t bitstart, uint32_t bitlen)
     tbuf->raw.speed = memalloc(2*bitlen);
 }
 
+static uint32_t fix_bc(struct tbuf *tbuf, int32_t bc)
+{
+    if (bc < 0)
+        bc += tbuf->raw.bitlen;
+    return bc;
+}
+
 static void tbuf_finalise(struct tbuf *tbuf)
 {
     int32_t pos, nr_bits;
     uint8_t b = 0;
 
-    if (tbuf->start == tbuf->pos)
-        return; /* handler completely filled the buffer */
+    tbuf->raw.data_start_bc = tbuf->start;
+    tbuf->raw.data_end_bc = fix_bc(tbuf, tbuf->pos - 1);
+
+    if (tbuf->start == tbuf->pos) {
+        /* Handler completely filled the buffer. */
+        tbuf->raw.write_splice_bc = tbuf->raw.data_end_bc;
+        return;
+    }
 
     /* Forward fill half the gap */
-    nr_bits = tbuf->start - tbuf->pos;
-    if (nr_bits < 0)
-        nr_bits += tbuf->raw.bitlen;
+    nr_bits = fix_bc(tbuf, tbuf->start - tbuf->pos);
     nr_bits /= 4; /* /2 to halve the gap, /2 to count data bits only */
     while (nr_bits--)
         tbuf_bits(tbuf, SPEED_AVG, bc_mfm, 1, 0);
 
     /* Write splice. Write an MFM-illegal string of zeroes. */
-    nr_bits = tbuf->start - tbuf->pos;
-    if (nr_bits < 0)
-        nr_bits += tbuf->raw.bitlen;
+    nr_bits = fix_bc(tbuf, tbuf->start - tbuf->pos);
     nr_bits = min(nr_bits, 5); /* up to 5 bits */
     tbuf_bits(tbuf, SPEED_AVG, bc_raw, nr_bits, 0);
+    tbuf->raw.write_splice_bc = fix_bc(tbuf, tbuf->pos - 1 - nr_bits/2);
 
     /* Reverse fill the remainder */
     for (pos = tbuf->start; pos != tbuf->pos; ) {
