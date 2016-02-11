@@ -76,6 +76,7 @@ static void usage(int rc)
     printf("  .dfi  => DiscFerret DFE2\n");
     printf("  *.raw => Kryoflux STREAM\n");
     printf("  .{ct,ctr,raw} => CAPS/SPS CT Raw\n");
+    printf("Write-only support:\n");
     printf("  .jv3  => JV3 TRS80 Emulator\n");
 
     exit(rc);
