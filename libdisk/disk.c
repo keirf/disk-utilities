@@ -59,6 +59,8 @@ static struct container *container_from_filename(
         return &container_ipf;
     if (!strcmp(suffix, "scp"))
         return &container_scp;
+    if (!strcmp(suffix, "jv3"))
+        return &container_jv3;
 
     warnx("Unknown file suffix: %s (valid suffixes: .adf,.dsk,.ipf)", name);
     return NULL;

@@ -32,8 +32,20 @@ struct ibm_psector {
     struct ibm_sector s;
 };
 
-#define type_is_fm(type) \
-    (((type) == TRKTYP_ibm_fm_sd) || ((type) == TRKTYP_ibm_fm_dd))
+#define type_is_fm(type)                        \
+    (((type) == TRKTYP_ibm_fm_sd)               \
+     || ((type) == TRKTYP_ibm_fm_dd)            \
+     || ((type) == TRKTYP_trs80_fm_sd))
+
+/* Is the mark a TRS-80 directory mark? */
+bool_t is_trs80_mark(int type, int mark)
+{
+/* TRS-80 address marks used in directory tracks */
+#define TRS_MARK_DAM1 0xfa
+#define TRS_MARK_DAM2 0xf8
+    return (((type == TRKTYP_trs80_fm_sd) || (type == TRKTYP_trs80_mfm_dd))
+            && ((mark == TRS_MARK_DAM1) || (mark == TRS_MARK_DAM2)));
+}
 
 
 /***********************************
@@ -221,7 +233,8 @@ static void *ibm_mfm_write_raw(
 
         /* DAM/DDAM */
         if ((ibm_scan_mark(s, 1000, &mark) < 0) ||
-            ((mark != IBM_MARK_DAM) && (mark != IBM_MARK_DDAM)) ||
+            ((mark != IBM_MARK_DAM) && (mark != IBM_MARK_DDAM)
+             && !is_trs80_mark(ti->type, mark)) ||
             (stream_next_bytes(s, dat, 2*sec_sz) == -1) ||
             (stream_next_bits(s, 32) == -1) || s->crc16_ccitt)
             continue;
@@ -494,6 +507,14 @@ struct track_handler ibm_mfm_ed_handler = {
     .read_sectors = ibm_read_sectors
 };
 
+struct track_handler trs80_mfm_dd_handler = {
+    .density = trkden_double,
+    .get_name = ibm_get_name,
+    .write_raw = ibm_mfm_write_raw,
+    .read_raw = ibm_mfm_read_raw,
+    .read_sectors = ibm_read_sectors
+};
+
 
 /**********************************
  * Single-density (IBM-FM) handlers
@@ -625,7 +646,8 @@ static void *ibm_fm_write_raw(
             mfm_decode_bytes(bc_mfm, sec_sz+2, dat, dat);
             if (crc16_ccitt(dat, sec_sz+2, crc))
                 continue;
-        } else if ((mark == IBM_MARK_DAM) || (mark == IBM_MARK_DDAM)) {
+        } else if ((mark == IBM_MARK_DAM) || (mark == IBM_MARK_DDAM)
+                   || is_trs80_mark(ti->type, mark)) {
             if (stream_next_bytes(s, dat, 2*sec_sz) == -1)
                 continue;
             if ((stream_next_bits(s, 32) == -1) || s->crc16_ccitt)
@@ -864,6 +886,14 @@ struct track_handler dec_rx01_handler = {
 
 struct track_handler dec_rx02_handler = {
     .density = trkden_high,
+    .get_name = ibm_get_name,
+    .write_raw = ibm_fm_write_raw,
+    .read_raw = ibm_fm_read_raw,
+    .read_sectors = ibm_read_sectors
+};
+
+struct track_handler trs80_fm_sd_handler = {
+    .density = trkden_single,
     .get_name = ibm_get_name,
     .write_raw = ibm_fm_write_raw,
     .read_raw = ibm_fm_read_raw,
