@@ -204,9 +204,12 @@ void scp_deselectdrive(struct scp_handle *scp, unsigned int drv)
     scp_send(scp, SCPCMD_DSELA + drv, NULL, 0);
 }
 
-void scp_seek_track(struct scp_handle *scp, unsigned int track)
+void scp_seek_track(struct scp_handle *scp, unsigned int track,
+                    int double_step)
 {
     uint8_t cyl = track >> 1, side = track & 1;
+    if (double_step)
+        cyl *= 2;
     if (cyl == 0)
         scp_send(scp, SCPCMD_SEEK0, NULL, 0);
     else

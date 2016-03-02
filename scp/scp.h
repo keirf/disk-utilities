@@ -71,7 +71,8 @@ void scp_printinfo(struct scp_handle *scp);
 void scp_ramtest(struct scp_handle *scp);
 void scp_selectdrive(struct scp_handle *scp, unsigned int drv);
 void scp_deselectdrive(struct scp_handle *scp, unsigned int drv);
-void scp_seek_track(struct scp_handle *scp, unsigned int track);
+void scp_seek_track(struct scp_handle *scp, unsigned int track,
+                    int double_step);
 void scp_read_flux(struct scp_handle *scp, unsigned int nr_revs,
                    struct scp_flux *flux);
 void scp_write_flux(struct scp_handle *scp, void *dat, unsigned int nr_dat);
