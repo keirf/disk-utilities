@@ -50,15 +50,21 @@ static void usage(int rc)
 {
     printf("Usage: scp_dump [options] out_file\n");
     printf("Options:\n");
-    printf("  -h, --help    Display this information\n");
-    printf("  -q, --quiet   Quiesce normal informational output\n");
-    printf("  -d, --device  Name of serial device (%s)\n", DEFAULT_SERDEVICE);
+    printf("  -h, --help        Display this information\n");
+    printf("  -q, --quiet       Quiesce normal informational output\n");
+    printf("  -d, --device      Name of serial device (%s)\n",
+           DEFAULT_SERDEVICE);
     printf("  -u, --unit={A,B}  Which drive to dump (%c)\n",
            DEFAULT_UNIT ? 'B' : 'A');
-    printf("  -r, --revs    Nr revolutions per track (%d)\n", DEFAULT_REVS);
-    printf("  -R, --ramtest Test SCP on-board SRAM before dumping\n");
-    printf("  -s, --start   First track to dump (%d)\n", DEFAULT_STARTTRK);
-    printf("  -e, --end     Last track to dump (%d)\n", DEFAULT_ENDTRK);
+    printf("  -r, --revs        Nr revolutions per track (%d)\n",
+           DEFAULT_REVS);
+    printf("  -R, --ramtest     Test SCP on-board SRAM before dumping\n");
+    printf("  -s, --start       First track to dump (%d)\n",
+           DEFAULT_STARTTRK);
+    printf("  -e, --end         Last track to dump (%d)\n",
+           DEFAULT_ENDTRK);
+    printf("  -D, --double-step Double-step heads "
+           "(40-cyl disk, 80-cyl drive)\n");
 
     exit(rc);
 }
@@ -73,10 +79,10 @@ int main(int argc, char **argv)
     unsigned int trk, start_trk = DEFAULT_STARTTRK, end_trk = DEFAULT_ENDTRK;
     unsigned int sizeof_thdr, unit = DEFAULT_UNIT;
     uint32_t *th_offs, file_off, dat_off;
-    int ch, fd, quiet = 0, ramtest = 0;
+    int ch, fd, quiet = 0, ramtest = 0, double_step = 0;
     char *sername = DEFAULT_SERDEVICE;
 
-    const static char sopts[] = "hqd:u:r:Rs:e:";
+    const static char sopts[] = "hqd:u:r:Rs:e:D";
     const static struct option lopts[] = {
         { "help", 0, NULL, 'h' },
         { "quiet", 0, NULL, 'q' },
@@ -86,6 +92,7 @@ int main(int argc, char **argv)
         { "ramtest", 0, NULL, 'R' },
         { "start", 1, NULL, 's' },
         { "end", 1, NULL, 'e' },
+        { "double-step", 0, NULL, 'D' },
         { 0, 0, 0, 0 }
     };
 
@@ -122,6 +129,9 @@ int main(int argc, char **argv)
             break;
         case 'e':
             end_trk = atoi(optarg);
+            break;
+        case 'D':
+            double_step = 1;
             break;
         default:
             usage(1);
@@ -174,7 +184,7 @@ int main(int argc, char **argv)
         log("%-4u...", trk);
         fflush(stdout);
 
-        scp_seek_track(scp, trk);
+        scp_seek_track(scp, trk, double_step);
         scp_read_flux(scp, nr_revs, &flux);
 
         th_offs[trk] = htole32(file_off);
