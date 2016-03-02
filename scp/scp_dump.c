@@ -21,7 +21,13 @@
 #include <libdisk/util.h>
 #include "scp.h"
 
+#if defined (__APPLE__)
+/* FTDI VCP driver: http://www.ftdichip.com/Drivers/VCP.htm */
+#define DEFAULT_SERDEVICE  "/dev/cu.usbserial-SCP-JIM"
+#else
 #define DEFAULT_SERDEVICE  "/dev/ttyUSB0"
+#endif
+
 #define DEFAULT_STARTTRK   0
 #define DEFAULT_ENDTRK     163
 #define MAX_TRACKS         166
