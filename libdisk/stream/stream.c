@@ -103,7 +103,7 @@ int stream_select_track(struct stream *s, unsigned int tracknr)
     int rc;
 
     s->max_revolutions = 0;
-    rc = s->type->select_track(s, tracknr);
+    rc = s->type->select_track(s, ((tracknr<<1)&~3) | (tracknr&1));
     if (rc)
         return rc;
     s->max_revolutions = max_t(uint32_t, s->max_revolutions, 4);
