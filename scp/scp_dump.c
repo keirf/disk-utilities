@@ -28,6 +28,7 @@
 #define DEFAULT_SERDEVICE  "/dev/ttyUSB0"
 #endif
 
+#define DEFAULT_UNIT       0
 #define DEFAULT_STARTTRK   0
 #define DEFAULT_ENDTRK     163
 #define MAX_TRACKS         166
@@ -52,6 +53,8 @@ static void usage(int rc)
     printf("  -h, --help    Display this information\n");
     printf("  -q, --quiet   Quiesce normal informational output\n");
     printf("  -d, --device  Name of serial device (%s)\n", DEFAULT_SERDEVICE);
+    printf("  -u, --unit={A,B}  Which drive to dump (%c)\n",
+           DEFAULT_UNIT ? 'B' : 'A');
     printf("  -r, --revs    Nr revolutions per track (%d)\n", DEFAULT_REVS);
     printf("  -R, --ramtest Test SCP on-board SRAM before dumping\n");
     printf("  -s, --start   First track to dump (%d)\n", DEFAULT_STARTTRK);
@@ -68,16 +71,17 @@ int main(int argc, char **argv)
     struct track_header thdr;
     unsigned int rev, nr_revs = DEFAULT_REVS;
     unsigned int trk, start_trk = DEFAULT_STARTTRK, end_trk = DEFAULT_ENDTRK;
-    unsigned int sizeof_thdr;
+    unsigned int sizeof_thdr, unit = DEFAULT_UNIT;
     uint32_t *th_offs, file_off, dat_off;
     int ch, fd, quiet = 0, ramtest = 0;
     char *sername = DEFAULT_SERDEVICE;
 
-    const static char sopts[] = "hqd:r:Rs:e:";
+    const static char sopts[] = "hqd:u:r:Rs:e:";
     const static struct option lopts[] = {
         { "help", 0, NULL, 'h' },
         { "quiet", 0, NULL, 'q' },
         { "device", 1, NULL, 'd' },
+        { "unit", 1, NULL, 'u' },
         { "revs", 1, NULL, 'r' },
         { "ramtest", 0, NULL, 'R' },
         { "start", 1, NULL, 's' },
@@ -95,6 +99,17 @@ int main(int argc, char **argv)
             break;
         case 'd':
             sername = optarg;
+            break;
+        case 'u':
+            if (strlen(optarg) != 1)
+                goto bad;
+            switch (*optarg) {
+            case 'a': case 'A': unit = 0; break;
+            case 'b': case 'B': unit = 1; break;
+            default: bad:
+                warnx("Bad drive unit '%s'", optarg);
+                usage(1);
+            }
             break;
         case 'r':
             nr_revs = atoi(optarg);
@@ -123,7 +138,7 @@ int main(int argc, char **argv)
     }
 
     if (nr_revs > ARRAY_SIZE(flux.info)) {
-        warnx("Too many revolutions specified (%u, max %u)\n",
+        warnx("Too many revolutions specified (%u, max %u)",
               nr_revs, (unsigned int)ARRAY_SIZE(flux.info));
         usage(1);
     }
@@ -150,7 +165,7 @@ int main(int argc, char **argv)
         scp_printinfo(scp);
     if (ramtest)
         scp_ramtest(scp);
-    scp_selectdrive(scp, 0);
+    scp_selectdrive(scp, unit);
 
     log("Reading track ");
 
@@ -184,7 +199,7 @@ int main(int argc, char **argv)
 
     log("\b\b\b\b\b\b\b\b\b\b\b\b\b\b");
 
-    scp_deselectdrive(scp, 0);
+    scp_deselectdrive(scp, unit);
     scp_close(scp);
 
     lseek(fd, sizeof(dhdr), SEEK_SET);
