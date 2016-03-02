@@ -21,7 +21,13 @@
 #include <libdisk/util.h>
 #include "scp.h"
 
+#if defined (__APPLE__)
+/* FTDI VCP driver: http://www.ftdichip.com/Drivers/VCP.htm */
+#define DEFAULT_SERDEVICE  "/dev/cu.usbserial-SCP-JIM"
+#else
 #define DEFAULT_SERDEVICE  "/dev/ttyUSB0"
+#endif
+
 #define DEFAULT_STARTTRK   0
 #define DEFAULT_ENDTRK     163
 
@@ -116,7 +122,7 @@ int main(int argc, char **argv)
         scp_printinfo(scp);
     scp_selectdrive(scp, 0);
 
-    scp_seek_track(scp, 0);
+    scp_seek_track(scp, 0, 0);
     scp_read_flux(scp, 1, &flux);
     drvtime = htole32(flux.info[0].index_time);
     log("Drive speed: %u us per revolution (%.2f RPM)\n",
@@ -166,7 +172,7 @@ int main(int argc, char **argv)
             x %= imtime; /* carry the fractional part */
         }
 
-        scp_seek_track(scp, trk);
+        scp_seek_track(scp, trk, 0);
         scp_write_flux(scp, odat, j);
 
         log("\b\b\b\b\b\b\b");
