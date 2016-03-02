@@ -132,6 +132,7 @@ int main(int argc, char **argv)
             break;
         case 'D':
             double_step = 1;
+            end_trk = 81;
             break;
         default:
             usage(1);
