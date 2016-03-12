@@ -330,6 +330,8 @@ probe_amiga
 # Arcade Action Game 2
 "Chess Player 2150" = amigados
 
+"Chicago 90" = amigados
+
 "Chrono Quest" = amigados
 
 "Chuck Rock" = amigados_copylock
@@ -433,6 +435,8 @@ probe_amiga
 "Dizzy Collection" = amigados_copylock
 
 "Dizzy Prince Of The Yolkfolk" = amigados_copylock
+
+"Donk! - The Samurai Duck!" = rnc_pdos
 
 "Dragon's Breath"
     158 amigados speedlock
@@ -1061,6 +1065,8 @@ probe_amiga
 "Rebellion"
     * amigados fun_factory
 
+"Resolution 101" = rnc_hidden
+
 # Original uses Copylock
 # Arcade Action Game 7 uses RNC Hidden!
 "Rick Dangerous"
@@ -1105,6 +1111,8 @@ probe_amiga
 
 "Rotox" = amigados
 
+"Ruff 'n' Tumble" = amigados_copylock
+
 "S.T.U.N. Runner" = amigados_copylock
 
 "Santa's Xmas Caper" = amigados_copylock
@@ -1114,6 +1122,9 @@ probe_amiga
 
 "Scooby Doo"
     * amigados scooby_doo
+
+# AmigaDOS Extended (Header)
+"Second Samurai" = amigados
 
 "Sensible Golf" = amigados
 
@@ -1171,6 +1182,10 @@ probe_amiga
     2-12/2 ignore
     * amigados
 
+"Silent Service" = amigados
+
+"Silicon Dreams" = amigados
+
 "Sim Ant" = amigados
 
 "Simpsons, Bart vs. The Space Mutants"
@@ -1225,6 +1240,9 @@ probe_amiga
 
 "Spherical" # Tracks 145+ may be empty
     * amigados spherical
+
+"Spitting Image"
+    * amigados protec_longtrack ibm_pc_dd_10sec
 
 "Stack Up" = amigados_copylock
 
