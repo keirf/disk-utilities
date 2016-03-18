@@ -22,7 +22,7 @@ struct ibm_sector {
 
 struct ibm_track {
     uint8_t has_iam;
-    uint8_t gap3;
+    uint8_t post_data_gap;
     struct ibm_sector secs[0];
 };
 
@@ -169,26 +169,26 @@ int ibm_scan_dam(struct stream *s)
     return (mark == IBM_MARK_DAM) ? idx_off : -1;
 }
 
-static int choose_gap3(
+static int choose_post_data_gap(
     struct track_info *ti, struct ibm_track *ibm_track,
     int gap_bits, unsigned int nr_secs)
 {
-    int gap3, iam_bits = (type_is_fm(ti->type) ? 7 : 16) * 16;
-    int gap4a = 40, gap4b = type_is_fm(ti->type) ? 40 : 80;
+    int post_data_gap, iam_bits = (type_is_fm(ti->type) ? 7 : 16) * 16;
+    int pre_index_gap = 40, post_index_gap = type_is_fm(ti->type) ? 40 : 80;
     for (;;) {
-        /* Don't include gap 4a and 4b (before/after index mark). */
-        gap3 = gap_bits - (gap4a + gap4b) * 16;
+        /* Don't include pre/post-index gaps (aka "track gap"). */
+        post_data_gap = gap_bits - (post_index_gap + pre_index_gap) * 16;
         /* Account for IAM and distribute gap evenly across sectors and IAM. */
-        gap3 = (ibm_track->has_iam
-                ? (gap3 - iam_bits) / ((nr_secs+1) * 16)
-                : gap3 / (nr_secs * 16));
-        if (gap3 >= 25) /* minimum permissible is 24 */
+        post_data_gap = (ibm_track->has_iam
+                         ? (post_data_gap - iam_bits) / ((nr_secs+1) * 16)
+                         : post_data_gap / (nr_secs * 16));
+        if (post_data_gap >= 10) /* some very small paranoia value */
             break;
         /* Inter-sector gap is too small: lengthen the track to make space. */
         gap_bits += 1000;
         ti->total_bits += 1000;
     }
-    return gap3;
+    return post_data_gap;
 }
 
 static void *ibm_mfm_write_raw(
@@ -295,7 +295,8 @@ static void *ibm_mfm_write_raw(
                          + dat_bytes);
 
     ibm_track->has_iam = iam ? 1 : 0;
-    ibm_track->gap3 = choose_gap3(ti, ibm_track, gap_bits, nr_blocks);
+    ibm_track->post_data_gap = choose_post_data_gap(
+        ti, ibm_track, gap_bits, nr_blocks);
 
     ti->len = sizeof(struct ibm_track);
     for (cur_sec = ibm_secs; cur_sec; cur_sec = cur_sec->next) {
@@ -323,7 +324,7 @@ static void ibm_mfm_read_raw(
             tbuf_bits(tbuf, SPEED_AVG, bc_mfm, 8, 0x00);
         tbuf_bits(tbuf, SPEED_AVG, bc_raw, 32, 0x52245224);
         tbuf_bits(tbuf, SPEED_AVG, bc_raw, 32, 0x52245552);
-        for (i = 0; i < ibm_track->gap3; i++)
+        for (i = 0; i < ibm_track->post_data_gap; i++)
             tbuf_bits(tbuf, SPEED_AVG, bc_mfm, 8, 0x4e);
     }
 
@@ -356,14 +357,14 @@ static void ibm_mfm_read_raw(
         tbuf_bits(tbuf, SPEED_AVG, bc_mfm, 8, cur_sec->mark);
         tbuf_bytes(tbuf, SPEED_AVG, bc_mfm, sec_sz, cur_sec->dat);
         tbuf_emit_crc16_ccitt(tbuf, SPEED_AVG);
-        for (i = 0; i < ibm_track->gap3; i++)
+        for (i = 0; i < ibm_track->post_data_gap; i++)
             tbuf_bits(tbuf, SPEED_AVG, bc_mfm, 8, 0x4e);
 
         cur_sec = (struct ibm_sector *)
             ((char *)cur_sec + sizeof(struct ibm_sector) + sec_sz);
     }
 
-    /* NB. Proper GAP4 should be 0x4e with write splice at index mark. */
+    /* NB. Proper track gap should be 0x4e with write splice at index mark. */
 }
 
 static void ibm_get_name(
@@ -434,7 +435,8 @@ void setup_ibm_mfm_track(
         errx(1, "Too much data for track!");
 
     ibm_track->has_iam = 1;
-    ibm_track->gap3 = choose_gap3(ti, ibm_track, gap_bits, nr_secs);
+    ibm_track->post_data_gap = choose_post_data_gap(
+        ti, ibm_track, gap_bits, nr_secs);
 
     ti->data_bitoff = (is_fm ? 40 : 80) * 16;
     ti->nr_sectors = nr_secs;
@@ -711,9 +713,9 @@ static void *ibm_fm_write_raw(
                          + dat_bytes);
 
     ibm_track->has_iam = iam ? 1 : 0;
-    ibm_track->gap3 = ((ti->type == TRKTYP_dec_rx01)
+    ibm_track->post_data_gap = ((ti->type == TRKTYP_dec_rx01)
                        || (ti->type == TRKTYP_dec_rx02)) ? 27
-        : choose_gap3(ti, ibm_track, gap_bits, nr_blocks);
+        : choose_post_data_gap(ti, ibm_track, gap_bits, nr_blocks);
 
     ti->len = sizeof(struct ibm_track);
     for (cur_sec = ibm_secs; cur_sec; cur_sec = cur_sec->next) {
@@ -779,7 +781,7 @@ static void ibm_fm_read_raw(
         for (i = 0; i < 6; i++)
             fm_bits(tbuf, flags, 8, 0x00);
         fm_bits(tbuf, flags|ENC_RAW, 16, IBM_FM_IAM_RAW);
-        for (i = 0; i < ibm_track->gap3; i++)
+        for (i = 0; i < ibm_track->post_data_gap; i++)
             fm_bits(tbuf, flags, 8, 0xff);
     }
 
@@ -852,7 +854,7 @@ static void ibm_fm_read_raw(
                 fm_bits(tbuf, flags, 8, cur_sec->dat[i]);
             fm_bits(tbuf, flags, 16, tbuf->crc16_ccitt);
         }
-        for (i = 0; i < ibm_track->gap3; i++)
+        for (i = 0; i < ibm_track->post_data_gap; i++)
             fm_bits(tbuf, flags, 8, 0xff);
 
         cur_sec = (struct ibm_sector *)

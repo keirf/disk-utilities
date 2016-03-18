@@ -105,14 +105,14 @@ static void ibm_img_read_raw(
     uint8_t *dat = (uint8_t *)ti->dat;
     uint8_t cyl = cyl(tracknr), hd = hd(tracknr), no;
     bool_t iam = dat[ti->len-1];
-    unsigned int sec, i, gap3;
+    unsigned int sec, i, post_data_gap;
 
     for (no = 0; (128<<no) != ti->bytes_per_sector; no++)
         continue;
 
-    gap3 = ((ti->type == TRKTYP_ibm_pc_dd) ? 80
-            : (ti->type == TRKTYP_ibm_pc_dd_10sec) ? 40
-            : 108);
+    post_data_gap = ((ti->type == TRKTYP_ibm_pc_dd) ? 80
+                     : (ti->type == TRKTYP_ibm_pc_dd_10sec) ? 40
+                     : 108);
 
     /* IAM */
     if (iam) {
@@ -120,7 +120,7 @@ static void ibm_img_read_raw(
             tbuf_bits(tbuf, SPEED_AVG, bc_mfm, 8, 0x00);
         tbuf_bits(tbuf, SPEED_AVG, bc_raw, 32, 0x52245224);
         tbuf_bits(tbuf, SPEED_AVG, bc_raw, 32, 0x52245552);
-        for (i = 0; i < gap3; i++)
+        for (i = 0; i < post_data_gap; i++)
             tbuf_bits(tbuf, SPEED_AVG, bc_mfm, 8, 0x4e);
     }
 
@@ -148,11 +148,11 @@ static void ibm_img_read_raw(
         tbuf_bytes(tbuf, SPEED_AVG, bc_mfm, ti->bytes_per_sector,
                    &dat[sec*ti->bytes_per_sector]);
         tbuf_emit_crc16_ccitt(tbuf, SPEED_AVG);
-        for (i = 0; i < gap3; i++)
+        for (i = 0; i < post_data_gap; i++)
             tbuf_bits(tbuf, SPEED_AVG, bc_mfm, 8, 0x4e);
     }
 
-    /* NB. Proper GAP4 should be 0x4e with write splice at index mark. */
+    /* NB. Proper track gap should be 0x4e with write splice at index mark. */
 }
 
 void *ibm_img_write_sectors(
@@ -202,7 +202,7 @@ struct track_handler ibm_pc_dd_handler = {
     }
 };
 
-/* Non-standard 10-sector version of the above, with reduced GAP4 length. */
+/* Non-standard 10-sector version of the above, with reduced sector gap. */
 struct track_handler ibm_pc_dd_10sec_handler = {
     .density = trkden_double,
     .bytes_per_sector = 512,
