@@ -131,6 +131,9 @@ probe_amiga
     100 archipelagos
     * ignore
 
+"Arkanoid"
+    * arkanoid_a arkanoid_b arkanoid_c amigados_long_108800 amigados
+
 # Precious Metal Compilation
 "Arkanoid Revenge Of Doh" = amigados_copylock
 
@@ -181,7 +184,7 @@ probe_amiga
     * baal
 
 "Back to the Future III" # Disk 2 only tracks 2-84 contain data
-    * back_future3 amigados copylock
+    * konami amigados copylock
 
 "Badlands" = amigados_copylock
 
@@ -590,6 +593,9 @@ probe_amiga
 "Gladiators" # Tracks 159+ may be empty
     * amigados gladiators
 
+"Globulus"
+    * amigados globulus
+
 "Gloom Deluxe" = amigados
 
 "Goal!" = amigados_copylock
@@ -678,6 +684,9 @@ probe_amiga
     0 amigados
     1 copylock
     * ibm_pc_dd_10sec
+
+"Hybris"
+    * amigados hybris amigados_long_102200
 
 "IK+"
     * amigados ikplus
@@ -834,6 +843,9 @@ probe_amiga
 # Boot Disk Track 0 only is AmigaDOS, mastered long same as all data tracks.
 "Lure Of The Temptress"
     * amigados_long_105500 rnc_pdos_old
+
+"Magic Marble"
+    * amigados magic_marble magic_marble_b magic_marble_prot
 
 "Magicland Dizzy" = amigados_copylock
 
@@ -1300,7 +1312,7 @@ probe_amiga
 "Switchblade 2" = gremlin_protected
 
 "Sword of Sodan"
-    * amigados sword_sodan
+    * sword_sodan amigados_long_102200
 
 "Syndicate" = amigados
 
@@ -1327,6 +1339,9 @@ probe_amiga
     * amigados tlk_dos_2
 
 "Teenage Mutant Hero Turtles" = amigados_copylock
+
+"Teenage Mutant Ninja Turtles"
+    * konami amigados copylock
 
 # Same version as Tenstar Pack Game 8
 "Terrorpods" = amigados # extended amigados tracks and some empty tracks

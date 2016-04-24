@@ -348,8 +348,18 @@ static void *ados_longtrack_write_raw(
     return ablk;
 }
 
+struct track_handler amigados_long_102200_handler = {
+    .bytes_per_sector = 102200,
+    .write_raw = ados_longtrack_write_raw,
+};
+
 struct track_handler amigados_long_103300_handler = {
     .bytes_per_sector = 103300,
+    .write_raw = ados_longtrack_write_raw,
+};
+
+struct track_handler amigados_long_104400_handler = {
+    .bytes_per_sector = 104400,
     .write_raw = ados_longtrack_write_raw,
 };
 
@@ -360,6 +370,11 @@ struct track_handler amigados_long_105500_handler = {
 
 struct track_handler amigados_long_106600_handler = {
     .bytes_per_sector = 106600,
+    .write_raw = ados_longtrack_write_raw,
+};
+
+struct track_handler amigados_long_108800_handler = {
+    .bytes_per_sector = 108800,
     .write_raw = ados_longtrack_write_raw,
 };
 
