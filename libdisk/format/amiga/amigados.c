@@ -326,21 +326,26 @@ static void *ados_longtrack_write_raw(
         return NULL;
 
     if (total_bits == 0) {
-        uint16_t type = 0;
+        static const uint16_t types[] = {
+            TRKTYP_amigados_long_102200,
+            TRKTYP_amigados_long_103300,
+            TRKTYP_amigados_long_104400,
+            TRKTYP_amigados_long_105500,
+            TRKTYP_amigados_long_106600,
+            TRKTYP_amigados_long_108800,
+            TRKTYP_amigados_long_111000 };
+        unsigned int i;
         stream_next_index(s);
-        if (s->track_len_bc >= 108800) {
-            type = TRKTYP_amigados_long_111000;
-        } else if (s->track_len_bc >= 106000) {
-            type = TRKTYP_amigados_long_106600;
-        } else if (s->track_len_bc >= 104400) {
-            type = TRKTYP_amigados_long_105500;
-        } else if (s->track_len_bc >= 102000) {
-            type = TRKTYP_amigados_long_103300;
-        } else {
+        if (s->track_len_bc <= 101100)
             return ablk; /* not long */
+        for (i = 0; i < ARRAY_SIZE(types)-1; i++) {
+            uint32_t midpoint = (handlers[types[i]]->bytes_per_sector +
+                                 handlers[types[i+1]]->bytes_per_sector) / 2;
+            if (s->track_len_bc <= midpoint)
+                break;
         }
-        total_bits = handlers[type]->bytes_per_sector;
-        typename = disk_get_format_desc_name(type);
+        total_bits = handlers[types[i]]->bytes_per_sector;
+        typename = disk_get_format_desc_name(types[i]);
     }
 
     ti->total_bits = total_bits;
