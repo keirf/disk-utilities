@@ -9,28 +9,49 @@
 #include <libdisk/util.h>
 #include <private/disk.h>
 
-#define MAX_BLOCK 100000u
+#define MAX_BYTES 100000u
 
 static void *raw_write_raw(
     struct disk *d, unsigned int tracknr, struct stream *s)
 {
     struct disk_info *di = d->di;
     struct track_info *ti = &di->track[tracknr];
-    char *block = memalloc(MAX_BLOCK);
-    unsigned int i = 0;
+    char *dat = memalloc(MAX_BYTES);
+    uint16_t *block = NULL, *block_p;
+    uint32_t av_latency, *speed = memalloc(4 * MAX_BYTES);
+    uint64_t tot_latency;
+    unsigned int bytes, i;
+
+    tot_latency = 0;
+    bytes = 0;
 
     do {
-        if ((stream_next_bits(s, 8) == -1) || (i == MAX_BLOCK)) {
-            memfree(block);
-            return NULL;
-        }
-        block[i++] = (uint8_t)s->word;
+        s->latency = 0;
+        if ((stream_next_bits(s, 8) == -1) || (bytes == MAX_BYTES))
+            goto out;
+        dat[bytes] = (uint8_t)s->word;
+        speed[bytes] = (uint32_t)s->latency;
+        tot_latency += s->latency;
+        bytes++;
     } while (s->index_offset_bc >= 8);
 
-    ti->total_bits = i*8 - s->index_offset_bc;
-    ti->len = i;
+    av_latency = tot_latency / bytes;
+    for (i = 0; i < bytes; i++)
+        speed[i] = ((uint64_t)speed[i] * SPEED_AVG) / av_latency;
+
+    ti->total_bits = bytes*8 - s->index_offset_bc;
+    ti->len = bytes * 3; /* 2 bytes of speed per 1 byte of dat */
     ti->data_bitoff = 0;
 
+    /* Marshal the descriptor block: speeds then data. */
+    block = block_p = memalloc(ti->len);
+    for (i = 0; i < bytes; i++)
+        *block_p++ = speed[i];
+    memcpy(block_p, dat, bytes);
+
+out:
+    memfree(dat);
+    memfree(speed);
     return block;
 }
 
@@ -38,12 +59,15 @@ static void raw_read_raw(
     struct disk *d, unsigned int tracknr, struct tbuf *tbuf)
 {
     struct track_info *ti = &d->di->track[tracknr];
+    uint16_t *speed = (uint16_t *)ti->dat;
+    uint8_t *dat = (uint8_t *)(speed + (ti->total_bits+7)/8);
+    unsigned int i;
 
-    if (ti->total_bits/8)
-        tbuf_bytes(tbuf, SPEED_AVG, bc_raw, ti->total_bits/8, ti->dat);
+    for (i = 0; i < ti->total_bits/8; i++)
+        tbuf_bits(tbuf, speed[i], bc_raw, 8, dat[i]);
     if (ti->total_bits%8)
-        tbuf_bits(tbuf, SPEED_AVG, bc_raw, ti->total_bits%8,
-                  ti->dat[ti->total_bits/8] >> (8 - ti->total_bits%8));
+        tbuf_bits(tbuf, speed[i], bc_raw, ti->total_bits%8,
+                  dat[i] >> (8 - ti->total_bits%8));
 }
 
 struct track_handler raw_sd_handler = {
