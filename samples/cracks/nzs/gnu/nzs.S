@@ -350,18 +350,19 @@ _load_sector:
         move.l  8(sp),a0                /* a0 = mfm start */
         lea     mfm_bytes-0x438(a0),a1  /* a1 = mfm end - 1 sector */
 .next_sector:
-        cmpa.l  a0,a1             /* bail if we scan to end of mfm buffer */
-        jmi     .fail_retry
-        cmpi.w  #0x4489,(a0)+
-        jne     .next_sector
         cmpi.w  #0x4489,(a0)      /* skip 4489 sync */
-        jeq     .next_sector
+        jeq     .find_sector
         movem.l (a0),d0-d1
         jbsr    decode_mfm_long
         lsr.w   #8,d0             /* d0.w = sector # */
         cmp.w   d4,d0
         jeq     .sector_found
         lea.l   0x438(a0),a0      /* skip this sector */
+.find_sector:
+        cmpa.l  a0,a1             /* bail if we scan to end of mfm buffer */
+        jmi     .fail_retry
+        cmpi.w  #0x4489,(a0)+
+        jne     .find_sector
         jra     .next_sector
 .sector_found:
         swap    d0                /* d0.b = track # */
