@@ -411,13 +411,13 @@ copper:
         dc.l    $01840ddd       ; col02
         dc.l    $01860ddd       ; col03
         dc.l    $01800103       ; col00
-        dc.l    $4401fffe
+        dc.l    $4407fffe
         dc.l    $01800ddd
-        dc.l    $4501fffe
+        dc.l    $4507fffe
         dc.l    $01800402
-        dc.l    $f001fffe
+        dc.l    $f007fffe
         dc.l    $01800ddd
-        dc.l    $f101fffe
+        dc.l    $f107fffe
         dc.l    $01800103
         dc.l    $fffffffe
 

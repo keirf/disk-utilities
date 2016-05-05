@@ -412,13 +412,13 @@ copper:
         dc.l    0x01840ddd       /* col02 */
         dc.l    0x01860ddd       /* col03 */
         dc.l    0x01800103       /* col00 */
-        dc.l    0x4401fffe
+        dc.l    0x4407fffe
         dc.l    0x01800ddd
-        dc.l    0x4501fffe
+        dc.l    0x4507fffe
         dc.l    0x01800402
-        dc.l    0xf001fffe
+        dc.l    0xf007fffe
         dc.l    0x01800ddd
-        dc.l    0xf101fffe
+        dc.l    0xf107fffe
         dc.l    0x01800103
         dc.l    0xfffffffe
 
