@@ -17,6 +17,7 @@
 struct ibm_sector {
     struct ibm_idam idam;
     uint8_t mark;
+    uint16_t crc; /* 0 = good crc */
     uint8_t dat[0];
 };
 
@@ -32,19 +33,35 @@ struct ibm_psector {
     struct ibm_sector s;
 };
 
-#define type_is_fm(type)                        \
-    (((type) == TRKTYP_ibm_fm_sd)               \
-     || ((type) == TRKTYP_ibm_fm_dd)            \
-     || ((type) == TRKTYP_trs80_fm_sd))
+#define type_is_fm(type)                            \
+    (((type) == TRKTYP_ibm_fm_sd)                   \
+     || ((type) == TRKTYP_ibm_fm_dd)                \
+     || ((type) == TRKTYP_trs80_fm_sd)              \
+     || ((type) == TRKTYP_trs80_fm_sd_recovery) )
 
-/* Is the mark a TRS-80 directory mark? */
-bool_t is_trs80_mark(int type, int mark)
+/* Defined all TRS80 track types that attemt data recovery */
+static bool_t is_recovery_type(int type)
+{
+    return (type == TRKTYP_trs80_fm_sd_recovery
+            || type == TRKTYP_trs80_mfm_dd_recovery);
+}
+
+/* Is this a TRS-track type ? */
+static bool_t is_trs80_track(int type)
+{
+    return (type == TRKTYP_trs80_fm_sd
+            || type == TRKTYP_trs80_mfm_dd
+            || is_recovery_type(type));
+}
+
+/* Is this a TRS-80 directory mark? */
+static bool_t is_trs80_mark(int type, int mark)
 {
 /* TRS-80 address marks used in directory tracks */
 #define TRS_MARK_DAM1 0xfa
 #define TRS_MARK_DAM2 0xf8
-    return (((type == TRKTYP_trs80_fm_sd) || (type == TRKTYP_trs80_mfm_dd))
-            && ((mark == TRS_MARK_DAM1) || (mark == TRS_MARK_DAM2)));
+    return (is_trs80_track(type) 
+            && (mark == TRS_MARK_DAM1 || mark == TRS_MARK_DAM2));
 }
 
 
@@ -157,6 +174,7 @@ int ibm_scan_idam(struct stream *s, struct ibm_idam *idam)
     if (stream_next_bits(s, 32) == -1)
         goto fail;
 
+    idam->crc = s->crc16_ccitt;
     return idx_off;
 fail:
     return -1;
@@ -218,11 +236,29 @@ static void *ibm_mfm_write_raw(
 
         int idx_off;
         uint8_t mark, dat[2*16384];
+        uint16_t crc;
         struct ibm_idam idam;
 
         /* IDAM */
-        if (((idx_off = ibm_scan_idam(s, &idam)) < 0) || s->crc16_ccitt)
+        if ((idx_off = ibm_scan_idam(s, &idam)) < 0)
             continue;
+
+        /* If the IDAM CRC is bad we cannot trust the sector data: we always 
+         * skip the sector data in this case. CRC errors can also happen from
+         * cross-talk (40-track disk read as 80-track). */
+        if (idam.crc) {
+#if CRC_DEBUG
+            /* Warn if we are recovering */
+            if (is_recovery_type(ti->type)) {
+                trk_warn(ti, tracknr, "IDAM CRC cyl:%2d, head:%2d, sec:%2d, "
+                         "no:%2d, crc:%04x, offset:%5d\n",
+                         idam.cyl, idam.head, idam.sec,
+                         idam.no, idam.crc, idx_off);
+            }
+#endif
+            /* TODO: try to reconstruct the correct idam ... */
+            continue;
+        }
 
         if (idam.no > 7) {
             trk_warn(ti, tracknr, "Unexpected IDAM no=%02x", idam.no);
@@ -236,14 +272,19 @@ static void *ibm_mfm_write_raw(
             ((mark != IBM_MARK_DAM) && (mark != IBM_MARK_DDAM)
              && !is_trs80_mark(ti->type, mark)) ||
             (stream_next_bytes(s, dat, 2*sec_sz) == -1) ||
-            (stream_next_bits(s, 32) == -1) || s->crc16_ccitt)
+            (stream_next_bits(s, 32) == -1))
+            continue;
+
+        /* Skip bad data CRC unless we are doing data recovery. */
+        crc = s->crc16_ccitt;
+        if (crc && !is_recovery_type(ti->type))
             continue;
 
         /* Find correct place for this sector in our linked list of sectors 
          * that we have decoded so far. */
         pprev_sec = &ibm_secs;
         cur_sec = *pprev_sec;
-        while (cur_sec && ((idx_off - cur_sec->offset) > 1000)) {
+        while (cur_sec && ((idx_off - cur_sec->offset) >= 1000)) {
             pprev_sec = &cur_sec->next;
             cur_sec = *pprev_sec;
         }
@@ -251,16 +292,74 @@ static void *ibm_mfm_write_raw(
         /* If this sector's start is within 1000 bits of one we already decoded
          * then it is the same sector: we decoded it already on an earlier 
          * revolution and can skip it this time round. */
-        if (cur_sec && (abs(idx_off - cur_sec->offset) < 1000))
+        if (cur_sec && (abs(idx_off - cur_sec->offset) < 1000)) {
+
+            /* Is this really the same sector? Check IDAM contents. */
+            if ((idam.cyl == cur_sec->s.idam.cyl) &&
+                (idam.head == cur_sec->s.idam.head) && 
+                (idam.sec == cur_sec->s.idam.sec) &&
+                (idam.no == cur_sec->s.idam.no)) {
+
+                /* If we now have a good CRC and the saved sector has a bad CRC
+                 * we should try converting it again.
+                 *
+                 * TODO:
+                 *  1 if we only have bad crcs on all reads we might try to
+                 *    median combine all of the bits into a new one
+                 *  2 reconstruct missing idam values if we have a data
+                 *    sector */
+                if (!crc && cur_sec->s.crc) {
+#ifdef CRC_DEBUG
+                    trk_warn(ti, tracknr, "FIXED CRC cyl:%2d, head:%2d, "
+                             "sec:%2d, no:%2d, size:%4x, offset:%5d\n",
+                             idam.cyl, idam.head, idam.sec, idam.no,
+                             sec_sz, idx_off);
+#endif
+
+                    /* Replace the previous bad sector header/data. */
+                    cur_sec->offset = idx_off;
+                    cur_sec->s.crc = crc;
+                    cur_sec->s.mark = mark;
+                    mfm_decode_bytes(bc_mfm, sec_sz, dat, dat);
+                    memcpy(&cur_sec->s.dat[0], dat, sec_sz);
+                    memcpy(&cur_sec->s.idam, &idam, sizeof(idam));
+                }
+
+            } else {
+
+                /* This code should NEVER trigger */
+                trk_warn(ti, tracknr, "IDAM  WARN"
+                         " [cyl:%2d, head:%2d, sec:%2d, no:%2d, "
+                         "crc:%04x, offset:%5d] != [cyl:%2d, head:%2d, "
+                         "sec:%2d, no:%2d, crc:%04x, offset:%5d]\n",
+                         idam.cyl, idam.head, idam.sec, idam.no,
+                         crc, idx_off,
+                         cur_sec->s.idam.cyl, cur_sec->s.idam.head,
+                         cur_sec->s.idam.sec, cur_sec->s.idam.no,
+                         cur_sec->s.idam.crc, cur_sec->offset);
+
+            }
+
             continue;
+        }
 
+#ifdef CRC_DEBUG
+        if (crc) {
+            trk_warn(ti, tracknr, "DATA  CRC cyl:%2d, head:%2d, sec:%2d, "
+                     "no:%2d, crc:%04x, offset:%5d\n",
+                     idam.cyl, idam.head, idam.sec, idam.no, crc, idx_off);
+        }
+#endif
+
+        /* Add a new sector. */
         mfm_decode_bytes(bc_mfm, sec_sz, dat, dat);
-
         new_sec = memalloc(sizeof(*new_sec) + sec_sz);
         new_sec->offset = idx_off;
+        new_sec->s.crc = crc;
+        new_sec->s.mark = mark;
         memcpy(&new_sec->s.dat[0], dat, sec_sz);
         memcpy(&new_sec->s.idam, &idam, sizeof(idam));
-        new_sec->s.mark = mark;
+        /* Add the new sector to linked list */
         new_sec->next = *pprev_sec;
         *pprev_sec = new_sec;
     }
@@ -447,12 +546,14 @@ void retrieve_ibm_mfm_track(
     struct disk *d, unsigned int tracknr,
     uint8_t **psec_map, uint8_t **pcyl_map,
     uint8_t **phead_map, uint8_t **pno_map,
-    uint8_t **pmark_map, uint8_t **pdat)
+    uint8_t **pmark_map, uint16_t **pcrc_map,
+    uint8_t **pdat)
 {
     struct track_info *ti = &d->di->track[tracknr];
     struct ibm_track *ibm_track = (struct ibm_track *)ti->dat;
     struct ibm_sector *cur_sec;
     uint8_t *sec_map, *cyl_map, *head_map, *no_map, *mark_map, *dat;
+    uint16_t *crc_map;
     unsigned int sec, sec_sz, dat_sz = 0;
 
     cur_sec = ibm_track->secs;
@@ -468,6 +569,7 @@ void retrieve_ibm_mfm_track(
     *phead_map = head_map = memalloc(ti->nr_sectors);
     *pno_map = no_map = memalloc(ti->nr_sectors);
     *pmark_map = mark_map = memalloc(ti->nr_sectors);
+    *pcrc_map = crc_map = memalloc(ti->nr_sectors * sizeof(uint16_t));
     *pdat = dat = memalloc(dat_sz);
 
     cur_sec = ibm_track->secs;
@@ -478,6 +580,7 @@ void retrieve_ibm_mfm_track(
         sec_map[sec] = cur_sec->idam.sec;
         no_map[sec] = cur_sec->idam.no;
         mark_map[sec] = cur_sec->mark;
+        crc_map[sec] = cur_sec->crc;
         memcpy(dat, cur_sec->dat, sec_sz);
         dat += sec_sz;
         cur_sec = (struct ibm_sector *)
@@ -510,6 +613,14 @@ struct track_handler ibm_mfm_ed_handler = {
 };
 
 struct track_handler trs80_mfm_dd_handler = {
+    .density = trkden_double,
+    .get_name = ibm_get_name,
+    .write_raw = ibm_mfm_write_raw,
+    .read_raw = ibm_mfm_read_raw,
+    .read_sectors = ibm_read_sectors
+};
+
+struct track_handler trs80_mfm_dd_recovery_handler = {
     .density = trkden_double,
     .get_name = ibm_get_name,
     .write_raw = ibm_mfm_write_raw,
@@ -576,6 +687,7 @@ static int ibm_fm_scan_idam(struct stream *s, struct ibm_idam *idam)
     if (stream_next_bits(s, 32) == -1)
         goto fail;
 
+    idam->crc = s->crc16_ccitt;
     return idx_off;
 fail:
     return -1;
@@ -606,11 +718,29 @@ static void *ibm_fm_write_raw(
 
         int idx_off;
         uint8_t mark, dat[2*16384];
+        uint16_t crc;
         struct ibm_idam idam;
 
         /* IDAM */
-        if (((idx_off = ibm_fm_scan_idam(s, &idam)) < 0) || s->crc16_ccitt)
+        if ((idx_off = ibm_fm_scan_idam(s, &idam)) < 0)
             continue;
+
+        /* If the IDAM CRC is bad we cannot trust the sector data: we always 
+         * skip the sector data in this case. CRC errors can also happen from
+         * cross-talk (40-track disk read as 80-track). */
+        if (idam.crc) {
+#if CRC_DEBUG
+            /* Warn if we are recovering */
+            if (is_recovery_type(ti->type)) {
+                trk_warn(ti, tracknr, "IDAM CRC cyl:%2d, head:%2d, sec:%2d, "
+                         "no:%2d, crc:%04x, offset:%5d\n",
+                         idam.cyl, idam.head, idam.sec,
+                         idam.no, idam.crc, idx_off);
+            }
+#endif
+            /* TODO: try to reconstruct the correct idam ... */
+            continue;
+        }
 
         if (idam.no > 7) {
             trk_warn(ti, tracknr, "Unexpected IDAM no=%02x", idam.no);
@@ -626,7 +756,8 @@ static void *ibm_fm_write_raw(
             && ((mark == DEC_RX02_MMFM_DAM_DAT)
                 || (mark == DEC_RX02_MMFM_DDAM_DAT))) {
             int i, rc;
-            uint16_t crc = s->crc16_ccitt, x = 1;
+            uint16_t x = 1;
+            crc = s->crc16_ccitt;
             idam.no = 1;
             sec_sz = 256;
             stream_set_density(s, 1000u);
@@ -646,24 +777,28 @@ static void *ibm_fm_write_raw(
             }
             /* ...then extract data bits as usual. */
             mfm_decode_bytes(bc_mfm, sec_sz+2, dat, dat);
-            if (crc16_ccitt(dat, sec_sz+2, crc))
-                continue;
+            crc = crc16_ccitt(dat, sec_sz+2, crc);
         } else if ((mark == IBM_MARK_DAM) || (mark == IBM_MARK_DDAM)
                    || is_trs80_mark(ti->type, mark)) {
             if (stream_next_bytes(s, dat, 2*sec_sz) == -1)
                 continue;
-            if ((stream_next_bits(s, 32) == -1) || s->crc16_ccitt)
+            if (stream_next_bits(s, 32) == -1)
                 continue;
+            crc = s->crc16_ccitt;
             mfm_decode_bytes(bc_mfm, sec_sz, dat, dat);
         } else {
             continue;
         }
 
+        /* Skip bad data CRC unless we are doing data recovery. */
+        if (crc && !is_recovery_type(ti->type))
+            continue;
+
         /* Find correct place for this sector in our linked list of sectors 
          * that we have decoded so far. */
         pprev_sec = &ibm_secs;
         cur_sec = *pprev_sec;
-        while (cur_sec && ((idx_off - cur_sec->offset) > 1000)) {
+        while (cur_sec && ((idx_off - cur_sec->offset) >= 1000)) {
             pprev_sec = &cur_sec->next;
             cur_sec = *pprev_sec;
         }
@@ -671,14 +806,66 @@ static void *ibm_fm_write_raw(
         /* If this sector's start is within 1000 bits of one we already decoded
          * then it is the same sector: we decoded it already on an earlier 
          * revolution and can skip it this time round. */
-        if (cur_sec && (abs(idx_off - cur_sec->offset) < 1000))
-            continue;
+        if (cur_sec && (abs(idx_off - cur_sec->offset) < 1000)) {
 
+            /* Is this really the same sector? Check IDAM contents. */
+            if ((idam.cyl == cur_sec->s.idam.cyl) &&
+                (idam.head == cur_sec->s.idam.head) && 
+                (idam.sec == cur_sec->s.idam.sec) &&
+                (idam.no == cur_sec->s.idam.no)) {
+
+                /* If we now have a good CRC and the saved sector has a bad CRC
+                 * we should try converting it again. */
+                if (!crc && cur_sec->s.crc) {
+#ifdef CRC_DEBUG
+                    trk_warn(ti, tracknr, "FIXED CRC cyl:%2d, head:%2d, "
+                             "sec:%2d, no:%2d, size:%4x, offset:%5d\n",
+                             idam.cyl, idam.head, idam.sec, idam.no,
+                             sec_sz, idx_off);
+#endif
+
+                    /* Replace the previous bad sector header/data. */
+                    cur_sec->offset = idx_off;
+                    cur_sec->s.crc = crc;
+                    cur_sec->s.mark = mark;
+                    memcpy(&cur_sec->s.dat[0], dat, sec_sz);
+                    memcpy(&cur_sec->s.idam, &idam, sizeof(idam));
+                }
+
+            } else {
+
+                /* This code should NEVER trigger */
+                trk_warn(ti, tracknr, "IDAM  WARN"
+                         " [cyl:%2d, head:%2d, sec:%2d, no:%2d, "
+                         "crc:%04x, offset:%5d] != [cyl:%2d, head:%2d, "
+                         "sec:%2d, no:%2d, crc:%04x, offset:%5d]\n",
+                         idam.cyl, idam.head, idam.sec, idam.no,
+                         crc, idx_off,
+                         cur_sec->s.idam.cyl, cur_sec->s.idam.head,
+                         cur_sec->s.idam.sec, cur_sec->s.idam.no,
+                         cur_sec->s.idam.crc, cur_sec->offset);
+
+            }
+
+            continue;
+        }
+
+#ifdef CRC_DEBUG
+        if (crc) {
+            trk_warn(ti, tracknr, "DATA  CRC cyl:%2d, head:%2d, sec:%2d, "
+                     "no:%2d, crc:%04x, offset:%5d\n",
+                     idam.cyl, idam.head, idam.sec, idam.no, crc, idx_off);
+        }
+#endif
+
+        /* Add a new sector. */
         new_sec = memalloc(sizeof(*new_sec) + sec_sz);
         new_sec->offset = idx_off;
+        new_sec->s.crc = crc;
+        new_sec->s.mark = mark;
         memcpy(&new_sec->s.dat[0], dat, sec_sz);
         memcpy(&new_sec->s.idam, &idam, sizeof(idam));
-        new_sec->s.mark = mark;
+        /* Add the new sector to linked list */
         new_sec->next = *pprev_sec;
         *pprev_sec = new_sec;
     }
@@ -895,6 +1082,14 @@ struct track_handler dec_rx02_handler = {
 };
 
 struct track_handler trs80_fm_sd_handler = {
+    .density = trkden_single,
+    .get_name = ibm_get_name,
+    .write_raw = ibm_fm_write_raw,
+    .read_raw = ibm_fm_read_raw,
+    .read_sectors = ibm_read_sectors
+};
+
+struct track_handler trs80_fm_sd_recovery_handler = {
     .density = trkden_single,
     .get_name = ibm_get_name,
     .write_raw = ibm_fm_write_raw,

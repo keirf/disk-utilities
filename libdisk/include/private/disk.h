@@ -139,7 +139,7 @@ uint32_t mfm_encode_word(uint32_t w);
 uint32_t amigados_checksum(void *dat, unsigned int bytes);
 
 /* IBM format decode helpers. */
-struct ibm_idam { uint8_t cyl, head, sec, no; };
+struct ibm_idam { uint8_t cyl, head, sec, no, crc;};
 #define IBM_MARK_IDAM 0xfe
 #define IBM_MARK_DAM  0xfb
 #define IBM_MARK_DDAM 0xf8
@@ -152,11 +152,13 @@ void setup_ibm_mfm_track(
     enum track_type type, unsigned int nr_secs, unsigned int no,
     uint8_t *sec_map, uint8_t *cyl_map, uint8_t *head_map,
     uint8_t *mark_map, uint8_t *dat);
+
 void retrieve_ibm_mfm_track(
     struct disk *d, unsigned int tracknr,
     uint8_t **psec_map, uint8_t **pcyl_map,
     uint8_t **phead_map, uint8_t **pno_map,
-    uint8_t **pmark_map, uint8_t **pdat);
+    uint8_t **pmark_map, uint16_t **pcrc_map,
+    uint8_t **pdat);
 
 bool_t track_is_copylock(struct track_info *ti);
 

@@ -1,5 +1,4 @@
-/*
- * libdisk/container/jv3.c
+/* libdisk/container/jv3.c
  * 
  * Write JV3 images (jv3 headers and dump of logical sector contents).
  * 
@@ -27,9 +26,7 @@
  *        # Convert to CT format
  *        dtc -m1 -p -fdisk/disk -i0 -fdisk_trs80_sd.ct -i2 -l0
  *        # Convert to JV3 format
- *        disk-analyse -v  -f trs80 disk_trs80_sd.ct disk_trs80_sd.jv3
- *
- */
+ *        disk-analyse -v  -f trs80 disk_trs80_sd.ct disk_trs80_sd.jv3 */
 
 #include <libdisk/util.h>
 #include <private/disk.h>
@@ -41,7 +38,7 @@
 
 /* Todo: Move to a run-time option */
 #ifndef JV3_DEBUG
-#define JV3_DEBUG 0
+    #define JV3_DEBUG 0
 #endif
 
 /* Support various levels of debugging information */
@@ -60,26 +57,22 @@ static int jv3_debug = JV3_DEBUG;
 
 /* ===============================================================
  * JV3 Documenation from http://www.tim-mann.org/trs80/dskspec.html
- * Tim Mann http://tim-mann.org */
-
-/* Todo:
- *  add more error information in the jv3 header processing */
-
-/*
+ * Tim Mann http://tim-mann.org 
+ *
  * Layout of JV3
- * Note: we only are doing 80 track double density trsdos/ldos disks
- * so we do not need the double header option
- typedef struct {
- unsigned char track;
- unsigned char sector;
- unsigned char flags;
- } SectorHeader;
- 
- typedef struct {
- SectorHeader sh[JV3_ENTRIES];
- unsigned char writeprot;
- } JV3;
-*/
+ * Note: we only are doing 80/40 track single/double density trsdos/ldos disks
+ * (We do not need the double header option for this)
+ *
+ * typedef struct {
+ *      unsigned char track;
+ *      unsigned char sector;
+ *      unsigned char flags;
+ * } SectorHeader;
+ *  
+ * typedef struct {
+ *      SectorHeader sh[JV3_ENTRIES];
+ *      unsigned char writeprot;
+ * } JV3; */
 
 #define JV3_DENSITY     0x80  /* 1=dden, 0=sden */
 #define JV3_DAM         0x60  /* data address mark code; see below */
@@ -96,7 +89,7 @@ static int jv3_debug = JV3_DEBUG;
 /* exact jv3 header size includes one byte flags at the end */
 #define JV3_HEADER_SIZE (JV3_ENTRIES*3+1)
 
-unsigned char jv3_buf[JV3_HEADER_SIZE+3]; /* add a few bytes of overflow */
+static unsigned char jv3_buf[JV3_HEADER_SIZE+3]; /* add a few bytes of overflow */
 
 static struct container *jv3_open(struct disk *d)
 {
@@ -127,6 +120,7 @@ static unsigned int mark_to_jv3_flags(uint8_t mark, unsigned int density)
         else if (mark == 0xf8)
             flags |= 0x60;
     } else { /* Double Density */
+        flags |= 0x80;
         if (mark == 0xf8)
             flags |= 0x20;
     }
@@ -166,9 +160,11 @@ unsigned int type_to_density(int type)
     /* Bit-rate testing borrowed directly from imd.c */
     switch (type) {
     case TRKTYP_trs80_fm_sd:
+    case TRKTYP_trs80_fm_sd_recovery:
         density = 0;
         break;
     case TRKTYP_trs80_mfm_dd:
+    case TRKTYP_trs80_mfm_dd_recovery:
         density = 1;
         break;
     case TRKTYP_ibm_fm_sd:
@@ -187,12 +183,163 @@ unsigned int type_to_density(int type)
         density = 0xff;
         break;
     default:
-        density = 0xff;
+        density = 0xffff;
         break;
     }
     return density;
 }
 
+
+/* Convert track type to encoding */
+char *type_to_encoding(int type)
+{
+    char *ptr = "INVALID";
+    /* Bit-rate testing borrowed directly from imd.c */
+    switch (type) {
+    case TRKTYP_trs80_fm_sd:
+    case TRKTYP_trs80_fm_sd_recovery:
+        ptr = "FM";
+        break;
+    case TRKTYP_trs80_mfm_dd:
+    case TRKTYP_trs80_mfm_dd_recovery:
+        ptr = "MFM";
+        break;
+    case TRKTYP_ibm_fm_sd:
+        ptr = "FM";
+        break;
+    case TRKTYP_ibm_fm_dd:
+        ptr = "FM";
+        break;
+    case TRKTYP_ibm_mfm_dd:
+        ptr = "MFM";
+        break;
+    case TRKTYP_ibm_mfm_hd:
+        ptr = "MFM";
+        break;
+    case TRKTYP_unformatted:
+        ptr = "UNFORMATTED";
+        break;
+    default:
+        break;
+    }
+    return ptr;
+}
+
+/**
+   @brief TEST bit in byte array
+   @param[in] *ptr: byte array
+   @param[in] off: bit offset
+   @return  1 if bit is set, 0 if not
+*/
+static uint8_t  bittest(uint8_t *ptr, int off)
+{
+    return( (ptr[off>>3] & (0x80 >> (off&7))) ? 1 : 0 );
+}
+
+/**
+   @brief SET bit in byte array
+   @param[in] *ptr: byte array
+   @param[in] off: bit offset
+   @return  void
+*/
+static void bitset(unsigned char *ptr, int off)
+{
+
+    ptr[off>>3] |= (0x80 >> (off & 7));
+}
+
+/**
+   @brief CLEAR bit in byte array
+   @param[in] *ptr: byte array
+   @param[in] off: bit offset
+   @return  void
+*/
+static void bitclr(unsigned char *ptr, int off )
+{
+
+    ptr[off>>3] &= ~(0x80 >> (off & 7));
+}
+
+
+/* ===================================================== */
+/* ===================================================== */
+/* ===================================================== */
+
+
+/* Analyse disk information based on physical values */
+
+#define MAX_CYLINDERS 256
+#define MAX_SECTORS 256
+#define MAX_SIDES 2
+
+#define MAX_TRACKS (MAX_CYLINDERS * MAX_SIDES)
+
+
+
+/* information from all tracks and sectors */
+typedef struct {
+    uint8_t     track[((MAX_TRACKS+7)>>3) ];
+    uint8_t     reject_track[((MAX_TRACKS+7)>>3) ];
+    uint8_t     cyl[ ((MAX_CYLINDERS+7)>>3) ];
+    uint8_t     sec[ ((MAX_SECTORS+7)>>3) ];
+    uint8_t        side_40;
+    uint8_t        side_80;
+    uint8_t        tracks;
+    int            test_encoding;
+    int            test_density;
+    int            test_size;
+    int            test_first_cylinder;
+    int            test_cylinders;
+    int            test_first_sector;
+    int            test_sectors;
+    int         first;
+    int         size;
+    int         sectors;
+    unsigned int density;
+    int         reject_side;
+} all_t;
+
+static all_t all[MAX_SIDES];
+
+static void init_trs80_used()
+{
+    int i,j;
+
+    for(j=0;j<MAX_SIDES;++j) {
+        for(i=0;i<MAX_TRACKS;++i)
+            bitclr(all[j].track,i);
+        for(i=0;i<MAX_TRACKS;++i)
+            bitclr(all[j].reject_track,i);
+        for(i=0;i<MAX_CYLINDERS;++i)
+            bitclr(all[j].cyl,i);
+        for(i=0;i<MAX_SECTORS;++i)
+            bitclr(all[j].sec,i);
+        all[j].tracks = 0;
+        all[j].first = 0;
+        all[j].sectors = 0;
+        all[j].size = -1;
+        all[j].density = -1;
+        all[j].tracks = 0;
+        all[j].side_80 = 0;
+        all[j].side_40 = 0;
+        all[j].reject_side= 0;
+
+        /* FIXME just these value rater then autodetect */
+        all[j].test_encoding = -1;
+        all[j].test_density = -1;
+        all[j].test_size = -1;
+        all[j].test_first_sector = -1;
+        all[j].test_sectors = -1;
+        all[j].test_first_cylinder = -1;
+        all[j].test_cylinders = -1;
+        
+    }
+}
+
+static int realcyl(int track, int eighty)
+{
+    return( eighty ? cyl(track) : cyl(track) / 2);
+}
 
 
 /* Write out the JV3 header and raw sector dump */
@@ -200,237 +347,742 @@ static void jv3_close(struct disk *d)
 {
     struct disk_info *di = d->di;
     struct track_info *ti;
-    uint8_t *secs, *cyls, *heads, *nos, *marks, *dat;
-    int track,cylinder,head,sector,sec_sz,mark;
-    unsigned int flags;
-    unsigned int density;
-    unsigned int jv3_state;
-    int jv3_ind = 0;
-    int side_0_40, side_0_80;
-    int side_1_40, side_1_80;
-    int single_40, single_80;
-    int single, track_80;
 
-    /* truncate to 0 bytes */
-    lseek(d->fd, 0, SEEK_SET);
-    if (ftruncate(d->fd, 0) < 0)
-        err(1, NULL);
+    uint8_t *secs, *cyls, *heads, *nos, *marks, *dat;
+    uint16_t *crcs;
+
+
+
+    unsigned int density;
+    int single, track, sector, size;
+    int tracks, reject_track, track_80;
+
+    int count;
+    int crc_errors;
+
+    int save_density,save_size,save_first,save_sectors;
+
+    unsigned int jv3_state;
+    int jv3_ind;
+    long jv3_pos;
+    unsigned int flags;
+
+    int i;
+    char *zeros;
+
+
+    /* FIXME int missing; */
+
 
     /* Guess if we are single sided
      * Test for double step (80 track drive reading 40 track disk) */
-    side_0_40 = 0;
-    side_1_40 = 0;
-    side_0_80 = 0;
-    side_1_80 = 0;
 
     /* Determine disk layout first 
      * Are we reading a 40 track disk with an 80 track drive ? 
-     * We use these tests to reject sectors on unused tracks that have
-     *     detected some data via cross talk.
      *
-     * Truth table:
+     * We use the tests below to reject_track sectors on unused tracks that may
+     *  have detected some data via cross talk.
+     *
      * Track counts 0 to > 160, odd numbers are always head 1, even head 0
      * track 80 track           40 track
+     *
+     * Truth table:
      * 0 = track 0 head 0    track 0 head 0
      * 1 = track 0 head 1    track 0 head 1
      * 2 = track 1 head    0    track x    x
      * 3 = track 1 head    1    track x    x
      * 4 = track 2 head    0    track 1 head 0
      * 5 = track 2 head    1    track 1 head 1
-     */
-    for (track = 0; track < di->nr_tracks; track++) {
-        ti = &di->track[track];
+     *
+     * macro hd() gives the phyical head of the drive
+     *   need not be the same as the logical head
+     * macro cyl() gives the phyical cylinder of the drive
+     *   need not be the same as the logical cylinder */
 
-        /* Skip unformatted or zero-sector tracks */
-        if ((ti->type == TRKTYP_unformatted)
-            || (ti->type == 0xff)
-            || !ti->nr_sectors)
+    tracks = 0;
+    size = 0;
+    crc_errors = 0;
+
+    init_trs80_used();
+
+    
+
+
+/* ============================================================ 
+ * Pass 1
+ * Using only tracks that a 35 (40) track disk would have on side 0
+ * (smallest TRSDOS format)
+ * Examine head 0 even tracks - 35 or 40 track formats only 
+ *     simple test ((track & 3) == 0)   we can step by tracks += 4
+ * If we wanted both heads
+ *     simple test ((track & 2) == 0)   we can step by tracks += 2
+ *
+ * On each track; (in the first 35 physical tracks)
+ *     Find the lowest numbered sector number found on side 0
+ *     Find the sector size - this should NOT change 
+ *     Find the number of sectors - this should NOT change - pick largest value
+ *
+ * FIXME - we may want to treat track 0 as special
+ * Later we use this data to verify the remaining sides and tracks
+ * ============================================================ */
+
+/* Below we do tests to reject the entire side of a disk
+ * Tests for 
+ *  density changes
+ *  sector count errors
+ *  duplicate sectors
+ *  cylinder or head mismatch
+ *     sector size mismatch or invalid size
+ * We keep track of
+ *     sector count
+ *  density
+ *  lowest sector number
+ *  all sectors useds */
+
+
+
+    /* Examine head 0 even tracks - 35 or 40 track formats only 
+     * (track & 2) == 0 */
+    for (track = 0; track < di->nr_tracks && (cyl(track)/2) < 35; ++track) 
+    {
+        /* Skip 80 track tests */
+        if (track & 2)
             continue;
 
-        /* Double-step, 40-track tests */
-        if ((track & 2) == 0) {
-            if (track & 1)
-                side_1_40++;
-            else
-                side_0_40++;
+        ti = &di->track[track];
+
+        density = type_to_density(ti->type);
+        if (track == 0) {
+            all[0].density = density;
+            all[1].density = density;
+            if (density & 0xfffe) {
+                JV3_WARN("JV3: bad density on track 0 - bad disk\n");
+                exit(1);
+            }
         }
 
-        /* Single-step, 80-track tests */
-        if (track & 1)
-            side_1_80++;
-        else
-            side_0_80++;
+
+        /* unknown track type ???? 
+         * Reject all other density tracks */
+        if (density & 0xfffe) 
+            continue;
+
+        if (all[hd(track)].density != density) {
+            all[hd(track)].reject_side++;
+            continue;
+        }
+
+        if (!ti->nr_sectors)
+            continue;
+
+        if (ti->nr_sectors >= 256) 
+            continue;
+
+        /* Simple reject_track tests are now done 
+         * We can not reject mismatches here - crosstalk can happen */
+
+        /* Get sector information from the TRS80 aware ibm.c helper function
+         *   - only tested with KroFlux CT and RAW type */
+
+        reject_track = 0;
+
+        retrieve_ibm_mfm_track(
+            d, track, &secs, &cyls, &heads, &nos, &marks, &crcs, &dat);
+
+        if (cyl(track) != cyls[0] && cyl(track)/2 != cyls[0]) {
+            JV3_INFO("JV3: C%02u.%02u Cylinder mismatch for track(%d)\n",
+                     cyls[0], heads[0],
+                     cyl(track));
+            reject_track++;
+        }
+
+        if (hd(track) != heads[0]) {
+            JV3_INFO("JV3: C%02u %02u Head mismatch for track(%d)\n",
+                     cyls[0], heads[0],
+                     hd(track));
+            reject_track++;
+        }
+
+
+        for (sector = 0; !reject_track && sector < ti->nr_sectors; sector++) {
+            /* Verify against logical and physical parameters */
+
+            /* FIXME - non zero based cylinder counts ??? 
+             * Check for Cylinder mismatch, logical vs physical 
+             * Check for 80 or 40 track formats 
+             * Cylinder mismatch, logical vs physical ? */
+            if (cyls[0] != cyls[sector]) {
+                JV3_INFO("JV3: C%02u.%02u.%02u Unexpected cylinder (%d)\n",
+                         cyls[0], heads[0], secs[sector], 
+                         cyls[sector] );
+                reject_track++;
+                continue;
+            }
+
+            /* Head mismatch ? */
+            if (heads[0] != heads[sector]) {
+                JV3_INFO("JV3: C%02u.%02u.%02u Unexpected head (%d)\n",
+                         cyls[0], heads[0], secs[sector], 
+                         heads[sector] );
+                reject_track++;
+                continue;
+            } 
+
+            if (nos[0] != nos[sector]) {
+                JV3_INFO("JV3: C%02u.%02u.%02u Unexpected size (%d)\n",
+                         cyls[0], heads[0], secs[sector], 
+                         128u<<nos[sector] );
+                reject_track++;
+                continue;
+            }
+
+            if (all[hd(track)].first > secs[sector])
+                all[hd(track)].first = secs[sector];
+            bitset(all[hd(track)].sec,secs[sector]);
+        }
+        if (!reject_track) {
+            if (cyl(track) == cyls[0] )
+                all[hd(track)].side_80++;
+            else if (cyl(track) / 2 == cyls[0])
+                all[hd(track)].side_40++;    
+            /* The first size we see is the correct one */
+            if (all[hd(track)].size == -1)
+                all[hd(track)].size = nos[0];
+
+            /* Get maximum sector count for all tracks */
+            if (ti->nr_sectors > all[hd(track)].sectors)
+                all[hd(track)].sectors = ti->nr_sectors;
+        } else {
+            bitset(all[hd(track)].reject_track,track);
+            all[hd(track)].reject_side++;
+        }
+
+        
+        memfree(secs);
+        memfree(cyls);
+        memfree(heads);
+        memfree(nos);
+        memfree(marks);
+        memfree(crcs);
+        memfree(dat);
     }
 
-    /* Single-side 40 track ? */
-    single_40 = 0;
-    if (side_1_40 < side_0_40/2)
-        single_40 = 1;
+    /* ============================================================ 
+     * Determine
+     * 80/40 track stepping
+     * Sides
+     * Density
+     * Number of sectors per track
+     * First Sector number
+     * Sector size
+     * ============================================================ */
 
-    /* Single-side 80 track ? */
-    single_80 = 0;
-    if (side_1_80 < side_0_80/2)
-        single_80 = 1;
 
     track_80 = 0;
-    /* Are we reading a 40 track disk with an 80 track drive ? */
-    track_80 = (side_0_80 > (side_0_40 * 3 / 2));
-
-    /* Single-sided overall? */
     single = 0;
-    if (single_40 || single_80)
+    save_density = all[0].density;
+    save_sectors = all[0].sectors;
+    save_first = all[0].first;
+    save_size = all[0].size;
+
+    uint8_t     used[ ((MAX_SECTORS+7)>>3) ];
+
+    if (size_to_jv3_flags(128u << save_size) & 0x100) {
+        JV3_WARN("JV3: size (%d) is not valid for JV3 format\n", 128u << save_size);
+        exit(1);
+    }
+
+    if (all[0].reject_side) {
+        JV3_WARN("JV3: disk side 0 40 track scan rejected disk\n");
+        exit(1);
+    }
+
+    if (all[1].reject_side) {
+        JV3_INFO("JV3: disk side 1 40 track scan rejected side 1\n");
+        single = 1;
+    }
+
+    /* Verify that sector use is consistant on side 0 */
+    count = 0;
+    for (i = 0; i < MAX_SECTORS; ++i)
+        if (bittest(all[0].sec, i))
+            count++;
+
+    if (count != all[0].sectors ) {
+        JV3_WARN("JV3: FATAL sector use mismatch - bad disk\n");
+        exit(1);
+    }
+
+    /* We can only trust 40 track data fully at this point in our testing */
+    track_80 = (all[0].side_80 > (all[0].side_40 * 3 / 2));
+
+    if (all[0].sectors != all[1].sectors)
         single = 1;
 
-    JV3_INFO("JV3: Cylinders: %d, track_80:%d, single:%d\n", 
-             di->nr_tracks, track_80, single);
-    JV3_INFO("JV3: side_0_40:%d, side_1_40:%d, side_0_80:%d, side_1_80:%d\n",
-             side_0_40, side_1_40, side_0_80, side_1_80);
+    if (all[0].side_80 > (all[1].side_80 * 3 / 2))
+        single = 1;
 
-    /* Loop twice - first pass dumps headers - second pass secors
-     * Fill jv3_buf in jv3_state 0
-     * Write jv3_but at start of jv3_state 1 - then write sectors */
-    for (jv3_state = 0; jv3_state < 2; jv3_state++) {
-        /* Are we done with the header? */
-        if (jv3_state == 1 && jv3_ind) {
-            /* PAD and WRITE PROTECT BYTE */
-            while(jv3_ind < JV3_HEADER_SIZE)
-                jv3_buf[jv3_ind++] = 0xff;
-            write_exact(d->fd, jv3_buf, JV3_HEADER_SIZE);
-            jv3_ind = 0; /* ignore header now it's written */
+    if (all[0].side_40 > (all[1].side_40 * 3 / 2))
+        single = 1;
+
+    if (all[0].density != all[1].density)
+        single = 1;
+
+    /* compare sector use on each side */
+    count = 0;
+    for (i = 0; i < MAX_SECTORS; ++i) {
+        if (bittest(all[0].sec,i))
+            count++;
+        if (bittest(all[1].sec,i))
+            count--;
+    }
+
+    if (count > 0)
+        single = 1;
+
+    /* pass 1 information is DEBUG only, real values are on pass 2 */
+    ti = &di->track[0];
+    JV3_TRACE("\n");
+    JV3_TRACE("===============================================\n");
+    JV3_TRACE("pass 1\n");
+    
+    JV3_TRACE("JV3: %s\n", ti->typename);
+    JV3_TRACE("JV3: %s Encoding\n", type_to_encoding(ti->type));
+
+    JV3_TRACE("JV3: %d Cylinders scanned\n", cyl(di->nr_tracks));
+
+    JV3_TRACE("JV3: %d track format\n", (track_80 ? 80 : 40));
+    JV3_TRACE("JV3: side 0 side_40: %d\n",all[0].side_40);
+    JV3_TRACE("JV3: side 1 side_40: %d\n",all[1].side_40);
+    JV3_TRACE("JV3: side 0 side_80: %d\n",all[0].side_80);
+    JV3_TRACE("JV3: side 1 side_80: %d\n",all[1].side_80);
+
+    JV3_TRACE("JV3: %s Sided disk\n", (single ? "Single" : "Double") );
+    JV3_TRACE("JV3: %d Sectors tracks\n", save_sectors);
+    JV3_TRACE("JV3: %d First Sector\n", save_first);
+    JV3_TRACE("JV3: %d Sectors size\n", 128u << save_size);
+    JV3_TRACE("===============================================\n");
+
+
+    /* ============================================================ 
+     * Pass 2
+     * Examine ALL tracks now using first pass data as a filter
+     * We know:
+     * 80/40 track stepping
+     * Sides
+     * Density
+     * Number of sectors per track
+     * First Sector number
+     * Sector size
+     * ============================================================ */
+
+    tracks = 0;
+    count = 0;
+    for (track = 0; track < di->nr_tracks; track++) {
+        if (single && hd(track))
+            continue;
+
+        /* 40 tracks ? */
+        if (!track_80 && (track & 2))
+            continue;
+
+        ti = &di->track[track];
+
+        density = type_to_density(ti->type);
+        if (density & 0xfffe || save_density != density ||
+            !ti->nr_sectors || ti->nr_sectors > save_sectors) {
+            bitset(all[hd(track)].reject_track,track);
+            bitclr(all[hd(track)].track,track);
+            continue;
         }
 
-        /* Look at the imd.c container for data access examples */
+        reject_track = 0;
 
-        /* Process tracks */
-        for (track = 0; track < di->nr_tracks; track++) {
-            ti = &di->track[track];
+        retrieve_ibm_mfm_track(
+            d, track, &secs, &cyls, &heads, &nos, &marks, &crcs, &dat);
 
-            /* TRS80 Denity is 0 (FM) or 1 (MFM)*/
-            density = type_to_density(ti->type);
-
-            /* Other bits are errors */
-            if (density & 0xfe) {
-                /* only warn once */
-                if (jv3_state == 0)
-                    JV3_WARN("T%u.%u: Ignoring track format '%s' "
-                             "while writing JV3 file\n",
-                             cyl(track), hd(track), ti->typename);
-                continue;    /* skip this unknown track type */
-            }
+        if (cyl(track) != cyls[0]  && cyl(track)/2 != cyls[0]) {
+            JV3_INFO("JV3: C%02u.%02u Cylinder mismatch for track(%d)\n",
+                     cyls[0], heads[0],
+                     cyl(track));
+            reject_track++;
+        }
             
-            if (!ti->nr_sectors)    /* No sectors ? */
-                continue;
-    
-            /* Invalid sector count ? */
-            if ((uint32_t)ti->nr_sectors >= 256) {
-                /* only warn once */
-                if (jv3_state == 0)
-                    JV3_WARN("T%u.%u: Unexpected number of IBM sectors (%u)\n",
-                             cyl(track), hd(track), ti->nr_sectors);
-                continue;
-            }
+        if (hd(track) != heads[0]) {
+            JV3_INFO("JV3: C%02u.%02u Head mismatch for track(%d)\n",
+                     cyls[0], heads[0],
+                     hd(track));
+            reject_track++;
+        }
 
-            /* If the disk is single side and we are on the wrong side */
-            if (single && hd(track))
-                continue;
+        /* size mismatch ? */
+        if (save_size != nos[0]) {
+            JV3_INFO("JV3: C%02u.%02u Unexpected size (%d)\n",
+                     cyls[0],heads[0], 
+                     128u<<nos[0]);
+            reject_track++;
+        }
 
-            /* 40 tracks ? */
-            /* Avoid partial cross-talk reads when using 80 track drive */
-            if (!track_80 && (track & 2))
-                continue; 
-    
-            /* This pulls information from the helper. In the case of jV3 we
-             * borrow from the ibm.c functions with extra trs80 address marks.
-             * The source can be from several file types - only tested with
-             * KroFlux CT type. */
-
-            retrieve_ibm_mfm_track(
-                d, track, &secs, &cyls, &heads, &nos, &marks, &dat);
-
-            /* FIXME: use track_80, single, etc to match with logical mapping */
-
-            /* From track header */
-            cylinder = cyl(track);
-            head = hd(track);
-            sec_sz = (128u << nos[0]);
-
-            /* More detailed debug level ? */
-            if (jv3_state == 0)
-                JV3_TRACE("JV3: trk:%3d, secs:%3d, sec_sz:%3d, density:%3d\n",
-                          track, ti->nr_sectors, sec_sz, density);
-    
-            /* Make sure each sector matches properties in the track header
-               Constant size, matching head, matching cylinder, etc */
-            for (sector = 0; sector < ti->nr_sectors; sector++) {
-                /* More detailed debug level ? */
-                if (jv3_state == 0)
-                    JV3_TRACE("\tcyl:%3d, head:%3d, sector:%3d, "
-                              "size:%3d, mark:%02x\n", 
-                              cyls[sector], heads[sector], secs[sector], 
-                              nos[sector], marks[sector]);
-
-                if ((128u << nos[sector]) != sec_sz) {
-                    if (jv3_state == 0)
-                        JV3_INFO("T%u.%u: Cannot write mixed-sized sectors "
-                                 "to JV3 file\n", cyl(track), hd(track));
-                    continue;
-                }
-                
-                if (cyl(cyls[sector]) != cylinder)
-                    head |= 0x80;
-                if (hd(heads[sector]) != (head&1))
-                    head |= 0x40;
-            }
-
-            /* Write headers , then data */
-            for (sector = 0; sector < ti->nr_sectors; sector++) {
-                /* Write JV3 headers first at state 0 */
-                if (jv3_state == 1) {
-                    /* We assume a fixed size sector */
-                    /* TODO double check how the dat[] array is filled */
-                    write_exact(d->fd, &dat[sector * sec_sz], sec_sz);
-                } else { /* jv3_state == 0, build headers */
-                    if (jv3_ind >= JV3_HEADER_SIZE) { /* Fatal Error */
-                        JV3_WARN("JV3: header index exceeded:%04x\n",jv3_ind);
-                        JV3_WARN("JV3: track:%d,side:%d,sector:%d\n", 
-                                 cyls[sector],heads[sector] & 1,sector);
-                        errx(1,"\n");
-                    }
-
-                    /* address marks */
-                    mark = marks[sector];
-                    /* map cylinder */
-                    jv3_buf[jv3_ind++] = cyls[sector];
-                    /* map sector number */
-                    jv3_buf[jv3_ind++] = secs[sector];
-
-                    /* JV3 flags */
-                    /* Convert sector size to JV3 flags */
-                    flags = size_to_jv3_flags(128u << nos[sector]);
-                    if (flags & 0x100)
-                        JV3_TRACE("JV3: cly:%d, hd:%d, sec(%d), size:%d "
-                                  "is INVALID\n",
-                                  cyl(track), hd(track), sector,
-                                  128u << nos[sector]);
-                    /* Convert address mark and density into JV3 flags */
-                    flags |=  mark_to_jv3_flags(mark, density);
-                    /* Encode side */
-                    flags |= (heads[sector] & 1) ? JV3_SIDE : 0;
-                    /* Encode Density */
-                    flags |= density ? JV3_DENSITY : 0;
-
-                    /* Discard any return status warnings */
-                    jv3_buf[jv3_ind++] = flags & 0xff;
-                }
-            }
+        if (reject_track) {
             memfree(secs);
             memfree(cyls);
             memfree(heads);
             memfree(nos);
             memfree(marks);
+            memfree(crcs);
             memfree(dat);
+    
+            bitclr(all[hd(track)].track,track);
+            bitset(all[hd(track)].reject_track,track);
+            continue;
+        }
+
+        /* Make sure that properties of each sector matches 
+           within the same Physical track and head */
+
+        JV3_TRACE("JV3 DEBUG: C%02u.%02u\n", cyls[0], heads[0]);
+
+        /* used sectors for this track */
+        for (i = 0;i < MAX_SECTORS; ++i)
+            bitclr(used,i);
+
+        /* Check Logical values for consistancy accross all 
+           sectors in this physical track */
+
+        for (sector = 0; !reject_track && sector < ti->nr_sectors; sector++) {
+            /* Cylinder mismatch, logical vs physical ? */
+            if( cyls[0] != cyls[sector] ) {
+                JV3_INFO("JV3: C%02u.%02u.%02u Unexpected cylinder (%d)\n",
+                         cyls[0], heads[0], secs[sector], 
+                         cyls[sector] );
+                reject_track++;
+                break;
+            }
+
+            /* Head mismatch ? */
+            if (heads[0] != heads[sector]) {
+                JV3_INFO("JV3: C%02u.%02u.%02u Unexpected head (%d)\n",
+                         cyls[0], heads[0], secs[sector], 
+                         heads[sector] );
+                reject_track++;
+                break;
+            } 
+
+            /* Is sector valid based information from first 35 sectors */
+            if (!bittest(all[hd(track)].sec,secs[sector])) {
+                JV3_INFO("JV3: C%02u.%02u.%02u Unexpected Sector (%d)\n",
+                         realcyl(track,track_80), hd(track), secs[sector], 
+                         secs[sector] );
+                ++reject_track;
+                break;
+            }
+
+            /* Is this sector duplicated ?*/
+            if (bittest(used,secs[sector])) {
+                JV3_INFO("JV3: C%02u.%02u.%02u.Duplicate Sector (%d)\n",
+                         realcyl(track,track_80), hd(track), secs[sector], 
+                         secs[sector] );
+                ++reject_track;
+                break;
+            }
+
+
+            /* size mismatch ? */
+            if (nos[0] != nos[sector]) {
+                JV3_INFO("JV3: C%02u.%02u.%02u.Unexpected size (%d)\n",
+                         realcyl(track,track_80), hd(track), secs[sector], 
+                         128u<<nos[sector] );
+                reject_track++;
+                break;
+            }
+
+
+            if (!reject_track) {
+                /* Track CRC Errors */
+                if(crcs[sector]) {
+                    JV3_WARN("JV3: C%02u.%02u.%02u CRC(%4x) error\n",
+                             cyls[sector],heads[sector], secs[sector], crcs[sector]);
+                    ++crc_errors;
+                    /* crc errors are not fatal */
+                }
+                JV3_TRACE("JV3 DEBUG: C%02u.%02u.%02u: mark:%02x\n",
+                          cyls[0], heads[0], secs[sector], marks[sector]);
+                bitset(used, secs[sector]);
+            }
+        }    /* for(sector=0 ....) */
+
+        if (!reject_track) {
+            bitclr(all[hd(track)].reject_track,track);
+            bitset(all[hd(track)].track,track);
+            bitset(all[hd(track)].cyl, cyls[0] );
+            /* save cylinder attributes */
+            /* Save density for this track */
+            if (hd(track) == 0)
+                ++tracks;
+        }
+
+        if (reject_track) {
+            bitset(all[hd(track)].reject_track,track);
+            bitclr(all[hd(track)].track,track);
+            JV3_INFO("JV3: T%u.%u track rejected\n",
+                     cyl(track), hd(track));
+        }
+
+        /* Free data from retrieve() */
+        memfree(secs);
+        memfree(cyls);
+        memfree(heads);
+        memfree(nos);
+        memfree(marks);
+        memfree(crcs);
+        memfree(dat);
+    } /* for (track = 0; track < di->nr_tracks; track++) */
+    /* ============================================================ */
+
+    for (track = 0; track < di->nr_tracks; track++) {
+        if(single && hd(track))
+            continue;
+
+        /* 40 tracks ? */
+        if (!track_80 && (track & 2))
+            continue; 
+    
+        if (realcyl(track,track_80) >= tracks)
+            break;
+
+        /* FIXME */
+        if (!bittest(all[hd(track)].track,track)) {
+            JV3_TRACE("DEBUG: track:%d.%d bad\n",
+                      realcyl(track,track_80) , hd(track));
+        }
+
+        if (bittest(all[hd(track)].reject_track,track)) {
+            JV3_TRACE("DEBUG: track:%d.%d reject\n",
+                      realcyl(track,track_80) , hd(track));
         }
     }
+
+    /* Test for total tracks */
+
+    ti = &di->track[0];
+    JV3_TRACE("\n");
+    JV3_TRACE("===============================================\n");
+    JV3_TRACE("pass 2\n");
+    JV3_INFO("JV3: %s\n", ti->typename);
+    JV3_INFO("JV3: %s Encoding\n", type_to_encoding(ti->type));
+    JV3_INFO("JV3: %d Cylinders scanned\n", di->nr_tracks / 2 );
+    JV3_INFO("JV3: %s Sided disk\n", (single ? "Single" : "Double") );
+    JV3_INFO("JV3: %d track format\n", (track_80 ? 80 : 40));
+    JV3_INFO("JV3: %d Tracks used\n", tracks);
+    JV3_INFO("JV3: %d Sectors tracks\n", save_sectors);
+    JV3_INFO("JV3: %d First Sector\n", save_first);
+    JV3_INFO("JV3: %d Sectors size\n", 128u << save_size);
+    if(crc_errors)
+        JV3_INFO("JV3: %d CRC errors\n", crc_errors);
+    JV3_TRACE("===============================================\n");
+
+    
+    /* =========================================================== */
+
+    /* truncate to 0 bytes */
+    lseek(d->fd, 0, SEEK_SET);
+    if (ftruncate(d->fd, 0) < 0)
+        err(1, NULL);
+
+
+    /* PAD and WRITE PROTECT BYTE */
+    jv3_ind = 0;
+    while (jv3_ind < JV3_HEADER_SIZE - 3) {
+        jv3_buf[jv3_ind++] = JV3_FREE;  /* CYL */
+        jv3_buf[jv3_ind++] = JV3_FREE;  /* SECTOR */
+        jv3_buf[jv3_ind++] = JV3_FREEF; /* FLAGS */
+    }
+                
+    /* Loop twice - first pass dumps headers - second pass sectors
+     * Fill jv3_buf in jv3_state 0
+     * Write jv3_buf at state 1, data at state 2
+     */
+
+    /*
+     * FIXME FIXME
+     * We should look trough the trs80 structure NOT THIS
+     */
+
+    count = 128u << 7;
+
+    zeros = calloc(count,1);
+
+    if (!zeros) {
+        JV3_WARN("JV3: memory calloc failed\n");
+        exit(1);
+    }
+
+    jv3_pos = 0;
+
+    for (jv3_state = 0; jv3_state < 3; jv3_state++) {
+        if (jv3_state == 0 ) {
+            jv3_pos = 0;
+            jv3_ind = 0;
+        }
+        /* Are we done with the header? */
+        if (jv3_state == 1) {
+            lseek(d->fd, 0, SEEK_SET);
+            write_exact(d->fd, jv3_buf, JV3_HEADER_SIZE);
+            continue;
+        }
+        if (jv3_state == 2) {
+            lseek(d->fd, ((long) JV3_HEADER_SIZE),  SEEK_SET);
+            jv3_pos = JV3_HEADER_SIZE;
+            jv3_ind = 0;
+        }
+
+        /* Look at the imd.c container for data access examples */
+
+        /* Reset sector count, first sector, size etc fro invalid tracks */
+        jv3_ind = 0;
+        for (track = 0; track < di->nr_tracks; track++) {
+
+            if (single && hd(track))
+                continue;
+
+            /* 40 tracks ? */
+            if (!track_80 && (track & 2))
+                continue;
+
+            if (realcyl(track,track_80) >= tracks)
+                break;
+
+            /* FIXME */
+            if (!bittest(all[hd(track)].track,track))
+                continue;
+
+            if (bittest(all[hd(track)].reject_track,track))
+                continue;
+
+            ti = &di->track[track];
+
+            if (!ti->nr_sectors) {
+                JV3_WARN("JV3: T%u.%u: FATAL expected (%d) sectors got ZERO\n",
+                         cyl(track), hd(track), save_sectors);
+                exit(1);
+            }
+
+
+            retrieve_ibm_mfm_track(
+                d, track, &secs, &cyls, &heads, &nos, &marks, &crcs, &dat);
+
+            size = 128u << save_size;
+
+            for (sector = 0; sector < save_sectors; ++sector) {
+
+                /* Write sectors in state 0 */
+                if (jv3_state == 2) {
+                    if (ti->nr_sectors <= sector) {
+                        JV3_TRACE("JV3: DEBUG: C%02u.%02u.%02u: mark:%02x, pos:%ld FILL\n", 
+                                  cyls[0],
+                                  heads[0],
+                                  0xff,
+                                  marks[0],
+                                  jv3_pos);
+                        write_exact(d->fd, zeros, size);
+                    } else {
+                        JV3_TRACE("DEBUG: C%02u.%02u.%02u: mark:%02x, pos:%ld\n", 
+                                  cyls[sector],
+                                  heads[sector],
+                                  secs[sector],
+                                  marks[sector],
+                                  jv3_pos);
+                        /* data */
+                        write_exact(d->fd, &dat[sector * size], size);
+                    }
+                    jv3_pos += size;
+
+                } /* if(jv3_state == 2) */
+
+
+                /* Write headers in state 0 */
+                if (jv3_state == 0) {
+                    if (jv3_ind >= ((JV3_ENTRIES) - 1)) {
+                        JV3_WARN("JV3: header index exceeded:%04x\n",jv3_ind);
+                        exit(1);
+                    }
+
+                    /* Convert sector size to JV3 flags */
+
+                    if (ti->nr_sectors <= sector) {
+                        JV3_TRACE("DEBUG: C%02u.%u %u: mark:%02x, "
+                                  "ind:%d FILL\n", 
+                                  cyls[0],
+                                  heads[0],
+                                  0xff,
+                                  marks[0],
+                                  jv3_ind);
+                        /* JV3 flags */
+                        flags = size_to_jv3_flags(size);
+
+                        /* Convert address mark and density to JV3 flags */
+                        flags |=  mark_to_jv3_flags(marks[0], save_density);
+                        /* Encode side */
+                        flags |= heads[0] ? JV3_SIDE : 0;
+
+#ifdef JV3_CRC
+                        flags |= JV3_ERROR;
+#endif
+                        /* map cylinder */
+                        jv3_buf[jv3_ind*3] = cyls[0];
+                        /* map sector number */
+
+                        /* FIXME - fill in missing with bit mask */
+                        jv3_buf[jv3_ind*3+1] = 0xff;
+
+                        jv3_buf[jv3_ind*3+2] = flags & 0xff;
+                        jv3_ind++;
+
+                    } else {
+
+                        JV3_TRACE("DEBUG: C%02u.%02u.%02u: mark:%02x, "
+                                  "ind:%d\n", 
+                                  cyls[sector],
+                                  heads[sector],
+                                  secs[sector],
+                                  marks[sector],
+                                  jv3_ind);
+
+                        /* Error testing has already been done */
+                        flags = size_to_jv3_flags(size);
+
+                        /* Convert address mark and density into JV3 flags */
+                        flags |= mark_to_jv3_flags(marks[sector], save_density);
+                        /* Encode side */
+                        flags |= heads[sector] ? JV3_SIDE : 0;
+
+                        /* Encode CRC Error */
+                        if (crcs[sector]) {
+#ifdef JV3_CRC_HIDE
+                            flags |= JV3_ERROR;
+#endif
+                        }
+
+                        /* map cylinder */
+                        jv3_buf[jv3_ind*3] = cyls[sector];
+                        /* map sector number */
+                        jv3_buf[jv3_ind*3+1] = secs[sector];
+                        jv3_buf[jv3_ind*3+2] = flags & 0xff;
+                        jv3_ind++;
+                    }
+
+                }    /* if(jv3_state == 0) */
+            } /* for(sector ...) */
+            /* Free data from retrieve() */
+            memfree(secs);
+            memfree(cyls);
+            memfree(heads);
+            memfree(nos);
+            memfree(marks);
+            memfree(crcs);
+            memfree(dat);
+        } /* for (track = 0; track < di->nr_tracks; track++) */
+    } /* for(jv3_state ..) */
 }
 
 struct container container_jv3 = {

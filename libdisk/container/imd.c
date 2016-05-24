@@ -189,6 +189,7 @@ static void imd_close(struct disk *d)
     struct track_info *ti;
     struct track_header thdr;
     uint8_t *secs, *cyls, *heads, *nos, *marks, *dat, c;
+    uint16_t *crcs;
     char timestr[30], sig[128];
     struct tm tm;
     time_t t;
@@ -241,7 +242,7 @@ static void imd_close(struct disk *d)
         }
 
         retrieve_ibm_mfm_track(
-            d, trk, &secs, &cyls, &heads, &nos, &marks, &dat);
+            d, trk, &secs, &cyls, &heads, &nos, &marks, &crcs, &dat);
 
         thdr.cyl = cyl(trk);
         thdr.head = hd(trk);
@@ -292,6 +293,7 @@ static void imd_close(struct disk *d)
         memfree(heads);
         memfree(nos);
         memfree(marks);
+        memfree(crcs);
         memfree(dat);
     }
 }

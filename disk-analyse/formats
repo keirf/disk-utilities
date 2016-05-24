@@ -1678,6 +1678,7 @@ ibm
 
 ##########################################################
 # TRS-FM Generic Formats (auto-detect sector arrangement)
+
 trs80_fm_sd
     * trs80_fm_sd
 
@@ -1685,8 +1686,16 @@ trs80_mfm_dd
     * trs80_mfm_dd
 
 trs80
-    * trs80_fm_sd trs80_mfm_dd ibm_fm_sd ibm_fm_dd \
-      ibm_mfm_dd ibm_mfm_hd ibm_mfm_ed
+    * trs80_fm_sd trs80_mfm_dd
+
+trs80_fm_sd_recovery
+    * trs80_fm_sd_recovery
+
+trs80_mfm_dd_recovery
+    * trs80_mfm_dd_recovery
+
+trs80_recovery
+    * trs80_fm_sd_recovery trs80_mfm_dd_recovery
 
 ##########################################################
 # Raw / Unanalysed Formats
