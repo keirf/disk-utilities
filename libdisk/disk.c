@@ -679,6 +679,47 @@ void mfm_decode_bytes(
     }
 }
 
+void mfm_encode_bytes(
+    enum bitcell_encoding enc, unsigned int bytes, void *in, void *out,
+    uint8_t prev_bit)
+{
+    uint16_t x, y;
+    uint8_t *in_b = in, *out_b = out;
+    unsigned int i, j;
+
+    /* Extract the data bits into correct output locations. */
+    for (i = 0; i < bytes; i++) {
+        if (enc == bc_mfm) {
+            x = y = in_b[i];
+            for (j = 0; j < 4; j++) {
+                x <<= 2;
+                y <<= 2;
+                x |= !!(x & 0x200);
+                y |= !!(x & 0x100);
+            }
+            out_b[2*i] = x;
+            out_b[2*i+1] = y;
+        } else if (enc == bc_mfm_even_odd) {
+            out_b[i] = in_b[i] >> 1;
+            out_b[i + bytes] = in_b[i];
+        } else if (enc == bc_mfm_odd_even) {
+            out_b[i] = in_b[i];
+            out_b[i + bytes] = in_b[i] >> 1;
+        } else {
+            BUG();
+        }
+    }
+
+    /* Calculate and insert the clock bits. */
+    x = prev_bit;
+    for (i = 0; i < 2*bytes; i++) {
+        x = (x << 8) | out_b[i];
+        x &= 0x5555u;
+        x |= ~((x>>1)|(x<<1)) & 0xaaaa;
+        out_b[i] = x;
+    }
+}
+
 uint32_t mfm_encode_word(uint32_t w)
 {
     uint32_t i, d, p = (w >> 16) & 1, x = 0;

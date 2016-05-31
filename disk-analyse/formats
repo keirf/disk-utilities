@@ -1304,6 +1304,9 @@ probe_amiga
     159 gremlin_longtrack
     * ignore
 
+"Super Stardust"
+    * amigados super_stardust
+
 "Superfrog" = rnc_pdos
 
 "Supremacy" # Disk 1 Tracks 138,140,142,144+, Disk 2 Tracks 130+, may be empty
