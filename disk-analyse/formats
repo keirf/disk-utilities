@@ -55,6 +55,8 @@ probe_amiga
     4-140/2 albedo_data
     * ignore
 
+"Alcatraz" = amigados
+
 "Alfred Chicken" = amigados
 
 # Alien Breed: Disk 2 Track 0 is a custom protection track
@@ -160,6 +162,8 @@ probe_amiga
 
 "Armour-Geddon II" = amigados
 
+"Arthur The Quest For Excalibur" = amigados
+
 "Aspar Master Grand Prix" = "Grand Prix Master"
 
 "Assassin" = amigados_copylock
@@ -254,6 +258,10 @@ probe_amiga
 "Blood Money"
     * amigados blood_money protec_longtrack
 
+"Bloodwych" = amigados_copylock
+
+"Bloodwych Data Disks Vol 1" = rnc_hidden
+
 "Blue Max" = amigados
 
 "Body Blows" = rnc_pdos
@@ -274,6 +282,9 @@ probe_amiga
 
 "Bubba N Styx" = amigados_copylock
 
+# US Version has Copylock, HitSquad release unprotected + all tracks long!
+"Bubble Bobble" = amigados_copylock
+
 "Buck Rogers: Countdown To Doomsday" = amigados
 
 "Buggy Boy" # speed Buggy also # also Tenstar Pack Game 4
@@ -282,6 +293,8 @@ probe_amiga
 # SPS IPF has normal-length tracks. Barry's dump has long tracks.
 "Bump 'n' Burn"
     * amigados_unknown_length bump_n_burn
+
+"Burnout" = amigados
 
 "Cadaver" = amigados_copylock
 
@@ -336,6 +349,8 @@ probe_amiga
 "Chicago 90" = amigados
 
 "Chrono Quest" = amigados
+
+"Chubby Gristle" = amigados
 
 "Chuck Rock" = amigados_copylock
 
@@ -393,6 +408,8 @@ probe_amiga
     1-151 hellwig
     * ignore
 
+"Darkmere" = amigados_copylock
+
 # Astra Pack Game 1
 "Datastorm" = amigados
 
@@ -432,6 +449,9 @@ probe_amiga
 "Dennis" = amigados_copylock
 
 "Desert Strike" = amigados
+
+# Disk 2 may show some tracks as AmigaDOS Extended (Header)
+"Deuteros" = amigados_copylock
 
 "Dizzy's Excellent Adventures" = amigados_copylock
 
@@ -484,6 +504,11 @@ probe_amiga
     * amigados
 
 "Ebonstar" = amigados
+
+# v2.0 / Lots of tracks with incorrect (but deliberate) track number! 
+"Elite" = amigados
+
+"Elvira II: The Jaws Of Cerberus" = amigados
 
 "Emerald Mine II" = amigados
 
@@ -549,6 +574,8 @@ probe_amiga
 # Same version as in the Mega Lo Mania + First Samurai Compilation
 "First Samurai" = amigados_copylock
 
+"Flight Of The Amazon Queen" = amigados
+
 "Flying Shark" = amigados
 
 "Forgotten Worlds"
@@ -587,6 +614,8 @@ probe_amiga
     * amigados gadgetslostintime_a gadgetslostintime_b
 
 "Galaxy Force II" = rnc_hidden
+
+"Galdregons Domain" = infogrames_protected
 
 "Gateway To The Savage Frontier" = amigados
 
@@ -642,6 +671,9 @@ probe_amiga
 "Heimdall" = amigados_copylock
 
 "Heimdall 2" = amigados_copylock
+
+# Sierra
+"Hero's Quest" = amigados
 
 # Tracks 154-157 may be empty
 "Hero Quest" = amigados_gremlin_longtrack
@@ -716,6 +748,8 @@ probe_amiga
 "Jaguar XJ220"
     * amigados core_design
 
+"James Clavell's Shogun" = amigados
+
 "James Pond"
     0 amigados
     2-77 ibm_pc_dd_10sec
@@ -741,6 +775,8 @@ probe_amiga
     2-3 infogrames_longtrack
     * ibm_pc_dd_10sec
 
+"Journey" = amigados
+
 # Budget re-release
 "Journey To The Center Of The Earth" = amigados
 
@@ -761,6 +797,8 @@ probe_amiga
     78-83 amigados
     92-134 ibm_pc_dd_10sec
     * ignore
+
+"KGB" = amigados
 
 "Khalaan" = amigados
 
@@ -869,6 +907,8 @@ probe_amiga
 
 "MegaTraveller 1" = amigados
 
+"MegaTraveller 2" = amigados
+
 "Menace"
     159 protec_longtrack
     * amigados menace
@@ -884,6 +924,8 @@ probe_amiga
 "Midwinter II" = amigados
 
 "Might And Magic III" = amigados
+
+"Monkey Island" = amigados
 
 "Monkey Island 2" = amigados
 
@@ -999,6 +1041,8 @@ probe_amiga
 # Disk label says "Copylock(tm) Amiga" so original may be copylock!
 "Pipe Mania" = amigados
 
+"Pirates!" = amigados
+
 "Plutos"
     1 amigados_long_111000
     * amigados
@@ -1027,6 +1071,9 @@ probe_amiga
 "Predator II"
     * arc_development_a copylock amigados
 
+"Prince Of Persia"
+    * amigados typhoon
+
 "Prison"
     70 amigados prison
     * amigados
@@ -1044,6 +1091,8 @@ probe_amiga
 "Puggsy" = amigados
 
 "Purple Saturn Day" = infogrames_protected
+
+"Pushover" = amigados_copylock
 
 "Putty" = amigados_copylock
 
@@ -1070,6 +1119,9 @@ probe_amiga
 # Hit Squad re-release has no copylock
 "Rainbow Islands" = amigados_copylock
 
+# All tracks mastered long + T0.1 shows AmigaDOS Extended (Header)
+"Rambo III" = amigados
+
 "Rampage" = amigados
 
 "Reach For The Skies" = amigados
@@ -1078,6 +1130,19 @@ probe_amiga
     * amigados fun_factory
 
 "Resolution 101" = rnc_hidden
+
+"Return To Genesis"
+    0 amigados
+    1 protec_longtrack
+    4-18/2 ibm_pc_dd
+    15-21 ibm_pc_dd_10sec
+    22-56/2 ibm_pc_dd_10sec
+    58-63 ibm_pc_dd_10sec
+    65-75/2 ibm_pc_dd_10sec
+    78-83 amigados
+    98 ibm_pc_dd
+    100-158/2 ibm_pc_dd_10sec
+    * ignore
 
 # Original uses Copylock
 # Arcade Action Game 7 uses RNC Hidden!
@@ -1196,6 +1261,8 @@ probe_amiga
 
 "Silent Service" = amigados
 
+"Silent Service II" = amigados
+
 "Silicon Dreams" = amigados
 
 "Sim Ant" = amigados
@@ -1229,6 +1296,10 @@ probe_amiga
 "Slayer" = amigados_copylock
 
 "Sleeping Gods Lie" = amigados_copylock
+
+"Soccer Kid" = amigados
+
+"Space Rogue" = amigados
 
 # KIXX XL Budget Label (Sierra)
 "Space Quest IV" = amigados
@@ -1319,6 +1390,9 @@ probe_amiga
 
 "Syndicate" = amigados
 
+# Hit Disks Volume 2
+"Tanglewood" = amigados
+
 # Protection checks for track length X, where 104448 < X <= 105984, and does
 # not care about gap contents. Actual length is almost exactly 105500 bits.
 "Targhan"
@@ -1376,6 +1450,9 @@ probe_amiga
 
 "The Guild Of Thieves" = amigados
 
+# AmigaDOS Extended (Header)
+"The Humans" = amigados
+
 "The Immortal" = amigados
 
 "The Keys To Maramon" = amigados
@@ -1386,6 +1463,8 @@ probe_amiga
 "The Kristal" = amigados_copylock
 
 "The Legend Of Kyrandia" = amigados
+
+"The Lost Treasures Of Infocom" = amigados
 
 "The Lurking Horror" = amigados
 
@@ -1571,6 +1650,10 @@ probe_amiga
 
 "Zool 2"
     * amigados gremlin
+
+"Zork Trilogy" = amigados
+
+"Zork Zero" = amigados
 
 ####################
 # Format information
