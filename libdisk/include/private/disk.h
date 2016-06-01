@@ -131,14 +131,16 @@ int dsk_write_raw(
     struct disk *d, unsigned int tracknr, enum track_type type,
     struct stream *s);
 
-/* Decode helpers for MFM analysers. */
-uint32_t mfm_decode_bits(enum bitcell_encoding enc, uint32_t x);
+/* Decode/Encode helpers for MFM analysers. */
+/* mfm_decode_word: Decode 32-bit MFM to 16-bit word. */
+uint16_t mfm_decode_word(uint32_t w);
+/* mfm_encode_word: Encode 17-bit word to 32-bit MFM (16 clock + 16 data). */
+uint32_t mfm_encode_word(uint32_t w);
 void mfm_decode_bytes(
     enum bitcell_encoding enc, unsigned int bytes, void *in, void *out);
 void mfm_encode_bytes(
     enum bitcell_encoding enc, unsigned int bytes, void *in, void *out,
     uint8_t prev_bit);
-uint32_t mfm_encode_word(uint32_t w);
 uint32_t amigados_checksum(void *dat, unsigned int bytes);
 
 /* IBM format decode helpers. */

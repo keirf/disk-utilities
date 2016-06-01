@@ -142,7 +142,7 @@ int ibm_scan_mark(struct stream *s, unsigned int max_scan, uint8_t *pmark)
         idx_off = s->index_offset_bc - 63;
         if (idx_off < 0)
             idx_off += s->track_len_bc;
-        *pmark = (uint8_t)mfm_decode_bits(bc_mfm, s->word);
+        *pmark = (uint8_t)mfm_decode_word(s->word);
         break;
     } while ((stream_next_bit(s) != -1) && --max_scan);
 
@@ -161,14 +161,14 @@ int ibm_scan_idam(struct stream *s, struct ibm_idam *idam)
     /* cyl,head */
     if (stream_next_bits(s, 32) == -1)
         goto fail;
-    idam->cyl = mfm_decode_bits(bc_mfm, s->word >> 16);
-    idam->head = mfm_decode_bits(bc_mfm, s->word);
+    idam->cyl = mfm_decode_word(s->word >> 16);
+    idam->head = mfm_decode_word(s->word);
 
     /* sec,no */
     if (stream_next_bits(s, 32) == -1)
         goto fail;
-    idam->sec = mfm_decode_bits(bc_mfm, s->word >> 16);
-    idam->no = mfm_decode_bits(bc_mfm, s->word);
+    idam->sec = mfm_decode_word(s->word >> 16);
+    idam->no = mfm_decode_word(s->word);
 
     /* crc */
     if (stream_next_bits(s, 32) == -1)
@@ -648,12 +648,12 @@ static int ibm_fm_scan_mark(
 
     do {
         if (((s->word>>16) != 0xaaaa) ||
-            ((uint8_t)mfm_decode_bits(bc_mfm, s->word>>1) != IBM_FM_SYNC_CLK))
+            ((uint8_t)mfm_decode_word(s->word>>1) != IBM_FM_SYNC_CLK))
             continue;
         idx_off = s->index_offset_bc - 111;
         if (idx_off < 0)
             idx_off += s->track_len_bc;
-        *pmark = (uint8_t)mfm_decode_bits(bc_mfm, s->word);
+        *pmark = (uint8_t)mfm_decode_word(s->word);
         stream_start_crc(s);
         s->crc16_ccitt = crc16_ccitt(pmark, 1, 0xffff);
         break;
@@ -674,14 +674,14 @@ static int ibm_fm_scan_idam(struct stream *s, struct ibm_idam *idam)
     /* cyl,head */
     if (stream_next_bits(s, 32) == -1)
         goto fail;
-    idam->cyl = mfm_decode_bits(bc_mfm, s->word >> 16);
-    idam->head = mfm_decode_bits(bc_mfm, s->word);
+    idam->cyl = mfm_decode_word(s->word >> 16);
+    idam->head = mfm_decode_word(s->word);
 
     /* sec,no */
     if (stream_next_bits(s, 32) == -1)
         goto fail;
-    idam->sec = mfm_decode_bits(bc_mfm, s->word >> 16);
-    idam->no = mfm_decode_bits(bc_mfm, s->word);
+    idam->sec = mfm_decode_word(s->word >> 16);
+    idam->no = mfm_decode_word(s->word);
 
     /* crc */
     if (stream_next_bits(s, 32) == -1)

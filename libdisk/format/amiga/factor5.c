@@ -35,7 +35,7 @@ static void *turrican_write_raw(
 
         if (stream_next_bits(s, 16) == -1)
             goto fail;
-        if (mfm_decode_bits(bc_mfm, (uint16_t)s->word) != 0)
+        if (mfm_decode_word((uint16_t)s->word) != 0)
             continue;
 
         if (stream_next_bytes(s, dat, 2*ti->len) == -1)
@@ -122,7 +122,7 @@ static void *denaris_a_write_raw(
 
         if (stream_next_bits(s, 16) == -1)
             goto fail;
-        if (mfm_decode_bits(bc_mfm, (uint16_t)s->word) != 0)
+        if (mfm_decode_word((uint16_t)s->word) != 0)
             continue;
 
         if (stream_next_bits(s, 32) == -1)
@@ -210,7 +210,7 @@ static void *denaris_b_write_raw(
 
         if (stream_next_bits(s, 16) == -1)
             goto fail;
-        if (mfm_decode_bits(bc_mfm, (uint16_t)s->word) != 0)
+        if (mfm_decode_word((uint16_t)s->word) != 0)
             continue;
 
         for (i = sum = 0; i < ti->len/4; i++) {
@@ -293,7 +293,7 @@ static void *factor5_hiscore_write_raw(
 
         if (stream_next_bits(s, 16) == -1)
             continue;
-        if (mfm_decode_bits(bc_mfm, (uint16_t)s->word) != 0)
+        if (mfm_decode_word((uint16_t)s->word) != 0)
             continue;
 
         if (stream_next_bytes(s, dat, 8) == -1)

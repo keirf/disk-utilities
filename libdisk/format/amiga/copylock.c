@@ -134,7 +134,7 @@ static void copylock_decode(
         } else /* TRKTYP_copylock_old */ {
             if (((uint16_t)s->word & 0xff00u) != 0x6500u)
                 continue;
-            sec = mfm_decode_bits(bc_mfm, s->word) & 0xfu;
+            sec = mfm_decode_word(s->word) & 0xfu;
             if (s->word != (mfm_encode_word(0xb0+sec) | (1u<<13)))
                 continue;
         }
@@ -144,7 +144,7 @@ static void copylock_decode(
         /* Check the sector header. */
         if (stream_next_bits(s, 16) == -1)
             break;
-        if (mfm_decode_bits(bc_mfm, (uint16_t)s->word) != sec)
+        if (mfm_decode_word((uint16_t)s->word) != sec)
             continue;
 
         /* Read and decode the sector data. */

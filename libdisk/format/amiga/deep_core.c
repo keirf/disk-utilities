@@ -173,14 +173,14 @@ static void *sec_N_write_raw(
                 break;
             if (stream_next_bits(s, 16) == -1)
                 goto fail;
-            if (mfm_decode_bits(bc_mfm, (uint16_t)s->word) != 0)
+            if (mfm_decode_word((uint16_t)s->word) != 0)
                 break;
             if (!block_write_raw(s, &block[sec*ti->bytes_per_sector],
                                  ti->bytes_per_sector))
                 continue;
             if (stream_next_bits(s, 32) == -1)
                 goto fail;
-            if (mfm_decode_bits(bc_mfm, s->word) != 0)
+            if (mfm_decode_word(s->word) != 0)
                 break;
             if (stream_next_bits(s, 16) == -1)
                 goto fail;
@@ -268,7 +268,7 @@ static void *diskid_write_raw(
 
         if (stream_next_bits(s, 16) == -1)
             goto fail;
-        if (mfm_decode_bits(bc_mfm, (uint16_t)s->word) != 0)
+        if (mfm_decode_word((uint16_t)s->word) != 0)
             continue;
         if (stream_next_bytes(s, raw, sizeof(raw)) == -1)
             goto fail;

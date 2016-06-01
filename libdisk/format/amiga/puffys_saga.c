@@ -38,7 +38,7 @@ static void *puffys_saga_write_raw(
         for (i = 0; i < 30; i++) {
             if (stream_next_bits(s, 32) == -1)
                 goto fail;
-            if (mfm_decode_bits(bc_mfm, s->word))
+            if (mfm_decode_word(s->word))
                 break;
         }
         if (i != 30)

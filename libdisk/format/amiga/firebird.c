@@ -47,7 +47,7 @@ static void *firebird_write_raw(
         if (ti->type == TRKTYP_firebird) {
             if (stream_next_bits(s, 16) == -1)
                 goto fail;
-            if (mfm_decode_bits(bc_mfm, (uint16_t)s->word) != 0xff)
+            if (mfm_decode_word((uint16_t)s->word) != 0xff)
                 continue;
         } else if (ti->type == TRKTYP_afterburner_data) {
             if (stream_next_bytes(s, dat, 6) == -1)

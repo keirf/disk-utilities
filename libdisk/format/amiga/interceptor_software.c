@@ -35,7 +35,7 @@ static void *interceptor_software_write_raw(
         /* Check for a decent-length zero sequence after the sync. */
         for (i = 0; i < 32; i++)
             if ((stream_next_bits(s, 32) == -1)
-                || mfm_decode_bits(bc_mfm, s->word))
+                || mfm_decode_word(s->word))
                 break;
         if (i != 32)
             continue;

@@ -68,7 +68,7 @@ static void *arc_development_write_raw(
 
         if (stream_next_bits(s, 32) == -1)
             goto fail;
-        if (mfm_decode_bits(bc_mfm, s->word) != 0)
+        if (mfm_decode_word(s->word) != 0)
            continue;
 
         for (sec = base = 0; sec < ti->nr_sectors; sec++) {

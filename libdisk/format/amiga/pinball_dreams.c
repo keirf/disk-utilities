@@ -60,7 +60,7 @@ static void *pinball_dreams_write_raw(
         block = memalloc(ti->len);
         p = (uint16_t *)dat;
         for (i = 0; i < ti->len; i++) {
-            uint8_t x = mfm_decode_bits(bc_mfm, be16toh(p[i]));
+            uint8_t x = mfm_decode_word(be16toh(p[i]));
             block[i] = (x >> 4) | (x << 4);
         }
         set_all_sectors_valid(ti);

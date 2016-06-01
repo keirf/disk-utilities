@@ -300,7 +300,7 @@ static int check_sequence(struct stream *s, unsigned int nr, uint8_t byte)
 {
     while (--nr) {
         stream_next_bits(s, 16);
-        if ((uint8_t)mfm_decode_bits(bc_mfm, s->word) != byte)
+        if ((uint8_t)mfm_decode_word(s->word) != byte)
             break;
     }
     return !nr;

@@ -637,24 +637,27 @@ uint16_t tbuf_rnd16(struct tbuf *tbuf)
     return rnd16(&tbuf->prng_seed);
 }
 
-uint32_t mfm_decode_bits(enum bitcell_encoding enc, uint32_t x)
+uint16_t mfm_decode_word(uint32_t w)
 {
-    if (enc == bc_mfm) {
-        uint32_t i, y = 0;
-        for (i = 0; i < 16; i++) {
-            y |= (x & 1) << i;
-            x >>= 2;
-        }
-        return y;
-    } 
+    return (((w & 0x40000000u) >> 15) | ((w & 0x10000000u) >> 14) |
+            ((w & 0x04000000u) >> 13) | ((w & 0x01000000u) >> 12) |
+            ((w & 0x00400000u) >> 11) | ((w & 0x00100000u) >> 10) |
+            ((w & 0x00040000u) >>  9) | ((w & 0x00010000u) >>  8) |
+            ((w & 0x00004000u) >>  7) | ((w & 0x00001000u) >>  6) |
+            ((w & 0x00000400u) >>  5) | ((w & 0x00000100u) >>  4) |
+            ((w & 0x00000040u) >>  3) | ((w & 0x00000010u) >>  2) |
+            ((w & 0x00000004u) >>  1) | ((w & 0x00000001u) >>  0));
+}
 
-    if (enc == bc_mfm_even)
-        return (x & 0x55555555u) << 1;
-
-    if (enc == bc_mfm_odd)
-        return x & 0x55555555u;
-
-    BUG_ON(enc != bc_raw);
+uint32_t mfm_encode_word(uint32_t w)
+{
+    uint32_t i, d, p = (w >> 16) & 1, x = 0;
+    for (i = 0; i < 16; i++) {
+        d = !!(w & 0x8000u);
+        x = (x << 2) | (!(d|p) << 1) | d;
+        p = d;
+        w <<= 1;
+    }
     return x;
 }
 
@@ -666,13 +669,15 @@ void mfm_decode_bytes(
 
     for (i = 0; i < bytes; i++) {
         if (enc == bc_mfm) {
-            out_b[i] = mfm_decode_bits(bc_mfm, be16toh(((uint16_t *)in)[i]));
+            uint8_t x = in_b[2*i+0], y = in_b[2*i+1];
+            out_b[i] = (((x & 0x40) << 1) | ((x & 0x10) << 2) |
+                        ((x & 0x04) << 3) | ((x & 0x01) << 4) |
+                        ((y & 0x40) >> 3) | ((y & 0x10) >> 2) |
+                        ((y & 0x04) >> 1) | ((y & 0x01) >> 0));
         } else if (enc == bc_mfm_even_odd) {
-            out_b[i] = (mfm_decode_bits(bc_mfm_even, in_b[i]) |
-                        mfm_decode_bits(bc_mfm_odd, in_b[i + bytes]));
+            out_b[i] = ((in_b[i] & 0x55) << 1) | (in_b[i + bytes] & 0x55);
         } else if (enc == bc_mfm_odd_even) {
-            out_b[i] = (mfm_decode_bits(bc_mfm_odd, in_b[i]) |
-                        mfm_decode_bits(bc_mfm_even, in_b[i + bytes]));
+            out_b[i] = (in_b[i] & 0x55) | ((in_b[i + bytes] & 0x55) << 1);
         } else {
             BUG();
         }
@@ -714,18 +719,6 @@ void mfm_encode_bytes(
         x |= ~((x>>1)|(x<<1)) & 0xaaaa;
         out_b[i] = x;
     }
-}
-
-uint32_t mfm_encode_word(uint32_t w)
-{
-    uint32_t i, d, p = (w >> 16) & 1, x = 0;
-    for (i = 0; i < 16; i++) {
-        d = !!(w & 0x8000u);
-        x = (x << 2) | (!(d|p) << 1) | d;
-        p = d;
-        w <<= 1;
-    }
-    return x;
 }
 
 uint32_t amigados_checksum(void *dat, unsigned int bytes)

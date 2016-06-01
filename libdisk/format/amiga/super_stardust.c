@@ -32,6 +32,8 @@ static void *super_stardust_write_raw(
         disk_get_tag_by_id(d, DSKTAG_disk_nr);
     unsigned int nr_valid_blocks = 0, least_block = ~0u;
 
+    printf("%u: ", tracknr);
+
     while ((stream_next_bit(s) != -1)
            && (nr_valid_blocks != ti->nr_sectors)) {
 
@@ -68,7 +70,7 @@ static void *super_stardust_write_raw(
                 disk_set_tag(d, DSKTAG_disk_nr, 4, &dsk);
         if (dsk != disktag_disk_nr->disk_nr)
             continue;
-        if ((trk != tracknr) || (sec >= ti->nr_sectors)
+        if ((trk>>1 != tracknr>>1) || (sec >= ti->nr_sectors)
             || is_valid_sector(ti, sec))
             continue;
 
@@ -87,6 +89,7 @@ static void *super_stardust_write_raw(
 
         /* Validate the data checksum */
         csum ^= be32toh(raw[0]);
+        printf("%08x ", be32toh(raw[0]));
         if (csum != CSUM_SSDT)
             continue;
 
@@ -99,6 +102,7 @@ static void *super_stardust_write_raw(
         nr_valid_blocks++;
     }
 
+    printf("\n");
     if (nr_valid_blocks == 0)
         goto fail;
 

@@ -45,12 +45,12 @@ static void *rtype_a_write_raw(
 
         if (stream_next_bits(s, 16) == -1)
             goto fail;
-        if (mfm_decode_bits(bc_mfm, (uint16_t)s->word) != 0)
+        if (mfm_decode_word((uint16_t)s->word) != 0)
             continue;
 
         if (stream_next_bits(s, 32) == -1)
             goto fail;
-        csum = mfm_decode_bits(bc_mfm_odd, s->word);
+        csum = s->word & 0x55555555u; /* bc_mfm_odd */
 
         if (stream_next_bytes(s, raw_dat, 2*ti->len) == -1)
             goto fail;
@@ -118,7 +118,7 @@ static void *rtype_b_write_raw(
 
         if (stream_next_bits(s, 16) == -1)
             goto fail;
-        if (mfm_decode_bits(bc_mfm, (uint16_t)s->word) != 0)
+        if (mfm_decode_word((uint16_t)s->word) != 0)
             continue;
 
         if (stream_next_bytes(s, raw_dat, 2*ti->len) == -1)

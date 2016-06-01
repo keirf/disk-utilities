@@ -44,24 +44,24 @@ static void *archipelagos_write_raw(
 
         if (stream_next_bits(s, 32) == -1)
             goto done;
-        if (mfm_decode_bits(bc_mfm, s->word) != (0xff00 | tracknr))
+        if (mfm_decode_word(s->word) != (0xff00 | tracknr))
             continue;
 
         if (stream_next_bits(s, 16) == -1)
             goto done;
-        sec = mfm_decode_bits(bc_mfm, (uint16_t)s->word) - 1;
+        sec = mfm_decode_word((uint16_t)s->word) - 1;
         if ((sec >= ti->nr_sectors) || is_valid_sector(ti, sec))
             continue;
 
         if (stream_next_bits(s, 32) == -1)
             goto done;
-        csum = mfm_decode_bits(bc_mfm, s->word);
+        csum = mfm_decode_word(s->word);
 
         p = (uint16_t *)(block + sec * ti->bytes_per_sector);
         for (i = 0; i < ti->bytes_per_sector/2; i++) {
             if (stream_next_bits(s, 32) == -1)
                 goto done;
-            csum -= w = mfm_decode_bits(bc_mfm, s->word);
+            csum -= w = mfm_decode_word(s->word);
             *p++ = htobe16(w);
         }
 

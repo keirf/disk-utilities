@@ -93,7 +93,7 @@ static void *pdos_write_raw(
             /* Skip the sector gap. */
             if (stream_next_bits(s, 16) == -1)
                 goto done;
-            skip = mfm_decode_bits(bc_mfm, (uint16_t)s->word);
+            skip = mfm_decode_word((uint16_t)s->word);
             if (stream_next_bits(s, skip*16) == -1)
                 goto done;
         }

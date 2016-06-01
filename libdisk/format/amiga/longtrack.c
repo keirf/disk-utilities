@@ -16,7 +16,7 @@ static int check_sequence(struct stream *s, unsigned int nr, uint8_t byte)
 {
     while (--nr) {
         stream_next_bits(s, 16);
-        if ((uint8_t)mfm_decode_bits(bc_mfm, s->word) != byte)
+        if ((uint8_t)mfm_decode_word(s->word) != byte)
             break;
     }
     return !nr;
@@ -49,7 +49,7 @@ static void *protec_longtrack_write_raw(
         ti->data_bitoff = s->index_offset_bc - 31;
         if ((s->word >> 16) != 0x4454)
             continue;
-        byte = (uint8_t)mfm_decode_bits(bc_mfm, s->word);
+        byte = (uint8_t)mfm_decode_word(s->word);
         if (!check_sequence(s, 1000, byte))
             continue;
         if (!check_length(s, 107200))

@@ -45,12 +45,12 @@ static void *federation_of_free_traders_write_raw(
 
         if (stream_next_bits(s, 32) == -1)
             goto done;
-        if (mfm_decode_bits(bc_mfm, s->word) != (0xff00 | (tracknr^1)))
+        if (mfm_decode_word(s->word) != (0xff00 | (tracknr^1)))
             continue;
 
         if (stream_next_bits(s, 16) == -1)
             goto done;
-        sec = mfm_decode_bits(bc_mfm, (uint16_t)s->word);
+        sec = mfm_decode_word((uint16_t)s->word);
         if ((sec >= ti->nr_sectors) || is_valid_sector(ti, sec))
             continue;
 
@@ -59,12 +59,12 @@ static void *federation_of_free_traders_write_raw(
             if (stream_next_bits(s, 16) == -1)
                 goto done;
             csum ^= (uint16_t)s->word;
-            p[i] = mfm_decode_bits(bc_mfm, (uint16_t)s->word);
+            p[i] = mfm_decode_word((uint16_t)s->word);
         }
 
         if (stream_next_bits(s, 32) == -1)
             goto done;
-        if (csum != mfm_decode_bits(bc_mfm, s->word))
+        if (csum != mfm_decode_word(s->word))
             continue;
 
         set_sector_valid(ti, sec);

@@ -45,7 +45,7 @@ static void *alienbreed_protection_write_raw(
         /* Check for a long sequence of zeroes */
         for (i = 0; i < 1000; i++) {
             stream_next_bits(s, 32);
-            if (mfm_decode_bits(bc_mfm, s->word) != 0)
+            if (mfm_decode_word(s->word) != 0)
                 break;
         }
         if (i == 1000)

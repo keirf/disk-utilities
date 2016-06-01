@@ -45,7 +45,7 @@ static void *bombuzal_write_raw(
         for (i = 0; i < sizeof(dat); i++) {
             if (stream_next_bits(s, 16) == -1)
                 goto fail;
-            dat[i] = mfm_decode_bits(bc_mfm, (uint16_t)s->word);
+            dat[i] = mfm_decode_word((uint16_t)s->word);
         }
 
         /* Our own checksum over the data. */
