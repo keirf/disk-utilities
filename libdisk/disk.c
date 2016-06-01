@@ -651,13 +651,21 @@ uint16_t mfm_decode_word(uint32_t w)
 
 uint32_t mfm_encode_word(uint32_t w)
 {
-    uint32_t i, d, p = (w >> 16) & 1, x = 0;
-    for (i = 0; i < 16; i++) {
-        d = !!(w & 0x8000u);
-        x = (x << 2) | (!(d|p) << 1) | d;
-        p = d;
-        w <<= 1;
-    }
+    uint32_t x;
+    /* Place data bits in their encoded locations. */
+    x = (((w & 0x8000u) << 15) | ((w & 0x4000u) << 14) |
+         ((w & 0x2000u) << 13) | ((w & 0x1000u) << 12) |
+         ((w & 0x0800u) << 11) | ((w & 0x0400u) << 10) |
+         ((w & 0x0200u) <<  9) | ((w & 0x0100u) <<  8) |
+         ((w & 0x0080u) <<  7) | ((w & 0x0040u) <<  6) |
+         ((w & 0x0020u) <<  5) | ((w & 0x0010u) <<  4) |
+         ((w & 0x0008u) <<  3) | ((w & 0x0004u) <<  2) |
+         ((w & 0x0002u) <<  1) | ((w & 0x0001u) <<  0));
+    /* Calculate the clock bits. */
+    x |= ~((x>>1)|(x<<1)) & 0xaaaaaaaau;
+    /* First clock bit is always 0 if preceding data bit was 1. */
+    if (w & (1u<<16))
+        x &= ~(1u<<31);
     return x;
 }
 
