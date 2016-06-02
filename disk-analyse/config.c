@@ -242,6 +242,13 @@ struct format_list **parse_config(char *config, char *specifier)
                 memfree(spec);
                 spec = memalloc(strlen(t.u.str)+1);
                 strcpy(spec, t.u.str);
+            } else if ((t.type == STR) && !strcmp(t.u.str, "WARN")) {
+                while (t.type != EOL)
+                    parse_token(&t);
+                parse_token(&t);
+                if (t.type != STR)
+                    parse_err("expected string after WARN");
+                printf("*** WARNING: %s\n", t.u.str);
             } else {
                 goto found;
             }
