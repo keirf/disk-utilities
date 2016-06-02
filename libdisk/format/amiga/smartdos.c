@@ -63,39 +63,23 @@ fail:
     return NULL;
 }
 
-static void mfm_encode_even_odd(
-    uint32_t w_prev, uint32_t w, uint32_t *p_e, uint32_t *p_o)
-{
-    uint32_t e = 0, o = 0;
-    unsigned int i;
-
-    for (i = 0; i < 16; i++) {
-        e = (e << 1) | ((w >> 31) & 1);
-        o = (o << 1) | ((w >> 30) & 1);
-        w <<= 2;
-    }
-
-    *p_e = mfm_encode_word((w_prev << 16) | e);
-    *p_o = mfm_encode_word((e << 16) | o);
-}
-
-
 static void smartdos_read_raw(
     struct disk *d, unsigned int tracknr, struct tbuf *tbuf)
 {
     struct track_info *ti = &d->di->track[tracknr];
-    uint32_t *dat = (uint32_t *)ti->dat, sum = 0, prev = 0, e, o, n;
+    uint32_t *dat = (uint32_t *)ti->dat, sum = 0, raw[2], n;
     unsigned int i;
 
     tbuf_bits(tbuf, SPEED_AVG, bc_raw, 16, 0x4488);
 
+    /* Calculate the 1s-complement checksum. */
+    raw[0] = raw[1] = 0; /* get 1st clock bit right */
     for (i = 0; i < 1551; i++) {
-        mfm_encode_even_odd(prev, be32toh(dat[i]), &e, &o);
-        n = sum + e;
+        mfm_encode_bytes(bc_mfm_even_odd, 4, &dat[i], raw, be32toh(raw[1]));
+        n = sum + be32toh(raw[0]);
         sum = (n < sum) ? n + 1 : n;
-        n = sum + o;
+        n = sum + be32toh(raw[1]);
         sum = (n < sum) ? n + 1 : n;
-        prev = be32toh(dat[i]);
     }
 
     sum = sum ^ ((sum << 8) & 0xf00u) ^ ((sum >> 24) & 0xf0u);
