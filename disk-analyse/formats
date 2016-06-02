@@ -644,6 +644,15 @@ probe_amiga
     84-154/2 ibm_pc_dd_10sec
     * ignore
 
+# Graham Gooch has an oddly formed Copylock track with missing sector 0
+# and sectors 1-3 at an unusual offset. This confuses the copylock decoder
+# and it places the track start at a location which the game protection
+# disapproves of (and fails). Luckily --index-align places sectors 4+ at the
+# correct offsets and protection checks pass. So tell the user to do that!
+"Graham Gooch World Class Cricket" WARN
+    "Copylock track is deliberately malformed on this disk"
+"Graham Gooch World Class Cricket" WARN
+    "You must specify --index-align to create a working image"
 "Graham Gooch World Class Cricket" = amigados_copylock
 
 # Version in Astra Pack Game 4 is 1 disk
