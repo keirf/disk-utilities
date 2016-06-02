@@ -187,36 +187,20 @@ fail:
     return NULL;
 }
 
-static uint32_t csum_long(uint32_t w_prev, uint32_t w)
-{
-    uint32_t e = 0, o = 0, csum = 0;
-    unsigned int i;
-
-    for (i = 0; i < 16; i++) {
-        e = (e << 1) | ((w >> 31) & 1);
-        o = (o << 1) | ((w >> 30) & 1);
-        w <<= 2;
-    }
-
-    csum -= mfm_encode_word((w_prev << 16) | e);
-    csum -= mfm_encode_word((e << 16) | o);
-    return csum;
-}
-
 static void afterburner_sega_read_raw(
     struct disk *d, unsigned int tracknr, struct tbuf *tbuf)
 {
     struct track_info *ti = &d->di->track[tracknr];
-    uint32_t csum, *dat = (uint32_t *)ti->dat, prev;
+    uint32_t csum, *dat = (uint32_t *)ti->dat, raw[2];
     unsigned int i;
 
     tbuf_bits(tbuf, SPEED_AVG, bc_raw, 32, 0xa245a245);
 
-    prev = 0xa245a245; /* get 1st clock bit right for checksum */
+    raw[1] = htobe32(0xa245a245); /* get 1st clock bit right for checksum */
     for (i = csum = 0; i < ti->len/4; i++) {
         tbuf_bits(tbuf, SPEED_AVG, bc_mfm_even_odd, 32, be32toh(dat[i]));
-        csum += csum_long(prev, be32toh(dat[i]));
-        prev = be32toh(dat[i]);
+        mfm_encode_bytes(bc_mfm_even_odd, 4, &dat[i], raw, be32toh(raw[1]));
+        csum -= be32toh(raw[0]) + be32toh(raw[1]);
     }
 
     tbuf_bits(tbuf, SPEED_AVG, bc_mfm_even_odd, 32, csum);
