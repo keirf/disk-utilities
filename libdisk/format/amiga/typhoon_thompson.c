@@ -8,7 +8,7 @@
  * RAW TRACK LAYOUT:
  *  u16 0x4891 :: Sync
  *  u32 0x489144a9 :: Sync
- *  u32 csum  :: Even/odd words, eor.w over raw data
+ *  u32 csum  :: Even/odd words, AmigaDOS-style over header and data
  *  u32 track :: track number
  *  u32 dat[6144/4]
  *
@@ -25,38 +25,39 @@ static void *typhoon_write_raw(
     struct track_info *ti = &d->di->track[tracknr];
 
     while (stream_next_bit(s) != -1) {
-        uint32_t csum, sum, hdr, raw2[2], raw[2*ti->len/4], dat[(ti->len)/4];
-        unsigned int i;
+
+        uint32_t csum, hdr, raw[2*ti->len/4], dat[ti->len/4];
         char *block;
 
-        if ((uint16_t)s->word != 0x4891)
+        /* Scan for sync pattern. */
+        if (s->word != 0x48914891)
             continue;
-
-        if (stream_next_bits(s, 32) == -1)
+        if (stream_next_bits(s, 16) == -1)
             goto fail;
         if (s->word != 0x489144a9)
             continue;
+        ti->data_bitoff = s->index_offset_bc - 47;
 
-        ti->data_bitoff = s->index_offset_bc - 31;
-
-        if (stream_next_bytes(s, raw2, 8) == -1)
+        /* Read the checksum. */
+        if (stream_next_bytes(s, raw, 8) == -1)
             goto fail;
-        mfm_decode_bytes(bc_mfm_even_odd, 4, raw2, &csum);
+        mfm_decode_bytes(bc_mfm_even_odd, 4, raw, &csum);
 
-        if (stream_next_bytes(s, raw2, 8) == -1)
+        /* Read and validate the header longword. */
+        if (stream_next_bytes(s, raw, 8) == -1)
             goto fail;
-        mfm_decode_bytes(bc_mfm_even_odd, 4, raw2, &hdr);
+        mfm_decode_bytes(bc_mfm_even_odd, 4, raw, &hdr);
+        if (be32toh(hdr) != tracknr)
+            continue;
 
+        /* Read and decode the data. */
         if (stream_next_bytes(s, raw, 2*ti->len) == -1)
             break;
         mfm_decode_bytes(bc_mfm_even_odd, ti->len, raw, dat);
 
-        sum = be32toh(raw2[0]) ^ be32toh(raw2[1]);
-        for (i = 0; i < 2*ti->len/4; i++)
-             sum ^= be32toh(raw[i]);
-        sum &= 0x55555555;
-
-        if (sum != be32toh(csum))
+        /* Validate the checksum. */
+        if (be32toh(csum) != (amigados_checksum(&hdr, 4)
+                              ^ amigados_checksum(dat, ti->len)))
             continue;
 
         block = memalloc(ti->len);
@@ -70,43 +71,22 @@ fail:
     return NULL;
 }
 
-static uint32_t csum_long(uint32_t w_prev, uint32_t w)
-{
-    uint32_t e = 0, o = 0, csum = 0;
-    unsigned int i;
-
-    for (i = 0; i < 16; i++) {
-        e = (e << 1) | ((w >> 31) & 1);
-        o = (o << 1) | ((w >> 30) & 1);
-        w <<= 2;
-    }
-
-    csum ^= mfm_encode_word((w_prev << 16) | e);
-    csum ^= mfm_encode_word((e << 16) | o);
-    return csum;
-}
-
 static void typhoon_read_raw(
     struct disk *d, unsigned int tracknr, struct tbuf *tbuf)
 {
     struct track_info *ti = &d->di->track[tracknr];
-    uint32_t *dat = (uint32_t *)ti->dat, prev, csum;
-    unsigned int i;
+    uint32_t csum;
 
     tbuf_bits(tbuf, SPEED_AVG, bc_raw, 16, 0x4891);
     tbuf_bits(tbuf, SPEED_AVG, bc_raw, 32, 0x489144a9);
 
-    prev = 0x4891; /* get 1st clock bit right for checksum */
-    for (i = csum = 0; i < ti->len/4; i++) {
-        csum ^= csum_long(prev, be32toh(dat[i]));
-        prev = be32toh(dat[i]);
-    }
-    csum ^= csum_long(prev, tracknr);
-    csum &= 0x55555555;
-
+    csum = htobe32(tracknr);
+    csum = amigados_checksum(&csum, 4) ^ amigados_checksum(ti->dat, ti->len);
     tbuf_bits(tbuf, SPEED_AVG, bc_mfm_even_odd, 32, csum);
+
     tbuf_bits(tbuf, SPEED_AVG, bc_mfm_even_odd, 32, tracknr);
-    tbuf_bytes(tbuf, SPEED_AVG, bc_mfm_even_odd, ti->len, dat);
+
+    tbuf_bytes(tbuf, SPEED_AVG, bc_mfm_even_odd, ti->len, ti->dat);
 
 }
 
