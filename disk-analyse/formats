@@ -26,6 +26,9 @@ probe_amiga
 
 "A-10 Tank Killer" = amigados
 
+# A-Train / A-Train Construction Kit!
+"A-Train" = amigados
+
 "Abandoned Places" = amigados
 
 "Action Fighter (Sega)" # US version
@@ -68,6 +71,11 @@ probe_amiga
 "Alien Breed Tower Assault" = rnc_pdos
 "Alien Breed 3D" = amigados
 "Alien Breed 3D 2" = amigados
+
+"Alien Storm"
+    158 tiertex_longtrack
+    159 gremlin_longtrack
+    * amigados
 
 # No apparent copy protection on several tested releases
 "Alien Syndrome" = amigados
@@ -356,6 +364,8 @@ probe_amiga
 
 "CJ's Elephant Antics" = amigados_copylock
 
+"Codename Iceman" = amigados
+
 "Combat Air Patrol" = amigados
 
 "Commando" # Tracks 98+ may be empty
@@ -574,6 +584,8 @@ probe_amiga
 # Same version as in the Mega Lo Mania + First Samurai Compilation
 "First Samurai" = amigados_copylock
 
+"Fish" = amigados
+
 "Flight Of The Amazon Queen" = amigados
 
 "Flying Shark" = amigados
@@ -616,6 +628,9 @@ probe_amiga
 "Galaxy Force II" = rnc_hidden
 
 "Galdregons Domain" = infogrames_protected
+
+# US Version
+"Garrison" = amigados
 
 "Gateway To The Savage Frontier" = amigados
 
@@ -674,6 +689,9 @@ probe_amiga
 
 "Harlequin"
     * amigados gremlin
+
+# Harpoon, Secenario Editor and All Battleset Disks!
+"Harpoon" = amigados
 
 "Heart Of China" = amigados
 
@@ -1105,6 +1123,9 @@ probe_amiga
 
 "Putty" = amigados_copylock
 
+# Track 0.1 is unformatted!
+"Quadralien" = amigados
+
 "Quartz"
     * amigados quartz_a quartz_b
 
@@ -1173,6 +1194,8 @@ probe_amiga
     1 amigados_long_111000
     * amigados
 
+"Road Rash" = amigados
+
 "Robin Hood Legend Quest" = amigados_copylock
 
 "Robocod"
@@ -1233,6 +1256,10 @@ probe_amiga
 "Shadow Of The Beast III"
     * amigados protec_longtrack psygnosis_a psygnosis_b
 
+"Shadowgate"
+      1 amigados_long_111000
+      * amigados
+
 "Shadowlands" = amigados_copylock
 
 "Shaq Fu"
@@ -1276,6 +1303,8 @@ probe_amiga
 
 "Sim Ant" = amigados
 
+"Simon The Sorcerer" = amigados
+
 "Simpsons, Bart vs. The Space Mutants"
     * arc_development_a copylock amigados
 
@@ -1305,6 +1334,8 @@ probe_amiga
 "Slayer" = amigados_copylock
 
 "Sleeping Gods Lie" = amigados_copylock
+
+"Snoball In Hell" = amigados
 
 "Soccer Kid" = amigados
 
@@ -1556,6 +1587,8 @@ probe_amiga
 
 "Ultima V"
     * amigados core_design
+
+"UMS II" = amigados
 
 # Protection checks for track gap of at least 12800 bits (and hence total
 # track length of 95744+12800=108544 bits). Does not care about gap contents.
