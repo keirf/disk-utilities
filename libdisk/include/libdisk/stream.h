@@ -12,15 +12,6 @@
 #include <stdint.h>
 #include <libdisk/util.h>
 
-enum pll_mode {
-    PLL_fixed_clock, /* Fixed clock, snap phase to flux transitions. */
-    PLL_variable_clock, /* Variable clock, snap phase to flux transitions. */
-    PLL_authentic /* Variable clock, do not snap phase to flux transition. */
-};
-
-/* Default mode: seems to work well for most things. */
-#define PLL_default PLL_authentic
-
 struct stream {
     const struct stream_type *type;
 
@@ -54,8 +45,11 @@ struct stream {
     /* Recording RPM of floppy data. */
     unsigned int data_rpm;
 
-    /* Flux-based streams: Authentic emulation of FDC PLL behaviour? */
-    enum pll_mode pll_mode;
+    /* Flux-based streams: Adjustable parameters for FDC PLL emulation. When a 
+     * flux transition occurs off-centre in the timing window, what percentage 
+     * of that error delta is applied to the window period and phase. */
+    int pll_period_adj_pct; /* 0 - 100 */
+    int pll_phase_adj_pct;  /* 0 - 100 */
 
     /* Flux-based streams. */
     int flux;                /* Nanoseconds to next flux reversal */
@@ -79,7 +73,6 @@ int stream_next_bit(struct stream *s);
 int stream_next_bits(struct stream *s, unsigned int bits);
 int stream_next_bytes(struct stream *s, void *p, unsigned int bytes);
 void stream_start_crc(struct stream *s);
-enum pll_mode stream_pll_mode(struct stream *s, enum pll_mode pll_mode);
 void stream_set_density(struct stream *s, unsigned int ns_per_cell);
 #pragma GCC visibility pop
 

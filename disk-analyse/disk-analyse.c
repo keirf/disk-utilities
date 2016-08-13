@@ -28,7 +28,7 @@ int quiet, verbose;
 static unsigned int start_cyl, end_cyl, disk_flags;
 static int index_align, clear_bad_sectors, single_sided = -1;
 static unsigned int drive_rpm = 300, data_rpm = 300;
-static enum pll_mode pll_mode = PLL_default;
+static int pll_period_adj_pct = -1, pll_phase_adj_pct = -1;
 static struct format_list **format_lists;
 static char *in, *out;
 
@@ -53,7 +53,9 @@ static void usage(int rc)
     printf("  -v, --verbose       Print extra diagnostic info\n");
     printf("  -i, --index-align   Align all track starts near index mark\n");
     printf("  -C, --clear-bad-sectors Clear bad sectors in output\n");
-    printf("  -p, --pll=MODE      MODE={fixed,variable,authentic}\n");
+    printf("  -p, --pll-period-adj=PCT (PCT=0..100) PLL period adjustment\n");
+    printf("  -P, --pll-phase-adj=PCT (PCT=0..100) PLL phase adjustment\n");
+    printf("                      Amount observed flux affects PLL\n");
     printf("  -r, --rpm=DRIVE[:DATA] RPM of drive that created the input,\n");
     printf("                         Original recording RPM of data [300]\n");
     printf("  -s, --start-cyl=N   Start cylinder\n");
@@ -123,7 +125,13 @@ static void handle_stream(void)
     if ((s = stream_open(in, drive_rpm, data_rpm)) == NULL)
         errx(1, "Failed to probe input file: %s", in);
 
-    stream_pll_mode(s, pll_mode);
+    if (pll_period_adj_pct >= 0)
+        s->pll_period_adj_pct = pll_period_adj_pct;
+    if (pll_phase_adj_pct >= 0)
+        s->pll_phase_adj_pct = pll_phase_adj_pct;
+    if (verbose)
+        printf("PLL Parameters: period_adj=%d%% phase_adj=%d%%\n",
+               s->pll_period_adj_pct, s->pll_phase_adj_pct);
 
     if ((d = disk_create(out, disk_flags | DISKFL_rpm(data_rpm))) == NULL)
         errx(1, "Unable to create new disk file: %s", out);
@@ -247,14 +255,15 @@ int main(int argc, char **argv)
     char in_suffix[8], out_suffix[8], *config = NULL, *format = NULL;
     int ch;
 
-    const static char sopts[] = "hqviCp:r:s:e:S::kf:c:";
+    const static char sopts[] = "hqviCp:P:r:s:e:S::kf:c:";
     const static struct option lopts[] = {
         { "help", 0, NULL, 'h' },
         { "quiet", 0, NULL, 'q' },
         { "verbose", 0, NULL, 'v' },
         { "index-align", 0, NULL, 'i' },
         { "clear-bad-sectors", 0, NULL, 'C' },
-        { "pll", 1, NULL, 'p' },
+        { "pll-period-adj", 1, NULL, 'p' },
+        { "pll-phase-adj", 1, NULL, 'P' },
         { "rpm", 1, NULL, 'r' },
         { "start-cyl", 1, NULL, 's' },
         { "end-cyl", 1, NULL, 'e' },
@@ -283,14 +292,16 @@ int main(int argc, char **argv)
             clear_bad_sectors = 1;
             break;
         case 'p':
-            if (!strcmp(optarg, "fixed"))
-                pll_mode = PLL_fixed_clock;
-            else if (!strcmp(optarg, "variable"))
-                pll_mode = PLL_variable_clock;
-            else if (!strcmp(optarg, "authentic"))
-                pll_mode = PLL_authentic;
-            else {
-                warnx("Unrecognised PLL mode '%s'", optarg);
+            pll_period_adj_pct = atoi(optarg);
+            if ((pll_period_adj_pct < 0) || (pll_period_adj_pct > 100)) {
+                warnx("Bad --pll-period-adj value '%s'", optarg);
+                usage(1);
+            }
+            break;
+        case 'P':
+            pll_phase_adj_pct = atoi(optarg);
+            if ((pll_phase_adj_pct < 0) || (pll_phase_adj_pct > 100)) {
+                warnx("Bad --pll-phase-adj value '%s'", optarg);
                 usage(1);
             }
             break;
