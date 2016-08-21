@@ -1664,6 +1664,11 @@ probe_amiga
 "WWF European Rampage Tour"
     * amigados copylock arc_development_b
 
+# Disk 2, Track 0 may be unformatted
+"WWF WrestleMania"
+    1 copylock
+    * amigados psygnosis_a
+
 "X-Out"
     * amigados x_out
 
