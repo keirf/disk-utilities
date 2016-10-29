@@ -119,6 +119,8 @@ probe_amiga
 "Aquablast"
     * amigados elite_b
 
+"Aquatic Games" = Robocod
+
 "Arcade Pool" = rnc_pdos
 
 "Arcade Trivia Quiz" = amigados_copylock
@@ -362,9 +364,13 @@ probe_amiga
 
 "Chuck Rock" = amigados_copylock
 
+"Cisco Heat" = amigados_copylock
+
 "CJ's Elephant Antics" = amigados_copylock
 
 "Codename Iceman" = amigados
+
+"Colonization" = amigados
 
 "Combat Air Patrol" = amigados
 
@@ -424,6 +430,8 @@ probe_amiga
 "Datastorm" = amigados
 
 "Day Of The Pharaoh" = amigados
+
+"Days Of Thunder" = amigados_copylock
 
 "Death Knights Of Krynn" = amigados
 
@@ -590,6 +598,8 @@ probe_amiga
 
 "Flying Shark" = amigados
 
+"Football Glory" = amigados
+
 "Forgotten Worlds"
     0 amigados 
     158 tiertex_longtrack
@@ -683,6 +693,12 @@ probe_amiga
 "Gremlins II"
     * amigados elite_c
 
+# Tracks may be mastered long, causing harmless warnings 
+"Greg Normans Ultimate Golf"
+    0-1 amigados
+    158-159 gremlin_longtrack
+    * federation_of_free_traders
+
 "Gunship 2000" = amigados
 
 "Hard Drivin'" = rnc_hidden
@@ -754,7 +770,12 @@ probe_amiga
 "Ikari Warriors"
     * amigados elite_d
 
+"Impossible Mission 2025" = amigados
+
 "Indiana Jones And The Fate Of Atlantis" = amigados
+
+# KIXX release
+"Indiana Jones And The Last Crusade - The Graphic Adventure" = amigados
 
 "Insanity Fight"
     1 ignore
@@ -786,6 +807,8 @@ probe_amiga
 
 # AGA version is AmigaDOS, hard disk installable
 "James Pond II: Codename Robocod" = Robocod
+
+"Jewels Of Darkness" = amigados
 
 "Jimmy White's Whirlwind Snooker" = amigados_copylock
 
@@ -866,9 +889,13 @@ probe_amiga
     80 amigados
     * ratt_dos_1810
 
+"Lancelot" = amigados
+
 "Leander" # Disks 2 & 3, Track 1 may be empty
     0-1 amigados protec_longtrack
     * psygnosis_b
+
+"Leisure Suit Larry III" = amigados
 
 "Legend" = amigados_copylock
 
@@ -942,6 +969,8 @@ probe_amiga
 
 "Micro Machines" = amigados_copylock
 
+"Microprose Formula One Grand Prix" = amigados
+
 # Astra Pack Game 9
 "Microprose Soccer" = amigados_copylock
 
@@ -951,6 +980,8 @@ probe_amiga
 "Midwinter II" = amigados
 
 "Might And Magic III" = amigados
+
+"Millennium 2.2" = amigados_copylock
 
 "Monkey Island" = amigados
 
@@ -1084,6 +1115,8 @@ probe_amiga
 
 "Postman Pat"
     * amigados rainbird  protec_longtrack
+
+"Power Drive" = amigados_copylock
 
 "Powerdrome" = amigados_copylock
 
@@ -1262,6 +1295,8 @@ probe_amiga
 
 "Shadowlands" = amigados_copylock
 
+"Shadoworlds" = amigados
+
 "Shaq Fu"
     1 amigados_long_111000
     * amigados
@@ -1379,6 +1414,8 @@ probe_amiga
 "Starglider 2"
     * amigados firebird adls
 
+"Starlord" = amigados
+
 "StarRay"
     * starray
 
@@ -1418,10 +1455,14 @@ probe_amiga
 "Super Stardust"
     * amigados super_stardust
 
+"Subversion" = amigados
+
 "Superfrog" = rnc_pdos
 
 "Supremacy" # Disk 1 Tracks 138,140,142,144+, Disk 2 Tracks 130+, may be empty
     * amigados supremacy_a supremacy_b
+
+"Suspicious Cargo" = amigados
 
 "Switchblade 2" = gremlin_protected
 
@@ -1468,6 +1509,8 @@ probe_amiga
 
 "The Addams Family" = amigados_copylock
 
+"The Ancient Art Of War In The Skies" = amigados
+
 # Tenstar Pack Game 2
 "The Art Of Chess"
     0 amigados
@@ -1481,6 +1524,10 @@ probe_amiga
 "The Colonel's Bequest" = amigados
 
 "The Curse Of Enchantia" = amigados_copylock
+
+"The Duel: Test Drive II"
+    1 amigados_long_111000
+    * amigados
 
 # Disk 2, Track 0 (0.0) is empty / unformatted.
 "The Games: Summer Edition"
@@ -1551,6 +1598,16 @@ probe_amiga
 
 # Astra Pack Game 10
 "Tower Of Babel" = rnc_hidden
+
+"Toyota Celica GT Rally"
+    0-1 amigados
+    2 phantom_fighter
+    3-109 gremlin
+    110 phantom_fighter
+    111 gremlin
+    112-157 phantom_fighter
+    158-159 gremlin_longtrack
+    * ignore
 
 "Tracker"
     0 amigados
@@ -1635,6 +1692,10 @@ probe_amiga
 "Ween" = amigados
 
 "Where In The USA Is Carmen Sandiego" = amigados
+
+"Where In The World Is Carmen Sandiego"
+    1 amigados_long_111000
+    * amigados
 
 "Wing Commander" = amigados
 
