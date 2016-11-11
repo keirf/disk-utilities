@@ -33,14 +33,6 @@
 
 #define log(_f, _a...) do { if (!quiet) printf(_f, ##_a); } while (0)
 
-struct track_header {
-    uint8_t sig[3];
-    uint8_t tracknr;
-    uint32_t duration;
-    uint32_t nr_samples;
-    uint32_t offset;
-};
-
 static void usage(int rc)
 {
     printf("Usage: scp_write [options] out_file\n");
@@ -102,7 +94,7 @@ int main(int argc, char **argv)
     if (argc != (optind + 1))
         usage(1);
 
-    if ((end_trk >= 168) || (start_trk > end_trk)) {
+    if ((end_trk >= SCP_MAX_TRACKS) || (start_trk > end_trk)) {
         warnx("Bad track range (%u-%u)", start_trk, end_trk);
         usage(1);
     }
@@ -148,19 +140,19 @@ int main(int argc, char **argv)
         read_exact(fd, &thdr, sizeof(thdr));
         if (memcmp(thdr.sig, "TRK", 3) || thdr.tracknr != trk)
             errx(1, "%s: Track %u bad signature", argv[optind], trk);
-        imtime = htole32(thdr.duration);
+        imtime = htole32(thdr.rev[0].duration);
 
-        dat_off = th_off + le32toh(thdr.offset);
+        dat_off = th_off + le32toh(thdr.rev[0].offset);
         lseek(fd, dat_off, SEEK_SET);
-        read_exact(fd, dat, le32toh(thdr.nr_samples) * 2);
+        read_exact(fd, dat, le32toh(thdr.rev[0].nr_samples) * 2);
 
         /* Resample data to match target drive speed */
-        for (i = j = 0; i < le32toh(thdr.nr_samples); i++) {
+        for (i = j = 0; i < le32toh(thdr.rev[0].nr_samples); i++) {
             if (dat[i]) {
                 x += (uint64_t)be16toh(dat[i]) * drvtime;
             } else {
                 x += (uint64_t)0x10000u * drvtime;
-                if (i < (le32toh(thdr.nr_samples)-1))
+                if (i < (le32toh(thdr.rev[0].nr_samples)-1))
                     continue;
             }
             y = x / imtime;

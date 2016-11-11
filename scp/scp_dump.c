@@ -31,20 +31,10 @@
 #define DEFAULT_UNIT       0
 #define DEFAULT_STARTTRK   0
 #define DEFAULT_ENDTRK     163
-#define MAX_TRACKS         166
 #define DEFAULT_REVS       2
+static int double_step = 0;
 
 #define log(_f, _a...) do { if (!quiet) printf(_f, ##_a); } while (0)
-
-struct track_header {
-    uint8_t sig[3];
-    uint8_t tracknr;
-    struct {
-        uint32_t duration;
-        uint32_t nr_samples;
-        uint32_t offset;
-    } rev[5];
-};
 
 static void usage(int rc)
 {
@@ -69,17 +59,27 @@ static void usage(int rc)
     exit(rc);
 }
 
+/* When double-stepping, default cylinder numbers are halved. */
+static unsigned int default_tracknr(unsigned int tracknr)
+{
+    unsigned int cyl = tracknr >> 1;
+    unsigned int hd = tracknr & 1;
+    if (double_step)
+        cyl /= 2;
+    return (cyl << 1) | hd;
+}
+
 int main(int argc, char **argv)
 {
     struct scp_handle *scp;
     struct scp_flux flux;
     struct disk_header dhdr;
     struct track_header thdr;
-    unsigned int rev, nr_revs = DEFAULT_REVS;
-    unsigned int trk, start_trk = DEFAULT_STARTTRK, end_trk = DEFAULT_ENDTRK;
+    int rev, nr_revs = DEFAULT_REVS;
+    int trk, start_trk = -1, end_trk = -1;
     unsigned int sizeof_thdr, unit = DEFAULT_UNIT;
     uint32_t *th_offs, file_off, dat_off;
-    int ch, fd, quiet = 0, ramtest = 0, double_step = 0;
+    int ch, fd, quiet = 0, ramtest = 0;
     char *sername = DEFAULT_SERDEVICE;
 
     const static char sopts[] = "hqd:u:r:Rs:e:D";
@@ -132,7 +132,6 @@ int main(int argc, char **argv)
             break;
         case 'D':
             double_step = 1;
-            end_trk = 81;
             break;
         default:
             usage(1);
@@ -140,10 +139,15 @@ int main(int argc, char **argv)
         }
     }
 
+    if (start_trk < 0)
+        start_trk = default_tracknr(DEFAULT_STARTTRK);
+    if (end_trk < 0)
+        end_trk = default_tracknr(DEFAULT_ENDTRK);
+
     if (argc != (optind + 1))
         usage(1);
 
-    if ((end_trk >= MAX_TRACKS) || (start_trk > end_trk)) {
+    if ((end_trk >= SCP_MAX_TRACKS) || (start_trk > end_trk)) {
         warnx("Bad track range (%u-%u)", start_trk, end_trk);
         usage(1);
     }
@@ -167,9 +171,9 @@ int main(int argc, char **argv)
     dhdr.flags = (1u<<_FLAG_writable); /* avoids need for checksum */
     write_exact(fd, &dhdr, sizeof(dhdr));
 
-    th_offs = memalloc(MAX_TRACKS * sizeof(uint32_t));
-    write_exact(fd, th_offs, MAX_TRACKS * sizeof(uint32_t));
-    file_off = sizeof(dhdr) + MAX_TRACKS * sizeof(uint32_t);
+    th_offs = memalloc(SCP_MAX_TRACKS * sizeof(uint32_t));
+    write_exact(fd, th_offs, SCP_MAX_TRACKS * sizeof(uint32_t));
+    file_off = sizeof(dhdr) + SCP_MAX_TRACKS * sizeof(uint32_t);
 
     scp = scp_open(sername);
     if (!quiet)
@@ -214,7 +218,7 @@ int main(int argc, char **argv)
     scp_close(scp);
 
     lseek(fd, sizeof(dhdr), SEEK_SET);
-    write_exact(fd, th_offs, MAX_TRACKS * sizeof(uint32_t));
+    write_exact(fd, th_offs, SCP_MAX_TRACKS * sizeof(uint32_t));
 
     return 0;
 }

@@ -97,4 +97,17 @@ struct disk_header {
 #define _FLAG_360rpm     2
 #define _FLAG_writable   3
 
+/* Maximum Track Data Headers supported by SCP image format. */
+#define SCP_MAX_TRACKS 168
+
+struct track_header {
+    uint8_t sig[3];
+    uint8_t tracknr;
+    struct {
+        uint32_t duration;
+        uint32_t nr_samples;
+        uint32_t offset;
+    } rev[5];
+};
+
 #endif /* __SCP_SCP_H__ */
