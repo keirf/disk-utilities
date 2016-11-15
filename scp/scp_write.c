@@ -31,6 +31,8 @@
 #define DEFAULT_STARTTRK   0
 #define DEFAULT_ENDTRK     163
 
+static struct scp_params scp_params;
+
 #define log(_f, _a...) do { if (!quiet) printf(_f, ##_a); } while (0)
 
 static void usage(int rc)
@@ -42,6 +44,10 @@ static void usage(int rc)
     printf("  -d, --device  Name of serial device (%s)\n", DEFAULT_SERDEVICE);
     printf("  -s, --start   First track to write (%d)\n", DEFAULT_STARTTRK);
     printf("  -e, --end     Last track to write (%d)\n", DEFAULT_ENDTRK);
+    printf("  -k, --step-delay  Delay between head steps, millisecs (%u)\n",
+           default_scp_params.step_delay_ms);
+    printf("  -K, --settle-delay  Settle time after seek, millisecs (%u)\n",
+           default_scp_params.seek_settle_delay_ms);
 
     exit(rc);
 }
@@ -58,15 +64,19 @@ int main(int argc, char **argv)
     int ch, fd, quiet = 0;
     char *sername = DEFAULT_SERDEVICE;
 
-    const static char sopts[] = "hqd:s:e:";
+    const static char sopts[] = "hqd:s:e:k:K:";
     const static struct option lopts[] = {
         { "help", 0, NULL, 'h' },
         { "quiet", 0, NULL, 'q' },
         { "device", 1, NULL, 'd' },
         { "start", 1, NULL, 's' },
         { "end", 1, NULL, 'e' },
+        { "step-delay", 1, NULL, 'k' },
+        { "settle-delay", 1, NULL, 'K' },
         { 0, 0, 0, 0 }
     };
+
+    scp_params = default_scp_params;
 
     while ((ch = getopt_long(argc, argv, sopts, lopts, NULL)) != -1) {
         switch (ch) {
@@ -84,6 +94,12 @@ int main(int argc, char **argv)
             break;
         case 'e':
             end_trk = atoi(optarg);
+            break;
+        case 'k':
+            scp_params.step_delay_ms = atoi(optarg);
+            break;
+        case 'K':
+            scp_params.seek_settle_delay_ms = atoi(optarg);
             break;
         default:
             usage(1);
@@ -112,6 +128,7 @@ int main(int argc, char **argv)
     scp = scp_open(sername);
     if (!quiet)
         scp_printinfo(scp);
+    scp_set_params(scp, &scp_params);
     scp_selectdrive(scp, 0);
 
     scp_seek_track(scp, 0, 0);

@@ -21,6 +21,17 @@ struct scp_flux {
     uint16_t flux[512*1024/2];
 };
 
+/* Firmware and host parameters. */
+struct scp_params {
+    uint16_t select_delay_ms;  /* Delay after drive select */
+    uint16_t step_delay_ms;    /* Delay after each head step */
+    uint16_t motoron_delay_ms; /* Delay after motor on command */
+    uint16_t seek0_delay_ms;   /* Delay after seek-track-0 */
+    uint16_t deselect_delay_ms; /* Delay from last command to deselect all */
+    uint16_t seek_settle_delay_ms; /* Delay after seeking to a track */
+};
+extern const struct scp_params default_scp_params;
+
 #define SCPCMD_SELA        0x80 /* select drive A */
 #define SCPCMD_SELB        0x81 /* select drive B */
 #define SCPCMD_DSELA       0x82 /* deselect drive A */
@@ -76,6 +87,7 @@ void scp_seek_track(struct scp_handle *scp, unsigned int track,
 void scp_read_flux(struct scp_handle *scp, unsigned int nr_revs,
                    struct scp_flux *flux);
 void scp_write_flux(struct scp_handle *scp, void *dat, unsigned int nr_dat);
+void scp_set_params(struct scp_handle *scp, const struct scp_params *params);
 
 struct disk_header {
     uint8_t sig[3];

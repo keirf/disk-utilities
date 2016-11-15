@@ -21,10 +21,20 @@
 
 #include "../libdisk/util.c"
 
+const struct scp_params default_scp_params = {
+    .select_delay_ms = 1,
+    .step_delay_ms = 5,
+    .motoron_delay_ms = 750,
+    .seek0_delay_ms = 15,
+    .deselect_delay_ms = 20000,
+    .seek_settle_delay_ms = 20
+};
+
 struct scp_handle {
     int fd;
     char *sername;
     struct termios oldtio, newtio;
+    struct scp_params scp_params;
 };
 
 static const char *scp_err[] = {
@@ -131,11 +141,15 @@ struct scp_handle *scp_open(const char *sername)
         tcsetattr(scp->fd, TCSANOW, &scp->newtio))
         err(1, "%s", sername);
 
+    scp_set_params(scp, &default_scp_params);
+
     return scp;
 }
 
 void scp_close(struct scp_handle *scp)
 {
+    scp_set_params(scp, &default_scp_params);
+
     if (tcsetattr(scp->fd, TCSANOW, &scp->oldtio) || close(scp->fd))
         err(1, "%s", scp->sername);
     memfree(scp);
@@ -207,6 +221,7 @@ void scp_deselectdrive(struct scp_handle *scp, unsigned int drv)
 void scp_seek_track(struct scp_handle *scp, unsigned int track,
                     int double_step)
 {
+    struct scp_params *p = &scp->scp_params;
     uint8_t cyl = track >> 1, side = track & 1;
     if (double_step)
         cyl *= 2;
@@ -215,6 +230,11 @@ void scp_seek_track(struct scp_handle *scp, unsigned int track,
     else
         scp_send(scp, SCPCMD_STEPTO, &cyl, 1);
     scp_send(scp, SCPCMD_SIDE, &side, 1);
+    
+    if (p->seek_settle_delay_ms > p->step_delay_ms) {
+        uint32_t extra_ms = p->seek_settle_delay_ms - p->step_delay_ms;
+        usleep(extra_ms * 1000);
+    }
 }
 
 void scp_read_flux(struct scp_handle *scp, unsigned int nr_revs,
@@ -252,3 +272,17 @@ void scp_write_flux(struct scp_handle *scp, void *dat, unsigned int nr_dat)
     scp_send(scp, SCPCMD_WRITEFLUX, ramcmd, 5);
 }
 
+void scp_set_params(struct scp_handle *scp, const struct scp_params *params)
+{
+    uint16_t raw_params[5];
+
+    scp->scp_params = *params;
+
+    raw_params[0] = htobe16(params->select_delay_ms*1000);
+    raw_params[1] = htobe16(params->step_delay_ms*1000);
+    raw_params[2] = htobe16(params->motoron_delay_ms);
+    raw_params[3] = htobe16(params->seek0_delay_ms);
+    raw_params[4] = htobe16(params->deselect_delay_ms);
+
+    scp_send(scp, SCPCMD_SETPARAMS, raw_params, sizeof(raw_params));
+}

@@ -34,6 +34,8 @@
 #define DEFAULT_REVS       2
 static int double_step = 0;
 
+static struct scp_params scp_params;
+
 #define log(_f, _a...) do { if (!quiet) printf(_f, ##_a); } while (0)
 
 static void usage(int rc)
@@ -55,6 +57,10 @@ static void usage(int rc)
            DEFAULT_ENDTRK);
     printf("  -D, --double-step Double-step heads "
            "(40-cyl disk, 80-cyl drive)\n");
+    printf("  -k, --step-delay  Delay between head steps, millisecs (%u)\n",
+           default_scp_params.step_delay_ms);
+    printf("  -K, --settle-delay  Settle time after seek, millisecs (%u)\n",
+           default_scp_params.seek_settle_delay_ms);
 
     exit(rc);
 }
@@ -82,7 +88,7 @@ int main(int argc, char **argv)
     int ch, fd, quiet = 0, ramtest = 0;
     char *sername = DEFAULT_SERDEVICE;
 
-    const static char sopts[] = "hqd:u:r:Rs:e:D";
+    const static char sopts[] = "hqd:u:r:Rs:e:Dk:K:";
     const static struct option lopts[] = {
         { "help", 0, NULL, 'h' },
         { "quiet", 0, NULL, 'q' },
@@ -93,8 +99,12 @@ int main(int argc, char **argv)
         { "start", 1, NULL, 's' },
         { "end", 1, NULL, 'e' },
         { "double-step", 0, NULL, 'D' },
+        { "step-delay", 1, NULL, 'k' },
+        { "settle-delay", 1, NULL, 'K' },
         { 0, 0, 0, 0 }
     };
+
+    scp_params = default_scp_params;
 
     while ((ch = getopt_long(argc, argv, sopts, lopts, NULL)) != -1) {
         switch (ch) {
@@ -132,6 +142,12 @@ int main(int argc, char **argv)
             break;
         case 'D':
             double_step = 1;
+            break;
+        case 'k':
+            scp_params.step_delay_ms = atoi(optarg);
+            break;
+        case 'K':
+            scp_params.seek_settle_delay_ms = atoi(optarg);
             break;
         default:
             usage(1);
@@ -180,6 +196,7 @@ int main(int argc, char **argv)
         scp_printinfo(scp);
     if (ramtest)
         scp_ramtest(scp);
+    scp_set_params(scp, &scp_params);
     scp_selectdrive(scp, unit);
 
     log("Reading track ");
