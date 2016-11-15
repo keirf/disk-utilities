@@ -199,11 +199,11 @@ int main(int argc, char **argv)
     scp_set_params(scp, &scp_params);
     scp_selectdrive(scp, unit);
 
-    log("Reading track ");
+    log("Reading track %7s", "");
 
     sizeof_thdr = 4 + 12*nr_revs;
     for (trk = start_trk; trk <= end_trk; trk++) {
-        log("%-4u...", trk);
+        log("\b\b\b\b\b\b\b%-4u...", trk);
         fflush(stdout);
 
         scp_seek_track(scp, trk, double_step);
@@ -225,11 +225,9 @@ int main(int argc, char **argv)
         write_exact(fd, &thdr, sizeof_thdr);
         write_exact(fd, flux.flux, dat_off - sizeof_thdr);
         file_off += dat_off;
-
-        log("\b\b\b\b\b\b\b");
     }
 
-    log("\b\b\b\b\b\b\b\b\b\b\b\b\b\b");
+    log("\n");
 
     scp_deselectdrive(scp, unit);
     scp_close(scp);

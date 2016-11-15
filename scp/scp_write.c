@@ -137,7 +137,7 @@ int main(int argc, char **argv)
     log("Drive speed: %u us per revolution (%.2f RPM)\n",
         drvtime/40, 60000000.0/(drvtime/40));
 
-    log("Writing track ");
+    log("Writing track %7s", "");
 
     for (trk = start_trk; trk <= end_trk; trk++) {
 
@@ -150,7 +150,7 @@ int main(int argc, char **argv)
         if (th_off == 0)
             continue;
 
-        log("%-4u...", trk);
+        log("\b\b\b\b\b\b\b%-4u...", trk);
         fflush(stdout);
 
         lseek(fd, th_off, SEEK_SET);
@@ -183,11 +183,9 @@ int main(int argc, char **argv)
 
         scp_seek_track(scp, trk, 0);
         scp_write_flux(scp, odat, j);
-
-        log("\b\b\b\b\b\b\b");
     }
 
-    log("\b\b\b\b\b\b\b\b\b\b\b\b\b\b");
+    log("\n");
 
     scp_deselectdrive(scp, 0);
     scp_close(scp);
