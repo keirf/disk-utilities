@@ -471,6 +471,8 @@ probe_amiga
 # Disk 2 may show some tracks as AmigaDOS Extended (Header)
 "Deuteros" = amigados_copylock
 
+"Devious Designs" = amigados_copylock
+
 "Dizzy's Excellent Adventures" = amigados_copylock
 
 "Dizzy Collection" = amigados_copylock
@@ -532,6 +534,8 @@ probe_amiga
 
 # Disk 1 may have first 30 tracks mastered long!
 "Epic" = amigados
+
+"Empire Soccer 94" = amigados
 
 "Exile" = amigados_copylock
 
@@ -643,6 +647,8 @@ probe_amiga
 "Garrison" = amigados
 
 "Gateway To The Savage Frontier" = amigados
+
+"Gettysburg" = amigados
 
 "Gladiators" # Tracks 159+ may be empty
     * amigados gladiators
@@ -914,6 +920,8 @@ probe_amiga
 
 "Liberation" = amigados
 
+"Links" = amigados
+
 "Little Puff In Dragonland" = amigados_copylock
 
 # Arcade Action Game 4
@@ -1042,6 +1050,12 @@ probe_amiga
 "Obliterator" # Odd tracks 135+, and track 158, may be empty
     156 protec_longtrack
     * amigados
+
+"Odyssey" WARN
+    "Copylock track is deliberately malformed on Disk 1"
+"Odyssey" WARN
+    "You must specify --index-align to create a working image"
+"Odyssey" = amigados_copylock
 
 "Omnicron Conspiracy" = amigados_copylock
 
@@ -1246,6 +1260,8 @@ probe_amiga
 # Arcade Action Game 8
 "Rock N' Roll" = amigados
 
+"Rocket Ranger" = amigados
+
 "Rogue Trooper"
     0 amigados
     1 protec_longtrack
@@ -1365,6 +1381,8 @@ probe_amiga
 
 "Slackskin & Flint"
     * amigados fun_factory
+
+"Slam Tilt" = amigados
 
 "Slayer" = amigados_copylock
 
@@ -1565,6 +1583,10 @@ probe_amiga
 
 "The Ultimate Ride" = amigados
 
+"The Untouchables"
+    0-1 amigados
+    * batman
+
 "Theatre Of Death" = amigados
 
 "Their Finest Hour" = amigados
@@ -1673,6 +1695,9 @@ probe_amiga
 
 "Virus"
     * amigados firebird
+
+"Viz"
+    * amigados konami
 
 "Voyager" = amigados_copylock
 
