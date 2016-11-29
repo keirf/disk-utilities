@@ -37,7 +37,7 @@ static struct scp_params scp_params;
 
 static void usage(int rc)
 {
-    printf("Usage: scp_write [options] out_file\n");
+    printf("Usage: scp_write [options] in_file\n");
     printf("Options:\n");
     printf("  -h, --help    Display this information\n");
     printf("  -q, --quiet   Quiesce normal informational output\n");
