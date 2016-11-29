@@ -89,9 +89,8 @@ static struct container *hfe_open(struct disk *d)
     struct disk_header dhdr;
     struct track_header thdr;
     struct disk_info *di;
-    struct track_info *ti;
     unsigned int i, j, len;
-    uint8_t *tbuf;
+    uint8_t *tbuf, *raw_dat[2];
 
     lseek(d->fd, 0, SEEK_SET);
 
@@ -119,18 +118,17 @@ static struct container *hfe_open(struct disk *d)
         read_exact(d->fd, tbuf, len);
         bit_reverse(tbuf, len);
 
-        /* Allocate internal track buffers and demux the data. */
-        ti = &di->track[i*2];
-        init_track_info(ti, TRKTYP_raw_dd);
-        ti->len = len/2;
-        ti->total_bits = thdr.len*4;
-        ti->data_bitoff = 0;
-        memcpy(&ti[1], &ti[0], sizeof(*ti));
-        ti[0].dat = memalloc(ti->len);
-        ti[1].dat = memalloc(ti->len);
+        /* Allocate track buffers and demux the data. */
+        raw_dat[0] = memalloc(len/2);
+        raw_dat[1] = memalloc(len/2);
         for (j = 0; j < len; j += 512) {
-            memcpy(&ti[0].dat[j/2], &tbuf[j+  0], 256);
-            memcpy(&ti[1].dat[j/2], &tbuf[j+256], 256);
+            memcpy(&raw_dat[0][j/2], &tbuf[j+  0], 256);
+            memcpy(&raw_dat[1][j/2], &tbuf[j+256], 256);
+        }
+        for (j = 0; j < 2; j++) {
+            setup_uniform_raw_track(d, i*2+j, TRKTYP_raw_dd,
+                                    thdr.len*4, raw_dat[j]);
+            memfree(raw_dat[j]);
         }
 
         memfree(tbuf);

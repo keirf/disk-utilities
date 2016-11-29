@@ -165,6 +165,11 @@ void retrieve_ibm_mfm_track(
     uint8_t **pmark_map, uint16_t **pcrc_map,
     uint8_t **pdat);
 
+void setup_uniform_raw_track(
+    struct disk *d, unsigned int tracknr,
+    enum track_type type, unsigned int nr_bits,
+    uint8_t *raw_dat);
+
 bool_t track_is_copylock(struct track_info *ti);
 
 #endif /* __PRIVATE_DISK_H__ */

@@ -94,6 +94,29 @@ struct track_handler raw_ed_handler = {
     .read_raw = raw_read_raw
 };
 
+void setup_uniform_raw_track(
+    struct disk *d, unsigned int tracknr,
+    enum track_type type, unsigned int nr_bits,
+    uint8_t *raw_dat)
+{
+    struct track_info *ti = &d->di->track[tracknr];
+    unsigned int i, nr_bytes = (nr_bits + 7) / 8;
+    uint16_t *speed;
+
+    init_track_info(ti, type);
+
+    ti->len = nr_bytes * 3;
+    ti->total_bits = nr_bits;
+    ti->data_bitoff = 0;
+    ti->dat = memalloc(ti->len);
+
+    speed = (uint16_t *)ti->dat;
+    for (i = 0; i < nr_bytes; i++)
+        *speed++ = SPEED_AVG;
+
+    memcpy(speed, raw_dat, nr_bytes);
+}
+
 /*
  * Local variables:
  * mode: C

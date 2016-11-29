@@ -109,6 +109,14 @@ static struct container *eadf_open(struct disk *d)
         ti = &di->track[i];
         off = (ext_type == 1) && (ti->type == TRKTYP_raw_dd) ? 2 : 0;
         read_exact(d->fd, &ti->dat[off], ti->len-off);
+        if (ti->type == TRKTYP_raw_dd) {
+            /* Raw data has a proper marshalling API we must use. */
+            struct track_info _ti = *ti;
+            memset(ti, 0, sizeof(*ti));
+            setup_uniform_raw_track(d, i, _ti.type, _ti.total_bits, _ti.dat);
+            ti->data_bitoff = _ti.data_bitoff;
+            memfree(_ti.dat);
+        }
     }
 
     return &container_eadf;
