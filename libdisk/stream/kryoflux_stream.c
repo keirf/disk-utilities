@@ -156,6 +156,10 @@ static int kfs_next_flux(struct stream *s)
                 /* sys_time ticks at ick_freq */
                 kfss->index_pos = pos;
                 break;
+            case 0xd: /* eof */
+                i = kfss->datsz;
+                sz = 0;
+                break;
             }
             i += sz;
             break;
