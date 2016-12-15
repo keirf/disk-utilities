@@ -16,3 +16,17 @@ Many variants, by part nr suffix:
 7383: 80-pin ASIC. ASIC pin 10
 8291: 56-pin ASIC. No RDY (checked all ASIC pins)
 A291: 52-pin ASIC. Pad TP4, ASIC pin 41
+
+Teac 235HG
+----------
+C630: 52-pin ASIC (different to 235HF-A291)
+      Not fully searched, but no obvious RDY.
+
+NEC FD1231M/FD1231H
+-------------------
+ASIC is marked FDN305.
+No RDY signal (checked all ASIC pins).
+This will apply to all drives using the same ASIC.
+The documented hack to use TP15 for RDY is not fully correct:
+ - it becomes active too quickly after motor on (0-35ms).
+ - it temporarily becomes active when removing/inserting disks.
