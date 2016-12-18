@@ -14,8 +14,12 @@ Many variants, by part nr suffix:
 6291: 80-pin ASIC. ASIC pin 10
 7291: 80-pin ASIC. ASIC pin 10
 7383: 80-pin ASIC. ASIC pin 10
+
 8291: 56-pin ASIC. No RDY (checked all ASIC pins)
+
 A291: 52-pin ASIC. Pad TP4, ASIC pin 41
+                   XXX My test drive is missing RDY,
+                   perhaps I got this one wrong XXX
 
 Teac 235HG
 ----------
