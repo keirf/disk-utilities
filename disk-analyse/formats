@@ -485,6 +485,8 @@ probe_amiga
     158 amigados speedlock
     * amigados
 
+"Dragon's Lair: Escape From Singe's Castle" = amigados
+
 "Dragon Breed"
     * arc_development_a copylock amigados
 
@@ -529,6 +531,8 @@ probe_amiga
 "Elite" = amigados
 
 "Elvira II: The Jaws Of Cerberus" = amigados
+
+"Enemy 2" = amigados
 
 "Emerald Mine II" = amigados
 
@@ -575,9 +579,10 @@ probe_amiga
 
 "Faery Tale Adventure" = amigados # novella protection
 
-"Falcon Mission Disk Vol 1" = amigados_copylock
-
-"Falcon V2" = rnc_hidden
+# Should cater for all versions of Falcon/Mission Disks
+"Falcon"
+    1 protec_longtrack rnc_hidden copylock amigados
+    * amigados
 
 "Fantastic Dizzy" = amigados_copylock
 
@@ -675,6 +680,19 @@ probe_amiga
     84-154/2 ibm_pc_dd_10sec
     * ignore
 
+"Goldrunner II"
+    0-40/2 amigados
+    1-41 ibm_pc_dd_10sec
+    42-128 ibm_pc_dd_10sec
+    129 raw_dd
+    130-159 ibm_pc_dd_10sec
+    * ignore
+
+# Seems to have lots of bad sectors, probably mastered like it so ignore!
+"Goldrunner II Data Disk 1"
+    1-147/2 ibm_pc_dd_10sec
+    * ignore
+
 # Graham Gooch has an oddly formed Copylock track with missing sector 0
 # and sectors 1-3 at an unusual offset. This confuses the copylock decoder
 # and it places the track start at a location which the game protection
@@ -721,6 +739,13 @@ probe_amiga
 
 "Heimdall 2" = amigados_copylock
 
+# 1988 version has 2 longtracks, T1.1 mastered with an error so ignore!
+# 1990 version is Copylock
+"Helter Skelter"
+    1 amigados copylock
+    2-3 amigados_unknown_length
+    * amigados
+
 # Sierra
 "Hero's Quest" = amigados
 
@@ -741,21 +766,6 @@ probe_amiga
     84-156 ibm_pc_dd_10sec
     157 amigados
     * ignore
-
-# Hit Disks Volume 1 - Karate Kid II
-"Hit Disks Karate Kid II"
-    0-1 amigados
-    2-62 ibm_pc_dd_10sec
-    64-66/2 ibm_pc_dd_10sec
-    78-83 amigados
-    89 ibm_pc_dd_10sec
-    91-135 ibm_pc_dd_10sec
-    137-159/2 ibm_pc_dd_10sec    
-    * ignore
-
-# Hit Disks Volume 1 - Slaygon.
-# Tracks may be mastered long, causing harmless warnings
-"Hit Disks Slaygon" = amigados
 
 "Hook" = amigados_copylock
 
@@ -851,7 +861,9 @@ probe_amiga
     64 ibm_pc_dd_10sec
     66 ibm_pc_dd_10sec
     78-83 amigados
-    92-134 ibm_pc_dd_10sec
+    89 ibm_pc_dd_10sec
+    91-135 ibm_pc_dd_10sec
+    137-159/2 ibm_pc_dd_10sec
     * ignore
 
 "KGB" = amigados
@@ -896,6 +908,9 @@ probe_amiga
     * ratt_dos_1810
 
 "Lancelot" = amigados
+
+"Laser Squad"
+    * protec_longtrack amigados
 
 "Leander" # Disks 2 & 3, Track 1 may be empty
     0-1 amigados protec_longtrack
@@ -1249,6 +1264,10 @@ probe_amiga
     1 protec_longtrack robocod amigados
     * robocod amigados
 
+# Tracks 0.0 & 0.1 on Disk 2 appear unused, ignore warning!
+"Robocop 2"
+    * amigados batman    
+
 "Robocop 3" = amigados
 
 "Robozone Disk 1"
@@ -1386,6 +1405,9 @@ probe_amiga
 
 "Slayer" = amigados_copylock
 
+# Tracks may be mastered long, causing harmless warnings
+"Slaygon" = amigados
+
 "Sleeping Gods Lie" = amigados_copylock
 
 "Snoball In Hell" = amigados
@@ -1447,6 +1469,8 @@ probe_amiga
 "Stryx"
     * amigados psygnosis_a  protec_longtrack
 
+"Stunt Car Racer" = rnc_hidden
+
 "Super Cars Disk 1" = gremlin_protected
 "Super Cars Disk 2"
     * gremlin
@@ -1500,11 +1524,9 @@ probe_amiga
 
 "Team Suzuki"
      0-1 amigados
-     2 phantom_fighter
+     2 raw_dd
      3-97 gremlin
-     98 phantom_fighter
      99 gremlin
-     100-157 phantom_fighter
      158-159 gremlin_longtrack
      * ignore
 
@@ -1623,11 +1645,9 @@ probe_amiga
 
 "Toyota Celica GT Rally"
     0-1 amigados
-    2 phantom_fighter
+    2 raw_dd
     3-109 gremlin
-    110 phantom_fighter
     111 gremlin
-    112-157 phantom_fighter
     158-159 gremlin_longtrack
     * ignore
 
