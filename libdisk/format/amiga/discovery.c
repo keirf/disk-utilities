@@ -4,7 +4,7 @@
  * Custom format as used on Sword of Sodan, Arkanoid, Hybris, Zoom
  * by Discovery/Innerprise.
  *
- * Written in 2014/2016 by Keith Krellwitz
+ * Written in 2014/2016/2017 by Keith Krellwitz
  *
  * RAW TRACK LAYOUT:
  *  u16 12 possible syncs :: Sync
@@ -20,7 +20,7 @@
  * TRKTYP_sword_sodan data layout:
  *  u8 sector_data[6272]
  *
- * TRKTYP_arkanoid data layout:
+ * TRKTYP_arkanoid_a data layout:
  *  u8 sector_data[6472]
  *
  * TRKTYP_arkanoid_b data layout:
@@ -58,7 +58,6 @@ static void *discovery_write_raw(
     unsigned int i, k;
     char *block;
 
-
     for (k = 0; k < ARRAY_SIZE(syncs); k++) {
 
         sync = syncs[k];
@@ -72,8 +71,15 @@ static void *discovery_write_raw(
             if (stream_next_bytes(s, craw, 4) == -1)
                 break;
             mfm_decode_bytes(bc_mfm_even_odd, 2, craw, &sum);
-            if (ti->type != TRKTYP_hybris && be16toh(sum) != sync)
-                continue;
+            if (ti->type == TRKTYP_sword_sodan){
+                if (sum != 0)
+                    continue;
+            }
+            else if (ti->type == TRKTYP_arkanoid_a || ti->type == TRKTYP_arkanoid_b 
+                || ti->type == TRKTYP_arkanoid_c){
+                if (be16toh(sum) != sync)
+                    continue;
+            }
 
             if (stream_next_bytes(s, craw, 4) == -1)
                 goto fail;
@@ -97,18 +103,17 @@ static void *discovery_write_raw(
                 goto fail;
             mfm_decode_bytes(bc_mfm_even_odd, 2, craw, &chk2);
 
-            sum = discovery_sum(sum,0);
-            sum = discovery_sum(chk1,sum);
-            sum = discovery_sum(len1,sum);
-            sum = discovery_sum(len2,sum);
+            sum = discovery_sum(sum, 0);
+            sum = discovery_sum(chk1, sum);
+            sum = discovery_sum(len1, sum);
+            sum = discovery_sum(len2, sum);
             for (i = 0 ; i < ti->len/2; i++)
                 sum = discovery_sum(dat[i], sum);
-            sum = discovery_sum(chk2,sum);
+            sum = discovery_sum(chk2, sum);
 
             if (stream_next_bytes(s, craw, 4) == -1)
                 break;
             mfm_decode_bytes(bc_mfm_even_odd, 2, craw, &csum);
-
             if (sum != be16toh(csum))
                 continue;
 
@@ -360,3 +365,4 @@ struct track_handler zoom_prot_handler = {
  * indent-tabs-mode: nil
  * End:
  */
+

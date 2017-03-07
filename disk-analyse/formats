@@ -1508,6 +1508,7 @@ probe_amiga
 
 "Switchblade 2" = gremlin_protected
 
+# Track 8.1 May be empty
 "Sword of Sodan"
     * sword_sodan amigados_long_102200
 
@@ -1760,6 +1761,9 @@ probe_amiga
 "Wonderland" = amigados
 
 "World Class Rugby '95" = amigados_copylock
+
+"World Class Soccer"
+     * amigados gremlin_longtrack
 
 "Worlds Of Legend" = amigados_copylock
 
