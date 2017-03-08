@@ -1371,6 +1371,13 @@ probe_amiga
 
 "Silicon Dreams" = amigados
 
+"Silkworm"
+    0 amigados
+    1 protec_longtrack
+    2 amigados
+    3-123 silkworm
+    * ignore
+
 "Sim Ant" = amigados
 
 "Simon The Sorcerer" = amigados
