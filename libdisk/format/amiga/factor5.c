@@ -12,6 +12,9 @@
  *  u32 csum[2]   :: bc_mfm_even_odd
  * TRKTYP_turrican data layout:
  *  u8 sector_data[6552]
+ *
+ * TRKTYP_turrican_2 data layout:
+ *  u8 sector_data[6832]
  */
 
 #include <libdisk/util.h>
