@@ -17,6 +17,10 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 
+#if defined(__APPLE__)
+#define B3000000 3000000
+#endif
+
 #include "scp.h"
 
 #include "../libdisk/util.c"
