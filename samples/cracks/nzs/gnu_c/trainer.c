@@ -240,6 +240,7 @@ static void print_option(const struct option *opt, uint16_t nr)
         break;
     }
     sprintf(s, "F%u - %24s%s", (uint32_t)(nr+1), opt->s, t);
+    sprintf(s, "%u %u\n", *(uint32_t *)0x4, *(uint32_t *)0x8);
     print_line(&r);
 }
 
