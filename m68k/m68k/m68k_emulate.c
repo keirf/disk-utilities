@@ -373,7 +373,7 @@ static int decode_ea(struct m68k_emulate_ctxt *c)
     case 7: {
         switch (reg) {
         case 0:
-            bail_if(rc = fetch_insn_ubytes(c, &op->mem, OPSZ_W));
+            bail_if(rc = fetch_insn_sbytes(c, (int32_t *)&op->mem, OPSZ_W));
         abs_addr:
             if ((name = addr_name(c, op->mem)) != NULL)
                 dump(c, "%s", name);
