@@ -12,6 +12,9 @@
  *  u32 csum[2]   :: bc_mfm_even_odd
  * TRKTYP_turrican data layout:
  *  u8 sector_data[6552]
+ *
+ * TRKTYP_turrican_2 data layout:
+ *  u8 sector_data[6832]
  */
 
 #include <libdisk/util.h>
@@ -52,10 +55,12 @@ static void *turrican_write_raw(
         if (csum != be32toh(dat[ti->len/4]))
             continue;
 
+        stream_next_index(s);
+        ti->total_bits = (s->track_len_bc > 110000) ? 111600 : 108000;
+        
         block = memalloc(ti->len);
         memcpy(block, dat, ti->len);
         set_all_sectors_valid(ti);
-        ti->total_bits = 108000;
         return block;
     }
 
@@ -88,6 +93,14 @@ struct track_handler turrican_handler = {
     .write_raw = turrican_write_raw,
     .read_raw = turrican_read_raw
 };
+
+struct track_handler turrican_2_handler = {
+    .bytes_per_sector = 6800,
+    .nr_sectors = 1,
+    .write_raw = turrican_write_raw,
+    .read_raw = turrican_read_raw
+};
+
 
 /*
  * Custom format as used on Denaris by Factor 5 Rainbow Arts

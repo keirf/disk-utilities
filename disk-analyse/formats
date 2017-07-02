@@ -1679,7 +1679,17 @@ probe_amiga
 
 "Turrican" # Tracks 158-159 may be empty
     27 factor5_hiscore
-    * amigados turrican
+    * turrican amigados_long_108800 amigados
+
+"Turrican II"
+    0 amigados 
+    1 factor5_hiscore
+    2-159 turrican_2
+    160 factor5_hiscore
+    162 factor5_hiscore
+    164 factor5_hiscore
+    166 factor5_hiscore
+    * ignore
 
 "Tusker"
     * amigados rainbird copylock
