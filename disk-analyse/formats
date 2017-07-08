@@ -106,6 +106,9 @@ probe_amiga
     156-159 psygnosis_a
     * ignore
 
+# Delphine Collection
+"Another World" = amigados
+
 # Antheads: It Came From The Desert II
 "Antheads" = rnc_hidden
 
@@ -295,6 +298,9 @@ probe_amiga
 # US Version has Copylock, HitSquad release unprotected + all tracks long!
 "Bubble Bobble" = amigados_copylock
 
+# Super Quintet Compilation
+"Bubble Ghost" = amigados
+
 "Buck Rogers: Countdown To Doomsday" = amigados
 
 "Buggy Boy" # speed Buggy also # also Tenstar Pack Game 4
@@ -342,6 +348,12 @@ probe_amiga
 # Castle Master + Castle Master II: The Crypt Compilation
 "Castle Master / The Crypt" = amigados_copylock
 
+# Original Castles + Data Disk: Northern Campaign 
+"Castles" = amigados
+
+# Super Quintet Compilation
+"Chamonix Challenge" = amigados
+
 "Champions Of Krynn" = amigados
 
 "Chaos Engine (OCS)" = amigados_copylock
@@ -377,6 +389,8 @@ probe_amiga
 "Commando" # Tracks 98+ may be empty
     * amigados elite_a
 
+"Conan The Cimmerian" = amigados
+
 "Conqueror"
     * amigados spherical conqueror
 
@@ -386,6 +400,8 @@ probe_amiga
     0 amigados
     1 protec_longtrack
     * amigados
+
+"Cool World" = amigados_copylock
 
 "Corporation" = amigados_copylock
 
@@ -449,7 +465,6 @@ probe_amiga
     108-152/2 deep_core
     * ignore
 
-# Triad Volume 1 Compilation
 "Defender Of The Crown"
     0 amigados
     1 amigados_long_111000
@@ -504,7 +519,6 @@ probe_amiga
 "Dugger" # No empty tracks
     * amigados dugger
 
-# 'The Greatest' Compilation
 "Dune" = amigados
 
 "Dune II" = amigados
@@ -529,6 +543,8 @@ probe_amiga
 
 # v2.0 / Lots of tracks with incorrect (but deliberate) track number! 
 "Elite" = amigados
+
+"Elvira: Mistress Of The Dark" = amigados
 
 "Elvira II: The Jaws Of Cerberus" = amigados
 
@@ -596,12 +612,20 @@ probe_amiga
 
 "Fighter Bomber" = rnc_hidden
 
+# Needs amigados longtracks or game won't load!
+"Final Fight"
+     158-159 gremlin_longtrack
+     * amigados_long_105500
+
 "Fire & Ice" = amigados_copylock
 
 # Same version as in the Mega Lo Mania + First Samurai Compilation
 "First Samurai" = amigados_copylock
 
 "Fish" = amigados
+
+# Delphine Collection
+"Flashback" = amigados
 
 "Flight Of The Amazon Queen" = amigados
 
@@ -641,6 +665,9 @@ probe_amiga
     91 hi_tec_b
     * ignore
 
+# Delphine Collection
+"Future Wars" = amigados
+
 "Gadgets Lost In Time"
     * amigados gadgetslostintime_a gadgetslostintime_b
 
@@ -664,6 +691,10 @@ probe_amiga
 "Gloom Deluxe" = amigados
 
 "Goal!" = amigados_copylock
+
+"Gobliins 2" = amigados
+
+"Goblins 3" = amigados
 
 "Gods" = amigados_copylock
 
@@ -790,12 +821,13 @@ probe_amiga
 
 "Indiana Jones And The Fate Of Atlantis" = amigados
 
-# KIXX release
 "Indiana Jones And The Last Crusade - The Graphic Adventure" = amigados
 
 "Insanity Fight"
     1 ignore
     * amigados
+
+"International Soccer Challenge" = amigados_copylock
 
 # Tracks 76+ are unused
 "Interphase"
@@ -831,6 +863,8 @@ probe_amiga
 "Jinks"
     158-161 amigados jinks
     * amigados
+
+"Joan Of Arc" = amigados_copylock
 
 # Actually developed/published by Interceptor Software on Players label.
 "Joe Blade" = infogrames_protected
@@ -931,6 +965,8 @@ probe_amiga
 
 "Lemmings 2" = amigados_copylock
 
+"Les Manley In: Search For the King" = amigados
+
 "Lethal Weapon" = amigados_copylock
 
 "Liberation" = amigados
@@ -944,6 +980,9 @@ probe_amiga
 
 # Tracks may be mastered long, causing harmless warnings
 "Lombard RAC Rally" = amigados
+
+# Lucas Arts Collection
+"Loom" = amigados
 
 "Lords Of The Rising Sun" = amigados_copylock
 
@@ -963,6 +1002,11 @@ probe_amiga
     * amigados magic_marble magic_marble_b magic_marble_prot
 
 "Magicland Dizzy" = amigados_copylock
+
+"Manhunter: San Francisco" = amigados
+
+# Lucas Arts Collection
+"Maniac Mansion" = amigados
 
 "Matrix Marauders"
     0 amigados
@@ -1023,6 +1067,8 @@ probe_amiga
 
 "Murders In Space" = amigados
 
+"NARC" = amigados_copylock
+
 "New York Warriors"
     1 amigados speedlock
     * amigados
@@ -1078,6 +1124,9 @@ probe_amiga
 # Arcade Action version uses copylock
 "Onslaught" = amigados_copylock
 
+# Delphine Collection
+"Operation Stealth" = amigados
+
 "Operation Thunderbolt" = rnc_hidden
 
 # Hit Squad Release, all tracks mastered long!
@@ -1102,9 +1151,14 @@ probe_amiga
 "Paperboy"
     * amigados elite_b
 
+"Paperboy 2" = amigados_copylock
+
 "Paradroid '90" = amigados_copylock
 
 "Parasol Stars" = amigados_copylock
+
+# Super Quintet Compilation, Parts 1 + 2
+"Passengers On The Wind" = amigados
 
 "Persian Gulf Inferno"
     * amigados persian_gulf_inferno
@@ -1112,8 +1166,12 @@ probe_amiga
 # Should cater for every PGA Tour release!
 "PGA Tour Golf" = amigados
 
+"Phantasie III" = amigados
+
 "Phantom Fighter" # Track 1 may be empty
     * amigados phantom_fighter
+
+"Pit-Fighter" = amigados_copylock
 
 "Pinball Dreams" # Tracks 1, 66-155, 158+ may be empty on either disk
     * amigados pinball_dreams
@@ -1446,6 +1504,8 @@ probe_amiga
 "Spherical" # Tracks 145+ may be empty
     * amigados spherical
 
+"Spirit Of Excalibur" = amigados
+
 "Spitting Image"
     * amigados protec_longtrack ibm_pc_dd_10sec
 
@@ -1467,6 +1527,8 @@ probe_amiga
     * starray
 
 "Steel Empire" = amigados
+
+"Steigar" = amigados_copylock
 
 "Strider II"
     158 amigados tiertex_longtrack
@@ -1544,6 +1606,7 @@ probe_amiga
 "Tecnoball.Z"
     * amigados tlk_dos_2
 
+# One version has no Copylock + AmigaDOS up to Track 163!
 "Teenage Mutant Hero Turtles" = amigados_copylock
 
 "Teenage Mutant Ninja Turtles"
@@ -1565,6 +1628,8 @@ probe_amiga
     1 protec_longtrack
     * amigados
 
+"The Bard's Tale" = amigados
+
 "The Bard's Tale III" = amigados
 
 "The Black Cauldron" = amigados_copylock
@@ -1583,7 +1648,11 @@ probe_amiga
     159 gremlin_longtrack
     * amigados summer_games
 
+"The Grail" = amigados
+
 "The Guild Of Thieves" = amigados
+
+"The Hitchhikers Guide To The Galaxy" = amigados
 
 # AmigaDOS Extended (Header)
 "The Humans" = amigados
@@ -1599,6 +1668,9 @@ probe_amiga
 
 "The Legend Of Kyrandia" = amigados
 
+"The Legend Of William Tell"
+     * speedlock amigados
+
 "The Lost Treasures Of Infocom" = amigados
 
 "The Lurking Horror" = amigados
@@ -1608,6 +1680,12 @@ probe_amiga
 "The Munsters" = amigados_copylock
 
 "The Pawn" = amigados
+
+# Track 1 (0.1) appears unformatted on both disks!
+"The Running Man"
+     0 amigados
+     2-159 phantom_fighter
+     * ignore
 
 "The Settlers" = amigados
 
@@ -1631,12 +1709,19 @@ probe_amiga
 
 "Time" = rnc_hidden
 
+# Version with no copy protection on Track 2 (1.0), some tracks mastered long!
+"Time Bandit"
+     * amigados ibm_pc_dd_10sec     
+
 "Time And Magik" = amigados
 
 "Time Machine" = amigados_copylock
 
 "Time Soldier"
     * amigados rainbird infogrames_longtrack
+
+# Original Timekeepers + Expansion Disk
+"Timekeepers" = amigados
 
 "Titanic Blinky" = amigados_copylock
 
@@ -1707,6 +1792,10 @@ probe_amiga
 
 "UMS II" = amigados
 
+"U.N. Squadron"
+    158-159 gremlin_longtrack
+    * amigados
+
 # Protection checks for track gap of at least 12800 bits (and hence total
 # track length of 95744+12800=108544 bits). Does not care about gap contents.
 # Actual track length is just over 111000 bits.
@@ -1720,6 +1809,8 @@ probe_amiga
 
 "Vade Retro Alienas"
     * amigados vade_retro_alienas
+
+"Valhalla: Before The War" = amigados
 
 "Vampires Empire"
     * amigados vampires_empire_a vampires_empire_b vampires_empire_c
@@ -1746,6 +1837,9 @@ probe_amiga
     * amigados
 
 "Warlock: The Avenger" = amigados_copylock
+
+# Super Quintet Compilation
+"Warlock's Quest" = amigados
 
 # A1200 / A4000
 "Watchtower" = amigados
@@ -1814,6 +1908,9 @@ probe_amiga
 
 # T0.1 Amigados Extended (Sync)
 "Z-Out" = amigados
+
+# Lucas Arts Collection
+"Zak McKracken And The Alien Mindbenders" = amigados
 
 "Zeewolf" = amigados
 
