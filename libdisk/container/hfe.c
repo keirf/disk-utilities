@@ -14,6 +14,14 @@
 #include <fcntl.h>
 #include <unistd.h>
 
+/* HFEv3 opcodes */
+enum {
+    OP_nop,     /* no effect */
+    OP_index,   /* index mark */
+    OP_bitrate, /* +1byte: new bitrate */
+    OP_skip     /* +1byte: skip 0-8 bits in next byte */
+};
+
 /* NB. Fields are little endian. */
 struct disk_header {
     char sig[8];
@@ -84,6 +92,19 @@ static void bit_reverse(uint8_t *block, unsigned int len)
     }
 }
 
+static void bit_copy(void *dst, unsigned int dst_off,
+                     void *src, unsigned int src_off,
+                     unsigned int nr)
+{
+    uint8_t *s = src, *d = dst;
+    unsigned int i;
+    for (i = 0; i < nr; i++) {
+        uint8_t x = (s[src_off/8] >> (7-(src_off&7))) & 1;
+        d[dst_off/8] |= x << (7-(dst_off&7));
+        src_off++; dst_off++;
+    }
+}
+
 static struct container *hfe_open(struct disk *d)
 {
     struct disk_header dhdr;
@@ -91,13 +112,18 @@ static struct container *hfe_open(struct disk *d)
     struct disk_info *di;
     unsigned int i, j, len;
     uint8_t *tbuf, *raw_dat[2];
+    bool_t v3 = 0;
 
     lseek(d->fd, 0, SEEK_SET);
 
     read_exact(d->fd, &dhdr, sizeof(dhdr));
-    if (strncmp(dhdr.sig, "HXCPICFE", sizeof(dhdr.sig))
-        || (dhdr.formatrevision != 0))
+    if (dhdr.formatrevision != 0)
         return NULL;
+    if (!strncmp(dhdr.sig, "HXCHFEV3", sizeof(dhdr.sig))) {
+        v3 = 1;
+    } else if (strncmp(dhdr.sig, "HXCPICFE", sizeof(dhdr.sig))) {
+        return NULL;
+    }
 
     dhdr.track_list_offset = le16toh(dhdr.track_list_offset);
 
@@ -125,10 +151,77 @@ static struct container *hfe_open(struct disk *d)
             memcpy(&raw_dat[0][j/2], &tbuf[j+  0], 256);
             memcpy(&raw_dat[1][j/2], &tbuf[j+256], 256);
         }
-        for (j = 0; j < 2; j++) {
-            setup_uniform_raw_track(d, i*2+j, TRKTYP_raw_dd,
-                                    thdr.len*4, raw_dat[j]);
-            memfree(raw_dat[j]);
+        if (v3) {
+            /* HFEv3: process opcodes in the input byte stream. */
+            for (j = 0; j < 2; j++) {
+                uint8_t *new_dat = memalloc(len/2);
+                uint8_t br = 0, *brs = memalloc(len/2+1);
+                unsigned int inb = 0, outb = 0, opc, index_bc = 0, len_bc;
+                while (inb/8 < len/2) {
+                    brs[outb/8] = br;
+                    BUG_ON(inb & 7);
+                    opc = raw_dat[j][inb/8]; 
+                    if ((opc & 0xf0) == 0xf0) {
+                        switch (opc & 0x0f) {
+                        case OP_nop:
+                            inb += 8;
+                            break;
+                        case OP_index:
+                            inb += 8;
+                            index_bc = outb;
+                            break;
+                        case OP_bitrate:
+                            br = raw_dat[j][inb/8+1];
+                            inb += 2*8;
+                            break;
+                        case OP_skip: {
+                            uint8_t skip = raw_dat[j][inb/8+1];
+                            inb += 2*8 + skip;
+                            BUG_ON(skip > 8);
+                            bit_copy(new_dat, outb, raw_dat[j], inb, 8-skip);
+                            inb += 8-skip; outb += 8-skip;
+                            break;
+                        }
+                        default:
+                            printf("Unknown HFEv3 opcode %02x\n", opc);
+                            BUG();
+                        }
+                    } else {
+                        bit_copy(new_dat, outb, raw_dat[j], inb, 8);
+                        inb += 8; outb += 8;
+                    }
+                }
+                /* Rotate track so index pulse is at bit 0. */
+                brs[outb/8] = br;
+                len_bc = outb;
+                memset(raw_dat[j], 0, len/2);
+                bit_copy(raw_dat[j], 0, new_dat, index_bc, len_bc-index_bc);
+                bit_copy(raw_dat[j], len_bc-index_bc, new_dat, 0, index_bc); 
+                memfree(new_dat);
+                /* Set up the track. */
+                setup_uniform_raw_track(d, i*2+j, TRKTYP_raw_dd,
+                                        len_bc, raw_dat[j]);
+                /* HACK: Poke the non-uniform speed values. */
+                {
+                    uint16_t *s = (uint16_t *)d->di->track[i*2+j].dat;
+                    unsigned int k, av_br, cur_br;
+                    av_br = (7200000 + len_bc/2) / len_bc;
+                    for (k = 0; k < (outb+7)/8; k++) {
+                        cur_br = brs[(k+index_bc/8) % ((outb+7)/8)];
+                        s[k] = cur_br ? (cur_br*SPEED_AVG + av_br/2) / av_br
+                            : SPEED_AVG;
+                    }
+                }
+                memfree(raw_dat[j]);
+                memfree(brs);
+            }
+        } else {
+            /* Original HFE */
+            for (j = 0; j < 2; j++) {
+                setup_uniform_raw_track(d, i*2+j, TRKTYP_raw_dd,
+                                        thdr.len*4, raw_dat[j]);
+                memfree(raw_dat[j]);
+            }
         }
 
         memfree(tbuf);

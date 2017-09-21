@@ -67,7 +67,7 @@ static void usage(int rc)
     printf("Supported file formats (suffix => type):\n");
     printf("  .adf  => ADF\n");
     printf("  .eadf => Extended-ADF\n");
-    printf("  .hfe  => HxC Floppy Emulator\n");
+    printf("  .hfe  => HxC Floppy Emulator (orig,v3)\n");
     printf("  .imd  => ImageDisk\n");
     printf("  .img  => IBM-MFM Sector Dump\n");
     printf("  .ipf  => SPS/IPF\n");

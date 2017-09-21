@@ -94,13 +94,15 @@ path for many of these tools to run. There are a few ways to ensure this:
     * Kryoflux STREAM
     * DiscFerret (.DFI)
     * Amiga diskread (.DAT)
+    * SPS/CTRaw
    - Read/write support:
-    * SPS/IPF, SPS/CTRaw
+    * SPS/IPF
     * ADF, Extended ADF
     * LibDisk (.DSK)
     * Supercard Pro (.SCP)
     * ImageDisk (.IMD)
     * Sector Image (.IMG)
+    * HxC Floppy Emulator (.HFE) (orig,v3)
 
 [**libdisk/**](libdisk/)
     A library for converting and manipulating disk images. It can create
