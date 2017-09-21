@@ -162,10 +162,14 @@ static void write_bits(
             if (!(i & (256*8-1)))
                 dst += 256;
         }
-        /* Deal with wrap. If we have consumed all bits then make up some 
-         * padding for the track gap. */
+        /* Deal with wrap. */
         if (++bit >= raw->bitlen)
-            bit = (i < raw->bitlen) ? 0 : (raw->bitlen - 16);
+            bit = 0;
+        /* If we consumed all bits then repeat last 16 bits as extra gap. */
+        if ((i >= raw->bitlen) && !((i - raw->bitlen) & 15)) {
+            int new_bit = (int)bit - 16;
+            bit = (new_bit < 0) ? new_bit + raw->bitlen : new_bit;
+        }
     }
 }
 
@@ -195,7 +199,7 @@ static void hfe_close(struct disk *d)
             if (raw[i]->speed[j] == 1000)
                 continue;
             printf("*** T%u.%u: Variable-density track cannot be "
-                   "correctly written to an Ext-ADF file\n", i/2, i&1);
+                   "correctly written to an HFE file %u\n", i/2, i&1, raw[i]->speed[j]);
             break;
         }
     }
