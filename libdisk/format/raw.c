@@ -37,7 +37,7 @@ static void *raw_write_raw(
 
     av_latency = tot_latency / bytes;
     for (i = 0; i < bytes; i++)
-        speed[i] = ((uint64_t)speed[i] * SPEED_AVG) / av_latency;
+        speed[i] = ((uint64_t)speed[i]*SPEED_AVG + av_latency/2) / av_latency;
 
     ti->total_bits = bytes*8 - s->index_offset_bc;
     ti->len = bytes * 3; /* 2 bytes of speed per 1 byte of dat */
