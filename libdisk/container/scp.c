@@ -13,6 +13,7 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <unistd.h>
+#include <time.h>
 
 struct disk_header {
     uint8_t sig[3];
@@ -32,7 +33,9 @@ struct disk_header {
 #define _FLAG_index_cued 0
 #define _FLAG_96tpi      1
 #define _FLAG_360rpm     2
-#define _FLAG_writable   3
+#define _FLAG_normalized 3
+#define _FLAG_writable   4
+#define _FLAG_footer     5
 
 struct track_header {
     uint8_t sig[3];
@@ -40,6 +43,22 @@ struct track_header {
     uint32_t duration;
     uint32_t nr_samples;
     uint32_t offset;
+};
+
+struct footer {
+    uint32_t manufacturer_offset;
+    uint32_t model_offset;
+    uint32_t serial_offset;
+    uint32_t creator_offset;
+    uint32_t application_offset;
+    uint32_t comments_offset;
+    uint64_t creation_time;
+    uint64_t modification_time;
+    uint8_t application_version;
+    uint8_t hardware_version;
+    uint8_t firmware_version;
+    uint8_t format_revision;
+    uint8_t sig[4];
 };
 
 #define SCK_NS_PER_TICK (25u)
@@ -105,10 +124,12 @@ static void scp_close(struct disk *d)
     struct disk_info *di = d->di;
     struct disk_header dhdr;
     struct track_header thdr;
+    struct footer ftr;
     struct track_raw *raw;
     unsigned int trk, i, j, bit;
     uint32_t av_cell, cell, *th_offs, file_off;
     uint16_t *dat;
+    const static char app_name[] = "Keirf's Disk-Utilities";
 
     lseek(d->fd, 0, SEEK_SET);
     if (ftruncate(d->fd, 0) < 0)
@@ -116,11 +137,11 @@ static void scp_close(struct disk *d)
 
     memset(&dhdr, 0, sizeof(dhdr));
     memcpy(dhdr.sig, "SCP", sizeof(dhdr.sig));
-    dhdr.version = 0x10; /* taken from existing images */
+    dhdr.version = 0x00;
     dhdr.disk_type = DISKTYPE_amiga;
     dhdr.nr_revolutions = 1;
     dhdr.end_track = di->nr_tracks - 1;
-    dhdr.flags = (1u<<_FLAG_writable); /* avoids need for checksum */
+    dhdr.flags = (1u<<_FLAG_writable) | (1u<<_FLAG_footer); /* avoids need for checksum */
     write_exact(d->fd, &dhdr, sizeof(dhdr));
 
     th_offs = memalloc(di->nr_tracks * sizeof(uint32_t));
@@ -194,6 +215,19 @@ static void scp_close(struct disk *d)
 
     memfree(dat);
     track_free_raw_buffer(raw);
+
+    memset(&ftr, 0, sizeof(ftr));
+    memcpy(ftr.sig, "FPCS", sizeof(ftr.sig));
+    ftr.application_offset = (uint32_t)lseek(d->fd, 0, SEEK_CUR);
+    ftr.creation_time = (uint64_t)time(NULL);
+    ftr.modification_time = (uint64_t)time(NULL);
+    ftr.application_version = 0x10; /* should be moved to a general include? */
+    ftr.format_revision = 0x16; /* last specification used, 1.6 */
+
+    uint16_t app_name_len = htole16((uint16_t)strlen(app_name));
+    write_exact(d->fd, &app_name_len, sizeof(app_name_len));
+    write_exact(d->fd, app_name, sizeof(app_name) + 1);
+    write_exact(d->fd, &ftr, sizeof(ftr));
 
     lseek(d->fd, sizeof(dhdr), SEEK_SET);
     write_exact(d->fd, th_offs, di->nr_tracks * sizeof(uint32_t));
