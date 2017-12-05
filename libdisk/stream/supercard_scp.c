@@ -33,13 +33,27 @@ struct scp_stream {
     unsigned int index_off[]; /* data offsets of each index */
 };
 
+struct disk_header {
+    uint8_t sig[3];
+    uint8_t version;
+    uint8_t disk_type;
+    uint8_t nr_revolutions;
+    uint8_t start_track;
+    uint8_t end_track;
+    uint8_t flags;
+    uint8_t cell_width;
+    uint16_t reserved;
+    uint32_t checksum;
+};
+
 #define SCK_NS_PER_TICK (25u)
 
 static struct stream *scp_open(const char *name, unsigned int data_rpm)
 {
     struct stat sbuf;
     struct scp_stream *scss;
-    uint8_t header[0x10], revs;
+    struct disk_header header;
+    uint8_t revs;
     int fd;
 
     if (stat(name, &sbuf) < 0)
@@ -48,16 +62,36 @@ static struct stream *scp_open(const char *name, unsigned int data_rpm)
     if ((fd = file_open(name, O_RDONLY)) == -1)
         err(1, "%s", name);
 
-    read_exact(fd, header, sizeof(header));
+    read_exact(fd, &header, sizeof(header));
 
-    if (memcmp(header, "SCP", 3) != 0)
+    if (memcmp(header.sig, "SCP", 3) != 0)
         errx(1, "%s is not a SCP file!", name);
 
-    if ((revs = header[5]) == 0)
-        errx(1, "%s has an invalid revolution count (%u)!", name, header[5]);
+    if ((revs = header.nr_revolutions) == 0)
+        errx(1, "%s has an invalid revolution count (%u)!", name, revs);
 
-    if (header[9] != 0 && header[9] != 16)
-        errx(1, "%s has unsupported bit cell time width (%u)", name, header[9]);
+    if (header.cell_width != 0 && header.cell_width != 16)
+        errx(1, "%s has unsupported bit cell time width (%u)",
+             name, header.cell_width);
+
+    if (!(header.flags & (1u<<4))) {
+        int sz;
+        uint8_t *p, *buf;
+        uint32_t csum = 0;
+        if ((sz = lseek(fd, 0, SEEK_END)) < 16)
+            errx(1, "%s is too short", name);
+        sz -= 16;
+        buf = memalloc(sz);
+        lseek(fd, 16, SEEK_SET);
+        read_exact(fd, buf, sz);
+        p = buf;
+        while (sz--)
+            csum += *p++;
+        memfree(buf);
+        if (csum != le32toh(header.checksum))
+            errx(1, "%s has bad checksum", name);
+        lseek(fd, 16, SEEK_SET);
+    }
 
     scss = memalloc(sizeof(*scss) + revs*sizeof(unsigned int));
     scss->fd = fd;

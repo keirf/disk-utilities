@@ -19,6 +19,7 @@
 #include <getopt.h>
 
 #include <libdisk/util.h>
+#include <time.h>
 #include "scp.h"
 
 #if defined (__APPLE__)
@@ -75,6 +76,17 @@ static unsigned int default_tracknr(unsigned int tracknr)
     return (cyl << 1) | hd;
 }
 
+static void checksum_and_write(
+    int fd, uint32_t *p_csum, const void *dat, size_t len)
+{
+    uint32_t csum = *p_csum;
+    const uint8_t *p = dat;
+    write_exact(fd, dat, len);
+    while (len--)
+        csum += *p++;
+    *p_csum = csum;
+}
+
 int main(int argc, char **argv)
 {
     struct scp_handle *scp;
@@ -84,9 +96,13 @@ int main(int argc, char **argv)
     int rev, nr_revs = DEFAULT_REVS;
     int trk, start_trk = -1, end_trk = -1;
     unsigned int sizeof_thdr, unit = DEFAULT_UNIT;
-    uint32_t *th_offs, file_off, dat_off;
+    uint32_t *th_offs, file_off, dat_off, csum = 0;
     int ch, fd, quiet = 0, ramtest = 0;
     char *sername = DEFAULT_SERDEVICE;
+    struct footer ftr;
+    uint8_t hwinfo[2];
+    uint16_t app_name_len;
+    const static char app_name[] = "scp_dump (keirf)";
 
     const static char sopts[] = "hqd:u:r:Rs:e:Dk:K:";
     const static struct option lopts[] = {
@@ -179,12 +195,11 @@ int main(int argc, char **argv)
 
     memset(&dhdr, 0, sizeof(dhdr));
     memcpy(dhdr.sig, "SCP", sizeof(dhdr.sig));
-    dhdr.version = 0x10; /* taken from existing images */
     dhdr.disk_type = DISKTYPE_amiga;
     dhdr.nr_revolutions = nr_revs;
     dhdr.start_track = start_trk;
     dhdr.end_track = end_trk;
-    dhdr.flags = (1u<<_FLAG_writable); /* avoids need for checksum */
+    dhdr.flags = (1u<<_FLAG_footer);
     write_exact(fd, &dhdr, sizeof(dhdr));
 
     th_offs = memalloc(SCP_MAX_TRACKS * sizeof(uint32_t));
@@ -198,6 +213,7 @@ int main(int argc, char **argv)
         scp_ramtest(scp);
     scp_set_params(scp, &scp_params);
     scp_selectdrive(scp, unit);
+    scp_getinfo(scp, &hwinfo);
 
     log("Reading track %7s", "");
 
@@ -222,8 +238,8 @@ int main(int argc, char **argv)
             thdr.rev[rev].offset = htole32(dat_off);
             dat_off += flux.info[rev].nr_bitcells * sizeof(uint16_t);
         }
-        write_exact(fd, &thdr, sizeof_thdr);
-        write_exact(fd, flux.flux, dat_off - sizeof_thdr);
+        checksum_and_write(fd, &csum, &thdr, sizeof_thdr);
+        checksum_and_write(fd, &csum, flux.flux, dat_off - sizeof_thdr);
         file_off += dat_off;
     }
 
@@ -232,8 +248,26 @@ int main(int argc, char **argv)
     scp_deselectdrive(scp, unit);
     scp_close(scp);
 
+    memset(&ftr, 0, sizeof(ftr));
+    memcpy(ftr.sig, "FPCS", sizeof(ftr.sig));
+    ftr.application_offset = htole32(lseek(fd, 0, SEEK_CUR));
+    ftr.creation_time = ftr.modification_time = htole64(time(NULL));
+    ftr.application_version = 0x10; /* should be moved to a general include? */
+    ftr.format_revision = 0x16; /* last specification used, 1.6 */
+    ftr.hardware_version = hwinfo[0];
+    ftr.firmware_version = hwinfo[1];
+
+    app_name_len = htole16(strlen(app_name));
+    checksum_and_write(fd, &csum, &app_name_len, sizeof(app_name_len));
+    checksum_and_write(fd, &csum, app_name, sizeof(app_name));
+    checksum_and_write(fd, &csum, &ftr, sizeof(ftr));
+
     lseek(fd, sizeof(dhdr), SEEK_SET);
-    write_exact(fd, th_offs, SCP_MAX_TRACKS * sizeof(uint32_t));
+    checksum_and_write(fd, &csum, th_offs, SCP_MAX_TRACKS * sizeof(uint32_t));
+
+    dhdr.checksum = htole32(csum);
+    lseek(fd, 0, SEEK_SET);
+    write_exact(fd, &dhdr, sizeof(dhdr));
 
     return 0;
 }

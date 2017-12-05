@@ -122,6 +122,25 @@ int main(int argc, char **argv)
     if (memcmp(dhdr.sig, "SCP", 3))
         errx(1, "%s: Not an SCP image", argv[optind]);
 
+    if (!(dhdr.flags & (1u<<_FLAG_writable))) {
+        int sz;
+        uint8_t *p, *buf;
+        uint32_t csum = 0;
+        if ((sz = lseek(fd, 0, SEEK_END)) < 16)
+            errx(1, "%s is too short", argv[optind]);
+        sz -= 16;
+        buf = memalloc(sz);
+        lseek(fd, 16, SEEK_SET);
+        read_exact(fd, buf, sz);
+        p = buf;
+        while (sz--)
+            csum += *p++;
+        memfree(buf);
+        if (csum != le32toh(dhdr.checksum))
+            errx(1, "%s has bad checksum", argv[optind]);
+        lseek(fd, 16, SEEK_SET);
+    }
+
     th_offs = memalloc((end_trk+1) * sizeof(uint32_t));
     read_exact(fd, th_offs, (end_trk+1) * sizeof(uint32_t));
 

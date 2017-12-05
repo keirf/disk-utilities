@@ -79,6 +79,7 @@ void scp_send(
     uint8_t len);
 
 void scp_printinfo(struct scp_handle *scp);
+void scp_getinfo(struct scp_handle *scp, void *info);
 void scp_ramtest(struct scp_handle *scp);
 void scp_selectdrive(struct scp_handle *scp, unsigned int drv);
 void scp_deselectdrive(struct scp_handle *scp, unsigned int drv);
@@ -102,12 +103,30 @@ struct disk_header {
     uint32_t checksum;
 };
 
+struct footer {
+    uint32_t manufacturer_offset;
+    uint32_t model_offset;
+    uint32_t serial_offset;
+    uint32_t creator_offset;
+    uint32_t application_offset;
+    uint32_t comments_offset;
+    uint64_t creation_time;
+    uint64_t modification_time;
+    uint8_t application_version;
+    uint8_t hardware_version;
+    uint8_t firmware_version;
+    uint8_t format_revision;
+    uint8_t sig[4];
+};
+
 #define DISKTYPE_amiga   4
 
 #define _FLAG_index_cued 0
 #define _FLAG_96tpi      1
 #define _FLAG_360rpm     2
-#define _FLAG_writable   3
+#define _FLAG_normalized 3
+#define _FLAG_writable   4
+#define _FLAG_footer     5
 
 /* Maximum Track Data Headers supported by SCP image format. */
 #define SCP_MAX_TRACKS 168

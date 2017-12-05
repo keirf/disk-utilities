@@ -201,6 +201,12 @@ void scp_printinfo(struct scp_handle *scp)
            info[0] >> 4, info[0] & 15, info[1] >> 4, info[1] & 15);
 }
 
+void scp_getinfo(struct scp_handle *scp, void *info)
+{
+    scp_send(scp, SCPCMD_SCPINFO, NULL, 0);
+    read_exact(scp->fd, info, 2);
+}
+
 void scp_ramtest(struct scp_handle *scp)
 {
     scp_send(scp, SCPCMD_RAMTEST, NULL, 0);
