@@ -141,7 +141,7 @@ static void scp_close(struct disk *d)
     dhdr.disk_type = DISKTYPE_amiga;
     dhdr.nr_revolutions = 1;
     dhdr.end_track = di->nr_tracks - 1;
-    dhdr.flags = (1u<<_FLAG_writable) | (1u<<_FLAG_footer); /* avoids need for checksum */
+    dhdr.flags = (1u<<_FLAG_footer);
     write_exact(d->fd, &dhdr, sizeof(dhdr));
 
     th_offs = memalloc(di->nr_tracks * sizeof(uint32_t));
@@ -231,6 +231,28 @@ static void scp_close(struct disk *d)
 
     lseek(d->fd, sizeof(dhdr), SEEK_SET);
     write_exact(d->fd, th_offs, di->nr_tracks * sizeof(uint32_t));
+
+    size_t filesize = (size_t)lseek(d->fd, 0, SEEK_END);
+    unsigned char* buffer = malloc(filesize);
+
+    /* Could not allocate memory */
+    if(buffer == NULL)
+        return;
+
+    lseek(d->fd, 0, SEEK_SET);
+    size_t read_len = read(d->fd, buffer, filesize);
+
+    /* Could not read whole file */
+    if(read_len != filesize)
+        return;
+
+    uint32_t sum = 0;
+    for(size_t i = 0x10; i < filesize; i++)
+        sum += *(buffer + i);
+
+    dhdr.checksum = htole32(sum);
+    lseek(d->fd, 0, SEEK_SET);
+    write_exact(d->fd, &dhdr, sizeof(dhdr));
 }
 
 struct container container_scp = {

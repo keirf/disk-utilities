@@ -177,7 +177,7 @@ int main(int argc, char **argv)
         usage(1);
     }
 
-    if ((fd = file_open(argv[optind], O_WRONLY|O_CREAT|O_TRUNC, 0666)) == -1)
+    if ((fd = file_open(argv[optind], O_RDWR|O_CREAT|O_TRUNC, 0666)) == -1)
         err(1, "Error creating %s", argv[optind]);
 
     memset(&dhdr, 0, sizeof(dhdr));
@@ -187,7 +187,7 @@ int main(int argc, char **argv)
     dhdr.nr_revolutions = nr_revs;
     dhdr.start_track = start_trk;
     dhdr.end_track = end_trk;
-    dhdr.flags = (1u<<_FLAG_writable) | (1u<<_FLAG_footer); /* avoids need for checksum */
+    dhdr.flags = (1u<<_FLAG_footer);
     write_exact(fd, &dhdr, sizeof(dhdr));
 
     th_offs = memalloc(SCP_MAX_TRACKS * sizeof(uint32_t));
@@ -255,6 +255,28 @@ int main(int argc, char **argv)
 
     lseek(fd, sizeof(dhdr), SEEK_SET);
     write_exact(fd, th_offs, SCP_MAX_TRACKS * sizeof(uint32_t));
+
+    size_t filesize = (size_t)lseek(fd, 0, SEEK_END);
+    unsigned char* buffer = malloc(filesize);
+
+    /* Could not allocate memory */
+    if(buffer == NULL)
+        return 0;
+
+    lseek(fd, 0, SEEK_SET);
+    size_t read_len = read(fd, buffer, filesize);
+
+    /* Could not read whole file */
+    if(read_len != filesize)
+        return 0;
+
+    uint32_t sum = 0;
+    for(size_t i = 0x10; i < filesize; i++)
+        sum += *(buffer + i);
+
+    dhdr.checksum = htole32(sum);
+    lseek(fd, 0, SEEK_SET);
+    write_exact(fd, &dhdr, sizeof(dhdr));
 
     return 0;
 }
