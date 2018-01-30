@@ -21,6 +21,9 @@ Cygwin/MinGW, Make, and a C compiler.
   # sudo make install
 ```
 
+[Tomse](http://retro-commodore.eu) has made a
+[beginners' guide](docs/LinuxSubsysOnWindows.md) for building
+Disk-Utilities on Windows 10 using the Linux Subsystem.
 
 ## IPF & CT Raw support: The CAPS/SPS IPF support library
 
