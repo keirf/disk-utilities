@@ -359,6 +359,8 @@ int main(int argc, char **argv)
             format = "ibm";
         else if (!strcmp(out_suffix, "adf"))
             format = "amigados";
+        else if (!strcmp(out_suffix, "mfm"))
+            format = "raw_dd";
     }
 
     format_lists = parse_config(config, format);

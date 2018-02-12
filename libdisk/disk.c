@@ -61,6 +61,8 @@ static struct container *container_from_filename(
         return &container_scp;
     if (!strcmp(suffix, "jv3"))
         return &container_jv3;
+    if (!strcmp(suffix, "mfm"))
+        return &container_mfm;
 
     warnx("Unknown file suffix: %s", name);
     return NULL;
