@@ -244,12 +244,16 @@ static void scp_close(struct disk *d)
 
     /* Could not read whole file */
     if(read_len != filesize)
+    {
+        free(buffer);
         return;
+    }
 
     uint32_t sum = 0;
     for(size_t i = 0x10; i < filesize; i++)
         sum += *(buffer + i);
 
+    free(buffer);
     dhdr.checksum = htole32(sum);
     lseek(d->fd, 0, SEEK_SET);
     write_exact(d->fd, &dhdr, sizeof(dhdr));
