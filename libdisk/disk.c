@@ -76,7 +76,7 @@ struct disk *disk_create(const char *name, unsigned int flags)
     if ((c = container_from_filename(name)) == NULL)
         return NULL;
 
-    if ((fd = file_open(name, O_WRONLY|O_CREAT|O_TRUNC, 0666)) == -1) {
+    if ((fd = file_open(name, O_RDWR|O_CREAT|O_TRUNC, 0666)) == -1) {
         warn("%s", name);
         return NULL;
     }

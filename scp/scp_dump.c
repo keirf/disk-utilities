@@ -19,6 +19,7 @@
 #include <getopt.h>
 
 #include <libdisk/util.h>
+#include <time.h>
 #include "scp.h"
 
 #if defined (__APPLE__)
@@ -87,6 +88,8 @@ int main(int argc, char **argv)
     uint32_t *th_offs, file_off, dat_off;
     int ch, fd, quiet = 0, ramtest = 0;
     char *sername = DEFAULT_SERDEVICE;
+    struct footer ftr;
+    const static char app_name[] = "Keirf's Disk-Utilities";
 
     const static char sopts[] = "hqd:u:r:Rs:e:Dk:K:";
     const static struct option lopts[] = {
@@ -174,17 +177,17 @@ int main(int argc, char **argv)
         usage(1);
     }
 
-    if ((fd = file_open(argv[optind], O_WRONLY|O_CREAT|O_TRUNC, 0666)) == -1)
+    if ((fd = file_open(argv[optind], O_RDWR|O_CREAT|O_TRUNC, 0666)) == -1)
         err(1, "Error creating %s", argv[optind]);
 
     memset(&dhdr, 0, sizeof(dhdr));
     memcpy(dhdr.sig, "SCP", sizeof(dhdr.sig));
-    dhdr.version = 0x10; /* taken from existing images */
+    dhdr.version = 0x00; /* taken from existing images */
     dhdr.disk_type = DISKTYPE_amiga;
     dhdr.nr_revolutions = nr_revs;
     dhdr.start_track = start_trk;
     dhdr.end_track = end_trk;
-    dhdr.flags = (1u<<_FLAG_writable); /* avoids need for checksum */
+    dhdr.flags = (1u<<_FLAG_footer);
     write_exact(fd, &dhdr, sizeof(dhdr));
 
     th_offs = memalloc(SCP_MAX_TRACKS * sizeof(uint32_t));
@@ -229,11 +232,56 @@ int main(int argc, char **argv)
 
     log("\n");
 
+    uint8_t hwinfo[2];
+    scp_getinfo(scp, &hwinfo);
+
     scp_deselectdrive(scp, unit);
     scp_close(scp);
 
+    memset(&ftr, 0, sizeof(ftr));
+    memcpy(ftr.sig, "FPCS", sizeof(ftr.sig));
+    ftr.application_offset = (uint32_t)lseek(fd, 0, SEEK_CUR);
+    ftr.creation_time = (uint64_t)time(NULL);
+    ftr.modification_time = (uint64_t)time(NULL);
+    ftr.application_version = 0x10; /* should be moved to a general include? */
+    ftr.format_revision = 0x16; /* last specification used, 1.6 */
+    ftr.hardware_version = hwinfo[0];
+    ftr.firmware_version = hwinfo[1];
+
+    uint16_t app_name_len = htole16((uint16_t)strlen(app_name));
+    write_exact(fd, &app_name_len, sizeof(app_name_len));
+    write_exact(fd, app_name, sizeof(app_name) + 1);
+    write_exact(fd, &ftr, sizeof(ftr));
+
     lseek(fd, sizeof(dhdr), SEEK_SET);
     write_exact(fd, th_offs, SCP_MAX_TRACKS * sizeof(uint32_t));
+
+    size_t filesize = (size_t)lseek(fd, 0, SEEK_END);
+    unsigned char* buffer = malloc(filesize);
+
+    /* Could not allocate memory */
+    if(buffer == NULL)
+        return 0;
+
+    lseek(fd, 0, SEEK_SET);
+    size_t read_len = read(fd, buffer, filesize);
+
+    /* Could not read whole file */
+    if(read_len != filesize)
+    {
+        free(buffer);
+        return 0;
+    }
+
+    uint32_t sum = 0;
+    for(size_t i = 0x10; i < filesize; i++)
+        sum += *(buffer + i);
+
+    free(buffer);
+
+    dhdr.checksum = htole32(sum);
+    lseek(fd, 0, SEEK_SET);
+    write_exact(fd, &dhdr, sizeof(dhdr));
 
     return 0;
 }
