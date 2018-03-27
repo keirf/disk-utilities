@@ -44,8 +44,8 @@
 /* Support various levels of debugging information */
 static int jv3_debug = JV3_DEBUG;
 
-#define JV3_LOG(l, f, a...) do {                \
-    if (jv3_debug >= (l)) printf(f, ##a);       \
+#define JV3_LOG(l, f, a...) do {                    \
+    if (jv3_debug >= (l)) fprintf(stderr, f, ##a);  \
 } while (0)
 
 /* JV3 warning - always enabled */

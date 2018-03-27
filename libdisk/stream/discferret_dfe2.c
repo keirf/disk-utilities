@@ -123,8 +123,8 @@ static unsigned int dfe2_find_acq_freq(struct stream *s)
         return MHZ(50);
     if (check_freq(index_pos, MHZ(100)))
         return MHZ(100);
-    printf("Cannot determine acq frequency! Maybe you used a "
-           "nonstandard drive! Using default of 50MHz.\n");
+    fprintf(stderr, "Cannot determine acq frequency! Maybe you used a "
+            "nonstandard drive! Using default of 50MHz.\n");
     return MHZ(50);
 }
 
@@ -157,7 +157,7 @@ static int dfe2_select_track(struct stream *s, unsigned int tracknr)
         data_length = be32toh(*(uint32_t *)&header[6]);
     }
     if (tracknr != (cyl*2)+head)
-        printf("DFI track number doesn't match!\n");
+        fprintf(stderr, "DFI track number doesn't match!\n");
     if (sector != 1)
         errx(1, "Hard sectored disks are not supported!\n");
 

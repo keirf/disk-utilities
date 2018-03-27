@@ -114,6 +114,66 @@ static void dump_track_list(struct disk *d)
     printf("%u.%u: %s\n", TRACK_ARG(i-TRACK_STEP), prev_name);
 }
 
+static void probe_stream(void)
+{
+    struct stream *s;
+    struct disk *d;
+    struct disk_info *di;
+    struct track_info *ti;
+    unsigned int i;
+
+    if ((s = stream_open(in, drive_rpm, data_rpm)) == NULL)
+        errx(1, "Failed to probe input file: %s", in);
+
+    if (pll_period_adj_pct >= 0)
+        s->pll_period_adj_pct = pll_period_adj_pct;
+    if (pll_phase_adj_pct >= 0)
+        s->pll_phase_adj_pct = pll_phase_adj_pct;
+    if (verbose)
+        printf("PLL Parameters: period_adj=%d%% phase_adj=%d%%\n",
+               s->pll_period_adj_pct, s->pll_phase_adj_pct);
+
+    if ((d = disk_create(out, disk_flags | DISKFL_rpm(data_rpm))) == NULL)
+        errx(1, "Unable to create new disk file: %s", out);
+    di = disk_get_info(d);
+
+    for (i = TRACK_START; i <= TRACK_END(di); i += TRACK_STEP) {
+        unsigned int j, k, nr = 0;
+        char name[128];
+        const char *fmtname;
+        printf("T%u.%u: ", TRACK_ARG(i));
+        for (j = 0; (fmtname = disk_get_format_id_name(j)) != NULL; j++) {
+            if (!strncmp(fmtname, "raw_", 4)) {
+                /* Skip raw formats, they accept everything. */
+                continue;
+            }
+            if (track_write_raw_from_stream(d, i, j, s) == 0) {
+                track_get_format_name(d, i, name, sizeof(name));
+                if (!strncmp(name, "AmigaDOS", 8)
+                    && strcmp(fmtname, "amigados")) {
+                    /* Skip umpteen variations on AmigaDOS. */
+                    continue;
+                }
+                if (nr++)
+                    printf(", ");
+                printf("%s(%s)", name, fmtname);
+                ti = &di->track[i];
+                for (k = 0; k < ti->nr_sectors; k++)
+                    if (!is_valid_sector(ti, k))
+                        break;
+                if (k != ti->nr_sectors)
+                    printf("[%u/%u]", k, ti->nr_sectors);
+            }
+        }
+        if (!nr)
+            printf("Unidentified");
+        printf("\n");
+    }
+
+    disk_close(d);
+    stream_close(s);
+}
+
 static void handle_stream(void)
 {
     struct stream *s;
@@ -361,12 +421,21 @@ int main(int argc, char **argv)
             format = "amigados";
     }
 
-    format_lists = parse_config(config, format);
+    if (!strcmp(format, "probe_all")) {
 
-    if (!strcmp(in_suffix, "img"))
-        handle_img();
-    else
-        handle_stream();
+        /* Lists all wholly- and partially-matching formats. */
+        probe_stream();
+
+    } else {
+
+        format_lists = parse_config(config, format);
+
+        if (!strcmp(in_suffix, "img"))
+            handle_img();
+        else
+            handle_stream();
+
+    }
 
     return 0;
 }

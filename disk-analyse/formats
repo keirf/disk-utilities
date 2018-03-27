@@ -1,9 +1,6 @@
 default = amigados
 
-# all: Try all supported formats, in arbitrary order.
-# May show many false positives.
-all
-    * all
+# probe_all: List all wholly- and partially-matching formats
 
 # probe_amiga: A list of more common Amiga formats which do not
 # show too many false positives.

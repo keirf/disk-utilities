@@ -263,9 +263,9 @@ int dsk_write_raw(
         /* nothing */
     } else if (((s->track_len_bc - (s->track_len_bc/50)) > ti->total_bits) ||
                ((s->track_len_bc + (s->track_len_bc/50)) < ti->total_bits)) {
-        printf("*** T%u.%u: Unexpected track length (seen %u, "
-               "expected %u)\n", cyl(tracknr), hd(tracknr),
-               s->track_len_bc, ti->total_bits);
+        fprintf(stderr, "*** T%u.%u: Unexpected track length (seen %u, "
+                "expected %u)\n", cyl(tracknr), hd(tracknr),
+                s->track_len_bc, ti->total_bits);
     }
 
     ti->data_bitoff = (int32_t)ti->data_bitoff % (int32_t)ti->total_bits;

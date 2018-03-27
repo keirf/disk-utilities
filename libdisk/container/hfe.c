@@ -183,7 +183,8 @@ static struct container *hfe_open(struct disk *d)
                             break;
                         }
                         default:
-                            printf("Unknown HFEv3 opcode %02x\n", opc);
+                            fprintf(stderr,
+                                    "Unknown HFEv3 opcode %02x\n", opc);
                             BUG();
                         }
                     } else {
@@ -291,8 +292,9 @@ static void hfe_close(struct disk *d)
         for (j = 0; j < raw[i]->bitlen; j++) {
             if (raw[i]->speed[j] == 1000)
                 continue;
-            printf("*** T%u.%u: Variable-density track cannot be "
-                   "correctly written to an HFE file %u\n", i/2, i&1, raw[i]->speed[j]);
+            fprintf(stderr, "*** T%u.%u: Variable-density track cannot be "
+                    "correctly written to an HFE file %u\n",
+                    i/2, i&1, raw[i]->speed[j]);
             break;
         }
     }

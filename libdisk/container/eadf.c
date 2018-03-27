@@ -163,8 +163,8 @@ static void eadf_close(struct disk *d)
             for (j = 0; j < raw[i]->bitlen; j++) {
                 if (raw[i]->speed[j] == 1000)
                     continue;
-                printf("*** T%u.%u: Variable-density track cannot be "
-                       "correctly written to an Ext-ADF file\n", i/2, i&1);
+                fprintf(stderr, "*** T%u.%u: Variable-density track cannot be "
+                        "correctly written to an Ext-ADF file\n", i/2, i&1);
                 break;
             }
         }
