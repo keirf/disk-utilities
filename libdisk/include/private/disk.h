@@ -123,6 +123,7 @@ extern struct container container_img;
 extern struct container container_ipf;
 extern struct container container_scp;
 extern struct container container_jv3;
+extern struct container container_mfm;
 
 /* Helpers for container implementations: defaults for init() & write_raw(). */
 void _dsk_init(struct disk *d, unsigned int nr_tracks);
