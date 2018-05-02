@@ -475,7 +475,7 @@ static void jv3_close(struct disk *d)
         if (!ti->nr_sectors)
             continue;
 
-        if (ti->nr_sectors >= 256) 
+        if ((uint32_t)ti->nr_sectors >= 256) 
             continue;
 
         /* Simple reject_track tests are now done 
