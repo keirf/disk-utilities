@@ -179,6 +179,22 @@ uint32_t htole32(uint32_t host_32bits)
     return result;
 }
 
+uint64_t htobe64(uint64_t host_64bits)
+{
+    uint64_t result;
+    ((uint32_t *)&result)[0] = htobe32(host_64bits >> 32);
+	((uint32_t *)&result)[1] = htobe32(host_64bits);
+    return result;
+}
+
+uint64_t htole64(uint64_t host_64bits)
+{
+    uint64_t result;
+    ((uint32_t *)&result)[1] = htole32(host_64bits >> 32);
+	((uint32_t *)&result)[0] = htole32(host_64bits);
+    return result;
+}
+
 uint16_t be16toh(uint16_t big_endian_16bits)
 {
     return ((((uint8_t *)&big_endian_16bits)[0] << 8) |
@@ -201,6 +217,18 @@ uint32_t le32toh(uint32_t little_endian_32bits)
 {
     return ((le16toh(((uint16_t *)&little_endian_32bits)[1]) << 16) |
             le16toh(((uint16_t *)&little_endian_32bits)[0]));
+}
+
+uint64_t be64toh(uint64_t big_endian_64bits)
+{
+    return (((uint64_t)be32toh(((uint32_t *)&big_endian_64bits)[0]) << 32) |
+            be32toh(((uint32_t *)&big_endian_64bits)[1]));
+}
+
+uint64_t le64toh(uint64_t little_endian_64bits)
+{
+    return (((uint64_t)le32toh(((uint32_t *)&little_endian_64bits)[1]) << 32) |
+            le32toh(((uint32_t *)&little_endian_64bits)[0]));
 }
 
 #endif /* !defined(__PLATFORM_HAS_ENDIAN_H__) */
