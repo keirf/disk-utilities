@@ -275,6 +275,7 @@ static void hfe_close(struct disk *d)
     struct track_header *thdr;
     struct track_raw *_raw[di->nr_tracks], **raw = _raw;
     unsigned int i, j, off, bitlen, bytelen, len;
+    bool_t is_st = di->nr_tracks && (di->track[0].type == TRKTYP_atari_st);
     uint8_t *tbuf;
 
     for (i = 0; i < di->nr_tracks; i++) {
@@ -310,10 +311,10 @@ static void hfe_close(struct disk *d)
     dhdr->formatrevision = 0;
     dhdr->nr_tracks = di->nr_tracks / 2;
     dhdr->nr_sides = 2;
-    dhdr->track_encoding = ENC_Amiga_MFM; /* XXX used? */
-    dhdr->bitrate = htole16(250); /* XXX used? */
+    dhdr->track_encoding = is_st ? ENC_ISOIBM_MFM : ENC_Amiga_MFM;
+    dhdr->bitrate = htole16(250);
     dhdr->rpm = htole16(0);
-    dhdr->interface_mode = IFM_Amiga_DD; /* XXX */
+    dhdr->interface_mode = is_st ? IFM_AtariST_DD : IFM_Amiga_DD;
     dhdr->rsvd = 1;
     dhdr->track_list_offset = htole16(1);
     write_exact(d->fd, block, 512);

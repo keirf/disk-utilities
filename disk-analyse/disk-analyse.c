@@ -73,6 +73,7 @@ static void usage(int rc)
     printf("  .ipf  => SPS/IPF\n");
     printf("  .dsk  => Libdisk\n");
     printf("  .scp  => Supercard Pro\n");
+    printf("  .st   => Atari ST Sector Dump\n");
     printf("Read-only support:\n");
     printf("  .dat  => Diskread\n");
     printf("  .dfi  => DiscFerret DFE2\n");
@@ -419,9 +420,11 @@ int main(int argc, char **argv)
             format = "ibm";
         else if (!strcmp(out_suffix, "adf"))
             format = "amigados";
+        else if (!strcmp(out_suffix, "st"))
+            format = "atari_st";
     }
 
-    if (!strcmp(format, "probe_all")) {
+    if (format && !strcmp(format, "probe_all")) {
 
         /* Lists all wholly- and partially-matching formats. */
         probe_stream();
@@ -430,7 +433,7 @@ int main(int argc, char **argv)
 
         format_lists = parse_config(config, format);
 
-        if (!strcmp(in_suffix, "img"))
+        if (!strcmp(in_suffix, "img") || !strcmp(in_suffix, "st"))
             handle_img();
         else
             handle_stream();

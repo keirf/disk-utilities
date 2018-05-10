@@ -2000,6 +2000,10 @@ acorn_adfs_d_e
 acorn_adfs_f
     * acorn_adfs_f
 
+# Atari ST (720K)
+atari_st
+    * atari_st
+
 ##########################################################
 # IBM-MFM Generic Formats (auto-detect sector arrangement)
 

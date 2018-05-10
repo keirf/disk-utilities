@@ -53,7 +53,7 @@ static struct container *container_from_filename(
         return &container_hfe;
     if (!strcmp(suffix, "imd"))
         return &container_imd;
-    if (!strcmp(suffix, "img"))
+    if (!strcmp(suffix, "img") || !strcmp(suffix, "st"))
         return &container_img;
     if (!strcmp(suffix, "ipf"))
         return &container_ipf;

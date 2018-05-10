@@ -82,8 +82,6 @@ static void *ibm_img_write_raw(
         memcpy(&block[idam.sec*sec_sz], dat, sec_sz);
         set_sector_valid(ti, idam.sec);
         nr_valid_blocks++;
-        if (idam.sec == 0)
-            ti->data_bitoff = idx_off;
     }
 
     if (nr_valid_blocks == 0) {
@@ -92,7 +90,7 @@ static void *ibm_img_write_raw(
     }
 
     block[ti->len++] = iam;
-    ti->data_bitoff = 80 * 16;
+    ti->data_bitoff = 0;
 
     return block;
 }
@@ -105,14 +103,18 @@ static void ibm_img_read_raw(
     uint8_t *dat = (uint8_t *)ti->dat;
     uint8_t cyl = cyl(tracknr), hd = hd(tracknr), no;
     bool_t iam = dat[ti->len-1];
-    unsigned int sec, i, post_data_gap;
+    unsigned int sec, i, gap3;
 
     for (no = 0; (128<<no) != ti->bytes_per_sector; no++)
         continue;
 
-    post_data_gap = ((ti->type == TRKTYP_ibm_pc_dd) ? 80
-                     : (ti->type == TRKTYP_ibm_pc_dd_10sec) ? 40
-                     : 108);
+    gap3 = ((ti->type == TRKTYP_ibm_pc_dd) ? 84
+            : (ti->type == TRKTYP_atari_st) ? 84
+            : (ti->type == TRKTYP_ibm_pc_dd_10sec) ? 30
+            : 108);
+
+    for (i = 0; i < 80; i++) /* Gap 4A */
+        tbuf_bits(tbuf, SPEED_AVG, bc_mfm, 8, 0x4e);
 
     /* IAM */
     if (iam) {
@@ -120,7 +122,7 @@ static void ibm_img_read_raw(
             tbuf_bits(tbuf, SPEED_AVG, bc_mfm, 8, 0x00);
         tbuf_bits(tbuf, SPEED_AVG, bc_raw, 32, 0x52245224);
         tbuf_bits(tbuf, SPEED_AVG, bc_raw, 32, 0x52245552);
-        for (i = 0; i < post_data_gap; i++)
+        for (i = 0; i < 50; i++)
             tbuf_bits(tbuf, SPEED_AVG, bc_mfm, 8, 0x4e);
     }
 
@@ -148,7 +150,7 @@ static void ibm_img_read_raw(
         tbuf_bytes(tbuf, SPEED_AVG, bc_mfm, ti->bytes_per_sector,
                    &dat[sec*ti->bytes_per_sector]);
         tbuf_emit_crc16_ccitt(tbuf, SPEED_AVG);
-        for (i = 0; i < post_data_gap; i++)
+        for (i = 0; i < gap3; i++)
             tbuf_bits(tbuf, SPEED_AVG, bc_mfm, 8, 0x4e);
     }
 
@@ -162,6 +164,9 @@ void *ibm_img_write_sectors(
     char *block;
     bool_t iam = 1;
 
+    if (ti->type == TRKTYP_atari_st)
+        iam = 0;
+
     if (sectors->nr_bytes < ti->len)
         return NULL;
 
@@ -172,7 +177,7 @@ void *ibm_img_write_sectors(
     sectors->nr_bytes -= ti->len;
 
     block[ti->len++] = iam;
-    ti->data_bitoff = 80 * 16;
+    ti->data_bitoff = 0;
 
     return block;
 }
@@ -350,6 +355,19 @@ struct track_handler acorn_adfs_f_handler = {
  * FM decode support:
  *   DFS 40-track - 40tk DS 10/256  200K  FM/SD
  *   DFS 80-track - 80th DS 10/256  400K  FM/SD */
+
+struct track_handler atari_st_handler = {
+    .density = trkden_double,
+    .bytes_per_sector = 512,
+    .nr_sectors = 9,
+    .write_raw = ibm_img_write_raw,
+    .read_raw = ibm_img_read_raw,
+    .write_sectors = ibm_img_write_sectors,
+    .read_sectors = ibm_img_read_sectors,
+    .extra_data = & (struct ibm_extra_data) {
+        .sector_base = 1
+    }
+};
 
 /*
  * Local variables:
