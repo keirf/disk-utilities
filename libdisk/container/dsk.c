@@ -179,7 +179,7 @@ static void dsk_close(struct disk *d)
     if (ftruncate(d->fd, 0) < 0)
         err(1, NULL);
 
-    strncpy(dh.signature, "DSK\0", 4);
+    memcpy(dh.signature, "DSK\0", 4);
     dh.version = 0;
     dh.nr_tracks = htobe16(di->nr_tracks);
     dh.bytes_per_thdr = htobe16(sizeof(th));

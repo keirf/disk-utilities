@@ -144,7 +144,7 @@ static void eadf_close(struct disk *d)
         err(1, NULL);
 
     memset(&dhdr, 0, sizeof(dhdr));
-    strncpy(dhdr.sig, "UAE-1ADF", sizeof(dhdr.sig));
+    memcpy(dhdr.sig, "UAE-1ADF", sizeof(dhdr.sig));
     dhdr.nr_tracks = htobe16(di->nr_tracks);
     write_exact(d->fd, &dhdr, sizeof(dhdr));
 

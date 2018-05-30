@@ -307,7 +307,7 @@ static void hfe_close(struct disk *d)
     /* Block 0: Disk info. */
     memset(block, 0xff, 512);
     dhdr = (struct disk_header *)block;
-    strncpy(dhdr->sig, "HXCPICFE", sizeof(dhdr->sig));
+    memcpy(dhdr->sig, "HXCPICFE", sizeof(dhdr->sig));
     dhdr->formatrevision = 0;
     dhdr->nr_tracks = di->nr_tracks / 2;
     dhdr->nr_sides = 2;
