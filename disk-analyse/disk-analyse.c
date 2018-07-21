@@ -267,8 +267,13 @@ static void handle_img(void)
     struct disk_info *di;
     void *data;
 
-    if ((fd = file_open(in, O_RDONLY)) == -1)
+    if ((fd = file_open(in, O_RDONLY)) == -1) {
+        if (errno == ENOENT) {
+            /* Non-existent file could be a Kryoflux stream basename. */
+            return handle_stream();
+        }
         err(1, "Failed to open IMG file '%s'", in);
+    }
     sz = lseek(fd, 0, SEEK_END);
     lseek(fd, 0, SEEK_SET);
 
