@@ -7,9 +7,9 @@
 *.so.*
 *.orig
 *.rej
-adfbb/adfbb
-adfread/adfread
-adfwrite/adfwrite
+adf/adfbb
+adf/adfread
+adf/adfwrite
 disk-analyse/disk-analyse
 ipfinfo/ipfinfo
 m68k/disassemble
