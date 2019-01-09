@@ -32,7 +32,7 @@ static void track_load_byte(struct amiga_state *s)
     uint16_t speed = s->disk.track_raw->speed[s->disk.input_pos];
     if (speed == SPEED_WEAK) {
         s->disk.ns_per_cell = s->disk.av_ns_per_cell;
-        s->disk.input_byte = (uint8_t)random();
+        s->disk.input_byte = (uint8_t)rand();
     } else {
         s->disk.ns_per_cell = (s->disk.av_ns_per_cell * speed) / SPEED_AVG;
         s->disk.input_byte = s->disk.track_raw->bits[s->disk.input_pos/8];
