@@ -131,6 +131,10 @@ int main(int argc, char **argv)
     mem_size = f_sz - 20*4;
     s.mem = malloc(mem_size);
 
+    /* Unmarshal memory. */
+    if (fread(s.mem, mem_size, 1, fd) != 1)
+        err(1, "%s", argv[1]);
+
     /* Unmarshal registers, 80 bytes: '>18IH6x' % (d0-d7,a0-a7,pc,ssp,sr) */
     if (fread(r, 4, 20, fd) != 20)
         err(1, "%s", argv[1]);
@@ -139,9 +143,6 @@ int main(int argc, char **argv)
         *_r++ = be32toh(r[i]);
     regs.sr = be16toh(*(uint16_t *)&r[i]);
 
-    /* Unmarshal memory. */
-    if (fread(s.mem, mem_size, 1, fd) != 1)
-        err(1, "%s", argv[1]);
     fclose(fd);
 
     init_sigint_handler();
@@ -161,6 +162,10 @@ int main(int argc, char **argv)
     if (fd == NULL)
         err(1, "%s", argv[2]);
 
+    /* Marshal memory. */
+    if (fwrite(s.mem, mem_size, 1, fd) != 1)
+        err(1, "%s", argv[1]);
+
     /* Marshal registers. */
     memset(r, 0, sizeof(r));
     _r = (uint32_t *)&regs;
@@ -170,9 +175,6 @@ int main(int argc, char **argv)
     if (fwrite(r, 4, 20, fd) != 20)
         err(1, "%s", argv[1]);
 
-    /* Marshal memory. */
-    if (fwrite(s.mem, mem_size, 1, fd) != 1)
-        err(1, "%s", argv[1]);
     fclose(fd);
 
     return 0;
