@@ -7,13 +7,16 @@ LDFLAGS := -Lamiga -Lm68k -L../libdisk
 
 .PHONY: m68k/m68k.a amiga/amiga.a
 
-all: disassemble copylock
+all: disassemble copylock m68k_emulate
 
 copylock: m68k/m68k.a amiga/amiga.a copylock.o
 	$(CC) $(LDFLAGS) $@.o -lamiga -lm68k -ldisk -o $@
 
 disassemble: m68k/m68k.a amiga/amiga.a disassemble.o
 	$(CC) $(LDFLAGS) $@.o -lamiga -lm68k -o $@
+
+m68k_emulate: m68k/m68k.a m68k_emulate.o
+	$(CC) $(LDFLAGS) $@.o -lm68k -o $@
 
 m68k/m68k.a:
 	$(MAKE) -C m68k all
