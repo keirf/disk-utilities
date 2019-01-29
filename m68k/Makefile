@@ -28,6 +28,7 @@ install: all
 	$(INSTALL_DIR) $(BINDIR)
 	$(INSTALL_PROG) copylock $(BINDIR)
 	$(INSTALL_PROG) disassemble $(BINDIR)
+	$(INSTALL_PROG) m68k_emulate $(BINDIR)
 
 clean::
 	$(RM) disassemble copylock

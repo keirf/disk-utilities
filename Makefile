@@ -1,7 +1,7 @@
 ROOT := .
 include $(ROOT)/Rules.mk
 
-SUBDIRS := libdisk adf m68k disk-analyse scp
+SUBDIRS := libdisk adf disk-analyse scp
 
 all:
 	@set -e; for subdir in $(SUBDIRS); do \
