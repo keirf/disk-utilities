@@ -853,7 +853,7 @@ static void *ibm_fm_write_raw(
 #ifdef CRC_DEBUG
         if (crc) {
             trk_warn(ti, tracknr, "DATA  CRC cyl:%2d, head:%2d, sec:%2d, "
-                     "no:%2d, crc:%04x, offset:%5d\n",
+                     "no:%2d, crc:%04x, offset:%5d",
                      idam.cyl, idam.head, idam.sec, idam.no, crc, idx_off);
         }
 #endif
@@ -1049,6 +1049,52 @@ static void ibm_fm_read_raw(
     }
 }
 
+static void *dec_write_sectors(
+    struct disk *d, unsigned int tracknr, struct track_sectors *sectors)
+{
+    struct track_info *ti = &d->di->track[tracknr];
+    struct ibm_track *trk;
+    struct ibm_sector *sec;
+    unsigned int i;
+    char *block;
+
+    if (sectors->nr_bytes < ti->len)
+        return NULL;
+
+    ti->len += sizeof(*trk);
+    ti->len += ti->nr_sectors * (sizeof(*sec) + ti->bytes_per_sector);
+    block = memalloc(ti->len);
+
+    trk = (struct ibm_track *)block;
+    trk->has_iam = 1;
+    trk->post_data_gap = 26;
+
+    sec = trk->secs;
+    for (i = 0; i < ti->nr_sectors; i++) {
+        sec->idam.cyl = tracknr/2;
+        sec->idam.head = 0;
+        sec->idam.sec = i + 1;
+        sec->idam.crc = 0;
+        sec->crc = 0;
+        if (ti->type == TRKTYP_dec_rx02) {
+            sec->idam.no = 1;
+            sec->mark = DEC_RX02_MMFM_DAM_DAT;
+        } else { /* TRKTYP_dec_rx01 */
+            sec->idam.no = 0;
+            sec->mark = IBM_MARK_DAM;
+        }
+        memcpy(sec->dat, sectors->data, ti->bytes_per_sector);
+        sectors->data += ti->bytes_per_sector;
+        sectors->nr_bytes -= ti->bytes_per_sector;
+        sec = (struct ibm_sector *)
+            ((char *)sec + sizeof(struct ibm_sector) + ti->bytes_per_sector);
+    }
+
+    ti->data_bitoff = 0;
+
+    return block;
+}
+
 struct track_handler ibm_fm_sd_handler = {
     .density = trkden_single,
     .get_name = ibm_get_name,
@@ -1070,7 +1116,10 @@ struct track_handler dec_rx01_handler = {
     .get_name = ibm_get_name,
     .write_raw = ibm_fm_write_raw,
     .read_raw = ibm_fm_read_raw,
-    .read_sectors = ibm_read_sectors
+    .read_sectors = ibm_read_sectors,
+    .write_sectors = dec_write_sectors,
+    .bytes_per_sector = 128,
+    .nr_sectors = 26
 };
 
 struct track_handler dec_rx02_handler = {
@@ -1078,7 +1127,10 @@ struct track_handler dec_rx02_handler = {
     .get_name = ibm_get_name,
     .write_raw = ibm_fm_write_raw,
     .read_raw = ibm_fm_read_raw,
-    .read_sectors = ibm_read_sectors
+    .read_sectors = ibm_read_sectors,
+    .write_sectors = dec_write_sectors,
+    .bytes_per_sector = 256,
+    .nr_sectors = 26
 };
 
 struct track_handler trs80_fm_sd_handler = {
