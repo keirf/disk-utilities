@@ -202,6 +202,11 @@ int stream_next_bytes(struct stream *s, void *p, unsigned int bytes)
     return 0;
 }
 
+unsigned int stream_get_density(struct stream *s)
+{
+    return s->clock_centre;
+}
+
 void stream_set_density(struct stream *s, unsigned int ns_per_cell)
 {
     /* Flux-based streams */

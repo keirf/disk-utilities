@@ -2031,6 +2031,12 @@ ibm_fm_dd
 "DEC-RX02"
     * dec_rx02
 
+"DEC-RX01-525"
+    * dec_rx01_525
+
+"DEC-RX02-525"
+    * dec_rx02_525
+
 ibm
     * ibm_fm_sd ibm_fm_dd ibm_mfm_dd ibm_mfm_hd ibm_mfm_ed
 

@@ -701,10 +701,17 @@ static void *ibm_fm_write_raw(
     struct ibm_track *ibm_track = NULL;
     unsigned int dat_bytes = 0, gap_bits, nr_blocks = 0;
     unsigned int sec_sz;
-    bool_t iam = 0;
+    bool_t iam = 0, is_dec = 0;
 
-    if (ti->type == TRKTYP_dec_rx02)
-        stream_set_density(s, 2000u);
+    switch (ti->type) {
+    case TRKTYP_dec_rx01:
+    case TRKTYP_dec_rx02:
+    case TRKTYP_dec_rx01_525:
+    case TRKTYP_dec_rx02_525:
+        is_dec = 1;
+        stream_set_density(s, stream_get_density(s)*2);
+        break;
+    }
 
     /* IAM */
     while (!iam && (stream_next_bit(s) != -1))
@@ -752,7 +759,8 @@ static void *ibm_fm_write_raw(
         /* DAM/DDAM */
         if (ibm_fm_scan_mark(s, 1000, &mark) < 0)
             continue;
-        if ((ti->type == TRKTYP_dec_rx02)
+        if (((ti->type == TRKTYP_dec_rx02)
+             || (ti->type == TRKTYP_dec_rx02_525))
             && ((mark == DEC_RX02_MMFM_DAM_DAT)
                 || (mark == DEC_RX02_MMFM_DDAM_DAT))) {
             int i, rc;
@@ -760,10 +768,10 @@ static void *ibm_fm_write_raw(
             crc = s->crc16_ccitt;
             idam.no = 1;
             sec_sz = 256;
-            stream_set_density(s, 1000u);
+            stream_set_density(s, stream_get_density(s)/2);
             stream_next_bit(s); /* Skip second half of last 2us bitcell? */
             rc = stream_next_bytes(s, dat, 2*(sec_sz+2));
-            stream_set_density(s, 2000u);
+            stream_set_density(s, stream_get_density(s)*2);
             if (rc == -1)
                 continue;
             /* Undo RX02 modified MFM rule... */
@@ -900,8 +908,7 @@ static void *ibm_fm_write_raw(
                          + dat_bytes);
 
     ibm_track->has_iam = iam ? 1 : 0;
-    ibm_track->post_data_gap = ((ti->type == TRKTYP_dec_rx01)
-                       || (ti->type == TRKTYP_dec_rx02)) ? 27
+    ibm_track->post_data_gap = is_dec ? 27
         : choose_post_data_gap(ti, ibm_track, gap_bits, nr_blocks);
 
     ti->len = sizeof(struct ibm_track);
@@ -913,8 +920,8 @@ static void *ibm_fm_write_raw(
     }
 
 out:
-    if (ti->type == TRKTYP_dec_rx02)
-        stream_set_density(s, 1000u);
+    if (is_dec)
+        stream_set_density(s, stream_get_density(s)/2);
     return ibm_track;
 }
 
@@ -959,9 +966,17 @@ static void ibm_fm_read_raw(
     struct ibm_track *ibm_track = (struct ibm_track *)ti->dat;
     struct ibm_sector *cur_sec;
     unsigned int sec, i, j, sec_sz, flags = 0;
+    bool_t is_dec = 0;
 
-    if (ti->type == TRKTYP_dec_rx02)
+    switch (ti->type) {
+    case TRKTYP_dec_rx01:
+    case TRKTYP_dec_rx02:
+    case TRKTYP_dec_rx01_525:
+    case TRKTYP_dec_rx02_525:
         flags |= ENC_HALFRATE;
+        is_dec = 1;
+        break;
+    }
 
     /* IAM */
     if (ibm_track->has_iam) {
@@ -986,8 +1001,7 @@ static void ibm_fm_read_raw(
         fm_bits(tbuf, flags, 8, cur_sec->idam.cyl);
         fm_bits(tbuf, flags, 8, cur_sec->idam.head);
         fm_bits(tbuf, flags, 8, cur_sec->idam.sec);
-        fm_bits(tbuf, flags, 8, ((ti->type == TRKTYP_dec_rx02)
-                                 ? 0 : cur_sec->idam.no));
+        fm_bits(tbuf, flags, 8, is_dec ? 0 : cur_sec->idam.no);
         fm_bits(tbuf, flags, 16, tbuf->crc16_ccitt);
         for (i = 0; i < 11; i++)
             fm_bits(tbuf, flags, 8, 0xff);
@@ -1067,16 +1081,16 @@ static void *dec_write_sectors(
 
     trk = (struct ibm_track *)block;
     trk->has_iam = 1;
-    trk->post_data_gap = 26;
+    trk->post_data_gap = 27;
 
     sec = trk->secs;
     for (i = 0; i < ti->nr_sectors; i++) {
         sec->idam.cyl = tracknr/2;
         sec->idam.head = 0;
-        sec->idam.sec = i + 1;
+        sec->idam.sec = i + ((tracknr&1) ? 14 : 1);
         sec->idam.crc = 0;
         sec->crc = 0;
-        if (ti->type == TRKTYP_dec_rx02) {
+        if (ti->bytes_per_sector == 256) {
             sec->idam.no = 1;
             sec->mark = DEC_RX02_MMFM_DAM_DAT;
         } else { /* TRKTYP_dec_rx01 */
@@ -1112,7 +1126,7 @@ struct track_handler ibm_fm_dd_handler = {
 };
 
 struct track_handler dec_rx01_handler = {
-    .density = trkden_double,
+    .density = trkden_high,
     .get_name = ibm_get_name,
     .write_raw = ibm_fm_write_raw,
     .read_raw = ibm_fm_read_raw,
@@ -1131,6 +1145,31 @@ struct track_handler dec_rx02_handler = {
     .write_sectors = dec_write_sectors,
     .bytes_per_sector = 256,
     .nr_sectors = 26
+};
+
+/* Micro Technology manufactured dual-density third-party interfaces (MXV22M,
+ * MXV42C) for the DEC RX02 subsystem. They write to 300RPM 5.25" DSDD disks.
+ * Sectors 1-13 on side 0, Sectors 14-26 on side 1. */
+struct track_handler dec_rx01_525_handler = {
+    .density = trkden_double,
+    .get_name = ibm_get_name,
+    .write_raw = ibm_fm_write_raw,
+    .read_raw = ibm_fm_read_raw,
+    .read_sectors = ibm_read_sectors,
+    .write_sectors = dec_write_sectors,
+    .bytes_per_sector = 128,
+    .nr_sectors = 13
+};
+
+struct track_handler dec_rx02_525_handler = {
+    .density = trkden_double,
+    .get_name = ibm_get_name,
+    .write_raw = ibm_fm_write_raw,
+    .read_raw = ibm_fm_read_raw,
+    .read_sectors = ibm_read_sectors,
+    .write_sectors = dec_write_sectors,
+    .bytes_per_sector = 256,
+    .nr_sectors = 13
 };
 
 struct track_handler trs80_fm_sd_handler = {
