@@ -23,7 +23,7 @@
 
 #if defined (__APPLE__)
 /* FTDI VCP driver: http://www.ftdichip.com/Drivers/VCP.htm */
-#define DEFAULT_SERDEVICE  "/dev/cu.usbserial-SCP-JIM"
+#define DEFAULT_SERDEVICE  "/dev/cu.usbserial-SCP_JIM"
 #else
 #define DEFAULT_SERDEVICE  "/dev/ttyUSB0"
 #endif
