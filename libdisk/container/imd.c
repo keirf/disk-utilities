@@ -200,7 +200,11 @@ static void imd_close(struct disk *d)
         err(1, NULL);
 
     t = time(NULL);
+#if !defined(__MINGW32__)
     localtime_r(&t, &tm);
+#else
+    tm = *localtime(&t); /* not thread-safe */
+#endif
     strftime(timestr, sizeof(timestr), "%d/%m/%C%y %H:%M:%S", &tm);
     snprintf(sig, sizeof(sig),
              "IMD 1.16: %s\r\nCreated by "
