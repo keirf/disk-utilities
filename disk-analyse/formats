@@ -2075,3 +2075,15 @@ raw_hd
 
 raw_ed
     * raw_ed
+
+variable_raw_sd
+    * raw_sd
+
+variable_raw_dd
+    * raw_dd
+
+variable_raw_hd
+    * raw_hd
+
+variable_raw_ed
+    * raw_ed

@@ -35,9 +35,21 @@ static void *raw_write_raw(
         bytes++;
     } while (s->index_offset_bc >= 8);
 
-    av_latency = tot_latency / bytes;
-    for (i = 0; i < bytes; i++)
-        speed[i] = ((uint64_t)speed[i]*SPEED_AVG + av_latency/2) / av_latency;
+    switch (ti->type) {
+    case TRKTYP_variable_raw_sd:
+    case TRKTYP_variable_raw_dd:
+    case TRKTYP_variable_raw_hd:
+    case TRKTYP_variable_raw_ed:
+        av_latency = tot_latency / bytes;
+        for (i = 0; i < bytes; i++)
+            speed[i] = ((uint64_t)speed[i]*SPEED_AVG + av_latency/2)
+                / av_latency;
+        break;
+    default:
+        for (i = 0; i < bytes; i++)
+            speed[i] = SPEED_AVG;
+        break;
+    }
 
     ti->total_bits = bytes*8 - s->index_offset_bc;
     ti->len = bytes * 3; /* 2 bytes of speed per 1 byte of dat */
@@ -89,6 +101,30 @@ struct track_handler raw_hd_handler = {
 };
 
 struct track_handler raw_ed_handler = {
+    .density = trkden_extra,
+    .write_raw = raw_write_raw,
+    .read_raw = raw_read_raw
+};
+
+struct track_handler variable_raw_sd_handler = {
+    .density = trkden_single,
+    .write_raw = raw_write_raw,
+    .read_raw = raw_read_raw
+};
+
+struct track_handler variable_raw_dd_handler = {
+    .density = trkden_double,
+    .write_raw = raw_write_raw,
+    .read_raw = raw_read_raw
+};
+
+struct track_handler variable_raw_hd_handler = {
+    .density = trkden_high,
+    .write_raw = raw_write_raw,
+    .read_raw = raw_read_raw
+};
+
+struct track_handler variable_raw_ed_handler = {
     .density = trkden_extra,
     .write_raw = raw_write_raw,
     .read_raw = raw_read_raw
