@@ -1145,6 +1145,11 @@ probe_amiga
 
 "P.P. Hammer" = amigados
 
+# Long tracks on Disks A and B
+"Panza Kick Boxing"
+    158-159 amigados_long_105500
+    * amigados
+
 "Paperboy"
     * amigados elite_b
 
