@@ -34,6 +34,7 @@
 #else
 #define file_open(p,f,m...) open(p,(f)|O_BINARY,##m)
 #define posix_mkdir(p,m) mkdir(p)
+#define localtime_r(pt,ptm) (*(ptm) = *localtime(pt)) /* not thread-safe */
 #endif
 
 #define __initcall __attribute__((constructor))
