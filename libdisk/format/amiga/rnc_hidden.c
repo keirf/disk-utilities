@@ -2,6 +2,7 @@
  * disk/rnc_hidden.c
  * 
  * Small sectors hidden alongside AmigaDOS track data.
+ * Each sector may be followed by a No Flux Area.
  * 
  * Written in 2012 by Keir Fraser
  * 
@@ -64,7 +65,10 @@ static void *rnc_hidden_write_raw(
         if ((sig[0] != 0xa1) || (sig[9] != 0x00))
             continue;
 
-        /* Sector may be followed by MFM-illegal flux transitions. */
+        /* Sector may be followed by a No Flux Area. These are mastered with 
+         * a series of rapid flux transitions. Some drives read this as all 
+         * ones rather than zeroes. So, just like the real protection check, 
+         * we check for lots of 1s as well as lots of 0s. */
         nr_ones = bit_weight(&raw[0x18], 12);
         if ((nr_ones <= 12) || (nr_ones >= 84))
             trailer_map |= 1u << sec;
@@ -134,9 +138,10 @@ static void rnc_hidden_read_raw(
         /* signature */
         for (i = 0; i < 10; i++)
             tbuf_bits(tbuf, SPEED_AVG, bc_mfm, 8, dat[i]);
-        /* raw zeroes */
+        tbuf_bits(tbuf, SPEED_AVG, bc_mfm, 8, 0);
+        /* No Flux Area */
         if (trailer_map & (1u << sec))
-            for (i = 0; i < 64; i++)
+            for (i = 0; i < 18; i++)
                 tbuf_bits(tbuf, SPEED_AVG, bc_raw, 8, 0x00);
     }
 }
