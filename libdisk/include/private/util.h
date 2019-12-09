@@ -1,6 +1,9 @@
 #ifndef __PRIVATE_UTIL_H__
 #define __PRIVATE_UTIL_H__
 
+#define FALSE 0
+#define TRUE 1
+
 #define track_usecs_from_rpm(rpm) (200000u*300u/(rpm))
 #define track_nsecs_from_rpm(rpm) (track_usecs_from_rpm(rpm) * 1000u)
 

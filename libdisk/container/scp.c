@@ -73,13 +73,14 @@ static struct container *scp_open(struct disk *d)
     return NULL;
 }
 
-static void emit(uint16_t *dat, unsigned int *p_j, uint32_t cell)
+static void emit(uint16_t *dat, unsigned int *p_j, uint32_t cell,
+                 bool_t is_weak)
 {
     unsigned int j = *p_j;
     const uint32_t one_us = 1000 / SCK_NS_PER_TICK;
 
     /* A long pattern which transitions between 000101 and 010001. */
-    if (cell >= LONG_WEAK_THRESH) {
+    if (is_weak && (cell >= LONG_WEAK_THRESH)) {
         uint32_t min = 42 * one_us/10;
         uint32_t max = 78 * one_us/10;
         uint32_t delta = 0;
@@ -96,7 +97,7 @@ static void emit(uint16_t *dat, unsigned int *p_j, uint32_t cell)
      * 25us, 0.5us*6, 19us, 0.5us*4 
      * The intention is to let the timing drift and weaken the eventual 
      * flux transitions by placing read pulses very close together. */
-    if (cell >= SHORT_WEAK_THRESH) {
+    if (is_weak && (cell >= SHORT_WEAK_THRESH)) {
         int delta = 0;
         while (32*one_us < cell) {
             delta = !delta;
@@ -141,6 +142,7 @@ static void scp_close(struct disk *d)
     uint32_t av_cell, cell, *th_offs, file_off, csum = 0;
     uint16_t *dat, app_name_len;
     const static char app_name[] = "libdisk (keirf)";
+    bool_t is_weak = FALSE;
 
     lseek(d->fd, 0, SEEK_SET);
     if (ftruncate(d->fd, 0) < 0)
@@ -185,11 +187,13 @@ static void scp_close(struct disk *d)
         for (i = 0; i < raw->bitlen; i++) {
             if (raw->speed[bit] == SPEED_WEAK) {
                 cell += av_cell;
+                is_weak = TRUE;
             } else {
                 cell += (av_cell * raw->speed[bit]) / SPEED_AVG;
                 if (raw->bits[bit>>3] & (0x80 >> (bit & 7))) {
-                    emit(dat, &j, cell / SCK_NS_PER_TICK);
+                    emit(dat, &j, cell / SCK_NS_PER_TICK, is_weak);
                     cell %= SCK_NS_PER_TICK;
+                    is_weak = FALSE;
                 }
             }
             if (++bit >= raw->bitlen)
@@ -205,7 +209,8 @@ static void scp_close(struct disk *d)
         } else if (cell) {
             /* Place remainder in its own final bitcell. It may be too
              * significant to merge with first bitcell (eg. a weak region). */
-            emit(dat, &j, cell);
+            emit(dat, &j, cell, is_weak);
+            is_weak = FALSE;
         }
 
         for (i = 0; i < j; i++) {
