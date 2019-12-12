@@ -1513,6 +1513,14 @@ probe_amiga
 
 "Stack Up" = amigados_copylock
 
+"Saint Dragon"
+    0 amigados_long_104400
+    1 copylock
+    2-13 sales_curve
+    14-89 ignore
+    90-159 sales_curve
+    * ignore
+
 "Star Trek 25th Anniversary" = amigados
 
 "Starglider" = amigados
@@ -1578,6 +1586,11 @@ probe_amiga
 "Suspicious Cargo" = amigados
 
 "Switchblade 2" = gremlin_protected
+
+"Swiv"
+    0 amigados
+    1 copylock
+    * amigados sales_curve
 
 # Track 8.1 May be empty
 "Sword of Sodan"
