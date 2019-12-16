@@ -14,7 +14,18 @@
  * TRKTYP_sales_Curve data layout:
  *  u8 sector_data[‭6240‬]
  *
- * Track 2 checksum 71F8BCDC
+ * Custom format as used on Ninja Warriors by Sales Curve.
+ *
+ * Written in 2019 by Keith Krellwitz
+ *
+ * RAW TRACK LAYOUT:
+ *  u16 0x448A  :: Sync
+ *  u16 0xAAAA :: Sync
+ *  u32 dat[‭6240‬/4]
+ *  u32 checksum
+ *
+ * TRKTYP_sales_Curve data layout:
+ *  u8 sector_data[‭6240‬]
  */
 
 #include <libdisk/util.h>
@@ -28,10 +39,16 @@ static void *sales_curve_write_raw(
     while (stream_next_bit(s) != -1) {
 
         uint32_t raw[2], dat[ti->bytes_per_sector/4], csum, sum;
+        uint16_t sync;
         unsigned int i;
         char *block;
 
-        if ((uint16_t)s->word != 0x4489)
+        if (ti->type == TRKTYP_ninja_warriors)
+            sync = 0x448A;
+        else
+            sync = 0x4489;
+
+        if ((uint16_t)s->word != sync)
             continue;
 
         if (stream_next_bits(s, 16) == -1)
@@ -70,10 +87,20 @@ static void sales_curve_read_raw(
 {
     struct track_info *ti = &d->di->track[tracknr];
     uint32_t csum, *dat = (uint32_t *)ti->dat;
+    uint16_t sync, word2;
     unsigned int i;
 
-    tbuf_bits(tbuf, SPEED_AVG, bc_raw, 16, 0x4489);
-    tbuf_bits(tbuf, SPEED_AVG, bc_raw, 16, 0x5555);
+    if (ti->type == TRKTYP_ninja_warriors) {
+        sync = 0x448A;
+        word2 = 0xAAAA;
+    }
+    else {
+        sync = 0x4489;
+        word2 = 0x5555;
+    }
+
+    tbuf_bits(tbuf, SPEED_AVG, bc_raw, 16, sync);
+    tbuf_bits(tbuf, SPEED_AVG, bc_raw, 16, word2);
 
     for (i = csum = 0; i < ti->len/4; i++) {
         tbuf_bits(tbuf, SPEED_AVG, bc_mfm_odd_even, 32, be32toh(dat[i]));
@@ -91,6 +118,12 @@ struct track_handler sales_curve_handler = {
     .read_raw = sales_curve_read_raw
 };
 
+struct track_handler ninja_warriors_handler = {
+    .bytes_per_sector = 6240,
+    .nr_sectors = 1,
+    .write_raw = sales_curve_write_raw,
+    .read_raw = sales_curve_read_raw
+};
 
 /*
  * Local variables:

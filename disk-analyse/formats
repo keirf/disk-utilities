@@ -1087,6 +1087,9 @@ probe_amiga
 "Nightdawn"
     * amigados nightdawn nightdawn_prot
 
+"Ninja Warriors"
+     * amigados protec_longtrack ninja_warriors
+
 "Nitro"
     1 protec_longtrack
     * psygnosis_c
