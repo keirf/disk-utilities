@@ -405,6 +405,9 @@ probe_amiga
 # Protected by copylock_old_variant
 "Cosmic Pirate" = amigados_copylock
 
+"Count Duckula"
+    * amigados rainbird gremlin_longtrack
+
 "Crackdown"
     * amigados crackdown gremlin_longtrack
 
@@ -436,6 +439,9 @@ probe_amiga
     0 amigados
     1-151 hellwig
     * ignore
+
+"Dark Spyre"
+    * amigados rainbird
 
 "Darkmere" = amigados_copylock
 
@@ -696,6 +702,9 @@ probe_amiga
 "Gods" = amigados_copylock
 
 "Gold Of The Americas" = amigados
+
+"Gold Of The Aztecs"
+    * amigados amigados_extended gremlin_longtrack
 
 "Golden Eagle" = amigados
 
