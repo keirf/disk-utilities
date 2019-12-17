@@ -101,6 +101,200 @@ struct track_handler turrican_2_handler = {
     .read_raw = turrican_read_raw
 };
 
+/*
+ * Custom format as used on Turrican 3 by Factor 5 Rainbow Arts
+ *
+ * Written in 2019 by Keith Krellwitz
+ *
+ * RAW TRACK LAYOUT:
+ *  u16 0x4489 :: Sync
+ *  u16 0x2aa5
+ *  u16 track number / 2
+ *  u32 data[1644][2] :: bc_mfm_even_odd
+ *  u32 csum[2]   :: bc_mfm_even_odd
+ * TRKTYP_denaris_a data layout:
+ *  u8 sector_data[6656]
+ */
+
+static void *turrican_3a_write_raw(
+    struct disk *d, unsigned int tracknr, struct stream *s)
+{
+    struct track_info *ti = &d->di->track[tracknr];
+
+    while (stream_next_bit(s) != -1) {
+
+        unsigned int i;
+        uint32_t sum, dat[ti->len/4], raw2[2];
+        char *block;
+        uint16_t trk, raw[2];
+
+        if (s->word != 0x44892aa5)
+            continue;
+
+        ti->data_bitoff = s->index_offset_bc - 31;
+
+        if (stream_next_bytes(s, raw, 4) == -1)
+            goto fail;
+        mfm_decode_bytes(bc_mfm_even_odd, 2, raw, &trk);
+
+        for (i = sum = 0; i < ti->len/4; i++) {
+            if (stream_next_bytes(s, raw2, 8) == -1)
+                goto fail;
+            mfm_decode_bytes(bc_mfm_even_odd, 4, raw2, &dat[i]);
+            sum += be32toh(dat[i]);
+        }
+        if (stream_next_bytes(s, &dat[ti->len/4], 8) == -1)
+            goto fail;
+        mfm_decode_bytes(bc_mfm_even_odd, 4, &dat[ti->len/4], &dat[ti->len/4]);
+        if (sum != be32toh(dat[ti->len/4]))
+            continue;
+
+        stream_next_index(s);
+        ti->total_bits = 111600;
+
+        block = memalloc(ti->len);
+        memcpy(block, dat, ti->len);
+        set_all_sectors_valid(ti);
+        return block;
+    }
+
+fail:
+    return NULL;
+}
+
+static void turrican_3a_read_raw(
+    struct disk *d, unsigned int tracknr, struct tbuf *tbuf)
+{
+    struct track_info *ti = &d->di->track[tracknr];
+    uint32_t csum, *dat = (uint32_t *)ti->dat;
+    unsigned int i;
+
+    tbuf_bits(tbuf, SPEED_AVG, bc_raw, 32, 0x44892aa5);
+    tbuf_bits(tbuf, SPEED_AVG, bc_mfm_even_odd, 16, (uint16_t)tracknr/2);
+
+    for (i = csum = 0; i < ti->len/4; i++) {
+        tbuf_bits(tbuf, SPEED_AVG, bc_mfm_even_odd, 32, be32toh(dat[i]));
+        csum += be32toh(dat[i]);
+    }
+
+    tbuf_bits(tbuf, SPEED_AVG, bc_mfm_even_odd, 32, csum);
+}
+
+
+struct track_handler turrican_3a_handler = {
+    .bytes_per_sector = 6656,
+    .nr_sectors = 1,
+    .write_raw = turrican_3a_write_raw,
+    .read_raw = turrican_3a_read_raw
+};
+
+
+/*
+ * Custom format as used on Turrican 3 Track 0.1 by Factor 5 Rainbow Arts
+ *
+ * Written in 2019 by Keith Krellwitz
+ *
+ * RAW TRACK LAYOUT:
+ *  u16 0x4489 :: Sync
+ *  u16 0x2aaa (0x2aa5 for track 21.1)
+ *  u32 data[1536][2] :: bc_mfm_even_odd
+ *  u32 csum[2]   :: bc_mfm_even_odd
+ * TRKTYP_denaris_a data layout:
+ *  u8 sector_data[6144]
+ */
+
+static void *turrican_3b_write_raw(
+    struct disk *d, unsigned int tracknr, struct stream *s)
+{
+    struct track_info *ti = &d->di->track[tracknr];
+
+    while (stream_next_bit(s) != -1) {
+
+        unsigned int i;
+        uint32_t sum, dat[ti->len/4], raw2[2];
+        uint16_t word_sync;
+        char *block;
+
+        if (ti->type == TRKTYP_turrican_3b)
+            word_sync = 0x2aaa;
+        else
+            word_sync = 0x2aa5;
+
+        if ((uint16_t)s->word != 0x4489)
+            continue;
+
+        ti->data_bitoff = s->index_offset_bc - 15;
+
+        if (stream_next_bits(s, 16) == -1)
+            goto fail;
+        if ((uint16_t)s->word != word_sync)
+            continue;
+
+        for (i = sum = 0; i < ti->len/4; i++) {
+            if (stream_next_bytes(s, raw2, 8) == -1)
+                goto fail;
+            mfm_decode_bytes(bc_mfm_even_odd, 4, raw2, &dat[i]);
+            sum += be32toh(dat[i]);
+        }
+
+        if (stream_next_bytes(s, &dat[ti->len/4], 8) == -1)
+            goto fail;
+        mfm_decode_bytes(bc_mfm_even_odd, 4, &dat[ti->len/4], &dat[ti->len/4]);
+        if (sum != be32toh(dat[ti->len/4]))
+            continue;
+        
+        stream_next_index(s);
+        ti->total_bits = 100400;
+
+        block = memalloc(ti->len);
+        memcpy(block, dat, ti->len);
+        set_all_sectors_valid(ti);
+        return block;
+    }
+
+fail:
+    return NULL;
+}
+
+static void turrican_3b_read_raw(
+    struct disk *d, unsigned int tracknr, struct tbuf *tbuf)
+{
+    struct track_info *ti = &d->di->track[tracknr];
+    uint32_t csum, *dat = (uint32_t *)ti->dat;
+    uint16_t word_sync;
+    unsigned int i;
+
+    if (ti->type == TRKTYP_turrican_3b)
+        word_sync = 0x2aaa;
+    else
+        word_sync = 0x2aa5;
+
+    tbuf_bits(tbuf, SPEED_AVG, bc_raw, 16, 0x4489);
+    tbuf_bits(tbuf, SPEED_AVG, bc_raw, 16, word_sync);
+
+    for (i = csum = 0; i < ti->len/4; i++) {
+        tbuf_bits(tbuf, SPEED_AVG, bc_mfm_even_odd, 32, be32toh(dat[i]));
+        csum += be32toh(dat[i]);
+    }
+
+    tbuf_bits(tbuf, SPEED_AVG, bc_mfm_even_odd, 32, csum);
+}
+
+
+struct track_handler turrican_3b_handler = {
+    .bytes_per_sector = 6144,
+    .nr_sectors = 1,
+    .write_raw = turrican_3b_write_raw,
+    .read_raw = turrican_3b_read_raw
+};
+
+struct track_handler turrican_3c_handler = {
+    .bytes_per_sector = 6144,
+    .nr_sectors = 1,
+    .write_raw = turrican_3b_write_raw,
+    .read_raw = turrican_3b_read_raw
+};
+
 
 /*
  * Custom format as used on Denaris by Factor 5 Rainbow Arts
