@@ -931,6 +931,9 @@ probe_amiga
     1 protec_longtrack
     * psygnosis_c
 
+"King's Quest" = herndon_longtrack
+"King's Quest II" = herndon_longtrack
+"King's Quest III" = herndon_longtrack
 "King's Quest V" = amigados
 
 "Kingdoms Of England"
@@ -1991,12 +1994,19 @@ amigados_gremlin_longtrack
 infogrames_protected # All tracks mastered
     2-3 amigados infogrames_longtrack
     * amigados
-rnc_pdos
+pdos
     * amigados rnc_pdos
 rnc_pdos_copylock
     * amigados rnc_pdos copylock
 sensible
     * amigados sensible copylock
+
+# Herndon HLS longtrack check decrypts the game.
+# HLS track needs to be >= 111000 bitcells, but we analyse "unknown length" as
+# some versions are not protected and this avoids warn on normal length track.
+herndon_longtrack
+    1 amigados_unknown_length
+    * amigados
 
 ################################################################
 # IBM-MFM Fully-Defined Formats (sector numbering/sizing/layout)

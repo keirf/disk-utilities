@@ -3,8 +3,13 @@
  * 
  * Herndon HLS: Long track gap protection in AmigaDOS track, by Ben Herndon.
  * 
- * There may be multiple variants of Herndon HLS. For now this supports the
- * format as found on tracks 2 and 3 of SPS 0407: TV Sports Football.
+ * Note that earlier Herndon protections use a simple long-gap check on a
+ * 111000-bitcell AmigaDOS track. These are dealt with by the standard
+ * AmigaDOS longtrack analyser.
+ * 
+ * The format supported here is a 105500-bitcell AmigaDOS track with a
+ * special sync header, and a fixed pattern in the track footer (pre-index
+ * track gap). So far seen in TV Sports Football only (SPS IPF 0407).
  * 
  * Written in 2019 by Keir Fraser
  */
