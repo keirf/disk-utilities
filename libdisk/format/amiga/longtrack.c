@@ -54,6 +54,7 @@ static void *protec_longtrack_write_raw(
             continue;
         if (!check_length(s, 107200))
             break;
+        printf("Len: %u\n", s->track_len_bc);
         ti->total_bits = 110000; /* long enough */
         ti->len = 1;
         data = memalloc(ti->len);
@@ -81,7 +82,7 @@ struct track_handler protec_longtrack_handler = {
     .read_raw = protec_longtrack_read_raw
 };
 
-/* TRKTYP_gremlin_longtrack: Lotus I/II, + many others
+/* TRKTYP_protoscan_longtrack: Lotus I/II, + many others
  *  u16 0x4124,0x4124
  *  Rest of track is (MFM-encoded) zeroes, and/or unformatted garbage.
  *  The contents are never checked, only successive sync marks are scanned for.
@@ -92,7 +93,7 @@ struct track_handler protec_longtrack_handler = {
  * 
  *  Track is typically ~105500 bits long. */
 
-static void *gremlin_longtrack_write_raw(
+static void *protoscan_longtrack_write_raw(
     struct disk *d, unsigned int tracknr, struct stream *s)
 {
     struct track_info *ti = &d->di->track[tracknr];
@@ -109,7 +110,7 @@ static void *gremlin_longtrack_write_raw(
     return NULL;
 }
 
-static void gremlin_longtrack_read_raw(
+static void protoscan_longtrack_read_raw(
     struct disk *d, unsigned int tracknr, struct tbuf *tbuf)
 {
     struct track_info *ti = &d->di->track[tracknr];
@@ -120,21 +121,21 @@ static void gremlin_longtrack_read_raw(
         tbuf_bits(tbuf, SPEED_AVG, bc_mfm, 8, 0);
 }
 
-struct track_handler gremlin_longtrack_handler = {
-    .write_raw = gremlin_longtrack_write_raw,
-    .read_raw = gremlin_longtrack_read_raw
+struct track_handler protoscan_longtrack_handler = {
+    .write_raw = protoscan_longtrack_write_raw,
+    .read_raw = protoscan_longtrack_read_raw
 };
 
 /* TRKTYP_tiertex_longtrack: Strider II
- *  A variant of the Gremlin long track, checks 99328 <= x <= 103680 bits long.
+ *  A variant of the Protoscan long track, checks 99328 <= x <= 103680 bits.
  *  Specifically, the variant checks 6208 <= x <= 6480 raw words between
  *  successive sync marks. Track contents are not otherwise checked or tested.
  * 
  *  Track is actually ~100150 bits long (normal length!). */
 
 struct track_handler tiertex_longtrack_handler = {
-    .write_raw = gremlin_longtrack_write_raw,
-    .read_raw = gremlin_longtrack_read_raw
+    .write_raw = protoscan_longtrack_write_raw,
+    .read_raw = protoscan_longtrack_read_raw
 };
 
 /* TRKTYP_crystals_of_arborea_longtrack: Crystals Of Arborea

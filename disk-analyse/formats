@@ -11,7 +11,7 @@ probe_amiga
       bat batman menace elite_a elite_b elite_c elite_d turrican \
       federation_of_free_traders \
       phantom_fighter supremacy_a supremacy_b \
-      protec_longtrack gremlin_longtrack
+      protec_longtrack protoscan_longtrack
 
 ####################
 # Game List - every checked game is listed here
@@ -71,7 +71,7 @@ probe_amiga
 
 "Alien Storm"
     158 tiertex_longtrack
-    159 gremlin_longtrack
+    159 protoscan_longtrack
     * amigados
 
 # No apparent copy protection on several tested releases
@@ -190,7 +190,7 @@ probe_amiga
     98-99 bat_longtrack
     * amigados bat
 
-"B.S.S. Jane Seymour" = amigados_gremlin_longtrack
+"B.S.S. Jane Seymour" = amigados_protoscan_longtrack
 
 "Baal"
     0 amigados
@@ -285,7 +285,7 @@ probe_amiga
     0 amigados 
     1-157 fun_factory
     158 tiertex_longtrack
-    159 gremlin_longtrack
+    159 protoscan_longtrack
     * ignore
 
 "Brat" = amigados_copylock
@@ -406,10 +406,10 @@ probe_amiga
 "Cosmic Pirate" = amigados_copylock
 
 "Count Duckula"
-    * amigados rainbird gremlin_longtrack
+    * amigados rainbird protoscan_longtrack
 
 "Crackdown"
-    * amigados crackdown gremlin_longtrack
+    * amigados crackdown protoscan_longtrack
 
 # Precious Metal Compilation
 "Crazy Cars" = amigados_copylock
@@ -539,7 +539,7 @@ probe_amiga
 # Astra Pack Game 3
 "E-Motion"
     158 tiertex_longtrack
-    159 gremlin_longtrack
+    159 protoscan_longtrack
     * amigados
 
 "Ebonstar" = amigados
@@ -610,14 +610,14 @@ probe_amiga
 
 "Federation Of Free Traders" # Track 1 may be empty
     0-1 amigados
-    158-159 gremlin_longtrack
+    158-159 protoscan_longtrack
     * federation_of_free_traders
 
 "Fighter Bomber" = rnc_hidden
 
 # Needs amigados longtracks or game won't load!
 "Final Fight"
-     158-159 gremlin_longtrack
+     158-159 protoscan_longtrack
      * amigados_long_105500
 
 "Fire & Ice" = amigados_copylock
@@ -639,7 +639,7 @@ probe_amiga
 "Forgotten Worlds"
     0 amigados 
     158 tiertex_longtrack
-    159 gremlin_longtrack
+    159 protoscan_longtrack
     * forgotten_worlds
 
 "Foundation's Waste"
@@ -704,7 +704,7 @@ probe_amiga
 "Gold Of The Americas" = amigados
 
 "Gold Of The Aztecs"
-    * amigados amigados_extended gremlin_longtrack
+    * amigados amigados_extended protoscan_longtrack
 
 "Golden Eagle" = amigados
 
@@ -757,7 +757,7 @@ probe_amiga
 # Tracks may be mastered long, causing harmless warnings 
 "Greg Normans Ultimate Golf"
     0-1 amigados
-    158-159 gremlin_longtrack
+    158-159 protoscan_longtrack
     * federation_of_free_traders
 
 "Gunship 2000" = amigados
@@ -787,7 +787,7 @@ probe_amiga
 "Hero's Quest" = amigados
 
 # Tracks 154-157 may be empty
-"Hero Quest" = amigados_gremlin_longtrack
+"Hero Quest" = amigados_protoscan_longtrack
 
 "Historyline 1914-1918" = amigados
 
@@ -1557,7 +1557,7 @@ probe_amiga
 
 "Strider II"
     158 amigados tiertex_longtrack
-    159 amigados gremlin_longtrack
+    159 amigados protoscan_longtrack
     * amigados
 
 "Stryx"
@@ -1585,7 +1585,7 @@ probe_amiga
     48-154/2 ignore
     49-155 supremacy_b
     158 tiertex_longtrack
-    159 gremlin_longtrack
+    159 protoscan_longtrack
     * ignore
 
 "Super Stardust"
@@ -1627,7 +1627,7 @@ probe_amiga
      2 raw_dd
      3-97 gremlin
      99 gremlin
-     158-159 gremlin_longtrack
+     158-159 protoscan_longtrack
      * ignore
 
 "Tecnoball"
@@ -1675,7 +1675,7 @@ probe_amiga
 # Disk 2, Track 0 (0.0) is empty / unformatted.
 "The Games: Summer Edition"
     158 tiertex_longtrack
-    159 gremlin_longtrack
+    159 protoscan_longtrack
     * amigados summer_games
 
 "The Grail" = amigados
@@ -1771,7 +1771,7 @@ probe_amiga
     2 raw_dd
     3-109 gremlin
     111 gremlin
-    158-159 gremlin_longtrack
+    158-159 protoscan_longtrack
     * ignore
 
 "Tracker"
@@ -1835,7 +1835,7 @@ probe_amiga
 "UMS II" = amigados
 
 "U.N. Squadron"
-    158-159 gremlin_longtrack
+    158-159 protoscan_longtrack
     * amigados
 
 # Protection checks for track gap of at least 12800 bits (and hence total
@@ -1916,7 +1916,7 @@ probe_amiga
 "World Class Rugby '95" = amigados_copylock
 
 "World Class Soccer"
-     * amigados gremlin_longtrack
+     * amigados protoscan_longtrack
 
 "Worlds Of Legend" = amigados_copylock
 
@@ -1986,10 +1986,10 @@ blue_byte
     * amigados blue_byte
 gremlin_protected
     0-1 amigados gremlin
-    158-159 gremlin_longtrack
+    158-159 protoscan_longtrack
     * gremlin
-amigados_gremlin_longtrack
-    158-159 amigados gremlin_longtrack
+amigados_protoscan_longtrack
+    158-159 amigados protoscan_longtrack
     * amigados
 infogrames_protected # All tracks mastered
     2-3 amigados infogrames_longtrack
