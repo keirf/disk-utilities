@@ -229,14 +229,14 @@ struct track_handler infogrames_longtrack_handler = {
     .read_raw = infogrames_longtrack_read_raw
 };
 
-/* TRKTYP_bat_longtrack: B.A.T. by Ubisoft
+/* TRKTYP_prolance_longtrack: PROTEC variant used on B.A.T. by Ubisoft
  *  u16 0x8945
  *  Rest of track is (MFM-encoded) zeroes
  *  Track is checked to be >= 109152 bits long (>= 3413 0xa...a longs)
  *  Specifically, protection checks for >= 3412 0xaaaaaaaa raw longwords
  *  starting 4 bytes into the DMA buffer (i.e., 4 bytes after the sync) */
 
-static void *bat_longtrack_write_raw(
+static void *prolance_longtrack_write_raw(
     struct disk *d, unsigned int tracknr, struct stream *s)
 {
     struct track_info *ti = &d->di->track[tracknr];
@@ -254,7 +254,7 @@ static void *bat_longtrack_write_raw(
     return NULL;
 }
 
-static void bat_longtrack_read_raw(
+static void prolance_longtrack_read_raw(
     struct disk *d, unsigned int tracknr, struct tbuf *tbuf)
 {
     unsigned int i;
@@ -264,9 +264,9 @@ static void bat_longtrack_read_raw(
         tbuf_bits(tbuf, SPEED_AVG, bc_mfm, 8, 0);
 }
 
-struct track_handler bat_longtrack_handler = {
-    .write_raw = bat_longtrack_write_raw,
-    .read_raw = bat_longtrack_read_raw
+struct track_handler prolance_longtrack_handler = {
+    .write_raw = prolance_longtrack_write_raw,
+    .read_raw = prolance_longtrack_read_raw
 };
 
 /* TRKTYP_app_longtrack: Amiga Power Pack by Softgang

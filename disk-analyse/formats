@@ -187,7 +187,7 @@ probe_amiga
 "AV8B Harrier Assault" = amigados
 
 "B.A.T." # Disk 1, Tracks 100+, and Disk 2, Tracks 1 & 96, may be empty
-    98-99 bat_longtrack
+    98-99 prolance_longtrack
     * amigados bat
 
 "B.S.S. Jane Seymour" = amigados_protoscan_longtrack
