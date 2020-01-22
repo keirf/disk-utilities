@@ -8,7 +8,7 @@ probe_amiga
     * amigados copylock psygnosis_a psygnosis_b rnc_pdos core_design \
       gremlin rainbird blue_byte ikplus firebird \
       archipelagos sensible rnc_pdos_old \
-      bat batman menace elite_a elite_b elite_c elite_d turrican \
+      bat special_fx menace elite_a elite_b elite_c elite_d turrican \
       federation_of_free_traders \
       phantom_fighter supremacy_a supremacy_b \
       protec_longtrack protoscan_longtrack
@@ -217,7 +217,7 @@ probe_amiga
 
 "Batman The Caped Crusader" # Tracks 132+ may be empty
     0-1 amigados
-    * batman
+    * special_fx
 
 "Batman The Movie" = amigados_copylock
 
@@ -1341,7 +1341,7 @@ probe_amiga
 
 # Tracks 0.0 & 0.1 on Disk 2 appear unused, ignore warning!
 "Robocop 2"
-    * amigados batman    
+    * amigados special_fx    
 
 "Robocop 3" = amigados
 
@@ -1723,7 +1723,7 @@ probe_amiga
 
 "The Untouchables"
     0-1 amigados
-    * batman
+    * special_fx
 
 "Theatre Of Death" = amigados
 

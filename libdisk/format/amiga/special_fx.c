@@ -1,7 +1,8 @@
 /*
- * disk/batman.c
+ * format/amiga/special_fx.c
  * 
- * Custom format as used on Batman The Caped Crusader by Ocean.
+ * Custom longtrack format developed by Special FX and used on titles such as
+ * Batman The Caped Crusader, published by Ocean.
  * 
  * Written in 2012 by Keir Fraser
  * 
@@ -14,7 +15,7 @@
  *  u8  dat[512] :: encoded as even/odd block
  *  u16 0
  * 
- * TRKTYP_batman data layout:
+ * TRKTYP_special_fx data layout:
  *  u8 sector_data[12][512]
  *  u8 first_sector
  */
@@ -46,7 +47,7 @@ static uint32_t checksum(uint16_t *dat)
     return sum;
 }
 
-static void *batman_write_raw(
+static void *special_fx_write_raw(
     struct disk *d, unsigned int tracknr, struct stream *s)
 {
     struct track_info *ti = &d->di->track[tracknr];
@@ -113,7 +114,7 @@ static void *batman_write_raw(
     return block;
 }
 
-static void batman_read_raw(
+static void special_fx_read_raw(
     struct disk *d, unsigned int tracknr, struct tbuf *tbuf)
 {
     struct track_info *ti = &d->di->track[tracknr];
@@ -146,11 +147,11 @@ static void batman_read_raw(
     }
 }
 
-struct track_handler batman_handler = {
+struct track_handler special_fx_handler = {
     .bytes_per_sector = 512,
     .nr_sectors = 12,
-    .write_raw = batman_write_raw,
-    .read_raw = batman_read_raw
+    .write_raw = special_fx_write_raw,
+    .read_raw = special_fx_read_raw
 };
 
 /*
