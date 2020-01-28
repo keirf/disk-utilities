@@ -47,6 +47,22 @@ static uint32_t checksum(uint16_t *dat)
     return sum;
 }
 
+static void init_hdr(
+    const struct track_info *ti, unsigned int tracknr, struct hdr *hdr)
+{
+    memset(hdr, 0, sizeof(*hdr));
+    switch (ti->type) {
+    case TRKTYP_head_over_heels:
+        hdr->track = tracknr-2;
+        hdr->mbz = 1;
+        break;
+    default:
+        hdr->track = (tracknr-2)^1;
+        hdr->mbz = 0;
+        break;
+    }
+}
+
 static void *special_fx_write_raw(
     struct disk *d, unsigned int tracknr, struct stream *s)
 {
@@ -59,7 +75,7 @@ static void *special_fx_write_raw(
     while ((stream_next_bit(s) != -1) &&
            (nr_valid_blocks != ti->nr_sectors)) {
 
-        struct hdr hdr;
+        struct hdr hdr, exp;
         uint32_t csum, idx_off;
         uint16_t dat[512];
 
@@ -72,8 +88,9 @@ static void *special_fx_write_raw(
             break;
         mfm_decode_bytes(bc_mfm_even_odd, 4, dat, &hdr);
 
-        if ((hdr.track != ((tracknr-2)^1)) ||
-            (hdr.mbz != 0) ||
+        init_hdr(ti, tracknr, &exp);
+        if ((hdr.track != exp.track) ||
+            (hdr.mbz != exp.mbz) ||
             (hdr.to_gap < 1) || (hdr.to_gap > 12) ||
             (hdr.sector >= ti->nr_sectors) ||
             (is_valid_sector(ti, hdr.sector)))
@@ -129,10 +146,9 @@ static void special_fx_read_raw(
         /* filler */
         tbuf_bits(tbuf, SPEED_AVG, bc_mfm, 8, 0);
         /* header info */
-        hdr.track = (tracknr-2)^1;
+        init_hdr(ti, tracknr, &hdr);
         hdr.sector = (first_sector + i) % 12;
         hdr.to_gap = 12-i;
-        hdr.mbz = 0;
         tbuf_bytes(tbuf, SPEED_AVG, bc_mfm_even_odd, 4, &hdr);
         /* data checksum */
         dat = (uint16_t *)&ti->dat[512*hdr.sector];
@@ -148,6 +164,13 @@ static void special_fx_read_raw(
 }
 
 struct track_handler special_fx_handler = {
+    .bytes_per_sector = 512,
+    .nr_sectors = 12,
+    .write_raw = special_fx_write_raw,
+    .read_raw = special_fx_read_raw
+};
+
+struct track_handler head_over_heels_handler = {
     .bytes_per_sector = 512,
     .nr_sectors = 12,
     .write_raw = special_fx_write_raw,

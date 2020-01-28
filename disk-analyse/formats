@@ -770,6 +770,10 @@ probe_amiga
 # Harpoon, Secenario Editor and All Battleset Disks!
 "Harpoon" = amigados
 
+"Head Over Heels" # Tracks 82+ may be empty
+    0-1 amigados_long_102200
+    * head_over_heels
+
 "Heart Of China" = amigados
 
 "Heimdall" = amigados_copylock
