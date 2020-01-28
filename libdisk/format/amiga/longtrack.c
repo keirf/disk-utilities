@@ -138,7 +138,7 @@ struct track_handler tiertex_longtrack_handler = {
     .read_raw = protoscan_longtrack_read_raw
 };
 
-/* TRKTYP_crystals_of_arborea_longtrack: Crystals Of Arborea
+/* TRKTYP_silmarils_longtrack: Used on French titles by Silmarils and Lankhor.
  *  u16 0xa144 :: sync
  *  u8[] "ROD0" (encoded bc_mfm)
  *  Rest of track is (MFM-encoded) zeroes
@@ -146,7 +146,7 @@ struct track_handler tiertex_longtrack_handler = {
  *  Specifically, protection checks for > 6500 0xaaaa/0x5555 raw words
  *  starting 12 bytes into the DMA buffer (i.e., 12 bytes after the sync) */
 
-static void *crystals_of_arborea_longtrack_write_raw(
+static void *silmarils_longtrack_write_raw(
     struct disk *d, unsigned int tracknr, struct stream *s)
 {
     struct track_info *ti = &d->di->track[tracknr];
@@ -171,7 +171,7 @@ static void *crystals_of_arborea_longtrack_write_raw(
     return NULL;
 }
 
-static void crystals_of_arborea_longtrack_read_raw(
+static void silmarils_longtrack_read_raw(
     struct disk *d, unsigned int tracknr, struct tbuf *tbuf)
 {
     unsigned int i;
@@ -182,9 +182,9 @@ static void crystals_of_arborea_longtrack_read_raw(
         tbuf_bits(tbuf, SPEED_AVG, bc_mfm, 8, 0);
 }
 
-struct track_handler crystals_of_arborea_longtrack_handler = {
-    .write_raw = crystals_of_arborea_longtrack_write_raw,
-    .read_raw = crystals_of_arborea_longtrack_read_raw
+struct track_handler silmarils_longtrack_handler = {
+    .write_raw = silmarils_longtrack_write_raw,
+    .read_raw = silmarils_longtrack_read_raw
 };
 
 /* TRKTYP_infogrames_longtrack: Hostages, Jumping Jack Son, and others

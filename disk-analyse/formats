@@ -429,7 +429,7 @@ probe_amiga
     * amigados copylock fun_factory
 
 "Crystals Of Arborea"
-    158-159 crystals_of_arborea_longtrack
+    158-159 silmarils_longtrack
     * amigados
 
 "Cyberblast"
@@ -570,6 +570,10 @@ probe_amiga
     * amigados eye_of_horus
 
 "Eye Of The Beholder II" = amigados
+
+"F1"
+    158 silmarils_longtrack
+    * amigados f1
 
 "F-15 Strike Eagle II" = amigados
 
