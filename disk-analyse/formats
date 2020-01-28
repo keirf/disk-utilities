@@ -10,7 +10,7 @@ probe_amiga
       archipelagos sensible rnc_pdos_old \
       bat special_fx menace elite_a elite_b elite_c elite_d turrican \
       federation_of_free_traders \
-      phantom_fighter supremacy_a supremacy_b \
+      phantom_fighter zzkj_boot \
       protec_longtrack protoscan_longtrack
 
 ####################
@@ -1578,16 +1578,16 @@ probe_amiga
 "Super Hang-On" 
     0 amigados 
     1 super_hang_on_scores
-    2 supremacy_a 
+    2 zzkj_boot 
     * super_hang_on  
 
 "Super Monaco GP"
     0 amigados
-    1 supremacy_b
-    2 supremacy_a
-    3-47 supremacy_b
+    1 zzkj_11sec
+    2 zzkj_boot
+    3-47 zzkj_11sec
     48-154/2 ignore
-    49-155 supremacy_b
+    49-155 zzkj_11sec
     158 tiertex_longtrack
     159 protoscan_longtrack
     * ignore
@@ -1600,7 +1600,7 @@ probe_amiga
 "Superfrog" = rnc_pdos
 
 "Supremacy" # Disk 1 Tracks 138,140,142,144+, Disk 2 Tracks 130+, may be empty
-    * amigados supremacy_a supremacy_b
+    * amigados zzkj_boot zzkj_11sec
 
 "Suspicious Cargo" = amigados
 

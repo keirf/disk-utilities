@@ -1,7 +1,7 @@
 /*
- * disk/supremacy.c
+ * disk/zzkj.c
  * 
- * Custom format as used on Supremacy by Melbourne House / Virgin Mastertronic.
+ * Custom formats as used on ZZKJ titles.
  * 
  * Written in 2012 by Keir Fraser
  */
@@ -9,7 +9,7 @@
 #include <libdisk/util.h>
 #include <private/disk.h>
 
-/* TRKTYP_supremacy_a: Used on Disk 1, Track 2 only.
+/* TRKTYP_zzkj_boot: Used on Disk 1, Track 2 only.
  *  u16 0x4489,0x4489,0x2aaa
  *  u32 data_odd[0x402]
  *  u32 data_even[0x402]
@@ -19,7 +19,7 @@
  * TRKTYP_supremacy data layout:
  *  u8 sector_data[4*1024] */
 
-static void *supremacy_a_write_raw(
+static void *zzkj_boot_write_raw(
     struct disk *d, unsigned int tracknr, struct stream *s)
 {
     struct track_info *ti = &d->di->track[tracknr];
@@ -61,7 +61,7 @@ static void *supremacy_a_write_raw(
     return NULL;
 }
 
-static void supremacy_a_read_raw(
+static void zzkj_boot_read_raw(
     struct disk *d, unsigned int tracknr, struct tbuf *tbuf)
 {
     struct track_info *ti = &d->di->track[tracknr];
@@ -80,14 +80,14 @@ static void supremacy_a_read_raw(
     tbuf_bytes(tbuf, SPEED_AVG, bc_mfm_odd_even, 0x402*4, dat);
 }
 
-struct track_handler supremacy_a_handler = {
+struct track_handler zzkj_boot_handler = {
     .bytes_per_sector = 4*1024,
     .nr_sectors = 1,
-    .write_raw = supremacy_a_write_raw,
-    .read_raw = supremacy_a_read_raw
+    .write_raw = zzkj_boot_write_raw,
+    .read_raw = zzkj_boot_read_raw
 };
 
-/* TRKTYP_supremacy_b:
+/* TRKTYP_zzkj_11sec:
  * 11 sectors:
  *  u16 0x4489,0x4489,0x2aaa :: Sync header
  *  u32 data_odd[0x82]
@@ -100,7 +100,7 @@ struct track_handler supremacy_a_handler = {
  * TRKTYP_supremacy data layout:
  *  u8 sector_data[11*512] */
 
-static void *supremacy_b_write_raw(
+static void *zzkj_11sec_write_raw(
     struct disk *d, unsigned int tracknr, struct stream *s)
 {
     struct track_info *ti = &d->di->track[tracknr];
@@ -162,7 +162,7 @@ static void *supremacy_b_write_raw(
     return block;
 }
 
-static void supremacy_b_read_raw(
+static void zzkj_11sec_read_raw(
     struct disk *d, unsigned int tracknr, struct tbuf *tbuf)
 {
     struct track_info *ti = &d->di->track[tracknr];
@@ -190,11 +190,11 @@ static void supremacy_b_read_raw(
     }
 }
 
-struct track_handler supremacy_b_handler = {
+struct track_handler zzkj_11sec_handler = {
     .bytes_per_sector = 512,
     .nr_sectors = 11,
-    .write_raw = supremacy_b_write_raw,
-    .read_raw = supremacy_b_read_raw
+    .write_raw = zzkj_11sec_write_raw,
+    .read_raw = zzkj_11sec_read_raw
 };
 
 /*
