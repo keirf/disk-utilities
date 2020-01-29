@@ -1411,6 +1411,7 @@ probe_amiga
       1 amigados_long_111000
       * amigados
 
+# Hit Squad version may have long tracks (~103000 bitcells). Harmless.
 "Shadowlands" = amigados_copylock
 
 "Shadoworlds" = amigados
