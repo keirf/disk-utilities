@@ -6,7 +6,7 @@ default = amigados
 # show too many false positives.
 probe_amiga
     * amigados copylock psygnosis_a psygnosis_b rnc_pdos core_design \
-      gremlin rainbird blue_byte ikplus firebird \
+      ss_mfm rainbird blue_byte ikplus firebird \
       archipelagos sensible rnc_pdos_old \
       bat special_fx menace elite_a elite_b elite_c elite_d turrican \
       federation_of_free_traders \
@@ -769,7 +769,7 @@ probe_amiga
 "Hard Drivin'" = rnc_hidden
 
 "Harlequin"
-    * amigados gremlin
+    * amigados ss_mfm
 
 # Harpoon, Secenario Editor and All Battleset Disks!
 "Harpoon" = amigados
@@ -1006,10 +1006,10 @@ probe_amiga
 "Lorna"
     * amigados lorna ibm_pc_dd
 
-"Lotus Turbo Challenge" = gremlin_protected
-"Lotus II" = gremlin_protected
+"Lotus Turbo Challenge" = ss_mfm_protected
+"Lotus II" = ss_mfm_protected
 "Lotus III"
-    * amigados gremlin
+    * amigados ss_mfm
 
 # Boot Disk Track 0 only is AmigaDOS, mastered long same as all data tracks.
 "Lure Of The Temptress"
@@ -1574,11 +1574,11 @@ probe_amiga
 
 "Stunt Car Racer" = rnc_hidden
 
-"Super Cars Disk 1" = gremlin_protected
+"Super Cars Disk 1" = ss_mfm_protected
 "Super Cars Disk 2"
-    * gremlin
+    * ss_mfm
 # SC2: Both disks protected tracks 158-159
-"Super Cars II" = gremlin_protected
+"Super Cars II" = ss_mfm_protected
 
 "Super Hang-On" 
     0 amigados 
@@ -1609,7 +1609,7 @@ probe_amiga
 
 "Suspicious Cargo" = amigados
 
-"Switchblade 2" = gremlin_protected
+"Switchblade 2" = ss_mfm_protected
 
 "Swiv"
     0 amigados
@@ -1634,8 +1634,8 @@ probe_amiga
 "Team Suzuki"
      0-1 amigados
      2 raw_dd
-     3-97 gremlin
-     99 gremlin
+     3-97 ss_mfm
+     99 ss_mfm
      158-159 protoscan_longtrack
      * ignore
 
@@ -1778,8 +1778,8 @@ probe_amiga
 "Toyota Celica GT Rally"
     0-1 amigados
     2 raw_dd
-    3-109 gremlin
-    111 gremlin
+    3-109 ss_mfm
+    111 ss_mfm
     158-159 protoscan_longtrack
     * ignore
 
@@ -1866,7 +1866,7 @@ probe_amiga
 "Vampires Empire"
     * amigados vampires_empire_a vampires_empire_b vampires_empire_c
 
-"Venus The Flytrap" = gremlin_protected
+"Venus The Flytrap" = ss_mfm_protected
 
 "Viaje Al Centro De La Tierra"
     * amigados ibm_pc_dd viaje
@@ -1968,10 +1968,10 @@ probe_amiga
 "Zeewolf 2" = amigados
 
 "Zool"
-    * amigados gremlin
+    * amigados ss_mfm
 
 "Zool 2"
-    * amigados gremlin
+    * amigados ss_mfm
 
 "Zork Trilogy" = amigados
 
@@ -1993,10 +1993,10 @@ rnc_hidden
     * amigados
 blue_byte
     * amigados blue_byte
-gremlin_protected
-    0-1 amigados gremlin
+ss_mfm_protected
+    0-1 amigados ss_mfm
     158-159 protoscan_longtrack
-    * gremlin
+    * ss_mfm
 amigados_protoscan_longtrack
     158-159 amigados protoscan_longtrack
     * amigados

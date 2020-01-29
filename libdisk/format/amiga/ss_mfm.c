@@ -1,9 +1,12 @@
 /*
- * disk/gremlin.c
+ * disk/ss_mfm.c
  * 
- * Custom format as used by various Gremlin Graphics releases:
+ * Custom format by Shaun Southern (Magnetic Fields / Gremlin) as used by
+ * various Gremlin Graphics releases:
  *   Lotus I, II, and III
  *   Harlequin
+ *   Zool 1 and 2
+ *   ... and many more
  * 
  * Written in 2011 by Keir Fraser
  * 
@@ -18,14 +21,14 @@
  * MFM encoding:
  *  Alternating odd/even words
  * 
- * TRKTYP_gremlin data layout:
+ * TRKTYP_ss_mfm data layout:
  *  u8 sector_data[12][512]
  */
 
 #include <libdisk/util.h>
 #include <private/disk.h>
 
-static void *gremlin_write_raw(
+static void *ss_mfm_write_raw(
     struct disk *d, unsigned int tracknr, struct stream *s)
 {
     struct track_info *ti = &d->di->track[tracknr];
@@ -79,7 +82,7 @@ fail:
     return NULL;
 }
 
-static void gremlin_read_raw(
+static void ss_mfm_read_raw(
     struct disk *d, unsigned int tracknr, struct tbuf *tbuf)
 {
     struct track_info *ti = &d->di->track[tracknr];
@@ -98,11 +101,11 @@ static void gremlin_read_raw(
     tbuf_bits(tbuf, SPEED_AVG, bc_mfm_odd_even, 16, tracknr^1);
 }
 
-struct track_handler gremlin_handler = {
+struct track_handler ss_mfm_handler = {
     .bytes_per_sector = 12*512,
     .nr_sectors = 1,
-    .write_raw = gremlin_write_raw,
-    .read_raw = gremlin_read_raw
+    .write_raw = ss_mfm_write_raw,
+    .read_raw = ss_mfm_read_raw
 };
 
 /*
