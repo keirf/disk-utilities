@@ -16,7 +16,7 @@
  *  First data long must be '1'.
  *  Checksum is last data long, ADD.L of all preceding data longs
  *  Track length is normal (not long)
- * TRKTYP_supremacy data layout:
+ * TRKTYP_zzkj_boot data layout:
  *  u8 sector_data[4*1024] */
 
 static void *zzkj_boot_write_raw(
@@ -97,7 +97,7 @@ struct track_handler zzkj_boot_handler = {
  *  Next 0x80 longs (512 bytes) are sector data.
  *  Last data long is ADD.L checksum of all preceding data longs.
  *  Track length is normal (not long)
- * TRKTYP_supremacy data layout:
+ * TRKTYP_zzkj_11sec data layout:
  *  u8 sector_data[11*512] */
 
 static void *zzkj_11sec_write_raw(
