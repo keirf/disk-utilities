@@ -1051,6 +1051,9 @@ probe_amiga
     159 protec_longtrack
     * amigados menace
 
+"Mickey Mouse"
+    * amigados fungus protoscan_longtrack
+
 "Micro Machines" = amigados_copylock
 
 "Microprose Formula One Grand Prix" = amigados
