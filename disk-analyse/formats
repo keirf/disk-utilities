@@ -1564,6 +1564,10 @@ probe_amiga
 
 "Steigar" = amigados_copylock
 
+# Many tracks are Unformatted (inc all odd tracks except Copylock)
+"Street Fighter II: The World Warrior"
+    * amigados copylock rainbird
+
 "Strider II"
     158 amigados tiertex_longtrack
     159 amigados protoscan_longtrack
