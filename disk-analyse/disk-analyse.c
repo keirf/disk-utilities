@@ -25,8 +25,8 @@
 #include "common.h"
 
 int quiet, verbose;
-static unsigned int start_cyl, end_cyl, disk_flags;
-static int index_align, clear_bad_sectors, single_sided = -1;
+static unsigned int start_cyl, disk_flags;
+static int index_align, clear_bad_sectors, single_sided = -1, end_cyl = -1;
 static unsigned int drive_rpm = 300, data_rpm = 300;
 static int pll_period_adj_pct = -1, pll_phase_adj_pct = -1;
 static struct format_list **format_lists;
@@ -35,7 +35,7 @@ static char *in, *out;
 /* Iteration start/step for single- and double-sided modes. */
 #define _TRACK_START ((single_sided == 1) ? 1 : 0)
 #define TRACK_START (start_cyl*2 + _TRACK_START)
-#define TRACK_END(di) ((end_cyl && (end_cyl*2 < (di)->nr_tracks))    \
+#define TRACK_END(di) (((end_cyl >= 0) && (end_cyl*2 < (di)->nr_tracks)) \
                        ? end_cyl*2+1 : (di)->nr_tracks-1)
 #define TRACK_STEP ((single_sided == -1) ? 1 : 2)
 
