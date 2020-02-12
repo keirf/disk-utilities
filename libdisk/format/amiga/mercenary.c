@@ -6,8 +6,8 @@
  * Written in 2020 by Keir Fraser
  * 
  * RAW TRACK LAYOUT:
- *  u16 0xa89a,0xa89a :: Sync
- *  u8  0x04,0x12,0x34,0x56,0x78,cyl
+ *  u16 0xa89a :: 1-3 Sync Words
+ *  u8  0x12,0x34,0x56,0x78,cyl
  *  u8  dat[0x1800]
  *  u8  csum_lo, csum_hi
  * 
@@ -18,8 +18,6 @@
 #include <libdisk/util.h>
 #include <private/disk.h>
 
-static const uint8_t exp[5] = { 0x04, 0x12, 0x34, 0x56, 0x78 };
-
 static void *mercenary_write_raw(
     struct disk *d, unsigned int tracknr, struct stream *s)
 {
@@ -27,20 +25,33 @@ static void *mercenary_write_raw(
 
     while (stream_next_bit(s) != -1) {
 
-        uint8_t dat[0x1800*2], hdr[6*2], sum[2*2];
+        uint8_t dat[0x1800*2], sum[2*2];
         uint16_t csum;
         uint8_t *block;
         unsigned int i;
 
-        if (s->word != 0xa89aa89a)
+        if ((uint16_t)s->word != 0xa89a)
             continue;
 
-        ti->data_bitoff = s->index_offset_bc - 31;
+        ti->data_bitoff = s->index_offset_bc - 15;
 
-        if (stream_next_bytes(s, hdr, 6*2) == -1)
+        /* This apes the header search in the game's trackloader. */
+        for (i = 0; i < 16; i++) {
+            if (stream_next_bits(s, 16) == -1)
+                goto fail;
+            if (mfm_decode_word(s->word) == 0x1234)
+                goto found_header;
+        }
+        continue;
+
+    found_header:
+        if (stream_next_bits(s, 32) == -1)
             goto fail;
-        mfm_decode_bytes(bc_mfm, 6, hdr, hdr);
-        if (memcmp(exp, hdr, 5) || (hdr[5] != tracknr>>1))
+        if (mfm_decode_word(s->word) != 0x5678)
+            continue;
+        if (stream_next_bits(s, 16) == -1)
+            goto fail;
+        if ((uint8_t)mfm_decode_word(s->word) != (tracknr>>1))
             continue;
         
         if (stream_next_bytes(s, dat, 0x1800*2) == -1)
@@ -77,7 +88,8 @@ static void mercenary_read_raw(
     unsigned int i;
 
     tbuf_bits(tbuf, SPEED_AVG, bc_raw, 32, 0xa89aa89a);
-    tbuf_bytes(tbuf, SPEED_AVG, bc_mfm, sizeof(exp), (void *)exp);
+    tbuf_bits(tbuf, SPEED_AVG, bc_raw, 16, 0xa89a);
+    tbuf_bits(tbuf, SPEED_AVG, bc_mfm, 32, 0x12345678);
     tbuf_bits(tbuf, SPEED_AVG, bc_mfm, 8, tracknr>>1);
     tbuf_bytes(tbuf, SPEED_AVG, bc_mfm, 0x1800, dat);
 

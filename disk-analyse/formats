@@ -1051,9 +1051,15 @@ probe_amiga
     159 protec_longtrack
     * amigados menace
 
+# Track 1 is unformatted in IPF #0955. It looks a bit like a long protection
+# track on one dump I've seen (Tenstar Pack) but is never accessed. Hence
+# we ignore it here.
+# Note that Side 1 data tracks are a clone of Side 0, and never accessed.
 "Mercenary"
     0 amigados_unknown_length # Mastered long same as data tracks
-    1 ignore # Might be a protection track, but doesn't seem to be accessed
+    1 ignore
+    62-69 ignore   # Cylinders 31-34
+    128-159 ignore # Cylinders 64-79
     * mercenary
 
 "Micro Machines" = amigados_copylock
