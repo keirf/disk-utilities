@@ -1051,6 +1051,11 @@ probe_amiga
     159 protec_longtrack
     * amigados menace
 
+"Mercenary"
+    0 amigados_unknown_length # Mastered long same as data tracks
+    1 ignore # Might be a protection track, but doesn't seem to be accessed
+    * mercenary
+
 "Micro Machines" = amigados_copylock
 
 "Microprose Formula One Grand Prix" = amigados
