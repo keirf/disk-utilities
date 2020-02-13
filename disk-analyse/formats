@@ -260,7 +260,7 @@ probe_amiga
 "Barbarian: The Ultimate Warrior"
     * rnc_protect_process
 
-#KIXX Version, Palace! Tracks may be mastered long! 
+# KIXX Version, Palace! Tracks may be mastered long! 
 "Barbarian II" = amigados
 
 # Same version as in Triad Volume 1 Compilation
@@ -854,6 +854,9 @@ probe_amiga
 "Football Glory" = amigados
 
 "Football Manager World Cup Edition" = amigados_copylock
+
+"Football Manager 2"
+    * rnc_protect_process
 
 # Retail / Platinum Compilation
 "Forgotten Worlds"
@@ -2310,6 +2313,9 @@ probe_amiga
     * ignore
 
 "The Settlers" = amigados
+
+"The Three Stooges"
+    * rnc_protect_process
 
 "The Ultimate Ride" = amigados
 

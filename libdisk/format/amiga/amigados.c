@@ -78,7 +78,7 @@ static void *ados_write_raw(
     char *block;
     struct ados_ext *ext;
     unsigned int i, nr_valid_blocks = 0, has_extended_blocks = 0;
-    unsigned int least_block = ~0u;
+    unsigned int least_block = 0;
     uint64_t lat, latency[ti->nr_sectors];
 
     block = memalloc(EXT_SEC * ti->nr_sectors);
@@ -138,9 +138,9 @@ static void *ados_write_raw(
 
         set_sector_valid(ti, ados_hdr.sector);
         nr_valid_blocks++;
-        if (least_block > ados_hdr.sector) {
+        if (least_block < ados_hdr.sectors_to_gap) {
             ti->data_bitoff = idx_off;
-            least_block = ados_hdr.sector;
+            least_block = ados_hdr.sectors_to_gap;
         }
     }
 
@@ -190,10 +190,7 @@ static void *ados_write_raw(
     init_track_info(
         ti, has_extended_blocks ? TRKTYP_amigados_extended : TRKTYP_amigados);
 
-    for (i = 0; i < ti->nr_sectors; i++)
-        if (is_valid_sector(ti, i))
-            break;
-    ti->data_bitoff -= i * 544*8*2;
+    ti->data_bitoff -= (11-least_block) * 544*8*2;
     ti->data_bitoff -= 32; /* initial gap */
 
     return block;
