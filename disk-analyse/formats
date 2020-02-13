@@ -65,7 +65,7 @@ probe_amiga
     4-146 afterburner_sega
     * ignore
 
-Air Support"
+"Air Support"
     * amigados psygnosis_a
 
 # Tracks 1.0 to 8.0 on side 0 appear to be IBM 10 sectors with 1 sector
@@ -258,7 +258,7 @@ Air Support"
 "Banshee" = amigados_copylock
 
 "Barbarian: The Ultimate Warrior"
-    * barbarian_ultimate_warrior
+    * rnc_protect_process
 
 #KIXX Version, Palace! Tracks may be mastered long! 
 "Barbarian II" = amigados
@@ -399,8 +399,11 @@ Air Support"
 
 "Buck Rogers: Countdown To Doomsday" = amigados
 
-"Buggy Boy" # speed Buggy also # also Tenstar Pack Game 4
-    * amigados elite_c
+# Tenstar Pack release uses RNC weak gap protection on some tracks, hence
+# we refer to that format here exclusively, in place of plain 'amigados'.
+# Original Elite release is apparently AmigaDOS + Elite formats.
+"Buggy Boy" # speed Buggy also
+    * rnc_protect_process elite_c
 
 # SPS IPF has normal-length tracks. Barry's dump has long tracks.
 "Bump 'n' Burn"

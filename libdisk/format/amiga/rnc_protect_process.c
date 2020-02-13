@@ -1,14 +1,16 @@
 /*
- * disk/barbarian_ultimate_warrior.c
+ * disk/rnc_protect_process.c
  * 
- * AmigaDOS-based weak-bit protection as used on "Barbarian: The Ultimate
- * Warrior" by Palace.
+ * AmigaDOS-based weak-bit protection as used on various early releases:
+ *  Barbarian: The Ultimate Warrior (Palace)
+ *  Buggy Boy (Tenstar Pack)
+ *  .. and others
  * 
  * Written in 2015 by Keir Fraser
  * 
  * Weak bits a short distance before first sector.
  * 
- * TRKTYP_barbarian_ultimate_warrior data layout:
+ * TRKTYP_rnc_protect_process data layout:
  *  As AmigaDOS
  */
 
@@ -63,7 +65,7 @@ static int find_pattern(struct stream *s, struct track_info *ti, uint32_t *p)
     return 1;
 }
 
-static void *barbarian_ultimate_warrior_write_raw(
+static void *rnc_protect_process_write_raw(
     struct disk *d, unsigned int tracknr, struct stream *s)
 {
     struct track_info *ti = &d->di->track[tracknr];
@@ -95,7 +97,7 @@ done:
      * Mark this as a 'Barbarian' special track. */
     for (i = 1; i < nr; i++) {
         if (patterns[0] != patterns[i]) {
-            init_track_info(ti, TRKTYP_barbarian_ultimate_warrior);
+            init_track_info(ti, TRKTYP_rnc_protect_process);
             break;
         }
     }
@@ -103,7 +105,7 @@ done:
     return ablk;
 }
 
-static void barbarian_ultimate_warrior_read_raw(
+static void rnc_protect_process_read_raw(
     struct disk *d, unsigned int tracknr, struct tbuf *tbuf)
 {
     tbuf_weak(tbuf, 32);
@@ -112,11 +114,11 @@ static void barbarian_ultimate_warrior_read_raw(
     handlers[TRKTYP_amigados]->read_raw(d, tracknr, tbuf);
 }
 
-struct track_handler barbarian_ultimate_warrior_handler = {
+struct track_handler rnc_protect_process_handler = {
     .bytes_per_sector = 512,
     .nr_sectors = 11,
-    .write_raw = barbarian_ultimate_warrior_write_raw,
-    .read_raw = barbarian_ultimate_warrior_read_raw
+    .write_raw = rnc_protect_process_write_raw,
+    .read_raw = rnc_protect_process_read_raw
 };
 
 /*
