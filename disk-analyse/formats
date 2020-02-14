@@ -21,9 +21,7 @@ probe_amiga
 
 "1st Division Manager" = amigados_copylock
 
-"4th & Inches"
-    1 amigados_long_111000
-    * amigados
+"4th & Inches" = herndon_longtrack
 
 # Retail uses RNC Hidden Sectors / Budget Pocket Power Release is AmigaDOS!
 "5th Gear" = rnc_hidden
@@ -116,6 +114,9 @@ probe_amiga
 
 # Tenstar Pack Game 1, Track 159 maybe empty/unformatted
 "Amegas" = amigados
+
+"Amiga Encounter"     
+    * amigados speedlock mercenary
 
 "Amiga Power Pack"
     1 app_longtrack amigados
@@ -242,6 +243,11 @@ probe_amiga
 
 "Back to the Future III" # Disk 2 only tracks 2-84 contain data
     * konami amigados copylock
+
+"Backlash"
+    0 amigados_unknown_length
+    2-153 mercenary
+    * ignore
 
 # Retail Release
 "Bad Company"
@@ -572,6 +578,9 @@ probe_amiga
 #Sporting Winners! Compilation
 "Daily Double Horse Racing" = amigados
 
+"Damocles"
+    * amigados_unknown_length speedlock mercenary
+
 "Danger Freak"
     0 amigados
     1-151 hellwig
@@ -799,9 +808,7 @@ probe_amiga
 "Fantastic Voyage"
     * amigados fantastic_voyage
 
-"Fast Break"
-    1 herndon_longtrack
-    * amigados
+"Fast Break" = herndon_longtrack
 
 "Fast Lane"
     1 speedlock
@@ -998,9 +1005,7 @@ probe_amiga
 "Grand Monster Slam"
     * amigados grand_monster_slam
 
-"Grand Prix Circuit"
-    1 amigados_long_111000
-    * amigados
+"Grand Prix Circuit" = herndon_longtrack
 
 "Grand Prix Master" = amigados
 
