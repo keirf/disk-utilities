@@ -116,7 +116,7 @@ probe_amiga
 "Amegas" = amigados
 
 "Amiga Encounter"     
-    * amigados speedlock mercenary
+    * amigados speedlock novagen
 
 "Amiga Power Pack"
     1 app_longtrack amigados
@@ -246,7 +246,7 @@ probe_amiga
 
 "Backlash"
     0 amigados_unknown_length
-    2-153 mercenary
+    2-153 novagen
     * ignore
 
 # Retail Release
@@ -579,7 +579,7 @@ probe_amiga
 "Daily Double Horse Racing" = amigados
 
 "Damocles"
-    * amigados_unknown_length speedlock mercenary
+    * amigados_unknown_length speedlock novagen
 
 "Danger Freak"
     0 amigados
@@ -1046,6 +1046,12 @@ probe_amiga
 
 "Heimdall 2" = amigados_copylock
 
+# SPS 1119: cylinders 77+ are empty
+"Hellbent"
+    0 amigados
+    1 ignore
+    * novagen
+
 # 1988 version has 2 longtracks, T1.1 mastered with an error so ignore!
 # 1990 version is Copylock
 "Helter Skelter"
@@ -1432,7 +1438,17 @@ probe_amiga
     1 ignore
     62-69 ignore   # Cylinders 31-34
     128-159 ignore # Cylinders 64-79
-    * mercenary
+    * novagen
+
+# SPS 0356 (Retail) uses Speedlock and Novagen format with 8914 sync.
+# Dump from BarryB had garbage in Track 1 and Novagen format with A89A sync.
+# Since Track 1 may be used, or may contain what looks like valid garbage,
+# we use raw_dd as a fallback to avoid a warning in the latter case: We don't
+# actually care about the track contents in that case though!
+"Mercenary III"
+    0 amigados
+    1 speedlock raw_dd
+    * novagen
 
 "Micro Machines" = amigados_copylock
 
