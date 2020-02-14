@@ -6,7 +6,7 @@
  * Written in 2020 by Keir Fraser
  * 
  * RAW TRACK LAYOUT:
- *  u16 0xa89a|0x8914 :: 1-3 Sync Words
+ *  u16 sync+ :: 1-3 Sync Words
  *  u8  0x12,0x34,0x56,0x78,cyl
  *  u8  dat[0x1800]
  *  u8  csum_lo, csum_hi
@@ -19,7 +19,7 @@
 #include <libdisk/util.h>
 #include <private/disk.h>
 
-const static uint16_t syncs[] = { 0xa89a, 0x8914 };
+const static uint16_t syncs[] = { 0xa89a, 0x8914, 0x4489 };
 
 static void *novagen_write_raw(
     struct disk *d, unsigned int tracknr, struct stream *s)

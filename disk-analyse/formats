@@ -575,9 +575,11 @@ probe_amiga
 "Cytron"
     * amigados psygnosis_a
 
-#Sporting Winners! Compilation
+# Sporting Winners! Compilation
 "Daily Double Horse Racing" = amigados
 
+# Mission Disk 1 is a mix of AmigaDOS and Novagen across the disk.
+# It is supported by this format specifier, along with the main game itself.
 "Damocles"
     * amigados_unknown_length speedlock novagen
 
