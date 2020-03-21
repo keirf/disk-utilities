@@ -23,8 +23,8 @@ probe_amiga
 
 "4th & Inches" = herndon_longtrack
 
-# Retail uses RNC Hidden Sectors / Budget Pocket Power Release is AmigaDOS!
-"5th Gear" = rnc_hidden
+# Retail uses RNC Gap / Budget Pocket Power Release is AmigaDOS!
+"5th Gear" = rnc_gap
 
 "688 Attack Sub" = amigados
 
@@ -140,7 +140,7 @@ probe_amiga
 "Another World" = amigados
 
 # Antheads: It Came From The Desert II
-"Antheads" = rnc_hidden
+"Antheads" = rnc_gap
 
 "Apache" = rnc_pdos
 
@@ -299,7 +299,7 @@ probe_amiga
 # Ignore any *Unformatted tracks!
 "Battleships"
     0 amigados
-    1 rnc_hidden amigados
+    1 rnc_gap amigados
     2-70 ibm_pc_dd_10sec
     78-83 amigados
     84-89 ignore
@@ -338,7 +338,7 @@ probe_amiga
 
 "Big Nose The Caveman" = amigados_copylock
 
-"Bio Challenge" = rnc_hidden
+"Bio Challenge" = rnc_gap
 
 "Bill's Tomato Game"
     * amigados_long_105500 rnc_pdos_old
@@ -366,7 +366,7 @@ probe_amiga
 
 "Bloodwych" = amigados_copylock
 
-"Bloodwych Data Disks Vol 1" = rnc_hidden
+"Bloodwych Data Disks Vol 1" = rnc_gap
 
 "Blue Angels" = amigados
 
@@ -794,13 +794,13 @@ probe_amiga
 
 "F-117A Stealth Fighter" = amigados
 
-"F-29 Retaliator" = rnc_hidden
+"F-29 Retaliator" = rnc_gap
 
 "Faery Tale Adventure" = amigados # novella protection
 
 # Should cater for all versions of Falcon/Mission Disks
 "Falcon"
-    1 protec_longtrack rnc_hidden copylock amigados
+    1 protec_longtrack rnc_gap copylock amigados
     * amigados
 
 "Fantastic Dizzy" = amigados_copylock
@@ -827,7 +827,7 @@ probe_amiga
 
 "FIFA Soccer" = amigados
 
-"Fighter Bomber" = rnc_hidden
+"Fighter Bomber" = rnc_gap
 
 # Needs amigados longtracks or game won't load!
 "Final Fight"
@@ -913,7 +913,7 @@ probe_amiga
 "Gadgets Lost In Time"
     * amigados gadgetslostintime_a gadgetslostintime_b
 
-"Galaxy Force II" = rnc_hidden
+"Galaxy Force II" = rnc_gap
 
 "Galdregons Domain" = infogrames_protected
 
@@ -931,8 +931,8 @@ probe_amiga
 
 "Gettysburg" = amigados
 
-# Retail has RNC Hidden Sectors, Triple Action Volume 3 is plain AmigaDOS
-"Ghostbusters II" = rnc_hidden
+# Retail has RNC Gap, Triple Action Volume 3 is plain AmigaDOS
+"Ghostbusters II" = rnc_gap
 
 # Demons & Drivers Compilation
 "Ghouls 'n' Ghosts"
@@ -1011,7 +1011,7 @@ probe_amiga
 
 "Grand Prix Master" = amigados
 
-"Gravity" = rnc_hidden
+"Gravity" = rnc_gap
 
 "Great Courts" = blue_byte
 
@@ -1026,7 +1026,7 @@ probe_amiga
 
 "Gunship 2000" = amigados
 
-"Hard Drivin'" = rnc_hidden
+"Hard Drivin'" = rnc_gap
 
 "Hardball"
     1 amigados_long_111000
@@ -1244,9 +1244,9 @@ probe_amiga
 
 "Khalaan" = amigados
 
-# Kick Off (Copylock) and Kick Off Extra Time Data Disc (RNC Hidden)
+# Kick Off (Copylock) and Kick Off Extra Time Data Disc (RNC Gap)
 "Kick Off"
-     * amigados copylock rnc_hidden
+     * amigados copylock rnc_gap
 
 # Many variants. Only tested 1.4e and 1.6e: both have long tracks 5 & 7.
 # Also used on The Final Whistle: Data Disk
@@ -1569,7 +1569,7 @@ probe_amiga
 # Delphine Collection
 "Operation Stealth" = amigados
 
-"Operation Thunderbolt" = rnc_hidden
+"Operation Thunderbolt" = rnc_gap
 
 # Hit Squad Release, all tracks mastered long!
 "Operation Wolf Hit Squad" = amigados
@@ -1745,6 +1745,7 @@ probe_amiga
     * arc_development_a copylock amigados
 
 # Hit Squad re-release has no copylock
+# Other releases have Copylock or gap protection
 "Rainbow Islands" = amigados_copylock
 
 # All tracks mastered long + T0.1 shows AmigaDOS Extended (Header)
@@ -1762,10 +1763,10 @@ probe_amiga
 "Rebellion"
     * amigados fun_factory
 
-# Retail release uses RNC Hidden
+# Retail release uses RNC Gap
 # Release in Virtual Reality Vol2 is Copylock!
 "Resolution 101"
-     1 rnc_hidden copylock
+     1 rnc_gap copylock
      * amigados
 
 #Star Wars Trilogy Release
@@ -1789,10 +1790,10 @@ probe_amiga
     * ignore
 
 # Original uses Copylock
-# Arcade Action Game 7 uses RNC Hidden!
+# Arcade Action Game 7 uses RNC Gap!
 "Rick Dangerous"
     0 amigados
-    1 copylock rnc_hidden
+    1 copylock rnc_gap
     * amigados
 
 "Rise Of The Dragon" = amigados
@@ -2128,7 +2129,7 @@ probe_amiga
 "Stryx"
     * amigados psygnosis_a  protec_longtrack
 
-"Stunt Car Racer" = rnc_hidden
+"Stunt Car Racer" = rnc_gap
 
 "Summer Olympiad"
      0 amigados
@@ -2364,7 +2365,7 @@ probe_amiga
 
 "Thunderstrike" = amigados_copylock
 
-"Time" = rnc_hidden
+"Time" = rnc_gap
 
 # Version with no copy protection on Track 2 (1.0), some tracks mastered long!
 "Time Bandit"
@@ -2404,7 +2405,7 @@ probe_amiga
 "Total Recall" = amigados_copylock
 
 # Astra Pack Game 10
-"Tower Of Babel" = rnc_hidden
+"Tower Of Babel" = rnc_gap
 
 "Toyota Celica GT Rally"
     0-1 amigados
@@ -2458,7 +2459,7 @@ probe_amiga
 "Tusker"
     * amigados rainbird copylock
 
-"TV Sports Basketball" = rnc_hidden
+"TV Sports Basketball" = rnc_gap
 
 "TV Sports Football"
     2-3 herndon_hls amigados
@@ -2538,7 +2539,7 @@ probe_amiga
 
 "Walker" = amigados_copylock
 
-"Warhead" = rnc_hidden
+"Warhead" = rnc_gap
 
 "War Machine"
     2-3 interceptor_software
@@ -2667,10 +2668,10 @@ amigados_varrate
     * amigados_varrate
 # Copylock sometimes later replaced with no protection, or PROTEC
 amigados_copylock
-    1 amigados copylock protec_longtrack copylock_old
+    1 rnc_gap amigados copylock protec_longtrack copylock_old
     * amigados
-rnc_hidden
-    1 rnc_hidden amigados
+rnc_gap
+    1 rnc_gap amigados
     * amigados
 blue_byte
     * amigados blue_byte

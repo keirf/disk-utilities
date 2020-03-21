@@ -1,12 +1,12 @@
 /*
- * disk/rnc_hidden.c
+ * disk/rnc_gap.c
  * 
- * Small sectors hidden alongside AmigaDOS track data.
+ * Small sectors hidden in the AmigaDOS track gap.
  * Each sector may be followed by a No Flux Area.
  * 
  * Written in 2012 by Keir Fraser
  * 
- * TRKTYP_rnc_hidden data layout:
+ * TRKTYP_rnc_gap data layout:
  *  u8 amigados_data[11*512]
  *  u8 rnc_signature[10]  ;; disk key/signature (same across all sectors)
  *  u8 sector_trailer_map ;; sectors which have an MFM-illegal trailer
@@ -33,7 +33,7 @@ unsigned int bit_weight(uint8_t *p, unsigned int nr)
     return nr_ones;
 }
 
-static void *rnc_hidden_write_raw(
+static void *rnc_gap_write_raw(
     struct disk *d, unsigned int tracknr, struct stream *s)
 {
     struct track_info *ti = &d->di->track[tracknr];
@@ -108,7 +108,7 @@ static void *rnc_hidden_write_raw(
                "out of %u", nr_sigs, NR_SYNCS);
 
     /* Build the track descriptor. */
-    init_track_info(ti, TRKTYP_rnc_hidden);
+    init_track_info(ti, TRKTYP_rnc_gap);
     ti->len += sizeof(sig) + 1;
     block = memalloc(ti->len);
     memcpy(block, ablk, 512*11);
@@ -120,7 +120,7 @@ out:
     return block;
 }
 
-static void rnc_hidden_read_raw(
+static void rnc_gap_read_raw(
     struct disk *d, unsigned int tracknr, struct tbuf *tbuf)
 {
     struct track_info *ti = &d->di->track[tracknr];
@@ -146,11 +146,11 @@ static void rnc_hidden_read_raw(
     }
 }
 
-struct track_handler rnc_hidden_handler = {
+struct track_handler rnc_gap_handler = {
     .bytes_per_sector = 512,
     .nr_sectors = 11,
-    .write_raw = rnc_hidden_write_raw,
-    .read_raw = rnc_hidden_read_raw
+    .write_raw = rnc_gap_write_raw,
+    .read_raw = rnc_gap_read_raw
 };
 
 /*
