@@ -182,7 +182,7 @@ fail:
 
 int ibm_scan_dam(struct stream *s)
 {
-    uint8_t mark;
+    uint8_t mark = 0;
     int idx_off = ibm_scan_mark(s, 1000, &mark);
     return (mark == IBM_MARK_DAM) ? idx_off : -1;
 }
