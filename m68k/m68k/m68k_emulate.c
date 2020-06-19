@@ -785,15 +785,16 @@ static int misc_insn(struct m68k_emulate_ctxt *c)
         /* movec */
         const static char *creg[] = {
             "sfc", "dfc", "cacr", "tc", "itt0", "itt1", "dtt0", "dtt1",
-            "usp", "vbr", "caar", "msp", "isp", "mmusr", "urp", "srp" };
+            "usp", "vbr", "caar", "msp", "isp", "mmusr", "urp", "srp",
+            "pcr" };
         uint16_t ext, idx;
         const char *greg;
         bail_if(rc = fetch_insn_word(c, &ext));
         idx = ext & 0x0fffu;
         greg = (ext & (1u<<15) ? areg : dreg)[(ext>>12)&7];
-        if (((idx > 7) && (idx < 0x800u)) || (idx > 0x807u))
+        if (((idx > 7) && (idx < 0x800u)) || (idx > 0x808u))
             goto unknown; /* bad creg */
-        idx = (idx & 7) | ((idx & 0x800u) >> 8);
+        idx = (idx & 15) + ((idx & 0x800u) >> 8);
         c->op_sz = OPSZ_L;
         dump(c, "movec.l\t");
         if (op & 1)
