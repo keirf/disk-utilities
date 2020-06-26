@@ -251,7 +251,7 @@ static void *ibm_mfm_write_raw(
             /* Warn if we are recovering */
             if (is_recovery_type(ti->type)) {
                 trk_warn(ti, tracknr, "IDAM CRC cyl:%2d, head:%2d, sec:%2d, "
-                         "no:%2d, crc:%04x, offset:%5d\n",
+                         "no:%2d, crc:%04x, offset:%5d",
                          idam.cyl, idam.head, idam.sec,
                          idam.no, idam.crc, idx_off);
             }
@@ -311,7 +311,7 @@ static void *ibm_mfm_write_raw(
                 if (!crc && cur_sec->s.crc) {
 #ifdef CRC_DEBUG
                     trk_warn(ti, tracknr, "FIXED CRC cyl:%2d, head:%2d, "
-                             "sec:%2d, no:%2d, size:%4x, offset:%5d\n",
+                             "sec:%2d, no:%2d, size:%4x, offset:%5d",
                              idam.cyl, idam.head, idam.sec, idam.no,
                              sec_sz, idx_off);
 #endif
@@ -331,7 +331,7 @@ static void *ibm_mfm_write_raw(
                 trk_warn(ti, tracknr, "IDAM  WARN"
                          " [cyl:%2d, head:%2d, sec:%2d, no:%2d, "
                          "crc:%04x, offset:%5d] != [cyl:%2d, head:%2d, "
-                         "sec:%2d, no:%2d, crc:%04x, offset:%5d]\n",
+                         "sec:%2d, no:%2d, crc:%04x, offset:%5d]",
                          idam.cyl, idam.head, idam.sec, idam.no,
                          crc, idx_off,
                          cur_sec->s.idam.cyl, cur_sec->s.idam.head,
@@ -346,7 +346,7 @@ static void *ibm_mfm_write_raw(
 #ifdef CRC_DEBUG
         if (crc) {
             trk_warn(ti, tracknr, "DATA  CRC cyl:%2d, head:%2d, sec:%2d, "
-                     "no:%2d, crc:%04x, offset:%5d\n",
+                     "no:%2d, crc:%04x, offset:%5d",
                      idam.cyl, idam.head, idam.sec, idam.no, crc, idx_off);
         }
 #endif
@@ -740,7 +740,7 @@ static void *ibm_fm_write_raw(
             /* Warn if we are recovering */
             if (is_recovery_type(ti->type)) {
                 trk_warn(ti, tracknr, "IDAM CRC cyl:%2d, head:%2d, sec:%2d, "
-                         "no:%2d, crc:%04x, offset:%5d\n",
+                         "no:%2d, crc:%04x, offset:%5d",
                          idam.cyl, idam.head, idam.sec,
                          idam.no, idam.crc, idx_off);
             }
@@ -827,7 +827,7 @@ static void *ibm_fm_write_raw(
                 if (!crc && cur_sec->s.crc) {
 #ifdef CRC_DEBUG
                     trk_warn(ti, tracknr, "FIXED CRC cyl:%2d, head:%2d, "
-                             "sec:%2d, no:%2d, size:%4x, offset:%5d\n",
+                             "sec:%2d, no:%2d, size:%4x, offset:%5d",
                              idam.cyl, idam.head, idam.sec, idam.no,
                              sec_sz, idx_off);
 #endif
@@ -846,7 +846,7 @@ static void *ibm_fm_write_raw(
                 trk_warn(ti, tracknr, "IDAM  WARN"
                          " [cyl:%2d, head:%2d, sec:%2d, no:%2d, "
                          "crc:%04x, offset:%5d] != [cyl:%2d, head:%2d, "
-                         "sec:%2d, no:%2d, crc:%04x, offset:%5d]\n",
+                         "sec:%2d, no:%2d, crc:%04x, offset:%5d]",
                          idam.cyl, idam.head, idam.sec, idam.no,
                          crc, idx_off,
                          cur_sec->s.idam.cyl, cur_sec->s.idam.head,
