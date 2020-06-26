@@ -25,6 +25,7 @@ struct scp_stream {
     uint16_t *dat;
     unsigned int datsz;
 
+    bool_t index_cued;
     unsigned int revs;       /* stored disk revolutions */
     unsigned int dat_idx;    /* current index into dat[] */
     unsigned int index_pos;  /* next index offset */
@@ -96,6 +97,12 @@ static struct stream *scp_open(const char *name, unsigned int data_rpm)
     scss = memalloc(sizeof(*scss) + revs*sizeof(unsigned int));
     scss->fd = fd;
     scss->revs = revs;
+    scss->index_cued = !!(header.flags & (1u<<0));
+    if (!scss->index_cued) {
+        if (scss->revs < 2)
+            errx(1, "%s needs at least one full revolution per track", name);
+        scss->revs--;
+    }
 
     return &scss->s;
 }
@@ -140,6 +147,11 @@ static int scp_select_track(struct stream *s, unsigned int tracknr)
 
     if (trk_header[3] != tracknr)
         return -1;
+
+    if (!scss->index_cued) {
+        /* Skip first partial revolution. */
+        lseek(scss->fd, 12, SEEK_CUR);
+    }
 
     for (rev = 0 ; rev < scss->revs ; rev++) {
         read_exact(scss->fd, longwords, sizeof(longwords));
