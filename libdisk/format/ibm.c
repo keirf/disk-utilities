@@ -133,6 +133,8 @@ int ibm_scan_mark(struct stream *s, unsigned int max_scan, uint8_t *pmark)
 {
     int idx_off = -1;
 
+    *pmark = 0;
+
     do {
         if (s->word != 0x44894489)
             continue;
