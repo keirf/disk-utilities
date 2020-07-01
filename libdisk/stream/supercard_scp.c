@@ -97,12 +97,9 @@ static struct stream *scp_open(const char *name, unsigned int data_rpm)
     scss = memalloc(sizeof(*scss) + revs*sizeof(unsigned int));
     scss->fd = fd;
     scss->revs = revs;
-    scss->index_cued = !!(header.flags & (1u<<0));
-    if (!scss->index_cued) {
-        if (scss->revs < 2)
-            errx(1, "%s needs at least one full revolution per track", name);
+    scss->index_cued = !!(header.flags & (1u<<0)) || (scss->revs == 1);
+    if (!scss->index_cued)
         scss->revs--;
-    }
 
     return &scss->s;
 }
