@@ -153,7 +153,7 @@ static void scp_close(struct disk *d)
     dhdr.disk_type = DISKTYPE_amiga;
     dhdr.nr_revolutions = 1;
     dhdr.end_track = di->nr_tracks - 1;
-    dhdr.flags = (1u<<_FLAG_footer);
+    dhdr.flags = (1u<<_FLAG_index_cued)|(1u<<_FLAG_96tpi)|(1u<<_FLAG_footer);
     write_exact(d->fd, &dhdr, sizeof(dhdr));
 
     th_offs = memalloc(di->nr_tracks * sizeof(uint32_t));
