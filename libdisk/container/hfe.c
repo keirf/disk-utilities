@@ -33,11 +33,6 @@ struct disk_header {
     uint8_t interface_mode;
     uint8_t rsvd; /* set to 1? */
     uint16_t track_list_offset;
-    /* from here can write 0xff to end of block... */
-    uint8_t write_allowed;
-    uint8_t single_step;
-    uint8_t t0s0_altencoding, t0s0_encoding;
-    uint8_t t0s1_altencoding, t0s1_encoding;
 };
 
 /* track_encoding */
@@ -269,9 +264,12 @@ static void write_bits(
 
 static void hfe_close(struct disk *d)
 {
-    uint32_t block[128];
+    union {
+        uint8_t x[512];
+        struct disk_header dhdr;
+        struct track_header thdr[128];
+    } block;
     struct disk_info *di = d->di;
-    struct disk_header *dhdr;
     struct track_header *thdr;
     struct track_raw *_raw[di->nr_tracks], **raw = _raw;
     unsigned int i, j, off, bitlen, bytelen, len;
@@ -305,23 +303,24 @@ static void hfe_close(struct disk *d)
         err(1, NULL);
 
     /* Block 0: Disk info. */
-    memset(block, 0xff, 512);
-    dhdr = (struct disk_header *)block;
-    memcpy(dhdr->sig, "HXCPICFE", sizeof(dhdr->sig));
-    dhdr->formatrevision = 0;
-    dhdr->nr_tracks = di->nr_tracks / 2;
-    dhdr->nr_sides = 2;
-    dhdr->track_encoding = is_st ? ENC_ISOIBM_MFM : ENC_Amiga_MFM;
-    dhdr->bitrate = htole16(250);
-    dhdr->rpm = htole16(0);
-    dhdr->interface_mode = is_st ? IFM_AtariST_DD : IFM_Amiga_DD;
-    dhdr->rsvd = 1;
-    dhdr->track_list_offset = htole16(1);
-    write_exact(d->fd, block, 512);
+    memset(block.x, 0xff, 512);
+    block.dhdr = (struct disk_header) {
+        .sig = "HXCPICFE",
+        .formatrevision = 0,
+        .nr_tracks = di->nr_tracks / 2,
+        .nr_sides = 2,
+        .track_encoding = is_st ? ENC_ISOIBM_MFM : ENC_Amiga_MFM,
+        .bitrate = htole16(250),
+        .rpm = htole16(0),
+        .interface_mode = is_st ? IFM_AtariST_DD : IFM_Amiga_DD,
+        .rsvd = 1,
+        .track_list_offset = htole16(1)
+    };
+    write_exact(d->fd, block.x, 512);
 
     /* Block 1: Track LUT. */
-    memset(block, 0xff, 512);
-    thdr = (struct track_header *)block;
+    memset(block.x, 0xff, 512);
+    thdr = block.thdr;
     off = 2;
     for (i = 0; i < di->nr_tracks/2; i++) {
         bitlen = max(raw[i*2]->bitlen, raw[i*2+1]->bitlen);
@@ -331,7 +330,7 @@ static void hfe_close(struct disk *d)
         off += (bytelen + 0x1ff) >> 9;
         thdr++;
     }
-    write_exact(d->fd, block, 512);
+    write_exact(d->fd, block.x, 512);
 
     for (i = 0; i < di->nr_tracks/2; i++) {
         bitlen = max(raw[0]->bitlen, raw[1]->bitlen);
