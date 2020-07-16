@@ -36,32 +36,13 @@ struct ibm_psector {
 #define type_is_fm(type)                            \
     (((type) == TRKTYP_ibm_fm_sd)                   \
      || ((type) == TRKTYP_ibm_fm_dd)                \
-     || ((type) == TRKTYP_trs80_fm_sd)              \
-     || ((type) == TRKTYP_trs80_fm_sd_recovery) )
+     || ((type) == TRKTYP_ibm_fm_sd_recovery) )
 
 /* Defined all TRS80 track types that attemt data recovery */
 static bool_t is_recovery_type(int type)
 {
-    return (type == TRKTYP_trs80_fm_sd_recovery
-            || type == TRKTYP_trs80_mfm_dd_recovery);
-}
-
-/* Is this a TRS-track type ? */
-static bool_t is_trs80_track(int type)
-{
-    return (type == TRKTYP_trs80_fm_sd
-            || type == TRKTYP_trs80_mfm_dd
-            || is_recovery_type(type));
-}
-
-/* Is this a TRS-80 directory mark? */
-static bool_t is_trs80_mark(int type, int mark)
-{
-/* TRS-80 address marks used in directory tracks */
-#define TRS_MARK_DAM1 0xfa
-#define TRS_MARK_DAM2 0xf8
-    return (is_trs80_track(type) 
-            && (mark == TRS_MARK_DAM1 || mark == TRS_MARK_DAM2));
+    return (type == TRKTYP_ibm_fm_sd_recovery
+            || type == TRKTYP_ibm_mfm_dd_recovery);
 }
 
 
@@ -271,8 +252,6 @@ static void *ibm_mfm_write_raw(
 
         /* DAM/DDAM */
         if ((ibm_scan_mark(s, 1000, &mark) < 0) ||
-            ((mark != IBM_MARK_DAM) && (mark != IBM_MARK_DDAM)
-             && !is_trs80_mark(ti->type, mark)) ||
             (stream_next_bytes(s, dat, 2*sec_sz) == -1) ||
             (stream_next_bits(s, 32) == -1))
             continue;
@@ -614,15 +593,7 @@ struct track_handler ibm_mfm_ed_handler = {
     .read_sectors = ibm_read_sectors
 };
 
-struct track_handler trs80_mfm_dd_handler = {
-    .density = trkden_double,
-    .get_name = ibm_get_name,
-    .write_raw = ibm_mfm_write_raw,
-    .read_raw = ibm_mfm_read_raw,
-    .read_sectors = ibm_read_sectors
-};
-
-struct track_handler trs80_mfm_dd_recovery_handler = {
+struct track_handler ibm_mfm_dd_recovery_handler = {
     .density = trkden_double,
     .get_name = ibm_get_name,
     .write_raw = ibm_mfm_write_raw,
@@ -788,16 +759,13 @@ static void *ibm_fm_write_raw(
             /* ...then extract data bits as usual. */
             mfm_decode_bytes(bc_mfm, sec_sz+2, dat, dat);
             crc = crc16_ccitt(dat, sec_sz+2, crc);
-        } else if ((mark == IBM_MARK_DAM) || (mark == IBM_MARK_DDAM)
-                   || is_trs80_mark(ti->type, mark)) {
+        } else {
             if (stream_next_bytes(s, dat, 2*sec_sz) == -1)
                 continue;
             if (stream_next_bits(s, 32) == -1)
                 continue;
             crc = s->crc16_ccitt;
             mfm_decode_bytes(bc_mfm, sec_sz, dat, dat);
-        } else {
-            continue;
         }
 
         /* Skip bad data CRC unless we are doing data recovery. */
@@ -1174,15 +1142,7 @@ struct track_handler dec_rx02_525_handler = {
     .nr_sectors = 13
 };
 
-struct track_handler trs80_fm_sd_handler = {
-    .density = trkden_single,
-    .get_name = ibm_get_name,
-    .write_raw = ibm_fm_write_raw,
-    .read_raw = ibm_fm_read_raw,
-    .read_sectors = ibm_read_sectors
-};
-
-struct track_handler trs80_fm_sd_recovery_handler = {
+struct track_handler ibm_fm_sd_recovery_handler = {
     .density = trkden_single,
     .get_name = ibm_get_name,
     .write_raw = ibm_fm_write_raw,

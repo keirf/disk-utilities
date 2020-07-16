@@ -159,23 +159,13 @@ unsigned int type_to_density(int type)
     int density = 0;
     /* Bit-rate testing borrowed directly from imd.c */
     switch (type) {
-    case TRKTYP_trs80_fm_sd:
-    case TRKTYP_trs80_fm_sd_recovery:
-        density = 0;
-        break;
-    case TRKTYP_trs80_mfm_dd:
-    case TRKTYP_trs80_mfm_dd_recovery:
-        density = 1;
-        break;
     case TRKTYP_ibm_fm_sd:
-        density = 0;
-        break;
+    case TRKTYP_ibm_fm_sd_recovery:
     case TRKTYP_ibm_fm_dd:
         density = 0;
         break;
     case TRKTYP_ibm_mfm_dd:
-        density = 1;
-        break;
+    case TRKTYP_ibm_mfm_dd_recovery:
     case TRKTYP_ibm_mfm_hd:
         density = 1;
         break;
@@ -196,23 +186,13 @@ char *type_to_encoding(int type)
     char *ptr = "INVALID";
     /* Bit-rate testing borrowed directly from imd.c */
     switch (type) {
-    case TRKTYP_trs80_fm_sd:
-    case TRKTYP_trs80_fm_sd_recovery:
-        ptr = "FM";
-        break;
-    case TRKTYP_trs80_mfm_dd:
-    case TRKTYP_trs80_mfm_dd_recovery:
-        ptr = "MFM";
-        break;
     case TRKTYP_ibm_fm_sd:
-        ptr = "FM";
-        break;
+    case TRKTYP_ibm_fm_sd_recovery:
     case TRKTYP_ibm_fm_dd:
         ptr = "FM";
         break;
     case TRKTYP_ibm_mfm_dd:
-        ptr = "MFM";
-        break;
+    case TRKTYP_ibm_mfm_dd_recovery:
     case TRKTYP_ibm_mfm_hd:
         ptr = "MFM";
         break;
