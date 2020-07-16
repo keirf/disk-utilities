@@ -60,10 +60,12 @@ $(SOVERS): $(PICOBJS) stream/streams.apic container/containers.apic \
 	ln -sf $(SONAME) $(SOLIB)
 
 install: all
+ifneq ($(SHARED_LIB),n)
 	$(INSTALL_DIR) $(LIBDIR)
 	$(INSTALL_PROG) $(SOVERS) $(LIBDIR)
 	ln -sf $(SOVERS) $(LIBDIR)/$(SONAME)
 	ln -sf $(SONAME) $(LIBDIR)/$(SOLIB)
+endif
 	$(INSTALL_DIR) $(INCLUDEDIR)/libdisk
 	$(INSTALL_DATA) include/libdisk/disk.h $(INCLUDEDIR)/libdisk
 	$(INSTALL_DATA) include/libdisk/stream.h $(INCLUDEDIR)/libdisk
