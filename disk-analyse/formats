@@ -1153,7 +1153,7 @@ probe_amiga
     * amigados rainbird
 
 "Into The Eagle's Nest"
-    2-3 interceptor_software
+    2-3 herndon_hls
     * amigados
 
 "It Came From The Desert" = amigados_copylock
@@ -2542,7 +2542,7 @@ probe_amiga
 "Warhead" = rnc_gap
 
 "War Machine"
-    2-3 interceptor_software
+    2-3 herndon_hls
     * amigados
 
 "Warlock: The Avenger" = amigados_copylock
