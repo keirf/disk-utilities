@@ -2620,16 +2620,17 @@ probe_amiga
 "Xenon" = amigados_copylock
 
 # Original 2-disk retail
-"Xenon 2" = amigados_copylock
+"Xenon 2, 2 Disk" = amigados_copylock
 
-# Budget compilation version
-"Xenon 2, The Power Pack"
+# Original 1-disk, possibly only used in budget releases:
+# 1. Mirrorsoft budget release; 2. The Power Pack compilation
+"Xenon 2, 1 Disk"
     0 amigados
     1 speedlock
     2 xenon2
     * xenon2_longtrack
 
-# Budget KIXX version
+# Budget KIXX version, altered intro removes Imageworks logo
 "Xenon 2, KIXX" = rnc_pdos
 
 "XP8" = amigados
