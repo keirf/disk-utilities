@@ -2619,7 +2619,18 @@ probe_amiga
 # Precious Metal Compilation
 "Xenon" = amigados_copylock
 
+# Original 2-disk retail
 "Xenon 2" = amigados_copylock
+
+# Budget compilation version
+"Xenon 2, The Power Pack"
+    0 amigados
+    1 speedlock
+    2 xenon2
+    * xenon2_longtrack
+
+# Budget KIXX version
+"Xenon 2, KIXX" = rnc_pdos
 
 "XP8" = amigados
 
