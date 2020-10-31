@@ -120,7 +120,11 @@ int ibm_scan_mark(struct stream *s, unsigned int max_scan, uint8_t *pmark)
         if (s->word != 0x44894489)
             continue;
         stream_start_crc(s);
-        if ((stream_next_bits(s, 32) == -1) || ((s->word >> 16) != 0x4489))
+        if (stream_next_bits(s, 16) == -1)
+            break;
+        if ((uint16_t)s->word != 0x4489)
+            continue;
+        if (stream_next_bits(s, 16) == -1)
             break;
         idx_off = s->index_offset_bc - 63;
         if (idx_off < 0)
