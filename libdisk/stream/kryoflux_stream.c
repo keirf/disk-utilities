@@ -25,10 +25,15 @@ struct kfs_stream {
     unsigned char *dat;
     unsigned int datsz;
 
+    /* Index positions in the raw stream. */
+    unsigned int *idxs;
+    unsigned int idx_i;
+
     unsigned int dat_idx;    /* current index into dat[] */
     unsigned int stream_idx; /* current index into non-OOB data in dat[] */
-    unsigned int index_pos;  /* stream_idx position of next index pulse */
 };
+
+#define MAX_INDEX 128
 
 #define MCK_FREQ (((18432000 * 73) / 14) / 2)
 #define SCK_FREQ (MCK_FREQ / 2)
@@ -67,6 +72,48 @@ static void kfs_close(struct stream *s)
     memfree(kfss);
 }
 
+static unsigned int *kfs_decode_index(unsigned char *dat, unsigned int datsz)
+{
+    unsigned int i, idx_i = 0;
+    unsigned int *idxs = memalloc((MAX_INDEX+1) * sizeof(*idxs));
+
+    for (i = 0; i < datsz; ) {
+        switch (dat[i]) {
+        case 0xd: /* oob */ {
+            uint32_t pos;
+            uint16_t sz = le16toh(*(uint16_t *)&dat[i+2]);
+            i += 4;
+            pos = le32toh(*(uint32_t *)&dat[i+0]);
+            if (dat[i-3] == 2) { /* index */
+                if (idx_i == MAX_INDEX)
+                    goto fail;
+                idxs[idx_i++] = pos;
+            }
+            i += sz;
+            break;
+        }
+        case 0xa: /* nop3 */
+        case 0xc: /* value16 */
+            i++;
+        case 0x00 ... 0x07:
+        case 0x9: /* nop2 */
+            i++;
+        case 0x8: /* nop1 */
+        case 0xb: /* overflow16 */
+        default: /* 1-byte sample */
+            i++;
+            break;
+        }
+    }
+
+    idxs[idx_i] = ~0u;
+    return idxs;
+
+fail:
+    memfree(idxs);
+    return NULL;
+}
+
 static int kfs_select_track(struct stream *s, unsigned int tracknr)
 {
     struct kfs_stream *kfss = container_of(s, struct kfs_stream, s);
@@ -76,6 +123,9 @@ static int kfs_select_track(struct stream *s, unsigned int tracknr)
 
     if (kfss->dat && (kfss->track == tracknr))
         return 0;
+
+    memfree(kfss->idxs);
+    kfss->idxs = NULL;
 
     memfree(kfss->dat);
     kfss->dat = NULL;
@@ -93,6 +143,13 @@ static int kfs_select_track(struct stream *s, unsigned int tracknr)
     kfss->datsz = sz;
     kfss->track = tracknr;
 
+    kfss->idxs = kfs_decode_index(kfss->dat, sz);
+    if (kfss->idxs == NULL) {
+        memfree(kfss->dat);
+        kfss->dat = NULL;
+        return -1;
+    }
+
     s->max_revolutions = ~0u;
     return 0;
 }
@@ -102,7 +159,7 @@ static void kfs_reset(struct stream *s)
     struct kfs_stream *kfss = container_of(s, struct kfs_stream, s);
 
     kfss->dat_idx = kfss->stream_idx = 0;
-    kfss->index_pos = ~0u;
+    kfss->idx_i = 0;
 }
 
 static int kfs_next_flux(struct stream *s)
@@ -113,8 +170,8 @@ static int kfs_next_flux(struct stream *s)
     uint32_t val = 0;
     bool_t done = 0;
 
-    if (kfss->stream_idx >= kfss->index_pos) {
-        kfss->index_pos = ~0u;
+    if (kfss->stream_idx >= kfss->idxs[kfss->idx_i]) {
+        kfss->idx_i++;
         s->ns_to_index = s->flux;
     }
 
@@ -153,8 +210,6 @@ static int kfs_next_flux(struct stream *s)
                     errx(1, "Out-of-sync during track read");
                 break;
             case 0x2: /* index */
-                /* sys_time ticks at ick_freq */
-                kfss->index_pos = pos;
                 break;
             case 0xd: /* eof */
                 i = kfss->datsz;
