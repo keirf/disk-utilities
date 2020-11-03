@@ -606,6 +606,18 @@ void tbuf_gap(struct tbuf *tbuf, uint16_t speed, unsigned int bits)
     }
 }
 
+void tbuf_gap_fill(struct tbuf *tbuf, uint16_t speed, uint8_t fill)
+{
+    unsigned int remain = fix_bc(tbuf, tbuf->start - tbuf->pos) / 16;
+    while (remain--)
+        tbuf_bits(tbuf, speed, bc_mfm, 8, fill);
+    remain = fix_bc(tbuf, tbuf->start - tbuf->pos) / 2;
+    while (remain--) {
+        tbuf_bits(tbuf, speed, bc_mfm, 1, fill>>7);
+        fill <<= 1;
+    }
+}
+
 void tbuf_weak(struct tbuf *tbuf, unsigned int bits)
 {
     tbuf->raw.has_weak_bits = 1;

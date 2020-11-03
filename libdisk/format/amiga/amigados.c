@@ -281,11 +281,34 @@ static void ados_get_name(
              hdr_flag ? "Header" : "");
 }
 
+/* Produce dummy IBM sector data for multi-format disks. */
+static void ados_read_sectors(
+    struct disk *d, unsigned int tracknr, struct track_sectors *sectors)
+{
+    struct track_info *ti = &d->di->track[0];
+
+    sectors->nr_bytes = 0;
+    sectors->data = NULL;
+
+    switch (ti->type) {
+    case TRKTYP_rnc_dualformat:
+        sectors->nr_bytes = 10*512;
+        break;
+    case TRKTYP_rnc_triformat:
+        sectors->nr_bytes = 9*512;
+        break;
+    }
+
+    if (sectors->nr_bytes != 0)
+        sectors->data = memalloc(sectors->nr_bytes);
+}
+
 struct track_handler amigados_handler = {
     .bytes_per_sector = STD_SEC,
     .nr_sectors = 11,
     .write_raw = ados_write_raw,
-    .read_raw = ados_read_raw
+    .read_raw = ados_read_raw,
+    .read_sectors = ados_read_sectors
 };
 
 struct track_handler amigados_varrate_handler = {

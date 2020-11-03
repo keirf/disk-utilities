@@ -2704,6 +2704,14 @@ rnc_pdos_copylock
 sensible
     * amigados sensible copylock
 
+rnc_dualformat
+    0 rnc_dualformat
+    * amigados ibm_pc_dd_10sec
+
+rnc_triformat
+    0 rnc_triformat
+    * amigados ibm_pc_dd
+
 # Herndon HLS longtrack check decrypts the game.
 # HLS track needs to be >= 111000 bitcells, but we analyse "unknown length" as
 # some versions are not protected and this avoids warn on normal length track.

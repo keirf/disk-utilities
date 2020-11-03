@@ -82,17 +82,44 @@ static struct container *adf_open(struct disk *d)
     return &container_adf;
 }
 
+extern void *rnc_dualformat_to_ados(struct disk *d, unsigned int tracknr);
+extern void *rnc_triformat_to_ados(struct disk *d, unsigned int tracknr);
+
 static void adf_close(struct disk *d)
 {
     struct disk_info *di = d->di;
     unsigned int i;
+    char *p;
 
     lseek(d->fd, 0, SEEK_SET);
     if (ftruncate(d->fd, 0) < 0)
         err(1, NULL);
 
-    for (i = 0; i < di->nr_tracks; i++)
-        write_exact(d->fd, di->track[i].dat, 11*512);
+    for (i = 0; i < di->nr_tracks; i++) {
+        struct track_info *ti = &di->track[i];
+        switch (ti->type) {
+        case TRKTYP_amigados:
+            write_exact(d->fd, di->track[i].dat, 11*512);
+            break;
+        case TRKTYP_rnc_dualformat:
+            p = rnc_dualformat_to_ados(d, i);
+            write_exact(d->fd, p, 11*512);
+            memfree(p);
+            break;
+        case TRKTYP_rnc_triformat:
+            p = rnc_triformat_to_ados(d, i);
+            write_exact(d->fd, p, 11*512);
+            memfree(p);
+            break;
+        }
+    }
+}
+
+static bool_t valid_adf_type(enum track_type type)
+{
+    return ((type == TRKTYP_amigados) ||
+            (type == TRKTYP_rnc_dualformat) ||
+            (type == TRKTYP_rnc_triformat));
 }
 
 static int adf_write_raw(
@@ -102,12 +129,12 @@ static int adf_write_raw(
     struct disk_info *di = d->di;
     struct track_info *ti = &di->track[tracknr];
 
-    if (type != TRKTYP_amigados)
+    if (!valid_adf_type(type))
         errx(1, "Only AmigaDOS tracks can be written to ADF files");
 
     dsk_write_raw(d, tracknr, type, s);
 
-    if (ti->type != TRKTYP_amigados) {
+    if (!valid_adf_type(ti->type)) {
         memfree(ti->dat);
         ti->dat = NULL;
     }
