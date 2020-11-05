@@ -16,38 +16,24 @@
 
 static void adf_init_track(struct disk *d, struct track_info *ti)
 {
-    unsigned int i;
-
     init_track_info(ti, TRKTYP_amigados);
     ti->dat = memalloc(ti->len);
     ti->data_bitoff = 1024;
     ti->total_bits = DEFAULT_BITS_PER_TRACK(d);
 
-    set_all_sectors_invalid(ti);
-
-    for (i = 0; i < ti->len/4; i++)
-        memcpy(ti->dat+i*4, "NDOS", 4);
+    set_all_sectors_valid(ti);
 }
 
 static void adf_init(struct disk *d)
 {
-    struct disk_info *di;
-    unsigned int i;
-
-    d->di = di = memalloc(sizeof(*di));
-    di->nr_tracks = 160;
-    di->flags = 0;
-    di->track = memalloc(di->nr_tracks * sizeof(struct track_info));
-
-    for (i = 0; i < di->nr_tracks; i++)
-        adf_init_track(d, &di->track[i]);
+    _dsk_init(d, 160);
 }
 
 static struct container *adf_open(struct disk *d)
 {
     struct track_info *ti;
     struct disk_info *di;
-    unsigned int i, j, k;
+    unsigned int i;
     char sig[8];
     off_t sz;
 
@@ -68,15 +54,8 @@ static struct container *adf_open(struct disk *d)
 
     for (i = 0; i < di->nr_tracks; i++) {
         ti = &di->track[i];
+        adf_init_track(d, ti);
         read_exact(d->fd, ti->dat, ti->len);
-        for (j = 0; j < ti->nr_sectors; j++) {
-            unsigned char *p = ti->dat + j*ti->bytes_per_sector;
-            for (k = 0; k < ti->bytes_per_sector/4; k++)
-                if (memcmp(p+k*4, "NDOS", 4))
-                    break;
-            if (k != ti->bytes_per_sector/4)
-                set_sector_valid(ti, j);
-        }
     }
 
     return &container_adf;
@@ -88,7 +67,7 @@ extern void *rnc_triformat_to_ados(struct disk *d, unsigned int tracknr);
 static void adf_close(struct disk *d)
 {
     struct disk_info *di = d->di;
-    unsigned int i;
+    unsigned int i, j;
     char *p;
 
     lseek(d->fd, 0, SEEK_SET);
@@ -111,45 +90,22 @@ static void adf_close(struct disk *d)
             write_exact(d->fd, p, 11*512);
             memfree(p);
             break;
+        default:
+            p = memalloc(11*512);
+            for (j = 0; j < 11*512/4; j++)
+                memcpy(p+j*4, "NDOS", 4);
+            write_exact(d->fd, p, 11*512);
+            memfree(p);
+            break;
         }
     }
-}
-
-static bool_t valid_adf_type(enum track_type type)
-{
-    return ((type == TRKTYP_amigados) ||
-            (type == TRKTYP_rnc_dualformat) ||
-            (type == TRKTYP_rnc_triformat));
-}
-
-static int adf_write_raw(
-    struct disk *d, unsigned int tracknr, enum track_type type,
-    struct stream *s)
-{
-    struct disk_info *di = d->di;
-    struct track_info *ti = &di->track[tracknr];
-
-    if (!valid_adf_type(type))
-        errx(1, "Only AmigaDOS tracks can be written to ADF files");
-
-    dsk_write_raw(d, tracknr, type, s);
-
-    if (!valid_adf_type(ti->type)) {
-        memfree(ti->dat);
-        ti->dat = NULL;
-    }
-
-    if (ti->dat == NULL)
-        adf_init_track(d, ti);
-
-    return 0;
 }
 
 struct container container_adf = {
     .init = adf_init,
     .open = adf_open,
     .close = adf_close,
-    .write_raw = adf_write_raw
+    .write_raw = dsk_write_raw
 };
 
 /*
