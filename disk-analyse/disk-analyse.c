@@ -85,6 +85,53 @@ static void usage(int rc)
     exit(rc);
 }
 
+static int count_lines(struct disk *d, unsigned int start, unsigned int step)
+{
+    struct disk_info *di = disk_get_info(d);
+    char name[128], prev_name[128];
+    unsigned int i, st, lines = 1;
+
+    i = st = start;
+    track_get_format_name(d, i, prev_name, sizeof(name));
+    while ((i += step) <= TRACK_END(di)) {
+        track_get_format_name(d, i, name, sizeof(name));
+        if (!strcmp(name, prev_name))
+            continue;
+        lines++;
+        strcpy(prev_name, name);
+    }
+
+    return lines;
+}
+
+static void dump_by_head(struct disk *d)
+{
+    struct disk_info *di = disk_get_info(d);
+    char name[128], prev_name[128];
+    unsigned int i, st, hd, step = 2;
+
+    for (hd = 0; hd < 2; hd++) {
+        printf("Side %u:\n", hd);
+        i = st = TRACK_START + hd;
+        track_get_format_name(d, i, prev_name, sizeof(name));
+        while ((i += step) <= TRACK_END(di)) {
+            track_get_format_name(d, i, name, sizeof(name));
+            if (!strcmp(name, prev_name))
+                continue;
+            printf(" T");
+            if (st != i-step)
+                printf("%u-", st/2);
+            printf("%u: %s\n", (i-step)/2, prev_name);
+            st = i;
+            strcpy(prev_name, name);
+        }
+        printf(" T");
+        if (st != i-step)
+            printf("%u-", st/2);
+        printf("%u: %s\n", (i-step)/2, prev_name);
+    }
+}
+
 static void dump_track_list(struct disk *d)
 {
     struct disk_info *di = disk_get_info(d);
@@ -94,24 +141,38 @@ static void dump_track_list(struct disk *d)
     if (quiet || (TRACK_START > TRACK_END(di)))
         return;
 
+    if (TRACK_STEP == 1) {
+        int lines, hd_lines;
+
+        /* Default: print track-by-track */
+        lines = count_lines(d, TRACK_START, 1);
+
+        /* Alternative: head at a time */
+        hd_lines = 2;
+        hd_lines += count_lines(d, TRACK_START, 2);
+        hd_lines += count_lines(d, TRACK_START+1, 2);        
+
+        /* Which gives the more concise summary? */
+        if (hd_lines < lines)
+            return dump_by_head(d);
+    }
+
     i = st = TRACK_START;
     track_get_format_name(d, i, prev_name, sizeof(name));
     while ((i += TRACK_STEP) <= TRACK_END(di)) {
         track_get_format_name(d, i, name, sizeof(name));
         if (!strcmp(name, prev_name))
             continue;
-        if (st == i-TRACK_STEP)
-            printf("T");
-        else
-            printf("T%u.%u-", TRACK_ARG(st));
+        printf("T");
+        if (st != i-TRACK_STEP)
+            printf("%u.%u-", TRACK_ARG(st));
         printf("%u.%u: %s\n", TRACK_ARG(i-TRACK_STEP), prev_name);
         st = i;
         strcpy(prev_name, name);
     }
-    if (st == i-TRACK_STEP)
-        printf("T");
-    else
-        printf("T%u.%u-", TRACK_ARG(st));
+    printf("T");
+    if (st != i-TRACK_STEP)
+        printf("%u.%u-", TRACK_ARG(st));
     printf("%u.%u: %s\n", TRACK_ARG(i-TRACK_STEP), prev_name);
 }
 
