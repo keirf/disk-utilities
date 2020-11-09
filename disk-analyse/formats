@@ -1950,8 +1950,7 @@ probe_amiga
 
 # Astra Pack Game 8, High Energy 2 Compilation
 "Shufflepuck Cafe"
-    0 amigados amigados_long_105500
-    1 amigados amigados_long_111000
+    0-1 amigados_unknown_length
     2 amigados infogrames_longtrack
     3 amigados infogrames_longtrack
     * amigados
