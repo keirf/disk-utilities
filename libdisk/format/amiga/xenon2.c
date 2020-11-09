@@ -38,8 +38,10 @@ static void *xenon2_write_raw(
             if (stream_next_bits(s, 32) == -1)
                 goto fail;
             if (mfm_decode_word(s->word) != 0xa1a1)
-                goto fail;
+                break;
         }
+        if (mfm_decode_word(s->word) != 0xa1a1)
+            continue;
 
         if (stream_next_bytes(s, raw, sizeof(raw)) == -1)
             goto fail;
