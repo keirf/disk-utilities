@@ -114,13 +114,13 @@ int stream_select_track(struct stream *s, unsigned int tracknr)
     return 0;
 }
 
-void stream_reset(struct stream *s)
+static void _stream_reset(struct stream *s)
 {
     /* Flux-based streams */
     s->flux = 0;
     s->clocked_zeros = 0;
-    s->clock = s->clock_centre;
 
+    s->word = 0;
     s->nr_index = 0;
     s->latency = 0;
     s->index_offset_bc
@@ -131,6 +131,17 @@ void stream_reset(struct stream *s)
     s->ns_to_index = INT_MAX;
 
     s->type->reset(s);
+}
+
+void stream_reset(struct stream *s)
+{
+    /* Reset the PLL clock, then allow 100 bit times for PLL lock. */
+    s->clock = s->clock_centre;
+    _stream_reset(s);
+    stream_next_bits(s, 100);
+
+    /* Now reset everything except the PLL clock. */
+    _stream_reset(s);
 
     if (s->nr_index == 0)
         stream_next_index(s);
