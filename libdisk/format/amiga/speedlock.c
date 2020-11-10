@@ -3,9 +3,8 @@
  * 
  * Speedlock variable-density track, used on various titles.
  * 
- * The hardcoded values for position of the long/short sectors are taken
- * from SPS IPFs, where they are used consistently to represent Speedlock
- * tracks. They obviously work. :)
+ * The exact position of the long/short sectors can vary slightly. Compare for
+ * example Xenon 2 (SPS #2234) versus Dragon's Breath (SPS #0072).
  * 
  * Written in 2012 by Keir Fraser
  * 
@@ -16,11 +15,16 @@
 #include <libdisk/util.h>
 #include <private/disk.h>
 
+struct speedlock_info {
+    uint16_t offs, len;
+};
+
 static void *speedlock_write_raw(
     struct disk *d, unsigned int tracknr, struct stream *s)
 {
     struct track_info *ti = &d->di->track[tracknr];
-    unsigned int i;
+    struct speedlock_info *si;
+    unsigned int i, len;
     uint64_t latency;
     unsigned int offs[3];
 
@@ -66,12 +70,20 @@ static void *speedlock_write_raw(
 
     /* Each sector should be around 640 bits long.
      * Check for this, with plenty of slack. */
-    offs[2] = (offs[2] - offs[0]) / 2;
-    if ((offs[2] < 500) || (offs[2] > 1000))
+    len = (offs[2] - offs[0]) / 2;
+    if ((len < 500) || (len > 800))
         goto fail;
 
+    /* Round the offset a bit, to counteract jitter and index misalignment. */
+    offs[0] = (offs[0] + 64) & ~127;
+
+    ti->len = sizeof(*si);
+    si = memalloc(ti->len);
+    si->offs = offs[0] / 16;
+    si->len = 640 / 16; /* hardcoded for now */
+
     ti->data_bitoff = 0;
-    return memalloc(0);
+    return si;
 
 fail:
     return NULL;
@@ -80,17 +92,19 @@ fail:
 static void speedlock_read_raw(
     struct disk *d, unsigned int tracknr, struct tbuf *tbuf)
 {
+    struct track_info *ti = &d->di->track[tracknr];
+    struct speedlock_info *si = (struct speedlock_info *)ti->dat;
     unsigned int i;
 
-    for (i = 0; i < 4864; i++) /* 77824 bitcells */
+    for (i = 0; i < si->offs; i++)
         tbuf_bits(tbuf, SPEED_AVG, bc_mfm, 8, 0);
     tbuf_gap(tbuf, SPEED_AVG, 0);
 
-    for (i = 0; i < 40; i++) /* 640 bitcells */
+    for (i = 0; i < si->len; i++)
         tbuf_bits(tbuf, (SPEED_AVG*110)/100, bc_mfm, 8, 0);
     tbuf_gap(tbuf, (SPEED_AVG*110)/100, 0);
 
-    for (i = 0; i < 40; i++) /* 640 bitcells */
+    for (i = 0; i < si->len; i++)
         tbuf_bits(tbuf, (SPEED_AVG*90)/100, bc_mfm, 8, 0);
     tbuf_gap(tbuf, (SPEED_AVG*90)/100, 0);
 }
