@@ -2705,7 +2705,7 @@ sensible
 
 rnc_dualformat
     0 rnc_dualformat
-    * amigados ibm_pc_dd_10sec
+    * amigados ibm_pc_dd_10sec rnc_dualformat_empty
 
 rnc_triformat
     0 rnc_triformat
