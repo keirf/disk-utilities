@@ -24,6 +24,7 @@
 struct caps_stream {
     struct stream s;
     CapsLong container;
+    bool_t is_ipf;
 
     /* Current track info */
     unsigned int track;
@@ -159,6 +160,9 @@ static struct stream *caps_open(const char *name, unsigned int data_rpm)
     cpss = memalloc(sizeof(*cpss));
     cpss->track = ~0u;
 
+    filename_extension(name, suffix, sizeof(suffix));
+    cpss->is_ipf = !strcmp(suffix, "ipf");
+
     if ((cpss->container = CAPSAddImage()) < 0) {
         warnx("caps: Could not create image container");
         goto fail1;
@@ -181,13 +185,12 @@ fail3:
 fail2:
     CAPSRemImage(cpss->container);
 fail1:
-    if ((capslib.version < 5) && strcmp(suffix, "ipf")) {
+    if ((capslib.version < 5) && !cpss->is_ipf) {
         w("CT Raw image files require v5+ of the CAPS/SPS library\n");
         print_library_download_info();
     }
     memfree(cpss);
     put_capslib();
-    filename_extension(name, suffix, sizeof(suffix));
         
     return NULL;
 }
@@ -221,6 +224,11 @@ static int caps_select_track(struct stream *s, unsigned int tracknr)
     /* Commit new track info. */
     memcpy(&cpss->ti, &ti, sizeof(ti));
     cpss->track = tracknr;
+
+    /* CTRaw dumps get bogus speed info from the CAPS library. 
+     * Assume they are uniform density. */
+    if (!cpss->is_ipf)
+        cpss->ti.timelen = 0;
 
     /* Commit new speed/density info. */
     memfree(cpss->speed);
