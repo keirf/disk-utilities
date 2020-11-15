@@ -295,6 +295,7 @@ static void ados_read_sectors(
         sectors->nr_bytes = 10*512;
         break;
     case TRKTYP_rnc_triformat:
+    case TRKTYP_softlock_dualformat:
         sectors->nr_bytes = 9*512;
         break;
     }

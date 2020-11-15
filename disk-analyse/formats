@@ -2711,6 +2711,11 @@ rnc_triformat
     0 rnc_triformat
     * amigados ibm_pc_dd
 
+# Seen on Ace Issue 55 (April 1992) coverdisk only, so far!
+softlock_dualformat
+    0 softlock_dualformat
+    * amigados ibm_pc_dd
+
 # Herndon HLS longtrack check decrypts the game.
 # HLS track needs to be >= 111000 bitcells, but we analyse "unknown length" as
 # some versions are not protected and this avoids warn on normal length track.

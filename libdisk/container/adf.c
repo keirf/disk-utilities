@@ -63,6 +63,7 @@ static struct container *adf_open(struct disk *d)
 
 extern void *rnc_dualformat_to_ados(struct disk *d, unsigned int tracknr);
 extern void *rnc_triformat_to_ados(struct disk *d, unsigned int tracknr);
+extern void *softlock_dualformat_to_ados(struct disk *d, unsigned int tracknr);
 
 static void adf_close(struct disk *d)
 {
@@ -96,6 +97,11 @@ static void adf_close(struct disk *d)
             break;
         case TRKTYP_rnc_triformat:
             p = rnc_triformat_to_ados(d, i);
+            write_exact(d->fd, p, 11*512);
+            memfree(p);
+            break;
+        case TRKTYP_softlock_dualformat:
+            p = softlock_dualformat_to_ados(d, i);
             write_exact(d->fd, p, 11*512);
             memfree(p);
             break;
