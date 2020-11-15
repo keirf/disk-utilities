@@ -80,6 +80,15 @@ static void adf_close(struct disk *d)
         case TRKTYP_amigados:
             write_exact(d->fd, di->track[i].dat, 11*512);
             break;
+        case TRKTYP_amigados_extended: {
+            uint8_t *p = di->track[i].dat;
+            for (j = 0; j < 11; j++) {
+                p += 26;
+                write_exact(d->fd, p, 512);
+                p += 512;
+            }
+            break;
+        }
         case TRKTYP_rnc_dualformat:
             p = rnc_dualformat_to_ados(d, i);
             write_exact(d->fd, p, 11*512);
