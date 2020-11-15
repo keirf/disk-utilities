@@ -490,6 +490,7 @@ void tbuf_init(struct tbuf *tbuf, uint32_t bitstart, uint32_t bitlen)
 {
     tbuf->start = tbuf->pos = bitstart;
     tbuf->prev_data_bit = 0;
+    tbuf->gap_fill_byte = 0;
     tbuf->crc16_ccitt = 0;
     tbuf->disable_auto_sector_split = 0;
     tbuf->bit = tbuf_bit;
@@ -616,6 +617,11 @@ void tbuf_gap_fill(struct tbuf *tbuf, uint16_t speed, uint8_t fill)
         tbuf_bits(tbuf, speed, bc_mfm, 1, fill>>7);
         fill <<= 1;
     }
+}
+
+void tbuf_set_gap_fill_byte(struct tbuf *tbuf, uint8_t byte)
+{
+    tbuf->gap_fill_byte = byte;
 }
 
 void tbuf_weak(struct tbuf *tbuf, unsigned int bits)

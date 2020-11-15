@@ -46,6 +46,7 @@ struct tbuf {
     uint32_t prng_seed;
     uint32_t start, pos;
     uint8_t prev_data_bit;
+    uint8_t gap_fill_byte;
     uint16_t crc16_ccitt;
     bool_t disable_auto_sector_split;
     void (*bit)(struct tbuf *, uint16_t speed,
@@ -65,6 +66,8 @@ void tbuf_weak(struct tbuf *, unsigned int bits);
 void tbuf_start_crc(struct tbuf *tbuf);
 void tbuf_emit_crc16_ccitt(struct tbuf *tbuf, uint16_t speed);
 void tbuf_disable_auto_sector_split(struct tbuf *tbuf);
+void tbuf_gap_fill(struct tbuf *tbuf, uint16_t speed, uint8_t fill);
+void tbuf_set_gap_fill_byte(struct tbuf *tbuf, uint8_t byte);
 
 #define TBUF_PRNG_INIT 0xae659201u
 uint16_t tbuf_rnd16(struct tbuf *tbuf);

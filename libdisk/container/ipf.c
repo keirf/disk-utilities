@@ -176,6 +176,7 @@ static void ipf_tbuf_finish_chunk(
         blk->blockbits = ibuf->decoded_bits;
         blk->enctype = 1; /* MFM */
         blk->dataoffset = ibuf->blockstart;
+        blk->gapvalue = ibuf->tbuf.gap_fill_byte;
         if (ibuf->encoder == ENC_CAPS) {
             blk->u.caps.blocksize = ceil_bits_to_bytes(blk->blockbits);
             blk->u.caps.gapsize = ceil_bits_to_bytes(blk->gapbits);

@@ -16,7 +16,7 @@
 #include <private/disk.h>
 
 struct speedlock_info {
-    uint16_t offs, len;
+    uint16_t seclen;
 };
 
 static void *speedlock_write_raw(
@@ -74,15 +74,14 @@ static void *speedlock_write_raw(
     if ((len < 500) || (len > 800))
         goto fail;
 
-    /* Round the offset a bit, to counteract jitter and index misalignment. */
-    offs[0] = (offs[0] + 64) & ~127;
-
     ti->len = sizeof(*si);
     si = memalloc(ti->len);
-    si->offs = offs[0] / 16;
-    si->len = 640 / 16; /* hardcoded for now */
 
-    ti->data_bitoff = 0;
+    /* Round the offset a bit, to counteract jitter and index misalignment. */
+    offs[0] = (offs[0] + 64) & ~127;
+    si->seclen = 640 / 16; /* hardcoded for now */
+    ti->data_bitoff = offs[0] - si->seclen*16;
+
     return si;
 
 fail:
@@ -96,15 +95,18 @@ static void speedlock_read_raw(
     struct speedlock_info *si = (struct speedlock_info *)ti->dat;
     unsigned int i;
 
-    for (i = 0; i < si->offs; i++)
+    /* Normal */
+    for (i = 0; i < si->seclen; i++)
         tbuf_bits(tbuf, SPEED_AVG, bc_mfm, 8, 0);
     tbuf_gap(tbuf, SPEED_AVG, 0);
 
-    for (i = 0; i < si->len; i++)
+    /* Long */
+    for (i = 0; i < si->seclen; i++)
         tbuf_bits(tbuf, (SPEED_AVG*110)/100, bc_mfm, 8, 0);
     tbuf_gap(tbuf, (SPEED_AVG*110)/100, 0);
 
-    for (i = 0; i < si->len; i++)
+    /* Short */
+    for (i = 0; i < si->seclen; i++)
         tbuf_bits(tbuf, (SPEED_AVG*90)/100, bc_mfm, 8, 0);
     tbuf_gap(tbuf, (SPEED_AVG*90)/100, 0);
 }

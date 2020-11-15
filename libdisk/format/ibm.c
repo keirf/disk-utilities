@@ -402,6 +402,8 @@ static void ibm_mfm_read_raw(
     struct ibm_sector *cur_sec;
     unsigned int sec, i, sec_sz;
 
+    tbuf_set_gap_fill_byte(tbuf, 0x4e);
+
     /* IAM */
     if (ibm_track->has_iam) {
         for (i = 0; i < 12; i++)
@@ -447,8 +449,6 @@ static void ibm_mfm_read_raw(
         cur_sec = (struct ibm_sector *)
             ((char *)cur_sec + sizeof(struct ibm_sector) + sec_sz);
     }
-
-    /* NB. Proper track gap should be 0x4e with write splice at index mark. */
 }
 
 static void ibm_get_name(
@@ -942,6 +942,8 @@ static void ibm_fm_read_raw(
     unsigned int sec, i, j, sec_sz, flags = 0;
     bool_t is_dec = 0;
 
+    tbuf_set_gap_fill_byte(tbuf, 0xff);
+
     switch (ti->type) {
     case TRKTYP_dec_rx01:
     case TRKTYP_dec_rx02:
@@ -1078,7 +1080,7 @@ static void *dec_write_sectors(
             ((char *)sec + sizeof(struct ibm_sector) + ti->bytes_per_sector);
     }
 
-    ti->data_bitoff = 0;
+    ti->data_bitoff = 40*16;
 
     return block;
 }

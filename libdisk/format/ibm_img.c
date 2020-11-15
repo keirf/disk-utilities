@@ -90,7 +90,7 @@ static void *ibm_img_write_raw(
     }
 
     block[ti->len++] = iam;
-    ti->data_bitoff = 0;
+    ti->data_bitoff = 80*16; /* Gap 4A */
 
     return block;
 }
@@ -105,6 +105,8 @@ static void ibm_img_read_raw(
     bool_t iam = dat[ti->len-1];
     unsigned int sec, i, gap3;
 
+    tbuf_set_gap_fill_byte(tbuf, 0x4e);
+
     for (no = 0; (128<<no) != ti->bytes_per_sector; no++)
         continue;
 
@@ -113,8 +115,7 @@ static void ibm_img_read_raw(
             : (ti->type == TRKTYP_ibm_pc_dd_10sec) ? 30
             : 108);
 
-    for (i = 0; i < 80; i++) /* Gap 4A */
-        tbuf_bits(tbuf, SPEED_AVG, bc_mfm, 8, 0x4e);
+    /* Gap 4A is included in data start offset */
 
     /* IAM */
     if (iam) {
@@ -153,8 +154,6 @@ static void ibm_img_read_raw(
         for (i = 0; i < gap3; i++)
             tbuf_bits(tbuf, SPEED_AVG, bc_mfm, 8, 0x4e);
     }
-
-    /* NB. Proper track gap should be 0x4e with write splice at index mark. */
 }
 
 void *ibm_img_write_sectors(
@@ -177,7 +176,7 @@ void *ibm_img_write_sectors(
     sectors->nr_bytes -= ti->len;
 
     block[ti->len++] = iam;
-    ti->data_bitoff = 0;
+    ti->data_bitoff = 80*16; /* Gap 4A */
 
     return block;
 }
