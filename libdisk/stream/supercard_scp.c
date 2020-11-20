@@ -31,6 +31,9 @@ struct scp_stream {
     unsigned int index_pos;  /* next index offset */
     int jitter;              /* accumulated injected jitter */
 
+    int total_ticks;         /* total ticks to final index pulse */
+    int acc_ticks;           /* accumulated ticks so far */
+
     unsigned int index_off[]; /* data offsets of each index */
 };
 
@@ -150,10 +153,12 @@ static int scp_select_track(struct stream *s, unsigned int tracknr)
         lseek(scss->fd, 12, SEEK_CUR);
     }
 
+    scss->total_ticks = 0;
     for (rev = 0 ; rev < scss->revs ; rev++) {
         read_exact(scss->fd, longwords, sizeof(longwords));
         trkoffset[rev] = tdh_offset + le32toh(longwords[2]);
         scss->index_off[rev] = le32toh(longwords[1]);
+        scss->total_ticks += le32toh(longwords[0]);
         scss->datsz += scss->index_off[rev];
     }
 
@@ -182,6 +187,7 @@ static void scp_reset(struct stream *s)
     scss->jitter = 0;
     scss->dat_idx = 0;
     scss->index_pos = 0;
+    scss->acc_ticks = 0;
 }
 
 static int scp_next_flux(struct stream *s)
@@ -193,14 +199,21 @@ static int scp_next_flux(struct stream *s)
     for (;;) {
         if (scss->dat_idx >= scss->index_pos) {
             uint32_t rev = s->nr_index % scss->revs;
+            if ((rev == 0) && (scss->index_pos != 0)) {
+                /* We are wrapping back to the start of the dump. Unless a flux
+                 * reversal sits exactly on the index we have some time to
+                 * donate to the first reversal of the first revolution. */
+                val = scss->total_ticks - scss->acc_ticks;
+                scss->acc_ticks = -val;
+            }
             scss->index_pos = scss->index_off[rev];
-            scss->dat_idx = rev ? scss->index_off[rev-1] : 0;
+            if (rev == 0)
+                scss->dat_idx = 0;
             s->ns_to_index = s->flux;
             /* Some drives return no flux transitions for tracks >= 160.
              * Bail if we see no flux transitions in a complete revolution. */
             if (nr_index_seen++)
                 break;
-            val = 0;
         }
 
         t = be16toh(scss->dat[scss->dat_idx++]);
@@ -213,6 +226,8 @@ static int scp_next_flux(struct stream *s)
         val += t;
         break;
     }
+
+    scss->acc_ticks += val;
 
     /* If we are replaying a single revolution then jitter it a little to
      * trigger weak-bit variations. */
