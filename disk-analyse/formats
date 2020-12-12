@@ -372,7 +372,12 @@ probe_amiga
 
 "Blue Max" = amigados
 
+# ECS versions can have incomplete or unformatted tracks:
+# Variant #1: Tracks 72.1 & 73.1 unused and may be incomplete or unformatted
+# Variant #2: Track 5.0 is incomplete (contains sector 0-6 only)
+# These variants are confirmed by inspecting the WHDLoad RawDIC installer
 "Body Blows" = rnc_pdos
+
 "Body Blows Galactic" = rnc_pdos
 
 # One version in Big Box 2 compilation has no protection!

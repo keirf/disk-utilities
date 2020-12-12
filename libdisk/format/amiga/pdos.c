@@ -80,14 +80,22 @@ static void *pdos_write_raw(
                     break;
             }
 
-            /* Decrypt and stash the data block. */
-            k = keytag->key;
-            p = (uint32_t *)dat;
-            q = (uint32_t *)&block[i*512];
-            for (j = 0; j < 512/4; j++) {
-                uint32_t enc = be32toh(*p++);
-                *q++ = htobe32(enc ^ k);
-                k = enc;
+            if (!is_valid_sector(ti, i)) {
+
+                /* Decrypt and stash the data block. */
+                k = keytag->key;
+                p = (uint32_t *)dat;
+                q = (uint32_t *)&block[i*512];
+                for (j = 0; j < 512/4; j++) {
+                    uint32_t enc = be32toh(*p++);
+                    *q++ = htobe32(enc ^ k);
+                    k = enc;
+                }
+
+                set_sector_valid(ti, i);
+                if (++nr_valid_blocks == ti->nr_sectors)
+                    goto done;
+
             }
 
             /* Skip the sector gap. */
@@ -97,21 +105,16 @@ static void *pdos_write_raw(
             if (stream_next_bits(s, skip*16) == -1)
                 goto done;
         }
-
-        if (i == ti->nr_sectors) {
-            nr_valid_blocks = ti->nr_sectors;
-            break;
-        }
     }
 
 done:
-    if (nr_valid_blocks == 0) {
+    if (nr_valid_blocks < 3) {
+        set_all_sectors_invalid(ti);
         free(block);
         return NULL;
     }
 
     ti->total_bits = 105500;
-    set_all_sectors_valid(ti);
 
     return block;
 }
@@ -131,6 +134,9 @@ static void pdos_read_raw(
 
         uint32_t hdr = (i << 24) | (tracknr << 16);
         uint32_t csum, enc[128];
+
+        if (!is_valid_sector(ti, i))
+            break;
 
         /* sync */
         tbuf_bits(tbuf, SPEED_AVG, bc_raw, 16, 0x4891);
@@ -157,6 +163,14 @@ static void pdos_read_raw(
         tbuf_bits(tbuf, SPEED_AVG, bc_mfm, 8,
                   i == (ti->nr_sectors - 1) ? 0 : 28);
         for (j = 0; j < 28; j++)
+            tbuf_bits(tbuf, SPEED_AVG, bc_mfm, 8, 0);
+    }
+
+    /* If tail of the track is bad, fill it with gap. */
+    i = ti->nr_sectors - i; /* # sectors in tail */
+    if (i != 0) {
+        int bytes = i * (1 + 4 + 512 + 1 + 28) - 28; /* # bytes in tail */
+        while (bytes--)
             tbuf_bits(tbuf, SPEED_AVG, bc_mfm, 8, 0);
     }
 }
