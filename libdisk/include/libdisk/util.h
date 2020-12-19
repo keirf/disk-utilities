@@ -20,7 +20,11 @@
 #ifndef _BSD_SOURCE
 #define _BSD_SOURCE
 #endif
+#ifdef __FreeBSD__
+#include <sys/endian.h>
+#else
 #include <endian.h>
+#endif
 #endif
 
 #if !defined(__MINGW32__)
