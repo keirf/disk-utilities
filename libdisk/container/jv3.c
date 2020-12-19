@@ -455,8 +455,10 @@ static void jv3_close(struct disk *d)
         if (!ti->nr_sectors)
             continue;
 
+#ifdef BOGUS /* nr_sectors is a uint8_t which has a range of 0..255 */
         if ((uint32_t)ti->nr_sectors >= 256) 
             continue;
+#endif
 
         /* Simple reject_track tests are now done 
          * We can not reject mismatches here - crosstalk can happen */
