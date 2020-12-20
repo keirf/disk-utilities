@@ -235,14 +235,6 @@ static void imd_close(struct disk *d)
         if ((thdr.mode == 0xff) || !ti->nr_sectors)
             continue;
 
-#ifdef BOGUS /* nr_sectors is a uint8_t which has a range of 0..255 */
-        if ((uint32_t)ti->nr_sectors >= 256) {
-            warnx("T%u.%u: Unexpected number of IBM-MFM sectors (%u)",
-                  cyl(trk), hd(trk), ti->nr_sectors);
-            continue;
-        }
-#endif
-
         retrieve_ibm_mfm_track(
             d, trk, &secs, &cyls, &heads, &nos, &marks, &crcs, &dat);
 
