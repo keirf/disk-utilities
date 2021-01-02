@@ -392,66 +392,6 @@ struct track_handler rnc_dualformat_handler = {
     .read_sectors = rnc_dualformat_read_sectors
 };
 
-/*
- * Empty track seen on Zero Issue 18 April 1991 Dual-Format Cover Disk.
- */
-
-static void *rnc_dualformat_empty_write_raw(
-    struct disk *d, unsigned int tracknr, struct stream *s)
-{
-    struct track_info *ti = &d->di->track[tracknr];
-    uint32_t prev_offset, prev_word;
-    unsigned int discontinuities, run, max_run;
-
-    stream_next_bits(s, 32);
-    run = ((s->word == 0xaaaaaaaa) || (s->word == 0x55555555));
-    max_run = discontinuities = 0;
-
-    do {
-        prev_word = s->word;
-        prev_offset = s->index_offset_bc;
-        if (stream_next_bits(s, 32) == -1)
-            goto fail;
-        if (run && (s->word == prev_word)) {
-            run++;
-        } else {
-            discontinuities++;
-            max_run = max(max_run, run);
-            run = ((s->word == 0xaaaaaaaa) || (s->word == 0x55555555));
-        }
-    } while (s->index_offset_bc > prev_offset);
-
-    /* Not too many discontinuities and a nice long run of zeroes. */
-    if ((discontinuities > 5) || (max_run < (99000/32)))
-        return NULL;
-
-    ti->data_bitoff = ti->total_bits / 2; /* write splice at index */
-    return memalloc(0);
-
-fail:
-    return NULL;
-}
-
-static void rnc_dualformat_empty_read_raw(
-    struct disk *d, unsigned int tracknr, struct tbuf *tbuf)
-{
-    /* Emit some data: prevents IPF handler from barfing on no data blocks. */
-    tbuf_bits(tbuf, SPEED_AVG, bc_mfm, 32, 0);
-}
-
-static void rnc_dualformat_empty_read_sectors(
-    struct disk *d, unsigned int tracknr, struct track_sectors *sectors)
-{
-    sectors->nr_bytes = 10*512;
-    sectors->data = memalloc(sectors->nr_bytes);
-}
-
-struct track_handler rnc_dualformat_empty_handler = {
-    .write_raw = rnc_dualformat_empty_write_raw,
-    .read_raw = rnc_dualformat_empty_read_raw,
-    .read_sectors = rnc_dualformat_empty_read_sectors
-};
-
 
 /*
  * Local variables:

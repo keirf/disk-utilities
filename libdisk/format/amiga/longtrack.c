@@ -368,6 +368,130 @@ struct track_handler sevencities_longtrack_handler = {
     .read_raw = sevencities_longtrack_read_raw
 };
 
+/*
+ * Super Methane Bros.
+ * GCR 99999.... == MFM 82828282...
+ */
+
+static void *supermethanebros_longtrack_write_raw(
+    struct disk *d, unsigned int tracknr, struct stream *s)
+{
+    struct track_info *ti = &d->di->track[tracknr];
+    uint32_t prev_offset;
+    unsigned int match = 0;
+
+    do {
+        prev_offset = s->index_offset_bc;
+        if (stream_next_bits(s, 32) == -1)
+            goto fail;
+        while (s->word != 0x82828282) {
+            if (stream_next_bit(s) == -1)
+                goto fail;
+            if (s->index_offset_bc <= prev_offset)
+                break;
+        }
+        match++;
+    } while (s->index_offset_bc > prev_offset);
+
+    if (match < (100000/32))
+        return NULL;
+
+    ti->total_bits = 105500;
+    ti->data_bitoff = 0;
+    return memalloc(0);
+
+fail:
+    return NULL;
+}
+
+static void supermethanebros_longtrack_read_raw(
+    struct disk *d, unsigned int tracknr, struct tbuf *tbuf)
+{
+    struct track_info *ti = &d->di->track[tracknr];
+    int nr = ti->total_bits;
+    while (nr >= 32) {
+        tbuf_bits(tbuf, SPEED_AVG, bc_raw, 32, 0x82828282);
+        nr -= 32;
+    }
+    if (nr > 0)
+        tbuf_bits(tbuf, SPEED_AVG, bc_raw, nr, 0x82828282 >> (32-nr));
+}
+
+struct track_handler supermethanebros_longtrack_handler = {
+    .write_raw = supermethanebros_longtrack_write_raw,
+    .read_raw = supermethanebros_longtrack_read_raw,
+};
+
+/*
+ * All MFM zeroes.
+ */
+
+static void *zeroes_write_raw(
+    struct disk *d, unsigned int tracknr, struct stream *s)
+{
+    struct track_info *ti = &d->di->track[tracknr];
+    uint32_t prev_offset, prev_word;
+    unsigned int discontinuities, run, max_run;
+
+    stream_next_bits(s, 32);
+    run = ((s->word == 0xaaaaaaaa) || (s->word == 0x55555555));
+    max_run = discontinuities = 0;
+
+    do {
+        prev_word = s->word;
+        prev_offset = s->index_offset_bc;
+        if (stream_next_bits(s, 32) == -1)
+            goto fail;
+        if (run && (s->word == prev_word)) {
+            run++;
+        } else {
+            discontinuities++;
+            max_run = max(max_run, run);
+            run = ((s->word == 0xaaaaaaaa) || (s->word == 0x55555555));
+        }
+    } while (s->index_offset_bc > prev_offset);
+
+    /* Not too many discontinuities and a nice long run of zeroes. */
+    max_run = max(max_run, run);
+    if ((discontinuities > 5) || (max_run < (99000/32)))
+        return NULL;
+
+    ti->data_bitoff = ti->total_bits / 2; /* write splice at index */
+    return memalloc(0);
+
+fail:
+    return NULL;
+}
+
+static void zeroes_read_raw(
+    struct disk *d, unsigned int tracknr, struct tbuf *tbuf)
+{
+    /* Emit some data: prevents IPF handler from barfing on no data blocks. */
+    tbuf_bits(tbuf, SPEED_AVG, bc_mfm, 32, 0);
+}
+
+struct track_handler zeroes_handler = {
+    .write_raw = zeroes_write_raw,
+    .read_raw = zeroes_read_raw,
+};
+
+/*
+ * Empty track seen on Zero Issue 18 April 1991 Dual-Format Cover Disk.
+ */
+
+static void rnc_dualformat_empty_read_sectors(
+    struct disk *d, unsigned int tracknr, struct track_sectors *sectors)
+{
+    sectors->nr_bytes = 10*512;
+    sectors->data = memalloc(sectors->nr_bytes);
+}
+
+struct track_handler rnc_dualformat_empty_handler = {
+    .write_raw = zeroes_write_raw,
+    .read_raw = zeroes_read_raw,
+    .read_sectors = rnc_dualformat_empty_read_sectors
+};
+
 /* TRKTYP_empty_longtrack:
  *  Entire track is (MFM-encoded) zeroes
  *  Track is only checked to be of a certain length. */

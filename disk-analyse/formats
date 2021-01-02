@@ -2155,6 +2155,10 @@ probe_amiga
     2 zzkj_boot 
     * super_hang_on  
 
+"Super Methane Bros"
+    158-159 amigados zeroes supermethanebros_longtrack
+    * amigados
+
 "Super Monaco GP"
     0 amigados
     1 zzkj_11sec
