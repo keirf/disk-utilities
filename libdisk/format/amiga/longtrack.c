@@ -370,7 +370,8 @@ struct track_handler sevencities_longtrack_handler = {
 
 /*
  * Super Methane Bros.
- * GCR 99999.... == MFM 82828282...
+ * GCR 99999....
+ * Long track (105500/2 GCR bits) but this isn't properly checked.
  */
 
 static void *supermethanebros_longtrack_write_raw(
@@ -380,11 +381,14 @@ static void *supermethanebros_longtrack_write_raw(
     uint32_t prev_offset;
     unsigned int match = 0;
 
+    /* GCR 4us bit time */
+    stream_set_density(s, 4000);
+
     do {
         prev_offset = s->index_offset_bc;
         if (stream_next_bits(s, 32) == -1)
             goto fail;
-        while (s->word != 0x82828282) {
+        while (s->word != 0x99999999) {
             if (stream_next_bit(s) == -1)
                 goto fail;
             if (s->index_offset_bc <= prev_offset)
@@ -393,10 +397,13 @@ static void *supermethanebros_longtrack_write_raw(
         match++;
     } while (s->index_offset_bc > prev_offset);
 
-    if (match < (100000/32))
+    /* We want to see predominantly GCR 99999999. */
+    if (match < (100000/(2*32)))
         return NULL;
 
-    ti->total_bits = 105500;
+    /* We will generate a gap-less track, so make it a 32-bitcell multiple 
+     * starting exactly on the index. */
+    ti->total_bits = (105500/2) & ~31;
     ti->data_bitoff = 0;
     return memalloc(0);
 
@@ -408,13 +415,9 @@ static void supermethanebros_longtrack_read_raw(
     struct disk *d, unsigned int tracknr, struct tbuf *tbuf)
 {
     struct track_info *ti = &d->di->track[tracknr];
-    int nr = ti->total_bits;
-    while (nr >= 32) {
-        tbuf_bits(tbuf, SPEED_AVG, bc_raw, 32, 0x82828282);
-        nr -= 32;
-    }
-    if (nr > 0)
-        tbuf_bits(tbuf, SPEED_AVG, bc_raw, nr, 0x82828282 >> (32-nr));
+    int nr = ti->total_bits / 32;
+    while (nr--)
+        tbuf_bits(tbuf, SPEED_AVG, bc_raw, 32, 0x99999999);
 }
 
 struct track_handler supermethanebros_longtrack_handler = {
