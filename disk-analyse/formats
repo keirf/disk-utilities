@@ -2595,6 +2595,10 @@ probe_amiga
 
 "TV Sports Basketball" = rnc_gap
 
+# Some versions have HLS only on track 3. Hence we must specify tracks 2 & 3
+# separately below, or track 3 would be misidentified as plain amigados. The
+# reason is subtle: in a shared format list, the last-accepted format is tested
+# first for the next track. Hence T2 = amigados -> T3 identified the same.
 "TV Sports Football"
     2 herndon_hls amigados
     3 herndon_hls amigados
