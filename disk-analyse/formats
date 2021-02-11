@@ -753,7 +753,9 @@ probe_amiga
 # Astra Pack Game 2
 "Dungeon Quest" = amigados
 
-"Dyter-07" = amigados
+# Two-disk version uses custom MFM and all tracks (inc AmigaDOS) mastered long
+"Dyter-07"
+    * amigados_unknown_length dyter_07
 
 "Dyna Blaster" = amigados
 
