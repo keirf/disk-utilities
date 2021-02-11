@@ -1275,6 +1275,8 @@ probe_amiga
     158-161 amigados jinks
     * amigados
 
+"Jinxter" = amigados
+
 "Joan Of Arc" = amigados_copylock
 
 # Actually developed/published by Interceptor Software on Players label.
@@ -2765,9 +2767,7 @@ probe_amiga
 "Xenomorph" = infogrames_protected
 
 # Precious Metal Compilation (Copylock) / 16 Blitz release (PROTEC)
-"Xenon"
-    1 copylock protec_longtrack
-    * amigados
+"Xenon" = amigados_copylock
 
 # Original 2-disk retail
 "Xenon 2, 2 Disk" = amigados_copylock
