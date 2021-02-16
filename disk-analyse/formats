@@ -996,6 +996,9 @@ probe_amiga
 
 "Gettysburg" = amigados
 
+"Ghost Battle"
+    * amigados ghost_battle
+
 # Retail has RNC Gap, Triple Action Volume 3 is plain AmigaDOS
 "Ghostbusters II" = rnc_gap
 
