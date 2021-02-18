@@ -702,6 +702,10 @@ probe_amiga
 
 "Dino Wars" = amigados
 
+"Disco-Scopie"
+    160 discoscopie
+    * amigados
+
 "Dizzy Dice" = amigados
 
 "Dizzy's Excellent Adventures" = amigados_copylock
