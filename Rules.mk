@@ -29,13 +29,14 @@ INSTALL_DIR  = $(INSTALL) -d -m0755 -p
 INSTALL_DATA = $(INSTALL) -m0644 -p
 INSTALL_PROG = $(INSTALL) -m0755 -p
 
-AR := ar
-CC := gcc
-LD := ld
-OBJCOPY := objcopy
+AR ?= ar
+CC ?= gcc
+LD ?= ld
+OBJCOPY ?= objcopy
 RM := rm -f
 
-CFLAGS = -O2
+LDFLAGS ?=
+CFLAGS ?= -O2
 #CFLAGS = -O0 -g
 CFLAGS += -fno-strict-aliasing -std=gnu99 -Wall
 ifneq ($(PLATFORM),win32)

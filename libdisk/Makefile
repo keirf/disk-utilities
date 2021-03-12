@@ -15,21 +15,21 @@ ifeq ($(PLATFORM),osx)
 SOLIB   := $(SOLIB_PFX).dylib
 SONAME  := $(SOLIB_PFX).$(MAJOR_VERSION).dylib
 SOVERS  := $(SOLIB_PFX).$(MAJOR_VERSION).$(MINOR_VERSION).dylib
-LDFLAGS ?= -dynamiclib -install_name $(SONAME)
+LDFLAGS += -dynamiclib -install_name $(SONAME)
 endif
 
 ifeq ($(PLATFORM),linux)
 SOLIB   := $(SOLIB_PFX).so
 SONAME  := $(SOLIB_PFX).so.$(MAJOR_VERSION)
 SOVERS  := $(SOLIB_PFX).so.$(MAJOR_VERSION).$(MINOR_VERSION)
-LDFLAGS ?= -Wl,-h,$(SONAME) -shared
+LDFLAGS += -Wl,-h,$(SONAME) -shared
 endif
 
 ifeq ($(PLATFORM),win32)
 SOLIB   := $(SOLIB_PFX).dll
 SONAME  := $(SOLIB_PFX).$(MAJOR_VERSION).dll
 SOVERS  := $(SOLIB_PFX).$(MAJOR_VERSION).$(MINOR_VERSION).dll
-LDFLAGS ?= -Wl,-h,$(SONAME) -shared
+LDFLAGS += -Wl,-h,$(SONAME) -shared
 endif
 
 LIBS :=
