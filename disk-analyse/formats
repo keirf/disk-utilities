@@ -1224,6 +1224,16 @@ probe_amiga
 
 "Insects In Space" = amigados_copylock
 
+# Empty tracks (and sync words in the Intact track handler) are from the
+# WHDLoad installer.
+"Intact"
+    44 ignore
+    46-49 ignore
+    76 ignore
+    78-79 ignore
+    128-133 ignore
+    * amigados intact
+
 # Disk 1 has data up to track 81
 "International Championship Wrestling" = amigados
 
