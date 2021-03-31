@@ -48,9 +48,10 @@ static void *super_hang_on_write_raw(
         ti->data_bitoff = s->index_offset_bc - 31;
 
         for (i = 0; i < 4; i++) {
+            uint32_t x = i ? 0xaaaaaaaa : 0x2aaaaaaa;
             if (stream_next_bits(s, 32) == -1)
                 goto fail;
-            if (mfm_decode_word(s->word) != 0) {
+            if (s->word != x) {
                 /* v2 has weak bits in the header */
                 v2 = 1;
                 break;
