@@ -77,13 +77,16 @@ static void *ados_write_raw(
     struct track_info *ti = &d->di->track[tracknr];
     char *block;
     struct ados_ext *ext;
-    unsigned int i, nr_valid_blocks = 0, has_extended_blocks = 0;
+    unsigned int i, j, nr_valid_blocks = 0, has_extended_blocks = 0;
     unsigned int least_block = 0;
     uint64_t lat, latency[ti->nr_sectors];
 
     block = memalloc(EXT_SEC * ti->nr_sectors);
-    for (i = 0; i < EXT_SEC * ti->nr_sectors / 4; i++)
-        memcpy((uint32_t *)block + i, "NDOS", 4);
+    for (i = 0; i < ti->nr_sectors; i++) {
+        ext = (struct ados_ext *)(block + i * EXT_SEC);
+        for (j = 0; j < 32; j++)
+            memcpy(&ext->dat[j*16], "-=[BAD SECTOR]=-", 16);
+    }
 
     while ((stream_next_bit(s) != -1) &&
            (nr_valid_blocks != ti->nr_sectors)) {
@@ -237,8 +240,6 @@ static void ados_read_raw(
         tbuf_bits(tbuf, speed, bc_mfm_even_odd, 32, csum);
         /* data checksum */
         csum = amigados_checksum(dat, STD_SEC);
-        if (!is_valid_sector(ti, i))
-            csum ^= 1; /* bad checksum for an invalid sector */
         tbuf_bits(tbuf, speed, bc_mfm_even_odd, 32, csum);
         /* data */
         tbuf_bytes(tbuf, speed, bc_mfm_even_odd, STD_SEC, dat);

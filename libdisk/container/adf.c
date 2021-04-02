@@ -107,8 +107,8 @@ static void adf_close(struct disk *d)
             break;
         default:
             p = memalloc(11*512);
-            for (j = 0; j < 11*512/4; j++)
-                memcpy(p+j*4, "NDOS", 4);
+            for (j = 0; j < 11*512/16; j++)
+                memcpy(p+j*16, "-=[BAD SECTOR]=-", 16);
             write_exact(d->fd, p, 11*512);
             memfree(p);
             break;
