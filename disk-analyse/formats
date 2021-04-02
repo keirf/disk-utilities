@@ -218,15 +218,14 @@ probe_amiga
 
 "Arthur The Quest For Excalibur" = amigados
 
-#Prism Leisure Release
-"Artura" = amigados
+"Artura"
+     * amigados_unknown_length federation_of_free_traders protoscan_longtrack
 
 "Aspar Master Grand Prix" = "Grand Prix Master"
 
 "Assassin" = amigados_copylock
 "Assassin Special Edition" = rnc_pdos
 
-# Arcade Action Game 1
 "Asterix Operation Getafix" = amigados
 
 "Atomic Robo-Kid" = amigados_copylock
@@ -280,10 +279,10 @@ probe_amiga
 "Barbarian: The Ultimate Warrior"
     * rnc_protect_process
 
-# KIXX Version, Palace! Tracks may be mastered long! 
-"Barbarian II" = amigados
+# Retail version by Palace, copylock and on 2 Disks.
+# KIXX Version, 1 Disk, AmigaDOS, Tracks may be mastered long! 
+"Barbarian II" = amigados_copylock
 
-# Same version as in Triad Volume 1 Compilation
 "Barbarian / Psygnosis"
     153-155/2 ignore
     157-159 ignore
@@ -420,14 +419,13 @@ probe_amiga
 
 "Brat" = amigados_copylock
 
-#Original CDS release + Sporting Winners! Compilation
 "Brian Cloughs Football Fortunes" = amigados
 
 "Brian The Lion" = amigados
 
 "Bubba N Styx" = amigados_copylock
 
-# US Version has Copylock, HitSquad / Addicted To Run release unprotected + tracks might be long!
+# US Version has Copylock, UK version has PROTEC
 "Bubble Bobble" = amigados_copylock
 
 # Super Quintet Compilation
@@ -435,9 +433,9 @@ probe_amiga
 
 "Buck Rogers: Countdown To Doomsday" = amigados
 
-# Tenstar Pack release uses RNC weak gap protection on some tracks, hence
+# Original Elite release uses RNC weak gap protection on some tracks, hence
 # we refer to that format here exclusively, in place of plain 'amigados'.
-# Original Elite release is apparently AmigaDOS + Elite formats.
+# Tenstar Pack release is AmigaDOS + Elite formats.
 "Buggy Boy" # speed Buggy also
     * rnc_protect_process elite_c
 
@@ -462,10 +460,10 @@ probe_amiga
 
 "Cannon Fodder 2" = amigados_copylock
 
-# EU Version has Copylock
-# US Version has HLS Protection
+# Various protections seen: HLS, Copylock & Infogrames 
 "Captain Blood"
     1 copylock amigados_unknown_length
+    2-3 amigados infogrames_longtrack
     * amigados
 
 "Captive" # Tracks 155+ may be empty
@@ -561,6 +559,8 @@ probe_amiga
     0 amigados
     1 protec_longtrack
     * amigados
+
+"Cool Spot" = amigados_copylock
 
 "Cool World" = amigados_copylock
 
@@ -677,7 +677,7 @@ probe_amiga
 "Defenders Of The Earth"
     * amigados speedlock psygnosis_a
 
-#Key Disk Version
+# Key Disk Version #Also works for Deluxe Paint II
 "Deluxe Paint"
     1 amigados_long_111000
     * amigados
@@ -737,9 +737,11 @@ probe_amiga
 
 "Drakkhen" = infogrames_protected
 
-# Arcade Action Game 3
+"Dream Web" = amigados
+
+# Retail uses speedlock, other releases seen do not!
 "Drivin' Force"
-    0-1 amigados
+    0-1 speedlock amigados
     * psygnosis_a
 
 "Dugger" # No empty tracks
@@ -754,7 +756,6 @@ probe_amiga
     1 amigados dungeon_master_weak
     * amigados
 
-# Astra Pack Game 2
 "Dungeon Quest" = amigados
 
 # Two-disk version uses custom MFM and all tracks (inc AmigaDOS) mastered long
@@ -763,10 +764,9 @@ probe_amiga
 
 "Dyna Blaster" = amigados
 
-# Original uses Copylock, Sega Master Mix / Fists of Fury compilations are plain amigados!
+# Original uses Copylock, other releases maybe plain amigados!
 "Dynamite Dux" = amigados_copylock
 
-# Astra Pack Game 3
 "E-Motion"
     158 tiertex_longtrack
     159 protoscan_longtrack
@@ -803,7 +803,8 @@ probe_amiga
 
 "Enlightenment: Druid II" = amigados
 
-# Disk 1 may have first 30 tracks mastered long!
+# Initial retail release has unsupported Rob Northen protection!
+# Subsequent re-releases are AmigaDOS, Disk 1 may have first 30 tracks mastered long!
 "Epic" = amigados
 
 "Empire Soccer 94" = amigados
@@ -860,6 +861,10 @@ probe_amiga
     158-159 ignore
     * rainbird
 
+# Single Disk Version!
+"F-19 Stealth Fighter"
+    * amigados rainbird
+
 "F-117A Stealth Fighter" = amigados
 
 "F-29 Retaliator" = rnc_gap
@@ -907,12 +912,10 @@ probe_amiga
 "Fire And Brimstone"
      * amigados protec_longtrack ibm_pc_dd_10sec
 
-# Same version as in the Mega Lo Mania + First Samurai Compilation
 "First Samurai" = amigados_copylock
 
 "Fish" = amigados
 
-# Delphine Collection
 "Flashback" = amigados
 
 "Flight Of The Amazon Queen" = amigados
@@ -934,7 +937,6 @@ probe_amiga
 "Football Manager 2"
     * rnc_protect_process
 
-# Retail / Platinum Compilation
 "Forgotten Worlds"
     0 amigados 
     158 tiertex_longtrack
@@ -951,7 +953,6 @@ probe_amiga
 
 "Frontier: Elite II" = amigados
 
-# MegaPack Compilation / Pocket Power
 "Frost Byte" = amigados
 
 "Full Metal Planete" = infogrames_protected
@@ -974,7 +975,6 @@ probe_amiga
     91 hi_tec_b
     * ignore
 
-# Delphine Collection
 "Future Wars" = amigados
 
 "G-LOC R360" = amigados_copylock
@@ -1003,10 +1003,9 @@ probe_amiga
 "Ghost Battle"
     * amigados ghost_battle
 
-# Retail has RNC Gap, Triple Action Volume 3 is plain AmigaDOS
+# Retail has RNC Gap, other releases maybe AmigaDOS
 "Ghostbusters II" = rnc_gap
 
-# Demons & Drivers Compilation
 "Ghouls 'n' Ghosts"
      158 tiertex_longtrack amigados
      159 protoscan_longtrack amigados
@@ -1141,7 +1140,8 @@ probe_amiga
 # Tracks 154-157 may be empty
 "Hero Quest" = amigados_protoscan_longtrack
 
-# Pocket Power Release
+# Retail release has unsupported Titus protection on 79.0/79.1!
+# Budget releases are AmigaDOS!
 "Highway Patrol II" = amigados
 
 "Hired Guns" = amigados
@@ -1188,15 +1188,20 @@ probe_amiga
 "IK+"
     * amigados ikplus
 
-# Same version as Tenstar Pack Game 5
+# Retail release uses elite_c, 1 other release uses elite_d
 "Ikari Warriors"
-    * amigados elite_d
+    * amigados elite_c elite_d
 
 "Impossible Mission 2025" = amigados
 
 "Incredible Shrinking Sphere" = amigados_copylock
 
 "Indiana Jones And The Fate Of Atlantis" = amigados
+
+"Indiana Jones And The Last Crusade: The Action Game"
+    158 tiertex_longtrack
+    159 protoscan_longtrack
+    * amigados elite_a
 
 "Indiana Jones And The Last Crusade - The Graphic Adventure" = amigados
 
@@ -1253,11 +1258,13 @@ probe_amiga
 "Into The Eagle's Nest"
     2-3 herndon_hls
     * amigados
+    
+"Ishar: Legend Of The Fortress"
+    158-159 amigados_unknown_length
+    * amigados    
 
 "It Came From The Desert" = amigados_copylock
 
-# 2-Hot 2-Handle Compilation
-# Tracks 1.0 to 79.1 show either Head 0 or Head 1 for each upper/lower track!
 "Ivan Stewarts Super Off Road"
     1 speedlock
     * amigados
@@ -1315,7 +1322,8 @@ probe_amiga
 "JUG"
     * amigados ibm_pc_dd_10sec
     
-# Unprotected Pocket Power Release. Retail release has unsupported Anco protection on track 1!
+# Retail release has unsupported Anco protection on track 1!
+# Budget releases may be unprotected!
 "Jump Jet" = amigados
 
 "Jumping Jack Son" = infogrames_protected
@@ -1341,6 +1349,7 @@ probe_amiga
     137-159/2 ibm_pc_dd_10sec
     * ignore
 
+# Retail appears to use unsupported ANCO protection, Budget release is Copylock!
 "Karting Grand Prix" = amigados_copylock
 
 "KGB" = amigados
@@ -1355,10 +1364,12 @@ probe_amiga
 # Also used on The Final Whistle: Data Disk
 "Kick Off 2"
       * kickoff2
+      
+"Kick Off 3"
+      * kickoff2
 
 "Kid Chaos" = amigados_copylock
 
-# Astra Pack Game 5
 "Kid Gloves"
     0 amigados
     1 protec_longtrack
@@ -1372,6 +1383,7 @@ probe_amiga
 "King's Quest" = herndon_longtrack
 "King's Quest II" = herndon_longtrack
 "King's Quest III" = herndon_longtrack
+"King's Quest IV" = amigados
 "King's Quest V" = amigados
 
 "Kingdoms Of England"
@@ -1388,8 +1400,12 @@ probe_amiga
     80 amigados
     * ratt_dos_1810
 
+"Kult" = infogrames_protected
+
 "Lancelot" = amigados
 
+# Retail release has unsupported ANCO protection!
+# Budget release may use Copylock!
 "Las Vegas" = amigados_copylock
 
 "Laser Squad"
@@ -1443,7 +1459,6 @@ probe_amiga
 # Tracks may be mastered long, causing harmless warnings
 "Lombard RAC Rally" = amigados
 
-# Lucas Arts Collection
 "Loom" = amigados
 
 "Lords Of The Rising Sun" = amigados_copylock
@@ -1484,7 +1499,6 @@ probe_amiga
 
 "Manhunter: San Francisco" = amigados
 
-# Lucas Arts Collection
 "Maniac Mansion" = amigados
 
 "MasterBlazer"
@@ -1619,6 +1633,8 @@ probe_amiga
 
 "Mystical" = amigados
 
+"Myth" = amigados_copylock
+
 "NARC" = amigados_copylock
 
 "New York Warriors"
@@ -1636,7 +1652,7 @@ probe_amiga
 "Night Hunter"
     * night_hunter_a night_hunter_b amigados
 
-# Retail uses Code Wheel, MAX Compilation has Gremlin long_track protection!
+# Retail uses Code Wheel, 1 compilation release has Protoscan protection!
 "Night Shift" = amigados_protoscan_longtrack
 
 # Disk 2 has extended amigados tracks on 155-159
@@ -1680,11 +1696,11 @@ probe_amiga
 
 "Omnicron Conspiracy" = amigados_copylock
 
-# One version is unprotected
-# Arcade Action version uses copylock
+"On The Ball" = amigados
+
+# Retail is RNC GAP, 1 other release is copylock
 "Onslaught" = amigados_copylock
 
-# Delphine Collection
 "Operation Stealth" = amigados
 
 "Operation Thunderbolt" = rnc_gap
@@ -1715,6 +1731,8 @@ probe_amiga
 "P.P. Hammer" = amigados
 
 "Pac-Mania" = amigados
+
+"Pacific Islands" = amigados
 
 # Long tracks on Disks A and B
 "Panza Kick Boxing"
@@ -1758,18 +1776,16 @@ probe_amiga
 
 "Pinball Illusions AGA" = amigados
 
-# High Energy 2 Compilation
 "Pinball Magic"
-    158-159 amigados_long_105500
+    158-159 empty_longtrack amigados_long_105500
     * amigados
 
 "Pinkie" = amigados
 
 "Pioneer Plague" = amigados
 
-# Arcade Action Game 6, No copylock!
-# Disk label says "Copylock(tm) Amiga" so original may be copylock!
-"Pipe Mania" = amigados
+# Budget release may have code sheet protection!
+"Pipe Mania" = rnc_gap
 
 "Pirates!" = amigados
 
@@ -1778,9 +1794,8 @@ probe_amiga
 "Player Manager"
     * kickoff2
 
-"Plutos"
-    1 amigados_long_111000
-    * amigados
+# US Mindscape release uses Herndon HLS protection, other releases may be unprotected!
+"Plutos" = herndon_longtrack
 
 "Pool Of Radiance" = amigados
 
@@ -1797,15 +1812,16 @@ probe_amiga
 
 "Postman Pat 3" = amigados
 
+# Retail release is unsupported, variant of Apprentice format?
+# Other releases may use Copylock
 "Power Drift" = amigados_copylock
-
+ 
 "Power Drive" = amigados_copylock
 
 "Powerdrome" = amigados_copylock
 
 "Powermonger" = amigados
 
-# Astra Pack Game 6, is also the Enhanced version!
 "Powerplay The Game Of The Gods" = amigados
 
 "Powerstyx"
@@ -1817,7 +1833,8 @@ probe_amiga
 
 "Predator II"
     * arc_development_a copylock amigados
-    
+
+# Also supports Premier Manager 2 and Premier Manager 3!    
 "Premier Manager" = amigados
 
 "Prince Of Persia"
@@ -1851,7 +1868,7 @@ probe_amiga
 
 "Putty" = amigados_copylock
 
-# Track 0.1 is unformatted!
+# Track 0.1 maybe unformatted!
 "Quadralien" = amigados
 
 "Quartz"
@@ -1896,11 +1913,9 @@ probe_amiga
 
 # Retail release uses RNC Gap
 # Release in Virtual Reality Vol2 is Copylock!
-"Resolution 101"
-     1 rnc_gap copylock
-     * amigados
+"Resolution 101" = amigados_copylock
 
-#Star Wars Trilogy Release
+# Star Wars Trilogy Release
 "Return Of The Jedi" = amigados
 
 "Return To Atlantis" = herndon_longtrack
@@ -1920,10 +1935,7 @@ probe_amiga
 
 # Original uses Copylock
 # Arcade Action Game 7 uses RNC Gap!
-"Rick Dangerous"
-    0 amigados
-    1 copylock rnc_gap
-    * amigados
+"Rick Dangerous" = amigados_copylock
 
 "Rise Of The Dragon" = amigados
 
@@ -1945,6 +1957,10 @@ probe_amiga
 "Robocod"
     1 protec_longtrack robocod amigados
     * robocod amigados
+
+# Initial retail release is unsupported
+# Later releases changed to Copylock!
+"Robocop" = amigados_copylock
 
 # Tracks 0.0 & 0.1 on Disk 2 appear unused, ignore warning!
 "Robocop 2"
@@ -1998,6 +2014,8 @@ probe_amiga
 # OCS/AGA, some tracks maybe mastered long!
 "Sabre Team" = amigados
 
+"Saint & Greavsie" = amigados
+
 "Santa's Xmas Caper" = amigados_copylock
 
 # Hits For Six Volume 1 has some ibm tracks, version in Magnum The
@@ -2043,10 +2061,9 @@ probe_amiga
 "Shadow Of The Beast III"
     * amigados protec_longtrack psygnosis_a psygnosis_b
 
-# 2-Hot 2-Handle Compilation
-# Tracks 70.0 & 70.1 on Disk 2 AmigaDOS with 1 sector, 71.0+ unformatted!
+# Some releases have no Copylock!
 "Shadow Warriors"
-    * amigados apprentice
+    * amigados copylock apprentice
 
 "Shadowgate"
       1 amigados_long_111000
@@ -2128,7 +2145,8 @@ probe_amiga
 
 "Skeleton Krew" = amigados_copylock
 
-# Tracks 158-159 show 2 missing sectors!
+# Tracks 79.0/79.1 show 2 missing sectors!
+# Another copy has 3 missing sectors on 40.0 as well!
 "Skweek"
     158-159 amigados_long_105500 
     * amigados
@@ -2157,15 +2175,12 @@ probe_amiga
 
 "Soccer Kid" = amigados
 
-# Used 'kickoff2' to catch protection on Kick Off 3, all other disks are AmigaDOS!
-"Soccer Stars '96"
-    * kickoff2
-
 "Sorcerer" = amigados
 
 "Space Rogue" = amigados
 
-# KIXX XL Budget Label (Sierra)
+"Space Quest III" = amigados
+
 "Space Quest IV" = amigados
 
 "Special Forces" = amigados
@@ -2190,7 +2205,6 @@ probe_amiga
 "Spherical" # Tracks 145+ may be empty
     * amigados spherical
 
-#Future Dreams Compilation
 "Spidertronic" = amigados
 
 "Spirit Of Excalibur" = amigados
@@ -2217,6 +2231,9 @@ probe_amiga
 
 "Star Trek 25th Anniversary" = amigados
 
+# Star Wars Trilogy Release
+"Star Wars" = amigados
+
 "Starglider" = amigados
 
 # Track 158 may be empty.
@@ -2233,6 +2250,8 @@ probe_amiga
 "StarRay"
     * starray
 
+"Steel" = rnc_gap
+
 "Steel Empire" = amigados
 
 "Steigar" = amigados_copylock
@@ -2241,8 +2260,11 @@ probe_amiga
 
 "Stellar 7" = amigados
 
-# Sporting Winners! Compilation
 "Steve Davis World Snooker" = amigados
+
+"Storm Master"
+    158-159 amigados_long_105500
+    * amigados
 
 # Various versions of this exist, this is the missing version not
 # supported in WHDLoad, uses the Rainbird format tracks + Copylock!
@@ -2250,7 +2272,7 @@ probe_amiga
 "Street Fighter II: The World Warrior"
    * amigados copylock rainbird
 
-# Platinum Compilation
+# Tracks maybe mastered long!
 "Strider"
     0 amigados
     158 amigados tiertex_longtrack
@@ -2262,10 +2284,19 @@ probe_amiga
     159 amigados protoscan_longtrack
     * amigados
 
+"Striker"
+    * amigados_unknown_length head_over_heels
+    
+"Strip Poker II Plus"
+    1 protec_longtrack
+    * amigados
+
 "Stryx"
     * amigados psygnosis_a  protec_longtrack
 
 "Stunt Car Racer" = rnc_gap
+
+"SubWar 2050" = amigados
 
 "Summer Olympiad"
      0 amigados
@@ -2274,6 +2305,8 @@ probe_amiga
      78-81 amigados
      82-159 ibm_pc_dd_10sec
      * ignore
+
+"Super All-Stars" = amigados_copylock
 
 "Super Cars Disk 1" = ss_mfm_protected
 "Super Cars Disk 2"
@@ -2311,8 +2344,9 @@ probe_amiga
 
 "Super Street Fighter II: The New Challengers" = amigados
 
-# Triple Action Volume 6
 "Super Tetris" = amigados
+
+"Super Wonder Boy" = amigados_copylock
 
 "Subversion" = amigados
 
@@ -2336,7 +2370,6 @@ probe_amiga
 
 "Syndicate" = amigados
 
-# Hit Disks Volume 2 / GoldRush Collection
 "Tanglewood" = amigados
 
 # Protection checks for track length X, where 104448 < X <= 105984, and does
@@ -2370,7 +2403,6 @@ probe_amiga
 
 "Terminator 2: Judgment Day" = amigados_copylock
 
-# Same version as Tenstar Pack Game 8
 "Terrorpods" = amigados # extended amigados tracks and some empty tracks
 
 "Test Drive"
@@ -2389,9 +2421,7 @@ probe_amiga
 
 "The Ancient Art Of War In The Skies" = amigados
 
-# Tenstar Pack Game 2
 "The Art Of Chess"
-    0 amigados
     1 protec_longtrack
     * amigados
 
@@ -2451,7 +2481,6 @@ probe_amiga
 "The Legend Of William Tell"
      * speedlock amigados
 
-# High Energy 2 Compilation
 "The Light Corridor"  = infogrames_protected
 
 "The Lost Patrol" = amigados_copylock
@@ -2475,6 +2504,8 @@ probe_amiga
      0 amigados
      2-159 phantom_fighter
      * ignore
+
+"The Ryder Cup" = amigados_copylock
 
 "The Sentinel"
     0 amigados
@@ -2559,7 +2590,6 @@ probe_amiga
 
 "Total Recall" = amigados_copylock
 
-# Astra Pack Game 10
 "Tower Of Babel" = rnc_gap
 
 "Toyota Celica GT Rally"
@@ -2575,6 +2605,10 @@ probe_amiga
     * ignore
 
 "Tracon II" = amigados
+
+"Transarctica"
+    158-159 amigados_unknown_length
+    * amigados
 
 "Treasure Island Dizzy" = amigados_copylock
 
@@ -2615,6 +2649,8 @@ probe_amiga
     * amigados rainbird copylock
 
 "TV Sports Basketball" = rnc_gap
+
+"TV Sports Boxing" = amigados 
 
 # Some versions have HLS only on track 3. Hence we must specify tracks 2 & 3
 # separately below, or track 3 would be misidentified as plain amigados. The
@@ -2660,10 +2696,7 @@ probe_amiga
 "Vade Retro Alienas"
     * amigados vade_retro_alienas
 
-# Covers all three Valhalla Speech Adventures:
-# Valhalla And The Lord Of Infinity
-# Valhalla: Before The War
-# Valhalla & The Fortress Of Eve
+# Supports all three Valhalla Speech Adventures!
 "Valhalla" = amigados
 
 "Vampires Empire"
@@ -2710,7 +2743,6 @@ probe_amiga
 # Super Quintet Compilation / Future Dreams Compilation
 "Warlock's Quest" = amigados
 
-# A1200 / A4000
 "Watchtower" = amigados
 
 "Waxworks" = amigados
@@ -2763,6 +2795,9 @@ probe_amiga
 "World Cup Soccer - Italia '90"
      1 speedlock
      * amigados
+     
+# Disk 2 is mastered with the Lamer Exterminator Virus!!
+"World Series Cricket" = amigados
 
 "Worlds Of Legend" = amigados_copylock
 
@@ -2811,7 +2846,6 @@ probe_amiga
 # T0.1 Amigados Extended (Sync)
 "Z-Out" = amigados
 
-# Same as version in 'Lucas Arts Collection'
 "Zak McKracken And The Alien Mindbenders" = amigados
 
 "Zany Golf"
