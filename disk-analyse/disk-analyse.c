@@ -27,6 +27,7 @@
 int quiet, verbose;
 static unsigned int start_cyl, disk_flags;
 static int index_align, clear_bad_sectors, single_sided = -1, end_cyl = -1;
+static int double_step = 0;
 static unsigned int drive_rpm = 300, data_rpm = 300;
 static int pll_period_adj_pct = -1, pll_phase_adj_pct = -1;
 static struct format_list **format_lists;
@@ -58,6 +59,7 @@ static void usage(int rc)
     printf("                      Amount observed flux affects PLL\n");
     printf("  -r, --rpm=DRIVE[:DATA] RPM of drive that created the input,\n");
     printf("                         Original recording RPM of data [300]\n");
+    printf("  -D, --double-step   Double Step\n");
     printf("  -s, --start-cyl=N   Start cylinder\n");
     printf("  -e, --end-cyl=N     End cylinder\n");
     printf("  -S, --ss[=0|1]      Single-sided disk (default is side 0)\n");
@@ -186,6 +188,7 @@ static void probe_stream(void)
 
     if ((s = stream_open(in, drive_rpm, data_rpm)) == NULL)
         errx(1, "Failed to probe input file: %s", in);
+    s->double_step = double_step;
 
     if (pll_period_adj_pct >= 0)
         s->pll_period_adj_pct = pll_period_adj_pct;
@@ -246,6 +249,7 @@ static void handle_stream(void)
 
     if ((s = stream_open(in, drive_rpm, data_rpm)) == NULL)
         errx(1, "Failed to probe input file: %s", in);
+    s->double_step = double_step;
 
     if (pll_period_adj_pct >= 0)
         s->pll_period_adj_pct = pll_period_adj_pct;
@@ -382,7 +386,7 @@ int main(int argc, char **argv)
     char in_suffix[8], out_suffix[8], *config = NULL, *format = NULL;
     int ch;
 
-    const static char sopts[] = "hqviCp:P:r:s:e:S::kf:c:";
+    const static char sopts[] = "hqviCp:P:r:s:e:S::Dkf:c:";
     const static struct option lopts[] = {
         { "help", 0, NULL, 'h' },
         { "quiet", 0, NULL, 'q' },
@@ -395,6 +399,7 @@ int main(int argc, char **argv)
         { "start-cyl", 1, NULL, 's' },
         { "end-cyl", 1, NULL, 'e' },
         { "ss", 2, NULL, 'S' },
+        { "double-step", 0, NULL, 'D' },
         { "kryoflux-hack", 0, NULL, 'k' },
         { "format", 1, NULL, 'f' },
         { "config",  1, NULL, 'c' },
@@ -455,6 +460,9 @@ int main(int argc, char **argv)
                 warnx("Bad side specifier '%s'", optarg);
                 usage(1);
             }
+            break;
+        case 'D':
+            double_step = 1;
             break;
         case 'k':
             disk_flags |= DISKFL_kryoflux_hack;

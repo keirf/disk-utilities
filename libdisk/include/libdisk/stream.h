@@ -58,6 +58,7 @@ struct stream {
     int ns_to_index;         /* Distance to next index pulse */
 
     uint32_t prng_seed;
+    bool_t double_step;
 };
 
 #pragma GCC visibility push(default)
