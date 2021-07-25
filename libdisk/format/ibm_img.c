@@ -37,14 +37,17 @@ static void *ibm_img_write_raw(
     while ((stream_next_bit(s) != -1) &&
            (nr_valid_blocks != ti->nr_sectors)) {
 
-        int idx_off, sec_sz;
-        uint8_t dat[2*16384];
+        int sec_sz;
+        uint8_t mark, dat[2*16384];
         struct ibm_idam idam;
 
         /* IDAM */
-        if (((idx_off = ibm_scan_idam(s, &idam)) < 0) || s->crc16_ccitt)
+        if (ibm_scan_idam(s, &idam) < 0)
             continue;
 
+    redo_idam:
+        if (s->crc16_ccitt)
+            continue;
         /* PCs start numbering sectors at 1, other platforms start at 0. Shift
          * sector number as appropriate.  */
         idam.sec -= extra_data->sector_base;
@@ -73,8 +76,13 @@ static void *ibm_img_write_raw(
             continue;
 
         /* DAM */
-        if (((idx_off = ibm_scan_dam(s)) < 0) ||
-            (stream_next_bytes(s, dat, 2*sec_sz) == -1) ||
+        if (ibm_scan_mark(s, 1000, &mark) < 0)
+            continue;
+        if ((mark == IBM_MARK_IDAM) && (_ibm_scan_idam(s, &idam) == 0))
+            goto redo_idam;
+        if (mark != IBM_MARK_DAM)
+            continue;
+        if ((stream_next_bytes(s, dat, 2*sec_sz) == -1) ||
             (stream_next_bits(s, 32) == -1) || s->crc16_ccitt)
             continue;
 
@@ -111,7 +119,6 @@ static void ibm_img_read_raw(
         continue;
 
     gap3 = ((ti->type == TRKTYP_ibm_pc_dd) ? 84
-            : (ti->type == TRKTYP_atari_st) ? 84
             : (ti->type == TRKTYP_ibm_pc_dd_10sec) ? 30
             : 108);
 
@@ -162,9 +169,6 @@ void *ibm_img_write_sectors(
     struct track_info *ti = &d->di->track[tracknr];
     char *block;
     bool_t iam = 1;
-
-    if (ti->type == TRKTYP_atari_st)
-        iam = 0;
 
     if (sectors->nr_bytes < ti->len)
         return NULL;
@@ -354,19 +358,6 @@ struct track_handler acorn_adfs_f_handler = {
  * FM decode support:
  *   DFS 40-track - 40tk DS 10/256  200K  FM/SD
  *   DFS 80-track - 80th DS 10/256  400K  FM/SD */
-
-struct track_handler atari_st_handler = {
-    .density = trkden_double,
-    .bytes_per_sector = 512,
-    .nr_sectors = 9,
-    .write_raw = ibm_img_write_raw,
-    .read_raw = ibm_img_read_raw,
-    .write_sectors = ibm_img_write_sectors,
-    .read_sectors = ibm_img_read_sectors,
-    .extra_data = & (struct ibm_extra_data) {
-        .sector_base = 1
-    }
-};
 
 /*
  * Local variables:

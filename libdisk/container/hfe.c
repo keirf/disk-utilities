@@ -273,7 +273,7 @@ static void hfe_close(struct disk *d)
     struct track_header *thdr;
     struct track_raw *_raw[di->nr_tracks], **raw = _raw;
     unsigned int i, j, off, bitlen, bytelen, len;
-    bool_t is_st = di->nr_tracks && (di->track[0].type == TRKTYP_atari_st);
+    bool_t is_amiga = di->nr_tracks && (di->track[0].type == TRKTYP_amigados);
     uint8_t *tbuf;
 
     for (i = 0; i < di->nr_tracks; i++) {
@@ -309,10 +309,10 @@ static void hfe_close(struct disk *d)
         .formatrevision = 0,
         .nr_tracks = di->nr_tracks / 2,
         .nr_sides = 2,
-        .track_encoding = is_st ? ENC_ISOIBM_MFM : ENC_Amiga_MFM,
+        .track_encoding = is_amiga ? ENC_Amiga_MFM : ENC_ISOIBM_MFM,
         .bitrate = htole16(250),
         .rpm = htole16(0),
-        .interface_mode = is_st ? IFM_AtariST_DD : IFM_Amiga_DD,
+        .interface_mode = is_amiga ? IFM_Amiga_DD : IFM_GenericShugart_DD,
         .rsvd = 1,
         .track_list_offset = htole16(1)
     };

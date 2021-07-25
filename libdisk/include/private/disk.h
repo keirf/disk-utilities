@@ -152,6 +152,7 @@ struct ibm_idam { uint8_t cyl, head, sec, no, crc;};
 #define IBM_MARK_DAM  0xfb
 #define IBM_MARK_DDAM 0xf8
 int ibm_scan_mark(struct stream *s, unsigned int max_scan, uint8_t *pmark);
+int _ibm_scan_idam(struct stream *s, struct ibm_idam *idam);
 int ibm_scan_idam(struct stream *s, struct ibm_idam *idam);
 int ibm_scan_dam(struct stream *s);
 
