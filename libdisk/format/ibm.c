@@ -136,15 +136,8 @@ int ibm_scan_mark(struct stream *s, unsigned int max_scan, uint8_t *pmark)
     return idx_off;
 }
 
-int ibm_scan_idam(struct stream *s, struct ibm_idam *idam)
+int _ibm_scan_idam(struct stream *s, struct ibm_idam *idam)
 {
-    uint8_t mark;
-    int idx_off;
-
-    idx_off = ibm_scan_mark(s, ~0u, &mark);
-    if ((idx_off < 0) || (mark != IBM_MARK_IDAM))
-        goto fail;
-
     /* cyl,head */
     if (stream_next_bits(s, 32) == -1)
         goto fail;
@@ -162,6 +155,23 @@ int ibm_scan_idam(struct stream *s, struct ibm_idam *idam)
         goto fail;
 
     idam->crc = s->crc16_ccitt;
+    return 0;
+fail:
+    return -1;
+}
+
+int ibm_scan_idam(struct stream *s, struct ibm_idam *idam)
+{
+    uint8_t mark;
+    int idx_off;
+
+    idx_off = ibm_scan_mark(s, ~0u, &mark);
+    if ((idx_off < 0) || (mark != IBM_MARK_IDAM))
+        goto fail;
+
+    if (_ibm_scan_idam(s, idam) < 0)
+        goto fail;
+
     return idx_off;
 fail:
     return -1;
@@ -221,7 +231,7 @@ static void *ibm_mfm_write_raw(
 
     while (stream_next_bit(s) != -1) {
 
-        int idx_off;
+        int idx_off, dam_idx_off;
         uint8_t mark, dat[2*16384];
         uint16_t crc;
         struct ibm_idam idam;
@@ -230,6 +240,7 @@ static void *ibm_mfm_write_raw(
         if ((idx_off = ibm_scan_idam(s, &idam)) < 0)
             continue;
 
+    redo_idam:
         /* If the IDAM CRC is bad we cannot trust the sector data: we always 
          * skip the sector data in this case. CRC errors can also happen from
          * cross-talk (40-track disk read as 80-track). */
@@ -255,8 +266,18 @@ static void *ibm_mfm_write_raw(
         sec_sz = 128 << idam.no;
 
         /* DAM/DDAM */
-        if ((ibm_scan_mark(s, 1000, &mark) < 0) ||
-            (stream_next_bytes(s, dat, 2*sec_sz) == -1) ||
+        if ((dam_idx_off = ibm_scan_mark(s, 1000, &mark)) < 0)
+            continue;
+        if (mark == IBM_MARK_IDAM) {
+            struct ibm_idam _idam;
+            if (_ibm_scan_idam(s, &_idam) == 0) {
+                idx_off = dam_idx_off;
+                idam = _idam;
+                goto redo_idam;
+            }
+        }
+
+        if ((stream_next_bytes(s, dat, 2*sec_sz) == -1) ||
             (stream_next_bits(s, 32) == -1))
             continue;
 
@@ -639,15 +660,8 @@ static int ibm_fm_scan_mark(
     return idx_off;
 }
 
-static int ibm_fm_scan_idam(struct stream *s, struct ibm_idam *idam)
+static int _ibm_fm_scan_idam(struct stream *s, struct ibm_idam *idam)
 {
-    uint8_t mark;
-    int idx_off;
-
-    idx_off = ibm_fm_scan_mark(s, ~0u, &mark);
-    if ((idx_off < 0) || (mark != IBM_MARK_IDAM))
-        goto fail;
-
     /* cyl,head */
     if (stream_next_bits(s, 32) == -1)
         goto fail;
@@ -665,6 +679,23 @@ static int ibm_fm_scan_idam(struct stream *s, struct ibm_idam *idam)
         goto fail;
 
     idam->crc = s->crc16_ccitt;
+    return 0;
+fail:
+    return -1;
+}
+
+static int ibm_fm_scan_idam(struct stream *s, struct ibm_idam *idam)
+{
+    uint8_t mark;
+    int idx_off;
+
+    idx_off = ibm_fm_scan_mark(s, ~0u, &mark);
+    if ((idx_off < 0) || (mark != IBM_MARK_IDAM))
+        goto fail;
+
+    if (_ibm_fm_scan_idam(s, idam) < 0)
+        goto fail;
+
     return idx_off;
 fail:
     return -1;
@@ -700,7 +731,7 @@ static void *ibm_fm_write_raw(
 
     while (stream_next_bit(s) != -1) {
 
-        int idx_off;
+        int idx_off, dam_idx_off;
         uint8_t mark, dat[2*16384];
         uint16_t crc;
         struct ibm_idam idam;
@@ -709,6 +740,7 @@ static void *ibm_fm_write_raw(
         if ((idx_off = ibm_fm_scan_idam(s, &idam)) < 0)
             continue;
 
+    redo_idam:
         /* If the IDAM CRC is bad we cannot trust the sector data: we always 
          * skip the sector data in this case. CRC errors can also happen from
          * cross-talk (40-track disk read as 80-track). */
@@ -734,8 +766,16 @@ static void *ibm_fm_write_raw(
         sec_sz = 128 << idam.no;
 
         /* DAM/DDAM */
-        if (ibm_fm_scan_mark(s, 1000, &mark) < 0)
+        if ((dam_idx_off = ibm_fm_scan_mark(s, 1000, &mark)) < 0)
             continue;
+        if (mark == IBM_MARK_IDAM) {
+            struct ibm_idam _idam;
+            if (_ibm_fm_scan_idam(s, &_idam) == 0) {
+                idx_off = dam_idx_off;
+                idam = _idam;
+                goto redo_idam;
+            }
+        }
         if (((ti->type == TRKTYP_dec_rx02)
              || (ti->type == TRKTYP_dec_rx02_525))
             && ((mark == DEC_RX02_MMFM_DAM_DAT)
