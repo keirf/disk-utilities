@@ -1,0 +1,245 @@
+Disk-Utilities unsupported protections/formats!
+
+Amiga Action Cover Disk 6: Ilyad (Possibly a format by Pierre Adane)
+Unsupported format!
+
+Astro Marine Corps:
+Disk 1 ADOS to tracks 61.1 rest unformatted! protection on track 79.0
+Disk 2 ADOS to tracks 64.1 rest unformatted! protection on track 79.0
+
+A320 Airbus:
+Disk 1 ADOS
+Disk 2 ADOS + Thalion key track on 79.0
+
+Afterburner II (The Hit Squad):
+Disk 1 Firebird format + unformatted tracks
+Disk 2 unsupported format
+
+APB:
+ADOS + unsupported copylock
+
+Awesome DEMO Disk:
+Unsupported format!
+
+Capone:
+ADOS + unsupported protection on track 42.0
+
+Captain Planet and the Planeteers:
+Unsupported rattDOS
+
+Carcharadon:
+Unsupported format!
+
+Cardiaxx:
+Unsupported format!
+
+Cetic Legends:
+Disk 1 ADOS + unsuported format (Possibly Ubisoft variant)
+Disk 2 unsupported format
+
+Chambers of Shaolin: (Thalion The First Year)
+Track 0.0 ADOS + IBM MFM 6 sectors, protection on track 0.1, all tracks appear long, around 106100
+
+Cybernoid:
+ADOS + unsupported Rob Northen protection on track 0.1
+
+Deflektor:
+Seems to have a longtrack on 0.0, all other tracks are unsupported format
+
+Deliverance:
+Unsupported format!
+
+Demolition Retail + Pocket Power Budget:
+ADOS + Protection on tracks 80.0/80.1
+
+Elf Mania:
+Unsupported format!
+
+Eliminator: (From various compilations)
+Unsupported format!
+
+EPIC (First release):
+ADOS + rnc_protect_process + unsupported Rob Northen protection on track 0.1 of Disk 1
+
+Double Dragon II:
+CyberDOS (unsupported)
+
+Flimbos Quest: (Kixx)
+Unsupported format!
+
+Fred: (Thalion The First Year)
+ADOS + protection on tracks 80.0/80.1
+
+G.Nius: (Future Dreams Compilation)
+ADOS + protection on tracks 50.0/50.1, my dump has a bad ADOS track 48.0!
+
+Garrison:
+Unsupported format!
+
+Garrison II:
+Unsupported format!
+
+Gauntlet II (Retail + Kixx)
+Unsupported MFM (Identified as Archipelagos but it's not) + alternate Gremlin Protection on 79.0/79.1
+
+Golden Axe:
+PROTEC + Identified as 'Archipelagos' format but it's not!
+
+Goldrunner II:
+ADOS + IBM 10 sector, unsupported 10 x 256 byte IBM/ST high score track on 64.1
+
+Grid Start:
+ADOS + protection on track 80.1
+
+Gunship:
+ADOS + unsupported Speedlock(?) on track 0.1
+
+Hammerfist:
+Unsupported format!
+
+Hellfire Attack:
+ADOS + protection on track 0.1
+
+Hot Shot:
+ADOS + unsupported Rob Northen protection on track 0.1
+
+Impact:
+ADOS + protection on track 0.1
+
+Insector Hecti In The Inter Change:
+ADOS (track 0.0 may be long) + protection on track 0.1
+
+Iron Lord:
+ADOS + protection on tracks 80.0/80.1
+
+James Pond 3 AGA:
+Unsupported format!
+
+Jupiters Masterdrive:
+Unsupported format!
+
+Leatherneck + Major Motion: (Hit Disks Volume 2)
+ADOS + protection on track 1.0/1.1
+
+Leavin' Teramis: (Thalion The First Year)
+ADOS + unsupported format, protection on track 3.1?
+
+Lombard RAC Rally:
+ADOS + unsupported Rob Northen protection on track 0.1
+
+Manic Miner
+Unsupported format!
+
+Manhattan Dealers:
+ADOS + unsupported Rob Northen protection on track 0.1
+
+Mighty Bomb Jack:
+Unsupported format!
+
+Minos:
+ADOS + protection on tracks 80.0/80.1
+
+Nebulus:
+ADOS + unsupported Rob Northen protection on track 0.1
+
+No Second Prize:
+ADOS + IBM 10 sector (105500), protection (?) on tracks 0.1, 79.0/79.1
+
+Operation Wolf:
+ADOS + unsupported Rob Northen protection on track 0.1
+
+Overlander:
+Unsupported format!
+
+Pang: Retail + Hit Squad (Possibly a format by Pierre Adane)
+Unsupported format!
+
+Pinball Fantasies OCS/ECS:
+Unsupported format!
+
+Pinball Prelude:
+Unsupported format!
+
+Plan 9 From Outer Space:
+Unsupported format!
+
+Power Drift:
+Unsupported format!
+
+Puffys Saga: (Thalion The First Year)
+ADOS + protection on tracks 70.0/70.1
+
+RoboCop (First release):
+Unsupported format!
+
+Ruffian:
+Unsupported format!
+
+Scorpio:
+ADOS + protection on tracks 80.0/80.1
+
+Shuffle:
+Unsupported format!
+
+Skid Marks:
+Unsupported format!
+
+Stardust:
+Unsupported format!
+
+Subtrade: Return to Irata:
+Unsupported format!
+
+Takado:
+ADOS + protection on tracks 80.0/80.1
+
+Time Bandit: (Hit Disks Volume 2)
+ADOS + IBM 10 sector, protection on track 1.0
+
+Tournament Golf: (Sports Spectacular)
+Unsupported format!
+
+The Adventures Of Robin Hood: (Possibly Millenium format)
+Unsupported format!
+
+The Blues Brothers: (Hits For Six Volume 2 + Triple Action Volume 4)
+ADOS + IBM 10 sectors + unsupported protection on tracks 79.0/79.1
+
+The Brides Of Dracula - Budget:
+Unsupported format!
+
+The Killing Game Show - Demo Disk:
+Unsupported format!
+
+The Plague:
+Unsupported format, protection (?) on tracks 79.0/79.1 or tracks 80.0/80.1 (duplicator info?)  
+
+The Seven Gates of Jambala: (Retail + Thalion The First Year)
+Track 0.0 ADOS + IBM MFM 6 sectors, protection on tracks 15.0/79.0, all tracks appear long, around 106100
+
+Turbo OutRun: (Demons & Drivers + SEGA Master Mix + Wheels of Fire)
+Unsupported format! Tiertex / Protoscan protection on Disk 2 tracks 78.1 / 79.1
+
+Turbo Trax: (Budget)
+ADOS + IBM 10 sector + unformatted tracks + unsupported 128 byte MFM tracks on 1.1, 4.1, 5.1, 6.1, 7.1, 8.1
+
+Ultima V:
+ADOS + unsupported Xelock protection on track 0.1
+
+Universe:
+Unsupported format!
+
+Unreal:
+Unsupported format!
+
+WARP: (Thalion The First Year)
+Track 0.0 ADOS + IBM MFM 6 sectors + unsupported format, protection (?) on tracks 79.0/79.1, tracks appear long, approx 102500 or 105200
+
+Weird Dreams:
+ADOS + unsupported copylock
+
+World Championship Boxing Manager:
+Unsupported format!
+
+Zoom!: (only MFM supported)
+ADOS + zoom_a + protection on track 59.1
