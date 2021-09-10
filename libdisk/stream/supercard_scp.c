@@ -78,7 +78,7 @@ static struct stream *scp_open(const char *name, unsigned int data_rpm)
         errx(1, "%s has unsupported bit cell time width (%u)",
              name, header.cell_width);
 
-    if (!(header.flags & (1u<<4))) {
+    if (!(header.flags & (1u<<4)) && header.checksum) {
         int sz;
         uint8_t *p, *buf;
         uint32_t csum = 0;

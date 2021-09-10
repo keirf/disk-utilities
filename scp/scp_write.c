@@ -122,7 +122,7 @@ int main(int argc, char **argv)
     if (memcmp(dhdr.sig, "SCP", 3))
         errx(1, "%s: Not an SCP image", argv[optind]);
 
-    if (!(dhdr.flags & (1u<<_FLAG_writable))) {
+    if (!(dhdr.flags & (1u<<_FLAG_writable)) && dhdr.checksum) {
         int sz;
         uint8_t *p, *buf;
         uint32_t csum = 0;
