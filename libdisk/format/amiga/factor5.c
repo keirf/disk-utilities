@@ -124,7 +124,7 @@ static void *turrican_3a_write_raw(
     while (stream_next_bit(s) != -1) {
 
         unsigned int i;
-        uint32_t sum, dat[ti->len/4], raw2[2];
+        uint32_t sum, dat[ti->len/4+2], raw2[2];
         char *block;
         uint16_t trk, raw[2];
 
@@ -211,7 +211,7 @@ static void *turrican_3b_write_raw(
     while (stream_next_bit(s) != -1) {
 
         unsigned int i;
-        uint32_t sum, dat[ti->len/4], raw2[2];
+        uint32_t sum, dat[ti->len/4+2], raw2[2];
         uint16_t word_sync;
         char *block;
 

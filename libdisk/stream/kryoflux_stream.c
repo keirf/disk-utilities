@@ -243,7 +243,8 @@ struct stream_type kryoflux_stream = {
     .close = kfs_close,
     .select_track = kfs_select_track,
     .reset = kfs_reset,
-    .next_flux = kfs_next_flux
+    .next_flux = kfs_next_flux,
+    .suffix = { NULL }
 };
 
 /*

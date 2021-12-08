@@ -274,8 +274,10 @@ found:
             t.u.num.end = NR_TRACKS-1;
             t.u.num.step = 1;
         }
-        if (t.type != NUM)
+        if (t.type != NUM) {
+            memfree(list);
             break;
+        }
         start = t.u.num.start;
         end = t.u.num.end;
         step = t.u.num.step;
