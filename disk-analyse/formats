@@ -30,6 +30,8 @@ probe_amiga
 
 "4th & Inches" = herndon_longtrack
 
+"50 Great Games" = amigados
+
 # Retail release uses RNC Gap, other releases may be AmigaDOS!
 "5th Gear" = rnc_gap
 
@@ -239,6 +241,8 @@ probe_amiga
 "Asterix Operation Getafix" = amigados
 
 "Atomic Robo-Kid" = amigados_copylock
+
+"Atomino" = amigados
 
 "AV8B Harrier Assault" = amigados
 
@@ -481,6 +485,8 @@ probe_amiga
 
 "Cadaver" = amigados_copylock
 
+"Caesar" = amigados
+
 "Caesar Deluxe" = amigados
 
 "California Games Disk 1"
@@ -502,6 +508,8 @@ probe_amiga
     1 copylock amigados_unknown_length
     2-3 amigados infogrames_longtrack
     * amigados
+
+"Captain Dynamo" = amigados_copylock
 
 "Captive" # Tracks 155+ may be empty
     0 amigados
@@ -2049,6 +2057,8 @@ probe_amiga
 "Rebellion"
     * amigados fun_factory
 
+"Red Storm Rising" = amigados
+
 # Retail release uses RNC Gap
 # Release in Virtual Reality Vol2 is Copylock!
 "Resolution 101" = amigados_copylock
@@ -2435,6 +2445,12 @@ probe_amiga
 "Striker"
     * amigados_unknown_length head_over_heels
     
+# Budget release (Energize): Has a longtrack on both sides of track 0
+# but does not seem to be checked!
+"Striker Number 9"
+    0-1 amigados_long_102200
+    * amigados
+    
 "Strip Poker II Plus"
     1 protec_longtrack
     * amigados
@@ -2485,6 +2501,8 @@ probe_amiga
     158 tiertex_longtrack
     159 protoscan_longtrack
     * ignore
+
+"Super Scramble Simulator" = amigados_protoscan_longtrack
 
 "Super Ski" = amigados
 
@@ -2690,6 +2708,10 @@ probe_amiga
 "Their Finest Hour" = amigados
 
 "Theme Park" = amigados
+
+# 4 Disk Compilation using a mix of ADOS + Elite C formats!
+"Thrill Time: Platinum 2"
+    * amigados elite_c
 
 "Thomas The Tank Engine's Pinball" = amigados
 
