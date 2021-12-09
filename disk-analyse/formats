@@ -2810,8 +2810,9 @@ probe_amiga
     27 factor5_hiscore
     * turrican amigados_long_108800 amigados
 
+# Versions: Retail, MAX Compilation
 "Turrican II"
-    0 amigados 
+    0-1 amigados_unknown_length factor5_hiscore 
     1 factor5_hiscore
     2-159 turrican_2
     160 factor5_hiscore
