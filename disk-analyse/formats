@@ -3173,9 +3173,13 @@ acorn_adfs_d_e
 acorn_adfs_f
     * acorn_adfs_f
 
-# Atari ST
+# Atari ST (generic)
 atari_st
     * ibm_mfm_dd
+
+# Atari ST (720K)
+atari_st_720kb
+    * atari_st_720kb
 
 ##########################################################
 # IBM-MFM Generic Formats (auto-detect sector arrangement)

@@ -119,6 +119,7 @@ static void ibm_img_read_raw(
         continue;
 
     gap3 = ((ti->type == TRKTYP_ibm_pc_dd) ? 84
+            : (ti->type == TRKTYP_atari_st_720kb) ? 84
             : (ti->type == TRKTYP_ibm_pc_dd_10sec) ? 30
             : 108);
 
@@ -169,6 +170,9 @@ void *ibm_img_write_sectors(
     struct track_info *ti = &d->di->track[tracknr];
     char *block;
     bool_t iam = 1;
+
+    if (ti->type == TRKTYP_atari_st_720kb)
+        iam = 0;
 
     if (sectors->nr_bytes < ti->len)
         return NULL;
@@ -358,6 +362,19 @@ struct track_handler acorn_adfs_f_handler = {
  * FM decode support:
  *   DFS 40-track - 40tk DS 10/256  200K  FM/SD
  *   DFS 80-track - 80th DS 10/256  400K  FM/SD */
+
+struct track_handler atari_st_720kb_handler = {
+    .density = trkden_double,
+    .bytes_per_sector = 512,
+    .nr_sectors = 9,
+    .write_raw = ibm_img_write_raw,
+    .read_raw = ibm_img_read_raw,
+    .write_sectors = ibm_img_write_sectors,
+    .read_sectors = ibm_img_read_sectors,
+    .extra_data = & (struct ibm_extra_data) {
+        .sector_base = 1
+    }
+};
 
 /*
  * Local variables:
