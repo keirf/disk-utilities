@@ -80,14 +80,22 @@ static unsigned int *kfs_decode_index(unsigned char *dat, unsigned int datsz)
     for (i = 0; i < datsz; ) {
         switch (dat[i]) {
         case 0xd: /* oob */ {
-            uint32_t pos;
-            uint16_t sz = le16toh(*(uint16_t *)&dat[i+2]);
+            int sz;
             i += 4;
-            pos = le32toh(*(uint32_t *)&dat[i+0]);
-            if (dat[i-3] == 2) { /* index */
-                if (idx_i == MAX_INDEX)
+            sz = min_t(int, le16toh(*(uint16_t *)&dat[i-2]), datsz - i);
+            switch (dat[i-3]) {
+            case 0x2: { /* index */
+                uint32_t pos;
+                if ((idx_i == MAX_INDEX) || (sz < 4))
                     goto fail;
+                pos = le32toh(*(uint32_t *)&dat[i+0]);
                 idxs[idx_i++] = pos;
+                break;
+            }
+            case 0xd: /* eof */
+                i = datsz;
+                sz = 0;
+                break;
             }
             i += sz;
             break;
@@ -199,16 +207,20 @@ static int kfs_next_flux(struct stream *s)
             i += 1; kfss->stream_idx += 1;
             goto two_byte_sample;
         case 0xd: /* oob */ {
-            uint32_t pos;
-            uint16_t sz = le16toh(*(uint16_t *)&dat[i+2]);
+            int sz;
             i += 4;
-            pos = le32toh(*(uint32_t *)&dat[i+0]);
+            sz = min_t(int, le16toh(*(uint16_t *)&dat[i-2]), kfss->datsz - i);
             switch (dat[i-3]) {
             case 0x1: /* stream read */
-            case 0x3: /* stream end */
+            case 0x3: /* stream end */ {
+                uint32_t pos;
+                if (sz < 4)
+                    errx(1, "Premature end of stream");
+                pos = le32toh(*(uint32_t *)&dat[i+0]);
                 if (pos != kfss->stream_idx)
                     errx(1, "Out-of-sync during track read");
                 break;
+            }
             case 0x2: /* index */
                 break;
             case 0xd: /* eof */
