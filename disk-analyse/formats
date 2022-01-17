@@ -556,6 +556,8 @@ probe_amiga
     1 amigados chaos_strikes_back_weak
     * amigados
 
+"Chariots of Wrath" = amigados
+
 "Chase H.Q. II" = amigados_copylock
 
 # Arcade Action Game 2
@@ -1455,6 +1457,8 @@ probe_amiga
 # Retail appears to use unsupported ANCO protection, Budget release is Copylock!
 "Karting Grand Prix" = amigados_copylock
 
+"Kenny Dalglish Soccer Manager" = amigados_copylock
+
 "KGB" = amigados
 
 "Khalaan" = amigados
@@ -1717,7 +1721,8 @@ probe_amiga
 
 "Monkey Island 2" = amigados
 
-"Monopoly" = amigados
+# Various versions, ADOS or ADOS + Protec! 
+"Monopoly" = amigados_copylock
 
 "Moonmist" = amigados
 
@@ -1734,6 +1739,8 @@ probe_amiga
 "Mortal Kombat II" = rnc_pdos_copylock
 
 "Motorbike Madness" = amigados_copylock
+
+"Motorhead" = amigados_copylock
 
 "Mr.HELI" = amigados
 
@@ -2092,6 +2099,10 @@ probe_amiga
 "Rise Of The Robots"
     * amigados smartdos
 
+"RISK"
+    1 speedlock amigados
+    * amigados
+
 # Protection checks for track length of at least 110164 bits, and does not
 # care about gap contents. Actual track length is just over 111000 bits.
 "Road Raider"
@@ -2180,6 +2191,9 @@ probe_amiga
 
 "Scooby Doo"
     * amigados scooby_doo
+
+# AKA Scrabble Deluxe, Computer Scrabble. Uses PROTEC track protection! 
+"Scrabble" = amigados_copylock
 
 # AmigaDOS Extended (Header)
 "Second Samurai" = amigados
@@ -2918,6 +2932,10 @@ probe_amiga
 "Voyager" = amigados_copylock
 
 "Voyages Of Discovery" = amigados
+
+"Vroom"
+    158 silmarils_longtrack
+    * amigados f1
 
 "Walker" = amigados_copylock
 

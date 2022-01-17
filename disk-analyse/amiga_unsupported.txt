@@ -64,6 +64,9 @@ ADOS + rnc_protect_process + unsupported Rob Northen protection on track 0.1 of 
 Double Dragon II:
 CyberDOS (unsupported)
 
+FEARS:
+Unsupported format!
+
 Flimbos Quest: (Kixx)
 Unsupported format!
 
@@ -154,6 +157,9 @@ Unsupported format!
 Pang: Retail + Hit Squad (Possibly a format by Pierre Adane)
 Unsupported format!
 
+Periheliom:
+Unsupported format!
+
 Pinball Fantasies OCS/ECS:
 Unsupported format!
 
@@ -181,14 +187,17 @@ ADOS + protection on tracks 80.0/80.1
 Shuffle:
 Unsupported format!
 
-Skid Marks:
-Unsupported format!
+Skidmarks:
+Unsupported format! (ACIDS own MFM, identified as Apprentice but it's not)
 
 Stardust:
 Unsupported format!
 
 Subtrade: Return to Irata:
 Unsupported format!
+
+Super Skidmarks:
+Unsupported format! (ACIDS own MFM, identified as Apprentice but it's not)
 
 Takado:
 ADOS + protection on tracks 80.0/80.1
