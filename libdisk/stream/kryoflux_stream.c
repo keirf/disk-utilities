@@ -42,7 +42,7 @@ struct kfs_stream {
 
 static struct stream *kfs_open(const char *name, unsigned int data_rpm)
 {
-    char track0[strlen(name) + 9];
+    char track0[strlen(name) + 10];
     struct stat sbuf;
     struct kfs_stream *kfss;
     char *basename;
@@ -67,6 +67,7 @@ static struct stream *kfs_open(const char *name, unsigned int data_rpm)
 static void kfs_close(struct stream *s)
 {
     struct kfs_stream *kfss = container_of(s, struct kfs_stream, s);
+    memfree(kfss->idxs);
     memfree(kfss->dat);
     memfree(kfss->basename);
     memfree(kfss);
