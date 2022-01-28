@@ -54,8 +54,10 @@ static struct stream *kfs_open(const char *name, unsigned int data_rpm)
     if (stat(track0, &sbuf) < 0) {
         strcat(basename, "/");
         sprintf(track0, "%s%02u.%u.raw", basename, 0, 0);
-        if (stat(track0, &sbuf) < 0)
+        if (stat(track0, &sbuf) < 0) {
+            memfree(basename);
             return NULL;
+        }
     }
 
     kfss = memalloc(sizeof(*kfss));
