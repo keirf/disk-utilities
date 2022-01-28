@@ -412,6 +412,11 @@ static void *ibm_mfm_write_raw(
     }
 
 out:
+    for (cur_sec = ibm_secs; cur_sec; ) {
+        next_sec = cur_sec->next;
+        memfree(cur_sec);
+        cur_sec = next_sec;
+    }
     return ibm_track;
 }
 
@@ -934,6 +939,11 @@ static void *ibm_fm_write_raw(
     }
 
 out:
+    for (cur_sec = ibm_secs; cur_sec; ) {
+        next_sec = cur_sec->next;
+        memfree(cur_sec);
+        cur_sec = next_sec;
+    }
     if (is_dec)
         stream_set_density(s, stream_get_density(s)/2);
     return ibm_track;
