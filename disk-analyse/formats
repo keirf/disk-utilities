@@ -26,9 +26,14 @@ probe_amiga
 "3D Pool"
     * rnc_triformat copylock amigados ibm_pc_dd    
 
+"3D World Soccer" = amigados
+
 "4D Sports Driving" = amigados
 
 "4th & Inches" = herndon_longtrack
+
+# Tracks may be mastered long causing harmless warnings!
+"5 Intelligent Strategy Games" = amigados
 
 "50 Great Games" = amigados
 
@@ -58,6 +63,8 @@ probe_amiga
 "Action In Hollywood" = amigados
 
 "Action Stations" = amigados
+
+"Advantage Tennis" = amigados
 
 "African Raiders-01" = amigados
 
@@ -97,6 +104,8 @@ probe_amiga
 "Alcatraz" = amigados
 
 "Alfred Chicken" = amigados
+
+"Alien 3" = amigados_copylock
 
 # Alien Breed: Disk 2 Track 0 is a custom protection track
 "Alien Breed"
@@ -315,9 +324,10 @@ probe_amiga
 
 "Batman Returns" = amigados_copylock
 
+# Re-releases maybe AmigaDOS
 "Batman The Caped Crusader" # Tracks 132+ may be empty
     0-1 amigados
-    * special_fx
+    * special_fx amigados
 
 # Various releases, 2 Disks + Copylock, 1 Disk + Copylock, 1 Disk no Copylock!
 # Tracks on some releases may be mastered long causing harmless warnings!
@@ -328,6 +338,8 @@ probe_amiga
     * amigados konami
 
 "Battle Chess" = amigados
+
+"Battle Isle 93" = amigados
 
 "Battle Isle" = amigados
 
@@ -548,7 +560,11 @@ probe_amiga
 # UK version may have tracks mastered long causing harmless warnings!
 "Champions Of Krynn" = amigados
 
+"Championship Manager 93" = amigados
+
 "Championship Manager" = amigados
+
+"Championship Manager Italia" = amigados
 
 "Championship Run" = amigados_copylock
 
@@ -567,6 +583,8 @@ probe_amiga
 "Chess Player 2150" = amigados
 
 "Chicago 90" = amigados
+
+"Chronicles Of Omega" = amigados_copylock
 
 "Chrono Quest" = amigados
 
@@ -605,6 +623,8 @@ probe_amiga
 "Compendium Six" = amigados
 
 "Conan The Cimmerian" = amigados
+
+"Conflict Europe" = amigados_copylock
 
 "Conqueror"
     * amigados spherical conqueror
@@ -701,6 +721,8 @@ probe_amiga
 "Dark Spyre"
     * amigados rainbird
 
+"Darkman" = amigados_copylock
+
 "Darkmere" = amigados_copylock
 
 # Astra Pack Game 1
@@ -784,6 +806,9 @@ probe_amiga
 
 "Donk! - The Samurai Duck!" = rnc_pdos
 
+# PROTEC
+"Double Dragon" = amigados_copylock
+
 "Double Dragon 3" = amigados_copylock
 
 "Dragon's Breath"
@@ -808,8 +833,9 @@ probe_amiga
 
 # Retail uses speedlock, other releases seen do not!
 "Drivin' Force"
-    0-1 speedlock amigados
-    * psygnosis_a
+    0 amigados
+    1 speedlock amigados
+    * digital_magic
 
 "Dugger" # No empty tracks
     * amigados dugger
@@ -822,6 +848,8 @@ probe_amiga
 "Dungeon Master"
     1 amigados dungeon_master_weak
     * amigados
+
+"Dungeon Master II" = amigados
 
 "Dungeon Quest" = amigados
 
@@ -849,9 +877,8 @@ probe_amiga
     84-158 ibm_pc_dd_10sec
     * ignore
 
-"Elf"
-    1 protec_longtrack
-    * amigados
+# Retail uses PROTEC, re-releases may use Copylock!
+"Elf" = amigados_copylock
 
 # v2.0 / Lots of tracks with incorrect (but deliberate) track number! 
 "Elite" = amigados
@@ -859,6 +886,8 @@ probe_amiga
 "Elvira: Mistress Of The Dark" = amigados
 
 "Elvira II: The Jaws Of Cerberus" = amigados
+
+"Embryo" = amigados
 
 "Emerald Mine II" = amigados
 
@@ -882,6 +911,8 @@ probe_amiga
     158 tiertex_longtrack
     159 protoscan_longtrack
     * amigados
+
+"European Championship 1992" = amigados_copylock
 
 "Exile" = amigados_copylock
 
@@ -982,6 +1013,11 @@ probe_amiga
 
 "Fire And Brimstone"
     * amigados protec_longtrack ibm_pc_dd_10sec
+    
+"Firehawk" = amigados_copylock
+
+# Educational Game
+"First Letters" = amigados
 
 "First Samurai" = amigados_copylock
 
@@ -1194,6 +1230,8 @@ probe_amiga
 
 "Hacker II" = amigados
 
+"Hagar" = amigados
+
 "Hard Drivin'" = rnc_gap
 
 "Hardball"
@@ -1320,6 +1358,8 @@ probe_amiga
 # Tracks may be mastered long causing harmless warnings!
 "Ingrid's Back" = amigados
 
+"Innocent Until Caught" = amigados
+
 "Insanity Fight"
     1 ignore
     * amigados
@@ -1335,6 +1375,9 @@ probe_amiga
     78-79 ignore
     128-133 ignore
     * amigados intact
+
+# Compilation by Wicked, mastered with Blizzard 1.0 Virus on both disks!!
+"International Arcade Action" = amigados
 
 # Disk 1 has data up to track 81
 "International Championship Wrestling" = amigados
@@ -1869,6 +1912,9 @@ probe_amiga
 
 "P.P. Hammer" = amigados
 
+# Tracks 21 to 79 on Side 1 are unformatted
+"Pac-Land" = amigados
+
 "Pac-Mania" = amigados
 
 "Pacific Islands" = amigados
@@ -2008,6 +2054,8 @@ probe_amiga
 "Projectyle"
     1 speedlock
     * amigados
+
+"Pub Trivia" = amigados_copylock
 
 # TODO: Protection on tracks 140-141. Same as on RanX and Iron Lord, also
 # by Ubisoft (but on tracks 180-181 on those titles).
@@ -2195,11 +2243,13 @@ probe_amiga
 "Scooby Doo"
     * amigados scooby_doo
 
-# AKA Scrabble Deluxe, Computer Scrabble. Uses PROTEC track protection! 
+# AKA Scrabble Deluxe, Computer Scrabble. Uses PROTEC or Copylock protection! 
 "Scrabble" = amigados_copylock
 
 # AmigaDOS Extended (Header)
 "Second Samurai" = amigados
+
+"Seconds Out" = amigados
 
 "Sensible Golf" = amigados
 
@@ -2342,6 +2392,8 @@ probe_amiga
 
 "Sleepwalker" = amigados_copylock
 
+"Slip Stream" = amigados
+
 "Spy vs Spy: The Island Caper" = amigados
 
 "Snoball In Hell" = amigados
@@ -2349,6 +2401,8 @@ probe_amiga
 "Soccer Kid" = amigados
 
 "Sorcerer" = amigados
+
+"Space Gun" = amigados_copylock
 
 "Space Hulk" = amigados
 
@@ -2441,6 +2495,10 @@ probe_amiga
     158-159 amigados_long_105500
     * amigados
 
+# Retail, Kixx re-releases: Amiga + Amiga/PC
+"Street Fighter"
+    * rnc_triformat amigados ibm_pc_dd
+
 # Various versions of this exist, this is the missing version not
 # supported in WHDLoad, uses the Rainbird format tracks + Copylock!
 # Many tracks are Unformatted (inc all odd tracks except Copylock).
@@ -2473,7 +2531,7 @@ probe_amiga
     * amigados
 
 "Stryx"
-    * amigados psygnosis_a  protec_longtrack
+    * amigados psygnosis_a protec_longtrack
 
 "Stunt Car Racer" = rnc_gap
 
@@ -2591,6 +2649,7 @@ probe_amiga
 
 "Tennis Cup II" = amigados
 
+# Disk 2 may have track 0.1 unformatted!
 "Terminator 2: Judgment Day" = amigados_copylock
 
 "Terminator 2: The Arcade Game" = amigados_copylock
@@ -3061,6 +3120,15 @@ probe_amiga
 "Xiphos"
     112 speedlock
     * amigados
+
+"Xybots" = amigados_copylock
+
+# Side 1 is unformatted!
+# robocod format also works for this title!
+"Yogi & Friends in the Greed Monster"
+    0 amigados
+    1-159/2 ignore
+    * rainbird
 
 "Yogi's Big Clean Up"
     * amigados yogis_escape
