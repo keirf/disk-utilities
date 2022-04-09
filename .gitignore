@@ -1,3 +1,10 @@
+*.adf
+*.ct
+*.dsk
+*.hfe
+*.img
+*.ipf
+*.scp
 *.[oa]
 *.[oa]pic
 .*.d
