@@ -526,6 +526,9 @@ probe_amiga
 
 "Captain Dynamo" = amigados_copylock
 
+"Captain Planet" # Tracks 155+ may be empty
+    * amigados copylock ratt_dos_sync_8944
+
 "Captive" # Tracks 155+ may be empty
     0 amigados
     1 copylock
@@ -760,6 +763,9 @@ probe_amiga
 
 "Defenders Of The Earth"
     * amigados speedlock psygnosis_a
+
+"Deliverance"
+    * amigados deliverance
 
 # Key Disk Version #Also works for Deluxe Paint II
 "Deluxe Paint"

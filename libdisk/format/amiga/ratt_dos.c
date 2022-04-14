@@ -4,6 +4,7 @@
  * Custom format used by Anthony "Ratt" Crowther.
  * 
  * Written in 2012 by Keir Fraser
+ * Updated to support Captain Planet in 2022 by Keith Krellwitz
  * 
  * RAW TRACK LAYOUT:
  *  u16 <sync>
@@ -26,18 +27,41 @@ struct ratt_file {
     uint32_t pad, length;
 };
 
+struct ratt_dos_info {
+    uint16_t type;
+    uint32_t key;
+    uint32_t step;
+    uint16_t sync;
+};
+
+const static struct ratt_dos_info ratt_dos_infos[] = {
+    { TRKTYP_ratt_dos_1800, 0xeff478edu, 0xbffb7e5eu, 0x4522 },
+    { TRKTYP_ratt_dos_1810, 0xeff478edu, 0xbffb7e5eu, 0x4522 },
+    { TRKTYP_ratt_dos_sync_8944, 0xb9280daau, 0x66ea7c6eu, 0x8944 }
+};
+
+static const struct ratt_dos_info *find_ratt_dos_info(uint16_t type)
+{
+    const struct ratt_dos_info *ratt_dos_info;
+    for (ratt_dos_info = ratt_dos_infos; ratt_dos_info->type != type; ratt_dos_info++)
+        continue;
+    return ratt_dos_info;
+}
+
 static void *ratt_dos_write_raw(
     struct disk *d, unsigned int tracknr, struct stream *s)
 {
     struct track_info *ti = &d->di->track[tracknr];
     unsigned int max_longs = ti->bytes_per_sector / 4;
-    uint16_t sync = 0x4522;
+    const struct ratt_dos_info *ratt_dos_info = find_ratt_dos_info(ti->type);
+    uint16_t sync = ratt_dos_info->sync;
 
     if (tracknr != 2) {
         struct track_info *t2 = &d->di->track[2];
         struct ratt_file *f = (struct ratt_file *)&t2->dat[0xbc];
         if ((t2->type != TRKTYP_ratt_dos_1800) &&
-            (t2->type != TRKTYP_ratt_dos_1810))
+            (t2->type != TRKTYP_ratt_dos_1810) &&
+            (t2->type != TRKTYP_ratt_dos_sync_8944))
             return NULL;
         while (f->name[0] != '\0') {
             uint8_t last_trk = f->first_trk + f->nr_trks - 1;
@@ -72,8 +96,8 @@ static void *ratt_dos_write_raw(
         if (nr_longs > max_longs)
             return NULL;
 
-        key = 0xeff478edu;
-        step = 0xbffb7e5eu;
+        key = ratt_dos_info->key;
+        step = ratt_dos_info->step;
         for (i = 0; i < nr_longs; i++) {
             if (stream_next_bytes(s, raw, 8) == -1)
                 goto fail;
@@ -107,6 +131,7 @@ static void ratt_dos_read_raw(
     struct disk *d, unsigned int tracknr, struct tbuf *tbuf)
 {
     struct track_info *ti = &d->di->track[tracknr];
+    const struct ratt_dos_info *ratt_dos_info = find_ratt_dos_info(ti->type);
     uint32_t header, csum, key, step, *dat = (uint32_t *)ti->dat;
     uint16_t sync;
     unsigned int i, nr_longs;
@@ -118,8 +143,8 @@ static void ratt_dos_read_raw(
     tbuf_bits(tbuf, SPEED_AVG, bc_raw, 16, sync);
     tbuf_bits(tbuf, SPEED_AVG, bc_mfm_odd_even, 32, ~header);
 
-    key = 0xeff478edu;
-    step = 0xbffb7e5eu;
+    key = ratt_dos_info->key;
+    step = ratt_dos_info->step;
     for (i = 0; i < nr_longs; i++) {
         tbuf_bits(tbuf, SPEED_AVG, bc_mfm_odd_even, 32, be32toh(dat[i]) + key);
         key += step;
@@ -138,6 +163,13 @@ struct track_handler ratt_dos_1800_handler = {
 
 struct track_handler ratt_dos_1810_handler = {
     .bytes_per_sector = 0x1810,
+    .nr_sectors = 1,
+    .write_raw = ratt_dos_write_raw,
+    .read_raw = ratt_dos_read_raw
+};
+
+struct track_handler ratt_dos_sync_8944_handler = {
+    .bytes_per_sector = 0x1800,
     .nr_sectors = 1,
     .write_raw = ratt_dos_write_raw,
     .read_raw = ratt_dos_read_raw
