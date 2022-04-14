@@ -764,6 +764,9 @@ probe_amiga
 "Defenders Of The Earth"
     * amigados speedlock psygnosis_a
 
+"Deliverance"
+    * amigados deliverance
+
 # Key Disk Version #Also works for Deluxe Paint II
 "Deluxe Paint"
     1 amigados amigados_long_111000
