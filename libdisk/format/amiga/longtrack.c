@@ -146,11 +146,39 @@ struct track_handler tiertex_longtrack_handler = {
  *  Specifically, protection checks for > 6500 0xaaaa/0x5555 raw words
  *  starting 12 bytes into the DMA buffer (i.e., 12 bytes after the sync) */
 
+/* TRKTYP_lankhor1_longtrack: Used on Outzone Lankhor.
+ *  u16 0xa144 :: sync
+ *  u8[] "PUTE" (encoded bc_mfm)
+ *  Rest of track is (MFM-encoded) zeroes
+ *  Track is checked to be >= 104128 bits long (track is ~106000 bits long)
+ *  Specifically, protection checks for > 6500 0xaaaa/0x5555 raw words
+ *  starting 12 bytes into the DMA buffer (i.e., 12 bytes after the sync) */
+
+struct silmarils_info {
+    uint16_t type;
+    uint32_t sig;
+    unsigned int bitlen;
+};
+
+const static struct silmarils_info silmarils_infos[] = {
+    { TRKTYP_silmarils_longtrack, 0x524f4430, 110000 },  /* "ROD0" */
+    { TRKTYP_lankhor1_longtrack, 0x50555445, 106000 }    /* "PUTE" */
+};
+
+static const struct silmarils_info *find_silmarils_info(uint16_t type)
+{
+    const struct silmarils_info *silmarils_info;
+    for (silmarils_info = silmarils_infos; silmarils_info->type != type; silmarils_info++)
+        continue;
+    return silmarils_info;
+}
+
 static void *silmarils_longtrack_write_raw(
     struct disk *d, unsigned int tracknr, struct stream *s)
 {
     struct track_info *ti = &d->di->track[tracknr];
     uint32_t raw[2];
+    const struct silmarils_info *silmarils_info = find_silmarils_info(ti->type);
 
     while (stream_next_bit(s) != -1) {
         ti->data_bitoff = s->index_offset_bc - 15;
@@ -158,13 +186,13 @@ static void *silmarils_longtrack_write_raw(
             continue;
         stream_next_bytes(s, raw, 8);
         mfm_decode_bytes(bc_mfm, 4, raw, raw);
-        if (be32toh(raw[0]) != 0x524f4430) /* "ROD0" */
+        if (be32toh(raw[0]) != silmarils_info->sig)
             continue;
         if (!check_sequence(s, 6500, 0x00))
             continue;
         if (!check_length(s, 104128))
             break;
-        ti->total_bits = 110000;
+        ti->total_bits = silmarils_info->bitlen;
         return memalloc(0);
     }
 
@@ -174,15 +202,22 @@ static void *silmarils_longtrack_write_raw(
 static void silmarils_longtrack_read_raw(
     struct disk *d, unsigned int tracknr, struct tbuf *tbuf)
 {
+    struct track_info *ti = &d->di->track[tracknr];
     unsigned int i;
+    const struct silmarils_info *silmarils_info = find_silmarils_info(ti->type);
 
     tbuf_bits(tbuf, SPEED_AVG, bc_raw, 16, 0xa144);
-    tbuf_bits(tbuf, SPEED_AVG, bc_mfm, 32, 0x524f4430); /* "ROD0" */
+    tbuf_bits(tbuf, SPEED_AVG, bc_mfm, 32, silmarils_info->sig);
     for (i = 0; i < 6550; i++)
         tbuf_bits(tbuf, SPEED_AVG, bc_mfm, 8, 0);
 }
 
 struct track_handler silmarils_longtrack_handler = {
+    .write_raw = silmarils_longtrack_write_raw,
+    .read_raw = silmarils_longtrack_read_raw
+};
+
+struct track_handler lankhor1_longtrack_handler = {
     .write_raw = silmarils_longtrack_write_raw,
     .read_raw = silmarils_longtrack_read_raw
 };

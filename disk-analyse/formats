@@ -1911,6 +1911,9 @@ probe_amiga
     2-3 infogrames_longtrack ibm_pc_dd_10sec
     * ibm_pc_dd_10sec
 
+"Outzone"
+    * amigados outzone lankhor1_longtrack
+
 # Sega: (Sega-style tracks): Tracks 126 and 128+ may be empty
 # US Gold: (AmigaDOS-style tracks): Tracks 86/88/90 may be empty
 "Out Run"
@@ -2887,6 +2890,14 @@ probe_amiga
 
 # Tracks may be mastered long causing harmless warnings!
 "Trolls" = amigados
+
+"Turbo OutRun Disk 1"
+    0-95 amigados 
+    * ignore
+
+"Turbo OutRun Disk 2"
+    159 amigados protoscan_longtrack
+    * tiertex_longtrack amigados 
 
 "Turrican" # Tracks 158-159 may be empty
     27 factor5_hiscore
