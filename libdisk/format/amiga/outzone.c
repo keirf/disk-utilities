@@ -65,13 +65,12 @@ static void outzone_read_raw(
     struct disk *d, unsigned int tracknr, struct tbuf *tbuf)
 {
     struct track_info *ti = &d->di->track[tracknr];
-    uint32_t *dat = (uint32_t *)ti->dat, csum, i;
+    uint32_t *dat = (uint32_t *)ti->dat, i;
 
     tbuf_bits(tbuf, SPEED_AVG, bc_raw, 16, 0x4489);
     tbuf_bits(tbuf, SPEED_AVG, bc_raw, 16, 0x5554);
-    for (i = csum = 0; i < ti->len/4; i++) {
+    for (i = 0; i < ti->len/4; i++) {
         tbuf_bits(tbuf, SPEED_AVG, bc_mfm_even_odd, 32, be32toh(dat[i]));
-        csum += be32toh(dat[i]);
     }
 }
 
