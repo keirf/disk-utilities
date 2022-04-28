@@ -2896,8 +2896,9 @@ probe_amiga
     * ignore
 
 "Turbo OutRun Disk 2"
-    159 amigados protoscan_longtrack
-    * tiertex_longtrack amigados 
+    157 tiertex_longtrack
+    159 protoscan_longtrack
+    * amigados
 
 "Turrican" # Tracks 158-159 may be empty
     27 factor5_hiscore
