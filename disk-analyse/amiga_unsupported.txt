@@ -26,9 +26,6 @@ Unsupported format!
 Capone:
 ADOS + unsupported protection on track 42.0
 
-Captain Planet and the Planeteers:
-Unsupported rattDOS
-
 Carcharadon:
 Unsupported format!
 
@@ -47,9 +44,6 @@ ADOS + unsupported Rob Northen protection on track 0.1
 
 Deflektor:
 Seems to have a longtrack on 0.0, all other tracks are unsupported format
-
-Deliverance:
-Unsupported format!
 
 Demolition Retail + Pocket Power Budget:
 ADOS + Protection on tracks 80.0/80.1
@@ -232,9 +226,6 @@ Unsupported format, protection (?) on tracks 79.0/79.1 or tracks 80.0/80.1 (dupl
 
 The Seven Gates of Jambala: (Retail + Thalion The First Year)
 Track 0.0 ADOS + IBM MFM 6 sectors, protection on tracks 15.0/79.0, all tracks appear long, around 106100
-
-Turbo OutRun: (Demons & Drivers + SEGA Master Mix + Wheels of Fire)
-Unsupported format! Tiertex / Protoscan protection on Disk 2 tracks 78.1 / 79.1
 
 Turbo Trax: (Budget)
 ADOS + IBM 10 sector + unformatted tracks + unsupported 128 byte MFM tracks on 1.1, 4.1, 5.1, 6.1, 7.1, 8.1
