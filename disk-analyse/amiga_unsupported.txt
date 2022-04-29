@@ -18,8 +18,6 @@ Disk 2 ADOS to tracks 64.1 rest unformatted! protection on track 79.0
 APB:
 ADOS + unsupported copylock
 
-AUI Superdisks using the Diskspare format are not supported!
-
 Awesome DEMO Disk:
 Unsupported format!
 
