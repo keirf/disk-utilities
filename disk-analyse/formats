@@ -684,6 +684,9 @@ probe_amiga
 
 "Custodian" = amigados_copylock
 
+"Cyber World"
+    * amigados_long_102200 cyberworld zoom_longtrack
+
 "Cyberball" = amigados_copylock
 
 "Cyberblast"
@@ -1098,6 +1101,9 @@ probe_amiga
     * ignore
 
 "Future Wars" = amigados
+
+"G.Nius"
+    * amigados lankhor2_longtrack
 
 "G-LOC R360" = amigados_copylock
 
@@ -1969,6 +1975,19 @@ probe_amiga
 
 "Pinball Dreams" # Tracks 1, 66-155, 158+ may be empty on either disk
     * amigados pinball_dreams
+
+"Pinball Fantasies Program"
+    0 amigados_long_105500 
+    1-98 pinball_fantasies
+    100-118 pinball_fantasies
+    120-132 pinball_fantasies
+    134-146 pinball_fantasies
+    148-156 pinball_fantasies
+    158-159 pinball_fantasies
+    * ignore
+
+"Pinball Fantasies Tables"
+    * amigados_long_105500 pinball_fantasies_tables
 
 "Pinball Illusions AGA" = amigados
 
@@ -3172,6 +3191,15 @@ probe_amiga
 
 "Zool 2"
     * amigados ss_mfm
+
+"Zoom"
+    0 amigados_long_102200
+    2-79 zoom_a zoom_b
+    80 amigados_long_102200
+    82-118 zoom_a zoom_b
+    119 zoom_longtrack
+    120-147 zoom_a zoom_b
+    * ignore
 
 "Zork I" = amigados
 

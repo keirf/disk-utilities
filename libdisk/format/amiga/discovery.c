@@ -301,61 +301,6 @@ struct track_handler zoom_b_handler = {
 };
 
 
-static int check_sequence(struct stream *s, unsigned int nr, uint8_t byte)
-{
-    while (--nr) {
-        stream_next_bits(s, 16);
-        if ((uint8_t)mfm_decode_word(s->word) != byte)
-            break;
-    }
-    return !nr;
-}
-
-static int check_length(struct stream *s, unsigned int min_bits)
-{
-    stream_next_index(s);
-    return (s->track_len_bc >= min_bits);
-}
-
-static void *zoom_prot_write_raw(
-    struct disk *d, unsigned int tracknr, struct stream *s)
-{
-    struct track_info *ti = &d->di->track[tracknr];
-
-    while (stream_next_bit(s) != -1) {
-        ti->data_bitoff = s->index_offset_bc - 15;
-        if (!check_sequence(s, 1000, 0xaa))
-            continue;
-        if (!check_length(s, 102000))
-            break;
-
-         ti->total_bits = 102386;
-        return memalloc(0);
-    }
-
-    return NULL;
-}
-
-
-
-static void zoom_prot_read_raw(
-    struct disk *d, unsigned int tracknr, struct tbuf *tbuf)
-{
-    unsigned int i;
-
-    tbuf_bits(tbuf, SPEED_AVG, bc_raw, 16, 0x4489 );
-    for (i = 0; i < 6396; i++)
-        tbuf_bits(tbuf, SPEED_AVG, bc_mfm, 8, 0xaa);
-
-}
-// Protetion not finished
-struct track_handler zoom_prot_handler = {
-    .write_raw = zoom_prot_write_raw,
-    .read_raw = zoom_prot_read_raw
-};
-
-
-
 /*
  * Local variables:
  * mode: C

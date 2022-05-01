@@ -154,6 +154,14 @@ struct track_handler tiertex_longtrack_handler = {
  *  Specifically, protection checks for > 6500 0xaaaa/0x5555 raw words
  *  starting 12 bytes into the DMA buffer (i.e., 12 bytes after the sync) */
 
+/* TRKTYP_lankhor2_longtrack: Used on G.Nius Lankhor.
+ *  u16 0xa144 :: sync
+ *  u8[] "genius" (encoded bc_mfm)
+ *  Rest of track is (MFM-encoded) zeroes
+ *  Track is checked to be >= 104128 bits long (track is ~106000 bits long)
+ *  Specifically, protection checks for > 6500 0xaaaa/0x5555 raw words
+ *  starting 12 bytes into the DMA buffer (i.e., 12 bytes after the sync) */
+
 struct silmarils_info {
     uint16_t type;
     uint32_t sig;
@@ -162,7 +170,8 @@ struct silmarils_info {
 
 const static struct silmarils_info silmarils_infos[] = {
     { TRKTYP_silmarils_longtrack, 0x524f4430, 110000 },  /* "ROD0" */
-    { TRKTYP_lankhor1_longtrack, 0x50555445, 106000 }    /* "PUTE" */
+    { TRKTYP_lankhor1_longtrack, 0x50555445, 106000 },   /* "PUTE" */
+    { TRKTYP_lankhor2_longtrack, 0x67656e69, 106000 }    /* "geni" */
 };
 
 static const struct silmarils_info *find_silmarils_info(uint16_t type)
@@ -178,6 +187,7 @@ static void *silmarils_longtrack_write_raw(
 {
     struct track_info *ti = &d->di->track[tracknr];
     uint32_t raw[2];
+    uint16_t raw16[2];
     const struct silmarils_info *silmarils_info = find_silmarils_info(ti->type);
 
     while (stream_next_bit(s) != -1) {
@@ -188,10 +198,17 @@ static void *silmarils_longtrack_write_raw(
         mfm_decode_bytes(bc_mfm, 4, raw, raw);
         if (be32toh(raw[0]) != silmarils_info->sig)
             continue;
+        if (silmarils_info->type == TRKTYP_lankhor2_longtrack){
+            stream_next_bytes(s, raw16, 4);
+            mfm_decode_bytes(bc_mfm, 2, raw16, raw16);
+            if(be16toh(raw16[0]) != 0x7573) /* "us" */
+                continue;
+        }
         if (!check_sequence(s, 6500, 0x00))
             continue;
         if (!check_length(s, 104128))
             break;
+
         ti->total_bits = silmarils_info->bitlen;
         return memalloc(0);
     }
@@ -218,6 +235,11 @@ struct track_handler silmarils_longtrack_handler = {
 };
 
 struct track_handler lankhor1_longtrack_handler = {
+    .write_raw = silmarils_longtrack_write_raw,
+    .read_raw = silmarils_longtrack_read_raw
+};
+
+struct track_handler lankhor2_longtrack_handler = {
     .write_raw = silmarils_longtrack_write_raw,
     .read_raw = silmarils_longtrack_read_raw
 };
@@ -557,6 +579,50 @@ static void empty_longtrack_read_raw(
 struct track_handler empty_longtrack_handler = {
     .write_raw = empty_longtrack_write_raw,
     .read_raw = empty_longtrack_read_raw
+};
+
+/* TRKTYP_zoom_longtrack:
+ *  This protections is used by Zoom! and Cyber World
+ *  Check for 0x31f8 bytes of either 0x11, 0x22, 0x44, or 0x88 with a single
+ *  byte that is not 0x11, 0x22, 0x44, or 0x88
+ *  example: 0x22 0x22.....0x22 0xaa 0x22
+. */
+
+static void *zoom_longtrack_write_raw(
+    struct disk *d, unsigned int tracknr, struct stream *s)
+{
+    struct track_info *ti = &d->di->track[tracknr];
+
+    while (stream_next_bit(s) != -1) {
+
+        ti->data_bitoff = s->index_offset_bc - 15;
+        if (!check_sequence(s, 3000, 0xaa))
+            continue;
+        if (!check_length(s, 102000))
+            break;
+
+        ti->total_bits = 102400;
+        return memalloc(0);
+    }
+
+    return NULL;
+}
+
+static void zoom_longtrack_read_raw(
+    struct disk *d, unsigned int tracknr, struct tbuf *tbuf)
+{
+    unsigned int i;
+
+    for (i = 0; i < 6200*2; i++)
+        tbuf_bits(tbuf, SPEED_AVG, bc_raw, 8, 0x22);
+    tbuf_bits(tbuf, SPEED_AVG, bc_raw, 8, 0xaa);
+    for (i = 0; i < 200*2-1; i++)
+        tbuf_bits(tbuf, SPEED_AVG, bc_raw, 8, 0x22);
+}
+
+struct track_handler zoom_longtrack_handler = {
+    .write_raw = zoom_longtrack_write_raw,
+    .read_raw = zoom_longtrack_read_raw
 };
 
 /*
