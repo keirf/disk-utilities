@@ -3222,6 +3222,10 @@ amigados_varrate
 amigados_copylock
     1 rnc_gap amigados copylock protec_longtrack copylock_old
     * amigados
+diskspare_dd
+    * diskspare_dd
+diskspare_hd
+    * diskspare_hd
 rnc_gap
     1 rnc_gap amigados
     * amigados
