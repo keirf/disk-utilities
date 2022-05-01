@@ -12,8 +12,6 @@
  *  u32 data[6306]
  *  u32 0x54555251 signature
  * 
- * Checksum is calculated from the raw data eor and anded 
- * 
  * TRKTYP_pinball_fantasies data layout:
  *  u8 sector_data[6306]
  */
