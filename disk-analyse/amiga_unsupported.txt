@@ -67,9 +67,6 @@ Unsupported format!
 Fred: (Thalion The First Year)
 ADOS + protection on tracks 80.0/80.1
 
-G.Nius: (Future Dreams Compilation)
-ADOS + protection on tracks 50.0/50.1, my dump has a bad ADOS track 48.0!
-
 Garrison:
 Unsupported format!
 
@@ -152,9 +149,6 @@ Pang: Retail + Hit Squad (Possibly a format by Pierre Adane)
 Unsupported format!
 
 Periheliom:
-Unsupported format!
-
-Pinball Fantasies OCS/ECS:
 Unsupported format!
 
 Pinball Prelude:
@@ -245,6 +239,3 @@ ADOS + unsupported copylock
 
 World Championship Boxing Manager:
 Unsupported format!
-
-Zoom!: (only MFM supported)
-ADOS + zoom_a + protection on track 59.1
