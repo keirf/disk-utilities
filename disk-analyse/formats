@@ -1976,17 +1976,7 @@ probe_amiga
 "Pinball Dreams" # Tracks 1, 66-155, 158+ may be empty on either disk
     * amigados pinball_dreams
 
-"Pinball Fantasies Program"
-    0 amigados_long_105500 
-    1-98 pinball_fantasies
-    100-118 pinball_fantasies
-    120-132 pinball_fantasies
-    134-146 pinball_fantasies
-    148-156 pinball_fantasies
-    158-159 pinball_fantasies
-    * ignore
-
-"Pinball Fantasies Tables"
+"Pinball Fantasies"
     * amigados_long_105500 pinball_fantasies_tables
 
 "Pinball Illusions AGA" = amigados
