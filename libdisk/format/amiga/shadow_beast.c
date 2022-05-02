@@ -6,11 +6,16 @@
  * Written in 2014 by Keith Krellwitz
  *
  * RAW TRACK LAYOUT:
- *  u16 0x4489,0x2925,0x2aa9,0x5145,0x544a :: Sync for Beast 1
- *  u16 0x4489,0x2929,0x2a91,0x4a51,0x5492 :: Sync for Beast 2
- *  u32 dat[6200/4] :: Beast 1
- *  u32 dat[6300/4] :: Beast 2
+ *  u16 0xA1 (4489 Sync)
+ * Beast 1:
+ *  u32 0x534f5442 ('SOTB')
+ *  u32 dat[6200/4]
+ * Beast 2:
+ *  u32 0x42535432 ('BST2')
+ *  u32 dat[6300/4]
  *
+ * No checksum of any kind.
+ * 
  * TRKTYP_shadow_beast data layout:
  *  u8 sector_data[6200]
  *
@@ -23,13 +28,13 @@
 
 struct beast_info {
     uint16_t type;
-    uint32_t sig[2];
+    uint32_t sig;
     unsigned int bitlen;
 };
 
 const static struct beast_info beast_infos[] = {
-    { TRKTYP_shadow_beast, { 0x29252aa9, 0x5145544a }, 100400 },
-    { TRKTYP_shadow_beast_2, { 0x29292a91, 0x4a515492 }, 105700 }
+    { TRKTYP_shadow_beast, 0x534f5442, 100400 },
+    { TRKTYP_shadow_beast_2, 0x42535432, 105700 }
 };
 
 static const struct beast_info *find_beast_info(uint16_t type)
@@ -52,21 +57,20 @@ static void *shadow_beast_write_raw(
         unsigned int i;
         char *block;
 
+        /* sync */
         if ((uint16_t)s->word != 0x4489)
             continue;
 
         ti->data_bitoff = s->index_offset_bc - 15;
 
-        if (stream_next_bits(s, 32) == -1)
+        /* signature */
+        if (stream_next_bytes(s, raw, 8) == -1)
             goto fail;
-        if (s->word != beast_info->sig[0])
+        mfm_decode_bytes(bc_mfm_even_odd, 4, raw, &dat[0]);
+        if (be32toh(dat[0]) != beast_info->sig)
             continue;
 
-        if (stream_next_bits(s, 32) == -1)
-            goto fail;
-        if (s->word != beast_info->sig[1])
-            continue;
-
+        /* data */
         for (i = 0; i < ti->len/4; i++) {
             if (stream_next_bytes(s, raw, 8) == -1)
                 goto fail;
@@ -93,8 +97,7 @@ static void shadow_beast_read_raw(
     unsigned int i;
 
     tbuf_bits(tbuf, SPEED_AVG, bc_raw, 16, 0x4489);
-    tbuf_bits(tbuf, SPEED_AVG, bc_raw, 32, beast_info->sig[0]);
-    tbuf_bits(tbuf, SPEED_AVG, bc_raw, 32, beast_info->sig[1]);
+    tbuf_bits(tbuf, SPEED_AVG, bc_mfm_even_odd, 32, beast_info->sig);
 
     for (i = 0; i < ti->len/4; i++)
         tbuf_bits(tbuf, SPEED_AVG, bc_mfm_even_odd, 32, be32toh(dat[i]));
