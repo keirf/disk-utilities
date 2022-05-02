@@ -54,7 +54,6 @@ static void *protec_longtrack_write_raw(
             continue;
         if (!check_length(s, 107200))
             break;
-        printf("Len: %u\n", s->track_len_bc);
         ti->total_bits = 110000; /* long enough */
         ti->len = 1;
         data = memalloc(ti->len);
