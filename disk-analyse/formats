@@ -2190,6 +2190,10 @@ probe_amiga
 # Later releases changed to Copylock!
 "Robocop" = amigados_copylock
 
+"Robocop Retail"
+    0 amigados
+    * amigados_long_105500 protec_longtrack robocop
+
 # Tracks 0.0 & 0.1 on Disk 2 appear unused, ignore warning!
 "Robocop 2"
     * amigados special_fx    
@@ -2329,6 +2333,12 @@ probe_amiga
     0 amigados
     1 copylock  # empty/unformatted on some versions
     * digital_magic
+
+"Shuffle"
+    0-1 amigados 
+    2-100 shuffle
+    158-159 shuffle
+    * ignore
 
 # Astra Pack Game 8, High Energy 2 Compilation
 "Shufflepuck Cafe"
