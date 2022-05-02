@@ -2186,13 +2186,13 @@ probe_amiga
     1 protec_longtrack robocod amigados
     * robocod amigados
 
-# Initial retail release is unsupported
-# Later releases changed to Copylock!
-"Robocop" = amigados_copylock
-
-"Robocop Retail"
-    0 amigados
-    * amigados_long_105500 protec_longtrack robocop
+# First retail release is PROTEC and custom MFM (with no track checksums!),
+# with lots of unused tracks which may cause spurious warnings:
+#  Side 0, Tracks 21-69,79; Side 1, Tracks 69-79
+# Subsequent releases are amigados + copylock.
+"Robocop"
+    1 amigados_unknown_length copylock protec_longtrack
+    * amigados_unknown_length robocop
 
 # Tracks 0.0 & 0.1 on Disk 2 appear unused, ignore warning!
 "Robocop 2"

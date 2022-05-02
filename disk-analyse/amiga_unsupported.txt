@@ -163,17 +163,11 @@ Unsupported format!
 Puffys Saga: (Thalion The First Year)
 ADOS + protection on tracks 70.0/70.1
 
-RoboCop (First release):
-Unsupported format!
-
 Ruffian:
 Unsupported format!
 
 Scorpio:
 ADOS + protection on tracks 80.0/80.1
-
-Shuffle:
-Unsupported format!
 
 Skidmarks:
 Unsupported format! (ACIDS own MFM, identified as Apprentice but it's not)
