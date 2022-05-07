@@ -1,7 +1,8 @@
 /*
  * disk/archipelagos.c
  * 
- * Custom format as used in Archipelagos by Logotron Entertainment.
+ * Custom format as used in Archipelagos by Logotron Entertainment and Golden Axe
+ * by Sega/Virign Mastertronic.
  * 
  * Written in 2011 by Keir Fraser
  * 
@@ -20,6 +21,9 @@
  * 
  * TRKTYP_archipelagos data layout:
  *  u8 sector_data[5][1024]
+ * 
+ * TRKTYP_archipelagos data layout:
+ *  u8 sector_data[6][1024]
  */
 
 #include <libdisk/util.h>
@@ -126,6 +130,13 @@ static void archipelagos_read_raw(
 struct track_handler archipelagos_handler = {
     .bytes_per_sector = 1024,
     .nr_sectors = 5,
+    .write_raw = archipelagos_write_raw,
+    .read_raw = archipelagos_read_raw
+};
+
+struct track_handler golden_axe_handler = {
+    .bytes_per_sector = 1024,
+    .nr_sectors = 6,
     .write_raw = archipelagos_write_raw,
     .read_raw = archipelagos_read_raw
 };

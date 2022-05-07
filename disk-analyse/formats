@@ -66,6 +66,9 @@ probe_amiga
 
 "Advantage Tennis" = amigados
 
+"Adventures of Robinhood"
+    * amigados millennium_a robocod protec_longtrack
+
 "African Raiders-01" = amigados
 
 "After Burner Disk A (Activision)"
@@ -1173,6 +1176,9 @@ probe_amiga
 "Gold Of The Aztecs"
     * amigados amigados_extended protoscan_longtrack
 
+"Golden Axe"
+    * amigados protec_longtrack golden_axe
+
 "Golden Eagle" = amigados
 
 "Goldrunner"
@@ -1453,6 +1459,17 @@ probe_amiga
 
 # AGA version is AmigaDOS, hard disk installable
 "James Pond II: Codename Robocod" = Robocod
+
+# Disk 1
+"James Pond III: Operation Starfi5h PGM"
+    0 amigados_long_105500 
+    1-159 millennium_b
+    * ignore
+
+# Disk 2 and 3
+"James Pond III: Operation Starfi5h Data"
+    0 ignore
+    * amigados millennium_b
 
 "Jewels Of Darkness" = amigados
 
