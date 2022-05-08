@@ -77,9 +77,6 @@ Unsupported format!
 Garrison II:
 Unsupported format!
 
-Gauntlet II (Retail + Kixx)
-Unsupported MFM (Identified as Archipelagos but it's not) + alternate Gremlin Protection on 79.0/79.1
-
 Goldrunner II:
 ADOS + IBM 10 sector, unsupported 10 x 256 byte IBM/ST high score track on 64.1
 
@@ -225,4 +222,3 @@ ADOS + unsupported copylock
 
 World Championship Boxing Manager:
 Unsupported format!
-

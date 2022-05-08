@@ -339,6 +339,8 @@ probe_amiga
 
 "Battle Chess" = amigados
 
+"Battle Command" = amigados_copylock
+
 "Battle Isle 93" = amigados
 
 "Battle Isle" = amigados
@@ -433,6 +435,8 @@ probe_amiga
 
 "Blue Max" = amigados
 
+"BMX Simulator" = amigados_copylock
+
 # ECS versions can have incomplete or unformatted tracks:
 # Variant #1: Tracks 72.1 & 73.1 unused and may be incomplete or unformatted
 # Variant #2: Track 5.0 is incomplete (contains sector 0-6 only)
@@ -491,6 +495,8 @@ probe_amiga
 # Other releases may use Elite formats.
 "Buggy Boy" # speed Buggy also
     * rnc_protect_process elite_c
+
+"Bully's Sporting Darts" = amigados
 
 # SPS IPF has normal-length tracks. Barry's dump has long tracks.
 "Bump 'n' Burn"
@@ -1861,6 +1867,8 @@ probe_amiga
 # Retail uses Code Wheel, 1 compilation release has Protoscan protection!
 "Night Shift" = amigados_protoscan_longtrack
 
+"Nightbreed The Action Game" = amigados_copylock
+
 # Disk 2 has extended amigados tracks on 155-159
 "Nightbreed The Interactive Movie" = amigados_copylock
 
@@ -2092,6 +2100,8 @@ probe_amiga
     1 speedlock
     * amigados
 
+"Prospector In The Mazes Of Xor" = amigados
+
 "Pub Trivia" = amigados_copylock
 
 # TODO: Protection on tracks 140-141. Same as on RanX and Iron Lord, also
@@ -2228,6 +2238,8 @@ probe_amiga
 # Arcade Action Game 8
 "Rock N' Roll" = amigados
 
+"Rock Star Ate My Hamster" = rnc_gap
+
 "Rocket Ranger" = amigados
 
 # Tracks may be mastered long causing harmless warnings!
@@ -2352,6 +2364,8 @@ probe_amiga
     0 amigados
     1 copylock  # empty/unformatted on some versions
     * digital_magic
+
+"Shoot 'Em Up Construction Kit" = amigados_copylock
 
 "Shuffle"
     0-1 amigados 
@@ -2769,6 +2783,8 @@ probe_amiga
 
 # AmigaDOS Extended (Header)
 "The Humans" = amigados
+
+"The Hunt For Red October" = amigados
 
 "The Immortal" = amigados
 
