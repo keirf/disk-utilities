@@ -7,7 +7,7 @@ default = amigados
 probe_amiga
     * amigados copylock psygnosis_a psygnosis_b rnc_pdos core_design \
       ss_mfm rainbird blue_byte ikplus firebird \
-      archipelagos sensible rnc_pdos_old \
+      logotron sensible rnc_pdos_old \
       bat special_fx menace elite_a elite_b elite_c elite_d turrican \
       federation_of_free_traders \
       phantom_fighter zzkj_boot \
@@ -65,9 +65,6 @@ probe_amiga
 "Action Stations" = amigados
 
 "Advantage Tennis" = amigados
-
-"Adventures of Robinhood"
-    * amigados millennium_a robocod protec_longtrack
 
 "African Raiders-01" = amigados
 
@@ -200,11 +197,11 @@ probe_amiga
 "Archipelagos"
     0 amigados
     1 protec_longtrack # may be unformatted
-    2-22 archipelagos
-    26-48 archipelagos
-    51-67 archipelagos
-    75-76 archipelagos
-    100 archipelagos
+    2-22 logotron
+    26-48 logotron
+    51-67 logotron
+    75-76 logotron
+    100 logotron
     * ignore
 
 "Arkanoid"
@@ -1461,15 +1458,15 @@ probe_amiga
 "James Pond II: Codename Robocod" = Robocod
 
 # Disk 1
-"James Pond III: Operation Starfi5h PGM"
+"James Pond III: Operation Starfi5h, Disk 1"
     0 amigados_long_105500 
-    1-159 millennium_b
+    1-159 james_pond_3
     * ignore
 
-# Disk 2 and 3
-"James Pond III: Operation Starfi5h Data"
+# Disks 2 and 3
+"James Pond III: Operation Starfi5h, Data Disk"
     0 ignore
-    * amigados millennium_b
+    * amigados james_pond_3
 
 "Jewels Of Darkness" = amigados
 
@@ -1555,7 +1552,7 @@ probe_amiga
 "Kid Gloves"
     0 amigados
     1 protec_longtrack
-    2-95 archipelagos
+    2-95 logotron
     * ignore
 
 "Killing Game Show"
@@ -2712,6 +2709,9 @@ probe_amiga
 "Tetris" = amigados
 
 "The Addams Family" = amigados_copylock
+
+"The Adventures of Robin Hood"
+    * amigados robin_hood robocod protec_longtrack
 
 "The Adventures Of Willy Beamish" = amigados
 

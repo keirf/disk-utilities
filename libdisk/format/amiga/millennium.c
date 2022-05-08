@@ -1,7 +1,7 @@
 /*
- * disk/robocod.c
+ * disk/millennium.c
  * 
- * Custom format as used by "James Pond 2: Codename Robocod" by Millennium.
+ * Custom formats as used by "James Pond 2: Codename Robocod" by Millennium.
  * 
  * Written in 2015 by Keir Fraser
  * 
@@ -93,7 +93,8 @@ struct track_handler robocod_handler = {
 };
 
 /*
- * Custom format as used on Adventure of Robinhood and James Pond III by Millennium.
+ * Custom format as used on Adventures of Robin Hood and James Pond III
+ * by Millennium.
  *
  * Written in 2022 by Keith Krellwitz
  *
@@ -103,36 +104,21 @@ struct track_handler robocod_handler = {
  *  u32 Checksum sum over data and if carry add 1
  *  u32 dat[6272/4]
  *
- * TRKTYP_millennium_a data layout:
+ * TRKTYP_robin_hood data layout:
  *  u8 sector_data[6272]
- * TRKTYP_millennium_b data layout:
+ * TRKTYP_james_pond_3 data layout:
  *  u8 sector_data[6272]
  */
 
 struct millennium_info {
-    uint16_t type;
     uint32_t hdr;
-    unsigned int bitlen;
 };
-
-const static struct millennium_info millennium_infos[] = {
-    { TRKTYP_millennium_a, 0x00000000, 105500 }, /* Adventures of Robinhood */
-    { TRKTYP_millennium_b, 0x00000100, 105500 }  /* James Pond III */
-};
-
-static const struct millennium_info *find_millennium_info(uint16_t type)
-{
-    const struct millennium_info *millennium_info;
-    for (millennium_info = millennium_infos; millennium_info->type != type; millennium_info++)
-        continue;
-    return millennium_info;
-}
 
 static void *millennium_write_raw(
     struct disk *d, unsigned int tracknr, struct stream *s)
 {
     struct track_info *ti = &d->di->track[tracknr];
-    const struct millennium_info *millennium_info = find_millennium_info(ti->type);
+    const struct millennium_info *info = handlers[ti->type]->extra_data;
 
     while (stream_next_bit(s) != -1) {
 
@@ -147,7 +133,7 @@ static void *millennium_write_raw(
         if (stream_next_bytes(s, raw, 8) == -1)
             goto fail;
         mfm_decode_bytes(bc_mfm_even_odd, 4, raw, &trk);
-        if (be32toh(trk) != (millennium_info->hdr | tracknr))
+        if (be32toh(trk) != (info->hdr | tracknr))
             continue;
 
         if (stream_next_bytes(s, raw, 8) == -1)
@@ -169,7 +155,7 @@ static void *millennium_write_raw(
         block = memalloc(ti->len);
         memcpy(block, dat, ti->len);
         set_all_sectors_valid(ti);
-        ti->total_bits = millennium_info->bitlen;
+        ti->total_bits = 105500;
         return block;
     }
 
@@ -181,12 +167,12 @@ static void millennium_read_raw(
     struct disk *d, unsigned int tracknr, struct tbuf *tbuf)
 {
     struct track_info *ti = &d->di->track[tracknr];
-    const struct millennium_info *millennium_info = find_millennium_info(ti->type);
+    const struct millennium_info *info = handlers[ti->type]->extra_data;
     uint32_t *dat = (uint32_t *)ti->dat, sum;
     unsigned int i;
 
     tbuf_bits(tbuf, SPEED_AVG, bc_raw, 32, 0x44894489);
-    tbuf_bits(tbuf, SPEED_AVG, bc_mfm_even_odd, 32, millennium_info->hdr | tracknr);
+    tbuf_bits(tbuf, SPEED_AVG, bc_mfm_even_odd, 32, info->hdr | tracknr);
 
     for (i = sum = 0; i < ti->len/4; i++) {
         if(sum + be32toh(dat[i]) < sum)
@@ -198,17 +184,23 @@ static void millennium_read_raw(
         tbuf_bits(tbuf, SPEED_AVG, bc_mfm_even_odd, 32, be32toh(dat[i]));
 }
 
-struct track_handler millennium_a_handler = {
+struct track_handler robin_hood_handler = {
     .bytes_per_sector = 6272,
     .nr_sectors = 1,
     .write_raw = millennium_write_raw,
-    .read_raw = millennium_read_raw
+    .read_raw = millennium_read_raw,
+    .extra_data = & (struct millennium_info) {
+        .hdr = 0x00000000
+    }
 };
-struct track_handler millennium_b_handler = {
+struct track_handler james_pond_3_handler = {
     .bytes_per_sector = 6272,
     .nr_sectors = 1,
     .write_raw = millennium_write_raw,
-    .read_raw = millennium_read_raw
+    .read_raw = millennium_read_raw,
+    .extra_data = & (struct millennium_info) {
+        .hdr = 0x00000100
+    }
 };
 
 

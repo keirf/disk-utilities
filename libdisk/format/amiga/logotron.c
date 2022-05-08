@@ -1,13 +1,12 @@
 /*
- * disk/archipelagos.c
+ * disk/logotron.c
  * 
- * Custom format as used in Archipelagos by Logotron Entertainment and Golden Axe
- * by Sega/Virign Mastertronic.
+ * Custom format as used in Archipelagos by Logotron Entertainment and others.
  * 
  * Written in 2011 by Keir Fraser
  * 
  * RAW TRACK LAYOUT:
- *  5 back-to-back sectors with explicit sector gap.
+ *  N back-to-back sectors with explicit sector gap.
  *  Total encoded sector size, including gap, is 0x820 (2080) bytes.
  * RAW SECTOR:
  *  u8 0xa1,0xa1   :: 0x4489 sync marks
@@ -19,17 +18,17 @@
  * MFM encoding:
  *  No even/odd split
  * 
- * TRKTYP_archipelagos data layout:
+ * TRKTYP_logotron data layout:
  *  u8 sector_data[5][1024]
  * 
- * TRKTYP_archipelagos data layout:
+ * TRKTYP_golden_axe data layout:
  *  u8 sector_data[6][1024]
  */
 
 #include <libdisk/util.h>
 #include <private/disk.h>
 
-static void *archipelagos_write_raw(
+static void *logotron_write_raw(
     struct disk *d, unsigned int tracknr, struct stream *s)
 {
     struct track_info *ti = &d->di->track[tracknr];
@@ -91,14 +90,14 @@ done:
             break;
     ti->data_bitoff -= i * 0x820;
 
-    /* Some releases use long tracks (for no good reason). */
+    /* Some releases use long tracks. */
     stream_next_index(s);
     ti->total_bits = (s->track_len_bc > 102000) ? 105500 : 100150;
 
     return block;
 }
 
-static void archipelagos_read_raw(
+static void logotron_read_raw(
     struct disk *d, unsigned int tracknr, struct tbuf *tbuf)
 {
     struct track_info *ti = &d->di->track[tracknr];
@@ -127,18 +126,18 @@ static void archipelagos_read_raw(
     }
 }
 
-struct track_handler archipelagos_handler = {
+struct track_handler logotron_handler = {
     .bytes_per_sector = 1024,
     .nr_sectors = 5,
-    .write_raw = archipelagos_write_raw,
-    .read_raw = archipelagos_read_raw
+    .write_raw = logotron_write_raw,
+    .read_raw = logotron_read_raw
 };
 
 struct track_handler golden_axe_handler = {
     .bytes_per_sector = 1024,
     .nr_sectors = 6,
-    .write_raw = archipelagos_write_raw,
-    .read_raw = archipelagos_read_raw
+    .write_raw = logotron_write_raw,
+    .read_raw = logotron_read_raw
 };
 
 /*
