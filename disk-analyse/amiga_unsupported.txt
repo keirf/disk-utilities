@@ -18,6 +18,10 @@ Disk 2 ADOS to tracks 64.1 rest unformatted! protection on track 79.0
 APB:
 ADOS + unsupported copylock
 
+Aunt Arctic Adventure:
+Unsupported format, possibly a variant of The Bitmap Brothers MFM according to the SPS WIP!
+Appears to have data or protection on tracks 80.0 & 80.1
+
 Awesome DEMO Disk:
 Unsupported format!
 
@@ -76,9 +80,6 @@ Unsupported format!
 Gauntlet II (Retail + Kixx)
 Unsupported MFM (Identified as Archipelagos but it's not) + alternate Gremlin Protection on 79.0/79.1
 
-Golden Axe:
-PROTEC + Identified as 'Archipelagos' format but it's not!
-
 Goldrunner II:
 ADOS + IBM 10 sector, unsupported 10 x 256 byte IBM/ST high score track on 64.1
 
@@ -105,9 +106,6 @@ ADOS (track 0.0 may be long) + protection on track 0.1
 
 Iron Lord:
 ADOS + protection on tracks 80.0/80.1
-
-James Pond 3 AGA:
-Unsupported format!
 
 Jupiters Masterdrive:
 Unsupported format!
@@ -195,14 +193,8 @@ ADOS + IBM 10 sector, protection on track 1.0
 Tournament Golf: (Sports Spectacular)
 Unsupported format!
 
-The Adventures Of Robin Hood: (Possibly Millenium format)
-Unsupported format!
-
 The Blues Brothers: (Hits For Six Volume 2 + Triple Action Volume 4)
 ADOS + IBM 10 sectors + unsupported protection on tracks 79.0/79.1
-
-The Brides Of Dracula - Budget:
-Unsupported format!
 
 The Killing Game Show - Demo Disk:
 Unsupported format!
@@ -233,3 +225,4 @@ ADOS + unsupported copylock
 
 World Championship Boxing Manager:
 Unsupported format!
+
