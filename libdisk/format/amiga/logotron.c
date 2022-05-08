@@ -21,7 +21,7 @@
  * TRKTYP_logotron data layout:
  *  u8 sector_data[5][1024]
  * 
- * TRKTYP_golden_axe data layout:
+ * TRKTYP_logotron_longtrack data layout:
  *  u8 sector_data[6][1024]
  */
 
@@ -133,7 +133,7 @@ struct track_handler logotron_handler = {
     .read_raw = logotron_read_raw
 };
 
-struct track_handler golden_axe_handler = {
+struct track_handler logotron_longtrack_handler = {
     .bytes_per_sector = 1024,
     .nr_sectors = 6,
     .write_raw = logotron_write_raw,

@@ -1119,6 +1119,11 @@ probe_amiga
 
 "Gateway To The Savage Frontier" = amigados
 
+"Gauntlet II"
+    0 amigados
+    158-159 gauntlet2_longtrack
+    * logotron_longtrack
+
 "Gazza II"
     * amigados apprentice
 
@@ -1174,7 +1179,7 @@ probe_amiga
     * amigados amigados_extended protoscan_longtrack
 
 "Golden Axe"
-    * amigados protec_longtrack golden_axe
+    * amigados protec_longtrack logotron_longtrack
 
 "Golden Eagle" = amigados
 

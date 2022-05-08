@@ -585,7 +585,7 @@ struct track_handler empty_longtrack_handler = {
  *  Check for 0x31f8 bytes of either 0x11, 0x22, 0x44, or 0x88 with a single
  *  byte that is not 0x11, 0x22, 0x44, or 0x88
  *  example: 0x22 0x22.....0x22 0xaa 0x22
-. */
+ */
 
 static void *zoom_longtrack_write_raw(
     struct disk *d, unsigned int tracknr, struct stream *s)
@@ -623,6 +623,41 @@ struct track_handler zoom_longtrack_handler = {
     .write_raw = zoom_longtrack_write_raw,
     .read_raw = zoom_longtrack_read_raw
 };
+
+/* TRKTYP_gauntlet2_longtrack:
+ *  Essentially measures distance between 44894489 syncwords.
+ *  Relies on track 79.0 being standard length and 79.1 being long.
+ *  It doesn't actually seem to care *how* much longer 79.1 is.
+ */
+
+static void *gauntlet2_longtrack_write_raw(
+    struct disk *d, unsigned int tracknr, struct stream *s)
+{
+    struct track_info *ti = &d->di->track[tracknr];
+
+    while (stream_next_bit(s) != -1) {
+        if (s->word == 0x44894489)
+            goto found;
+    }
+    return NULL;
+
+found:
+    ti->data_bitoff = 200;
+    ti->total_bits = (tracknr == 158) ? 102000 : 105500;
+    return memalloc(0);
+}
+
+static void gauntlet2_longtrack_read_raw(
+    struct disk *d, unsigned int tracknr, struct tbuf *tbuf)
+{
+    tbuf_bits(tbuf, SPEED_AVG, bc_raw, 32, 0x44894489);
+}
+
+struct track_handler gauntlet2_longtrack_handler = {
+    .write_raw = gauntlet2_longtrack_write_raw,
+    .read_raw = gauntlet2_longtrack_read_raw
+};
+
 
 /*
  * Local variables:
