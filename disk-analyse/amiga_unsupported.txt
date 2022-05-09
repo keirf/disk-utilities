@@ -50,6 +50,9 @@ Seems to have a longtrack on 0.0, all other tracks are unsupported format
 Demolition Retail + Pocket Power Budget:
 ADOS + Protection on tracks 80.0/80.1
 
+Double Dragon II:
+CyberDOS (unsupported)
+
 Elf Mania:
 Unsupported format!
 
@@ -58,9 +61,6 @@ Unsupported format!
 
 EPIC (First release):
 ADOS + rnc_protect_process + unsupported Rob Northen protection on track 0.1 of Disk 1
-
-Double Dragon II:
-CyberDOS (unsupported)
 
 FEARS:
 Unsupported format!

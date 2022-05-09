@@ -1684,6 +1684,8 @@ probe_amiga
 "Magic Marble"
     * amigados magic_marble magic_marble_b magic_marble_prot
 
+"Magic Pockets" = amigados_copylock
+
 "Magicland Dizzy" = amigados_copylock
 
 "Major Motion" = amigados
