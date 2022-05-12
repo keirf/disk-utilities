@@ -1798,6 +1798,9 @@ probe_amiga
 
 "Might And Magic III" = amigados
 
+"Mighty BombJack"
+    * amigados mighty_bombjack
+
 "Millennium 2.2" = amigados_copylock
 
 "Minskies ...the abduction" = amigados
@@ -1962,6 +1965,9 @@ probe_amiga
 "Pac-Mania" = amigados
 
 "Pacific Islands" = amigados
+
+"Pang"
+    * amigados pang_a pang_b
 
 # Long tracks on Disks A and B
 "Panza Kick Boxing"
