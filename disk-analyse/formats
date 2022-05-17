@@ -524,6 +524,12 @@ probe_amiga
 
 "Cannon Fodder 2" = amigados_copylock
 
+"Capone"
+    0-83 amigados
+    84 capone_protection_track
+    85-159 amigados
+    * ignore
+
 # Various protections seen: HLS, Copylock & Infogrames 
 "Captain Blood"
     1 copylock amigados_unknown_length
@@ -1245,6 +1251,11 @@ probe_amiga
     158-159 protoscan_longtrack
     * federation_of_free_traders
 
+"Grid Start"
+    0-160 amigados
+    161 zoom_longtrack
+    * ignore
+
 "Gunboat" = amigados
 
 "Gunship 2000" = amigados
@@ -1257,6 +1268,13 @@ probe_amiga
 "Hacker II" = amigados
 
 "Hagar" = amigados
+
+"Hammerfist"
+    0 amigados
+    2-40/2 hammerfist_a
+    60-156/2 hammerfist_b
+    1-96/2 hammerfist_c
+    * ignore
 
 "Hard Drivin'" = rnc_gap
 
@@ -1799,7 +1817,7 @@ probe_amiga
 "Might And Magic III" = amigados
 
 "Mighty BombJack"
-    * amigados mighty_bombjack
+    * amigados elite_e
 
 "Millennium 2.2" = amigados_copylock
 
@@ -1956,6 +1974,9 @@ probe_amiga
 # US Gold: (AmigaDOS-style tracks): Tracks 86/88/90 may be empty
 "Out Run"
     * amigados outrun_sega
+
+"Overlander"
+    * amigados elite_e
 
 "P.P. Hammer" = amigados
 

@@ -158,7 +158,7 @@ struct track_handler elite_d_handler = {
 
 #define SIG 0x8912
 
-static void *mighty_bombjack_write_raw(
+static void *elite_e_write_raw(
     struct disk *d, unsigned int tracknr, struct stream *s)
 {
     struct track_info *ti = &d->di->track[tracknr];
@@ -211,7 +211,7 @@ fail:
     return NULL;
 }
 
-static void mighty_bombjack_read_raw(
+static void elite_e_read_raw(
     struct disk *d, unsigned int tracknr, struct tbuf *tbuf)
 {
     struct track_info *ti = &d->di->track[tracknr];
@@ -232,11 +232,11 @@ static void mighty_bombjack_read_raw(
         tbuf_bits(tbuf, SPEED_AVG, bc_mfm_even_odd, 16, be16toh(dat[i]));
 }
 
-struct track_handler mighty_bombjack_handler = {
+struct track_handler elite_e_handler = {
     .bytes_per_sector = 6144,
     .nr_sectors = 1,
-    .write_raw = mighty_bombjack_write_raw,
-    .read_raw = mighty_bombjack_read_raw
+    .write_raw = elite_e_write_raw,
+    .read_raw = elite_e_read_raw
 };
 
 /*

@@ -428,12 +428,22 @@ struct track_handler sevencities_longtrack_handler = {
  * Super Methane Bros.
  * GCR 99999....
  * Long track (105500/2 GCR bits) but this isn't properly checked.
+ * 
+ * Capone
+ * GCR fffff....
+ * Long track (100300/2 GCR bits).
  */
 
-static void *supermethanebros_longtrack_write_raw(
+struct gcr_protection_info {
+    uint32_t pattern;
+    unsigned int bitlen;
+};
+
+static void *gcr_protection_write_raw(
     struct disk *d, unsigned int tracknr, struct stream *s)
 {
     struct track_info *ti = &d->di->track[tracknr];
+    const struct gcr_protection_info *info = handlers[ti->type]->extra_data;
     uint32_t prev_offset;
     unsigned int match = 0;
 
@@ -444,7 +454,7 @@ static void *supermethanebros_longtrack_write_raw(
         prev_offset = s->index_offset_bc;
         if (stream_next_bits(s, 32) == -1)
             goto fail;
-        while (s->word != 0x99999999) {
+        while (s->word != info->pattern) {
             if (stream_next_bit(s) == -1)
                 goto fail;
             if (s->index_offset_bc <= prev_offset)
@@ -453,13 +463,13 @@ static void *supermethanebros_longtrack_write_raw(
         match++;
     } while (s->index_offset_bc > prev_offset);
 
-    /* We want to see predominantly GCR 99999999. */
+    /* We want to see predominantly GCR info->pattern. */
     if (match < (100000/(2*32)))
         return NULL;
 
     /* We will generate a gap-less track, so make it a 32-bitcell multiple 
      * starting exactly on the index. */
-    ti->total_bits = (105500/2) & ~31;
+    ti->total_bits = (info->bitlen/2) & ~31;
     ti->data_bitoff = 0;
     return memalloc(0);
 
@@ -467,20 +477,33 @@ fail:
     return NULL;
 }
 
-static void supermethanebros_longtrack_read_raw(
+static void gcr_protection_read_raw(
     struct disk *d, unsigned int tracknr, struct tbuf *tbuf)
 {
     struct track_info *ti = &d->di->track[tracknr];
+    const struct gcr_protection_info *info = handlers[ti->type]->extra_data;
     int nr = ti->total_bits / 32;
     while (nr--)
-        tbuf_bits(tbuf, SPEED_AVG, bc_raw, 32, 0x99999999);
+        tbuf_bits(tbuf, SPEED_AVG, bc_raw, 32, info->pattern);
 }
 
 struct track_handler supermethanebros_longtrack_handler = {
-    .write_raw = supermethanebros_longtrack_write_raw,
-    .read_raw = supermethanebros_longtrack_read_raw,
+    .write_raw = gcr_protection_write_raw,
+    .read_raw = gcr_protection_read_raw,
+    .extra_data = & (struct gcr_protection_info) {
+        .pattern = 0x99999999,
+        .bitlen = 105500
+    }
 };
 
+struct track_handler capone_protection_track_handler = {
+    .write_raw = gcr_protection_write_raw,
+    .read_raw = gcr_protection_read_raw,
+    .extra_data = & (struct gcr_protection_info) {
+        .pattern = 0xffffffff,
+        .bitlen = 100300
+    }
+};
 /*
  * All MFM zeroes.
  */
@@ -581,7 +604,7 @@ struct track_handler empty_longtrack_handler = {
 };
 
 /* TRKTYP_zoom_longtrack:
- *  This protections is used by Zoom! and Cyber World
+ *  This protections is used by Zoom!, Grid Start and Cyber World
  *  Check for 0x31f8 bytes of either 0x11, 0x22, 0x44, or 0x88 with a single
  *  byte that is not 0x11, 0x22, 0x44, or 0x88
  *  example: 0x22 0x22.....0x22 0xaa 0x22
@@ -597,7 +620,7 @@ static void *zoom_longtrack_write_raw(
         ti->data_bitoff = s->index_offset_bc - 15;
         if (!check_sequence(s, 3000, 0xaa))
             continue;
-        if (!check_length(s, 102000))
+        if (!check_length(s, 101200))
             break;
 
         ti->total_bits = 102400;
