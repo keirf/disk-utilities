@@ -25,9 +25,6 @@ Appears to have data or protection on tracks 80.0 & 80.1
 Awesome DEMO Disk:
 Unsupported format!
 
-Capone:
-ADOS + unsupported protection on track 42.0
-
 Carcharadon:
 Unsupported format!
 
@@ -80,14 +77,8 @@ Unsupported format!
 Goldrunner II:
 ADOS + IBM 10 sector, unsupported 10 x 256 byte IBM/ST high score track on 64.1
 
-Grid Start:
-ADOS + protection on track 80.1
-
 Gunship:
 ADOS + unsupported Speedlock(?) on track 0.1
-
-Hammerfist:
-Unsupported format!
 
 Hellfire Attack:
 ADOS + protection on track 0.1
@@ -122,9 +113,6 @@ Unsupported format!
 Manhattan Dealers:
 ADOS + unsupported Rob Northen protection on track 0.1
 
-Mighty Bomb Jack:
-Unsupported format!
-
 Minos:
 ADOS + protection on tracks 80.0/80.1
 
@@ -136,12 +124,6 @@ ADOS + IBM 10 sector (105500), protection (?) on tracks 0.1, 79.0/79.1
 
 Operation Wolf:
 ADOS + unsupported Rob Northen protection on track 0.1
-
-Overlander:
-Unsupported format!
-
-Pang: Retail + Hit Squad (Possibly a format by Pierre Adane)
-Unsupported format!
 
 Periheliom:
 Unsupported format!
