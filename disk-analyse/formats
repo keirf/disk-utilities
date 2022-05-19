@@ -823,6 +823,16 @@ probe_amiga
 
 "Dizzy Prince Of The Yolkfolk" = amigados_copylock
 
+"Dogs of War"
+    0 amigados
+    1 ignore
+    2-76/2 ibm_pc_dd_10sec
+    3-77/2 ibm_pc_dd_10sec
+    78-83 amigados
+    84-158/2 ibm_pc_dd_10sec
+    85-159/2 ibm_pc_dd_10sec
+    * ignore
+
 "Dominator" = amigados_copylock
 
 "Donk! - The Samurai Duck!" = rnc_pdos
