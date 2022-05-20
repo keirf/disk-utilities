@@ -242,4 +242,7 @@ X(capone_protection_track, "Capone Protection Track")
 X(hammerfist_a, "Hammerfist A")
 X(hammerfist_b, "Hammerfist B")
 X(hammerfist_c, "Hammerfist C")
-
+X(apidya_a, "Apidya A")
+X(apidya_b, "Apidya B")
+X(apidya_c, "Apidya C")
+X(apidya_d, "Apidya D")
