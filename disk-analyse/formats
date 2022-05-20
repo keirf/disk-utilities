@@ -493,6 +493,8 @@ probe_amiga
 
 "Buck Rogers: Countdown To Doomsday" = amigados
 
+"Budokan: The Martial Spirit" = amigados
+
 # Original Elite release uses RNC weak gap protection on some tracks, hence
 # we refer to that format here exclusively, in place of plain 'amigados'.
 # Other releases may use Elite formats.
@@ -632,6 +634,8 @@ probe_amiga
 
 "Colonization" = amigados
 
+"Colossus Bridge X" = amigados
+
 "Combat Air Patrol" = amigados
 
 "Commando" # Tracks 98+ may be empty, tracks may also be mastered long
@@ -713,6 +717,8 @@ probe_amiga
     * amigados psygnosis_a
     
 "D-Generation" = amigados_copylock
+
+"Dr.Fruit" = amigados_copylock
 
 # Sporting Winners! Compilation
 "Daily Double Horse Racing" = amigados
@@ -925,6 +931,9 @@ probe_amiga
 
 "Emerald Mine II" = amigados
 
+"Emlyn Hughes International Soccer"
+    * amigados copylock digital_magic
+
 "Empire Soccer 94" = amigados
 
 "Enchanter" = amigados
@@ -937,14 +946,14 @@ probe_amiga
 # Subsequent re-releases are AmigaDOS, Disk 1 may have first 30 tracks mastered long!
 "Epic" = amigados
 
-"Empire Soccer 94" = amigados
-
 "Escape From The Planet Of The Robot Monsters" = amigados_copylock
 
 "ESWAT"
     158 tiertex_longtrack
     159 protoscan_longtrack
     * amigados
+
+"European Champions" = amigados
 
 "European Championship 1992" = amigados_copylock
 
@@ -1038,6 +1047,8 @@ probe_amiga
 
 "Fighter Bomber" = rnc_gap
 
+"Fighting Soccer" = amigados_copylock
+
 # Needs amigados longtracks or game won't load!
 "Final Fight"
     158-159 protoscan_longtrack
@@ -1081,6 +1092,11 @@ probe_amiga
 
 "Football Manager 2"
     * rnc_protect_process
+
+"Footballer Of The Year 2"
+    0-1 amigados
+    158-159 protoscan_longtrack
+    * federation_of_free_traders
 
 "Forgotten Worlds"
     0 amigados 
@@ -1585,10 +1601,19 @@ probe_amiga
     * amigados copylock rnc_gap
 
 # Many variants. Only tested 1.4e and 1.6e: both have long tracks 5 & 7.
-# Also The Final Whistle: Data Disk (1.9e) & Return To Europe: Data Disk (2.1e)
  "Kick Off 2"
     * kickoff2
-      
+
+# Only uses data to track 109 (54.1)
+"Kick Off 2 + World Cup 90"
+    * kickoff2
+
+"Kick Off 2: Return To Europe"
+    * kickoff2
+
+"Kick Off 2: The Final Whistle"
+    * kickoff2
+
 "Kick Off 3"
     * kickoff2
 
@@ -2072,6 +2097,9 @@ probe_amiga
 "Planetfall" = amigados
 
 "Player Manager"
+    * kickoff2
+
+"Player Manager 2"
     * kickoff2
 
 # US Mindscape release uses Herndon HLS protection, other releases may be unprotected!
@@ -2829,6 +2857,8 @@ probe_amiga
 
 "The Hitchhikers Guide To The Galaxy" = amigados
 
+"The Hound Of Shadow" = amigados
+
 # AmigaDOS Extended (Header)
 "The Humans" = amigados
 
@@ -2960,6 +2990,9 @@ probe_amiga
 "Total Eclipse" = amigados_copylock
 
 "Total Recall" = amigados_copylock
+
+"Tournament Golf"
+    * amigados elite_e
 
 "Tower Of Babel" = rnc_gap
 
@@ -3296,6 +3329,9 @@ probe_amiga
 "Zork Trilogy" = amigados
 
 "Zork Zero" = amigados
+
+# Some releases may use an unsupported Rob Northern protection! 
+"Zynaps" = amigados_copylock
 
 ####################
 # Format information

@@ -38,17 +38,20 @@ Disk 2 unsupported format
 Chambers of Shaolin: (Thalion The First Year)
 Track 0.0 ADOS + IBM MFM 6 sectors, protection on track 0.1, all tracks appear long, around 106100
 
+Crazy Cars III:
+Unsupported Titus protection on track 79.0 of Disk 1
+
 Cybernoid:
 ADOS + unsupported Rob Northen protection on track 0.1
 
 Deflektor:
 Seems to have a longtrack on 0.0, all other tracks are unsupported format
 
+Deluxe Strip Poker (AKA Strip Poker II)
+AmigaDOS + Protection on track 80.1
+
 Demolition Retail + Pocket Power Budget:
 ADOS + Protection on tracks 80.0/80.1
-
-Double Dragon II:
-CyberDOS (unsupported)
 
 Elf Mania:
 Unsupported format!
@@ -58,6 +61,9 @@ Unsupported format!
 
 EPIC (First release):
 ADOS + rnc_protect_process + unsupported Rob Northen protection on track 0.1 of Disk 1
+
+Double Dragon II:
+CyberDOS (unsupported)
 
 FEARS:
 Unsupported format!
@@ -112,6 +118,9 @@ Unsupported format!
 
 Manhattan Dealers:
 ADOS + unsupported Rob Northen protection on track 0.1
+
+Mega Motion:
+ADOS to track 49.1, tracks 50.0+ Unsupported format!
 
 Minos:
 ADOS + protection on tracks 80.0/80.1
@@ -169,9 +178,6 @@ ADOS + protection on tracks 80.0/80.1
 Time Bandit: (Hit Disks Volume 2)
 ADOS + IBM 10 sector, protection on track 1.0
 
-Tournament Golf: (Sports Spectacular)
-Unsupported format!
-
 The Blues Brothers: (Hits For Six Volume 2 + Triple Action Volume 4)
 ADOS + IBM 10 sectors + unsupported protection on tracks 79.0/79.1
 
@@ -204,3 +210,8 @@ ADOS + unsupported copylock
 
 World Championship Boxing Manager:
 Unsupported format!
+
+Zynaps:
+Version with unsupported Rob Northen protection on track 0.1
+Other releases use a supported Copylock!
+
