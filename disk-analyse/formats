@@ -171,6 +171,9 @@ probe_amiga
     66-67 amigados_long_102200
     * amigados
 
+"Apidya"
+    * amigados apidya_a apidya_b apidya_c apidya_d
+
 "Apprentice"
     * amigados apprentice
 
@@ -1565,6 +1568,9 @@ probe_amiga
     137-159/2 ibm_pc_dd_10sec
     * ignore
 
+"Karate King"
+    * amigados sextett_protection
+
 # Retail appears to use unsupported ANCO protection, Budget release is Copylock!
 "Karting Grand Prix" = amigados_copylock
 
@@ -1828,6 +1834,9 @@ probe_amiga
 
 "Mighty BombJack"
     * amigados elite_e
+
+"Mike the Magic Dragon"
+    * amigados sextett_protection
 
 "Millennium 2.2" = amigados_copylock
 
