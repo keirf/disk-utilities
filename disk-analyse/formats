@@ -1568,6 +1568,9 @@ probe_amiga
 "Jupiter Probe"
     * amigados ibm_pc_dd_10sec
 
+"Jupiter's Masterdrive"
+    * amigados jupiters_masterdrive
+
 # OCS and AGA versions
 "Jurassic Park" = rnc_pdos_copylock
 
@@ -3093,6 +3096,9 @@ probe_amiga
     * amigados core_design
 
 "Ultima VI" = amigados
+
+"Ultimate Golf Simulator"
+    * amigados federation_of_free_traders
 
 "UMS II" = amigados
 

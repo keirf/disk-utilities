@@ -246,3 +246,5 @@ X(apidya_a, "Apidya A")
 X(apidya_b, "Apidya B")
 X(apidya_c, "Apidya C")
 X(apidya_d, "Apidya D")
+X(jupiters_masterdrive, "Jupiter's Masterdrive")
+
