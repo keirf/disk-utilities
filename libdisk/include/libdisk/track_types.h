@@ -247,4 +247,7 @@ X(apidya_b, "Apidya B")
 X(apidya_c, "Apidya C")
 X(apidya_d, "Apidya D")
 X(jupiters_masterdrive, "Jupiter's Masterdrive")
+X(celtic_legends_a, "Celtic Legends Disk 1")
+X(celtic_legends_b, "Celtic Legends Disk 2")
+
 

@@ -572,6 +572,9 @@ probe_amiga
 # Original Castles + Data Disk: Northern Campaign 
 "Castles" = amigados
 
+"Celtic Legends"
+    * amigados celtic_legends_a celtic_legends_b
+
 # Super Quintet Compilation
 "Chamonix Challenge" = amigados
 
