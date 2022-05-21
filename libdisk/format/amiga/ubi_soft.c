@@ -136,7 +136,7 @@ static void ubi_soft_read_raw(
         tbuf_bits(tbuf, SPEED_AVG, bc_mfm, 8, 0);
     }
     for (i = 0; i < 4; i++)
-    tbuf_bits(tbuf, SPEED_AVG, bc_mfm, 8, 0);
+        tbuf_bits(tbuf, SPEED_AVG, bc_mfm, 8, 0);
 }
 
 struct track_handler jupiters_masterdrive_handler = {
