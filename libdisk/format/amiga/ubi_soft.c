@@ -10,8 +10,8 @@
  *  u32 0x44894489 :: Sync
  *  u16 pad :: 0x2aaa
  *  u16 pad :: 0xa888
- *  u32  data[260] :: Even blocks (252 + 8 bytes for headder and checksum)
- *  u32  data[260] :: Odd blocks (252 + 8 bytes for headder and checksum)
+ *  u32  data[260] :: Even blocks (252 + 8 bytes for header and checksum)
+ *  u32  data[260] :: Odd blocks (252 + 8 bytes for header and checksum)
  *  u8 gap[5]
  * 
  *  Header is (tracknr/2) << 24 | (sec*4 << 8) | (info->hdr << 16)
