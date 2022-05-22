@@ -2912,6 +2912,10 @@ probe_amiga
 
 "The Pawn" = amigados
 
+# Created with Innerprise version
+"The Plague"
+    * amigados the_plague_a the_plague_b the_plague_c
+
 # Track 1 (0.1) appears unformatted on both disks!
 "The Running Man"
     0 amigados
