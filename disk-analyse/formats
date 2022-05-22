@@ -1724,6 +1724,8 @@ probe_amiga
 "Lorna"
     * amigados lorna ibm_pc_dd
 
+"Lost Dutchman Mine" = amigados
+
 "Lotus Turbo Challenge" = ss_mfm_protected
 "Lotus II" = ss_mfm_protected
 "Lotus III"
@@ -2825,7 +2827,7 @@ probe_amiga
 # 7 disks of shovelware :)
 "The Big 100" = amigados
 
-"The Black Cauldron" = amigados_copylock
+"The Black Cauldron" = herndon_longtrack
 
 "The Colonel's Bequest" = amigados
 

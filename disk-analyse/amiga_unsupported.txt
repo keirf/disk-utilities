@@ -53,6 +53,9 @@ AmigaDOS + Protection on track 80.1
 Demolition Retail + Pocket Power Budget:
 ADOS + Protection on tracks 80.0/80.1
 
+Dogs of War:
+ADOS + 10 sector IBM/ATARI MFM, unsupported protection on track 0.1
+
 Elf Mania:
 Unsupported format!
 
@@ -73,6 +76,9 @@ Unsupported format!
 
 Fred: (Thalion The First Year)
 ADOS + protection on tracks 80.0/80.1
+
+Full Contact:
+ADOS + protection on track 76.1 of Disk 1 is unsupported!
 
 Garrison:
 Unsupported format!
