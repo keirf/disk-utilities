@@ -10,11 +10,13 @@ classic Amiga m68k, tested with SAS/C 6.50.
 Prerequisites: You need at least Make and a C compiler (GCC; for Clang
 you'll have to edit CC in [Rules.mk](Rules.mk)). On Mac OS X, the
 Xcode Command Line Tools include this. On Windows, you need
-Cygwin/MinGW, Make, and a C compiler.
+Cygwin/MinGW, Make, and a C compiler. Alternatively, on Windows 10 and 11
+you can instead use [WSL](WSL).
 
 
 ## Building & Installing:
 
+Run these commands in the *root directory* of the source tree:
 ```
   # make clean
   # make
@@ -144,3 +146,4 @@ path for many of these tools to run. There are a few ways to ensure this:
 [**scp/**](scp/)
     Dump floppy flux data from Supercard Pro to a .SCP image file.
 
+[WSL]: https://docs.microsoft.com/en-us/windows/wsl/
