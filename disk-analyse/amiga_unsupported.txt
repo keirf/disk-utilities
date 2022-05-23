@@ -31,10 +31,6 @@ Unsupported format!
 Cardiaxx:
 Unsupported format!
 
-Celtic Legends:
-Disk 1 ADOS + unsuported format (Possibly Ubisoft variant)
-Disk 2 unsupported format
-
 Chambers of Shaolin: (Thalion The First Year)
 Track 0.0 ADOS + IBM MFM 6 sectors, protection on track 0.1, all tracks appear long, around 106100
 
@@ -107,9 +103,6 @@ ADOS (track 0.0 may be long) + protection on track 0.1
 Iron Lord:
 ADOS + protection on tracks 80.0/80.1
 
-Jupiters Masterdrive:
-Unsupported format!
-
 Leatherneck + Major Motion: (Hit Disks Volume 2)
 ADOS + protection on track 1.0/1.1
 
@@ -136,6 +129,9 @@ ADOS + unsupported Rob Northen protection on track 0.1
 
 No Second Prize:
 ADOS + IBM 10 sector (105500), protection (?) on tracks 0.1, 79.0/79.1
+
+Ooops Up:
+ADOS + unsupported protection on track 0.1. Track 79.1 on my dump is junk/broken/bad as IPF #1283 shows that track as unformatted!
 
 Operation Wolf:
 ADOS + unsupported Rob Northen protection on track 0.1

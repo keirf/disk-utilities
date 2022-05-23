@@ -1249,6 +1249,8 @@ probe_amiga
     1-147/2 ibm_pc_dd_10sec
     * ignore
 
+"Graham Gooch's Second Innings" = amigados
+
 # Graham Gooch has an oddly formed Copylock track with missing sector 0
 # and sectors 1-3 at an unusual offset. This confuses the copylock decoder
 # and it places the track start at a location which the game protection
@@ -1757,6 +1759,12 @@ probe_amiga
 
 "Major Motion" = amigados
 
+"Manchester United: Premier League Champions" = amigados
+
+"Manchester United"
+    1 protec_longtrack
+    * amigados
+
 "Manchester United Europe"
     1 protec_longtrack
     * amigados
@@ -2090,7 +2098,7 @@ probe_amiga
 "Pinball Illusions AGA" = amigados
 
 "Pinball Magic"
-    158-159 empty_longtrack amigados_long_105500
+    158-159 amigados_long_105500
     * amigados
 
 "Pinkie" = amigados
