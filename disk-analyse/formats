@@ -50,6 +50,9 @@ probe_amiga
 # A-Train / A-Train Construction Kit!
 "A-Train" = amigados
 
+"Aargh!"
+    * amigados_long_103300
+
 "Abandoned Places" = amigados
 
 "Abandoned Places 2" = amigados
@@ -697,6 +700,13 @@ probe_amiga
 
 "Cruise For A Corpse" = amigados
 
+"Crystal Hammer"
+    0-157 amigados_long_103300
+    158 crystal_hammer_prot_a
+    159 crystal_hammer_prot_b
+    161 crystal_hammer_prot_c
+    *ignore
+
 "Crystal Kingdom Dizzy" # Disk 2 Track 0 may be empty
     * amigados copylock fun_factory
 
@@ -725,6 +735,9 @@ probe_amiga
 
 # Sporting Winners! Compilation
 "Daily Double Horse Racing" = amigados
+
+"Dalek Attack"
+    * amigados
 
 # Mission Disk 1 is a mix of AmigaDOS and Novagen across the disk.
 # It is supported by this format specifier, along with the main game itself.
@@ -783,6 +796,8 @@ probe_amiga
     * ignore
 
 "Deep Space" = amigados
+
+"Defcon 5" = amigados
 
 "Defender Of The Crown"
     1 amigados_long_111000
@@ -874,6 +889,9 @@ probe_amiga
 
 "Dream Web" = amigados
 
+"Dream Zone"
+    * amigados_long_102200
+
 # Retail uses speedlock, other releases seen do not!
 "Drivin' Force"
     0 amigados
@@ -933,6 +951,8 @@ probe_amiga
 "Embryo" = amigados
 
 "Emerald Mine II" = amigados
+
+"Emetic Skimmer" = amigados
 
 "Emlyn Hughes International Soccer"
     * amigados copylock digital_magic
@@ -1154,9 +1174,17 @@ probe_amiga
 "Gadgets Lost In Time"
     * amigados gadgetslostintime_a gadgetslostintime_b
 
+"Galaxy Fight" = amigados
+
 "Galaxy Force II" = rnc_gap
 
 "Galdregons Domain" = infogrames_protected
+
+"Ganymed"
+    0 amigados_long_102200
+    1 zoom_longtrack
+    2-159 amigados_long_102200
+    * ignore
 
 # US Version
 "Garrison" = amigados
@@ -1338,6 +1366,12 @@ probe_amiga
     1 ignore
     * novagen
 
+"Hellfire Attack"
+    0 amigados 
+    1 hellfire_attack
+    2-159 amigados
+    * ignore
+
 # 1988 version has 2 longtracks, T1.1 mastered with an error so ignore!
 # 1990 version is Copylock
 "Helter Skelter"
@@ -1441,6 +1475,9 @@ probe_amiga
 "Insanity Fight"
     1 ignore
     * amigados
+
+"Insanity Fight V2"
+    * amigados_long_102200
 
 "Insects In Space" = amigados_copylock
 
@@ -2110,6 +2147,9 @@ probe_amiga
 
 "Pirates!" = amigados
 
+"Planet Probe"
+    * amigados_long_102200
+
 "Planetfall" = amigados
 
 "Player Manager"
@@ -2647,6 +2687,20 @@ probe_amiga
 "Storm Master"
     158-159 amigados_long_105500
     * amigados
+
+"Street Cat Disk 1"
+    0-157 amigados
+    158 street_cat_prot_a
+    159 street_cat_prot_b
+    160-163 street_cat_prot_c
+    166 street_cat_prot_c
+    *ignore
+
+"Street Cat Disk 2"
+    0-159 amigados
+    160 street_cat_prot_c
+    167 street_cat_prot_c
+    * ignore
 
 # Retail, Kixx re-releases: Amiga + Amiga/PC
 "Street Fighter"
@@ -3199,6 +3253,12 @@ probe_amiga
 
 # Tracks may be mastered long causing harmless warnings!
 "Waxworks" = amigados
+
+"Wayne Gretzky Hockey"
+    0 amigados
+    1-152 wayne_gretzky
+    159 wayne_gretzky
+    * ignore
 
 "Ween" = amigados
 
