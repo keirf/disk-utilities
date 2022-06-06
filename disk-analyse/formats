@@ -2920,6 +2920,9 @@ probe_amiga
 
 "Stunt Car Racer" = rnc_gap
 
+"Subtrade: Return To Irata"
+    * amigados sub_trade_a sub_trade_b
+
 "SubWar 2050" = amigados
 
 "Suicide Mission" = amigados
