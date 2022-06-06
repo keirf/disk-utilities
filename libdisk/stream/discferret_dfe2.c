@@ -91,7 +91,6 @@ static unsigned int dfe2_find_acq_freq(struct stream *s)
     unsigned char *dat = dfss->dat;
 
     unsigned int i = 0;
-    uint32_t carry = 0;
     uint32_t abspos = 0;
     uint32_t index_pos = 0;
 
@@ -100,17 +99,14 @@ static unsigned int dfe2_find_acq_freq(struct stream *s)
     while (!done && (i < dfss->datsz)) {
 
         if ((dat[i] & 0x7f) == 0x7f) { /* carry */
-            carry += 127;
             abspos += 127;
         } else if ((dat[i] & 0x80) != 0) {
-            carry += (dat[i] & 0x7f);
             abspos += (dat[i] & 0x7f);
             index_pos = abspos;
             if (index_pos != 0)
                 done = 1;
         } else {
             abspos = abspos + (dat[i] & 0x7f);
-            carry = 0;
         }
         i++;
     }
