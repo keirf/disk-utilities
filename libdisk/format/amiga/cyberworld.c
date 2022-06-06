@@ -1,18 +1,25 @@
 /*
  * disk/cyberworld.c
  *
- * Custom format as used on Cyber World by Magic Bytes.
+ * Custom format as used on Cyber World by Magic Bytes and 
+ * Subtrade: Return To Irata from boeder.
  *
  * Written in 2022 by Keith Krellwitz
  *
  * RAW TRACK LAYOUT:
  *  u16 0x4489 Sync
  *  u16 0x2aaa 0x2aaa
- *  u32 dat[5120/4]
+ *  u32 dat[ti->len/4]
  *  u32 checksum
  *
  * TRKTYP_cyberworld data layout:
  *  u8 sector_data[5120]
+ * 
+ * TRKTYP_sub_trade_a data layout:
+ *  u8 sector_data[6656]
+ * 
+ * TRKTYP_sub_trade_b data layout:
+ *  u8 sector_data[6144]
  */
 
 #include <libdisk/util.h>
@@ -52,10 +59,11 @@ static void *cyberworld_write_raw(
         if (be32toh(csum) != sum)
             goto fail;
 
+        stream_next_index(s);
         block = memalloc(ti->len);
         memcpy(block, dat, ti->len);
         set_all_sectors_valid(ti);
-        ti->total_bits = 100500;
+        ti->total_bits = s->track_len_bc;
         return block;
     }
 
@@ -87,6 +95,19 @@ struct track_handler cyberworld_handler = {
     .read_raw = cyberworld_read_raw
 };
 
+struct track_handler sub_trade_a_handler = {
+    .bytes_per_sector = 6656,
+    .nr_sectors = 1,
+    .write_raw = cyberworld_write_raw,
+    .read_raw = cyberworld_read_raw
+};
+
+struct track_handler sub_trade_b_handler = {
+    .bytes_per_sector = 6144,
+    .nr_sectors = 1,
+    .write_raw = cyberworld_write_raw,
+    .read_raw = cyberworld_read_raw
+};
 
 
 /*
