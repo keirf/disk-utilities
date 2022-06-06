@@ -65,6 +65,9 @@ probe_amiga
 
 "Action In Hollywood" = amigados
 
+"Action Service"
+    * amigados action_service_longtrack
+
 "Action Stations" = amigados
 
 "Advantage Tennis" = amigados
@@ -806,6 +809,12 @@ probe_amiga
 "Defenders Of The Earth"
     * amigados speedlock psygnosis_a
 
+"Deflektor"
+    0 amigados_long_105500 
+    2-157 deflektor
+    158-159 protoscan_longtrack
+    * ignore
+
 "Deliverance"
     * amigados deliverance
 
@@ -813,6 +822,13 @@ probe_amiga
 "Deluxe Paint"
     1 amigados amigados_long_111000
     * amigados
+
+# The secret is ABUSS
+"Demolition"
+    0-159 amigados 
+    160 demolition_prot_a
+    161 demolition_prot_b
+    * ignore
 
 "Denaris Disk 1" #NTSC - Hard Wired Release / Also PAL - Rainbow Arts
     * amigados denaris_a  
@@ -940,6 +956,15 @@ probe_amiga
 
 # Retail uses PROTEC, re-releases may use Copylock!
 "Elf" = amigados_copylock
+
+"Eliminator"
+    0 amigados_long_104400
+    1-79 eliminator
+    80 amigados_long_104400
+    81-105 eliminator
+    106 amigados_long_104400
+    107-158 amigados_long_104400
+    * ignore
 
 # v2.0 / Lots of tracks with incorrect (but deliberate) track number! 
 "Elite" = amigados

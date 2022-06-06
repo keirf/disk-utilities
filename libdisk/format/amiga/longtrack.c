@@ -682,6 +682,55 @@ struct track_handler gauntlet2_longtrack_handler = {
 };
 
 
+/* TRKTYP_action_service_longtrack:
+
+ *  This protections is used by Action Service
+ *  u16 0xa144 :: sync
+ *  u8 0xaa  :: 0x32FA consecutive 0xaa's
+ * 
+ *  Checks for 0x32FA or more consecutive 0xaa's
+ * 
+ */
+
+static void *action_service_longtrack_write_raw(
+    struct disk *d, unsigned int tracknr, struct stream *s)
+{
+    struct track_info *ti = &d->di->track[tracknr];
+
+    while (stream_next_bit(s) != -1) {
+
+        if (s->word != 0xaaaaa144)
+            continue;
+        ti->data_bitoff = s->index_offset_bc - 15;
+        if (!check_sequence(s, 3000, 0))
+            continue;
+        if (!check_length(s, 101200))
+            break;
+
+        stream_next_index(s);
+        ti->total_bits = s->track_len_bc;
+        return memalloc(0);
+    }
+
+    return NULL;
+}
+
+static void action_service_longtrack_read_raw(
+    struct disk *d, unsigned int tracknr, struct tbuf *tbuf)
+{
+    unsigned int i;
+
+    tbuf_bits(tbuf, SPEED_AVG, bc_raw, 32, 0xaaaaa144);
+    for (i = 0; i < 6550*2; i++)
+        tbuf_bits(tbuf, SPEED_AVG, bc_raw, 8, 0xaa);
+}
+
+struct track_handler action_service_longtrack_handler = {
+    .write_raw = action_service_longtrack_write_raw,
+    .read_raw = action_service_longtrack_read_raw
+};
+
+
 /*
  * Local variables:
  * mode: C
