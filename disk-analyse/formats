@@ -70,7 +70,7 @@ probe_amiga
 "Action In Hollywood" = amigados
 
 "Action Service"
-    * amigados action_service_longtrack
+    * amigados infogrames_longtrack
 
 "Action Stations" = amigados
 
@@ -1005,12 +1005,12 @@ probe_amiga
 "Elf" = amigados_copylock
 
 "Eliminator"
-    0 amigados_long_104400
-    1-79 eliminator
-    80 amigados_long_104400
-    81-105 eliminator
-    106 amigados_long_104400
-    107-158 amigados_long_104400
+    0 amigados_unknown_length
+    1-79 eliminator_a eliminator_b
+    80 amigados_unknown_length
+    81-105 eliminator_a eliminator_b
+    106 amigados_unknown_length
+    107-158 amigados_unknown_length
     * ignore
 
 # v2.0 / Lots of tracks with incorrect (but deliberate) track number! 
@@ -1532,6 +1532,9 @@ probe_amiga
 # Retail release uses elite_c, 1 other release uses elite_d
 "Ikari Warriors"
     * amigados elite_c elite_d
+
+"Ilyad"
+    * amigados ilyad
 
 "Impossible Mission 2025" = amigados
 

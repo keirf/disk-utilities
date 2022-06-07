@@ -37,7 +37,7 @@ static void *eliminator_write_raw(
         if (stream_next_bytes(s, raw, 8) == -1)
             goto fail;
         mfm_decode_bytes(bc_mfm_odd_even, 4, raw, &trackln);
-        if (be32toh(trackln) != 0x198c)
+        if (be32toh(trackln) != ti->len-4)
             continue;
 
         sum = be32toh(raw[0]) ^ be32toh(raw[1]);
@@ -89,14 +89,19 @@ static void eliminator_read_raw(
     tbuf_bits(tbuf, SPEED_AVG, bc_mfm_odd_even, 32, sum);
 }
 
-struct track_handler eliminator_handler = {
+struct track_handler eliminator_a_handler = {
     .bytes_per_sector = 6544,
     .nr_sectors = 1,
     .write_raw = eliminator_write_raw,
     .read_raw = eliminator_read_raw
 };
 
-
+struct track_handler eliminator_b_handler = {
+    .bytes_per_sector = 6560,
+    .nr_sectors = 1,
+    .write_raw = eliminator_write_raw,
+    .read_raw = eliminator_read_raw
+};
 
 /*
  * Local variables:
