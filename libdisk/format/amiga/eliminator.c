@@ -6,13 +6,20 @@
  * Written in 2022 by Keith Krellwitz
  *
  * RAW TRACK LAYOUT:
+ *
+ * TRKTYP_eliminator_a data layout:
+ * 
  *  u32 0x44894489 Sync
  *  u32 0x198c :: Track Length
  *  u32 dat[6544/4]
  *  u32 checksum :: Calculate EOR of all raw data including the track length
- *
- * TRKTYP_eliminator data layout:
- *  u8 sector_data[6544]
+ * 
+ * TRKTYP_eliminator_b data layout:
+ * 
+ *  u32 0x44894489 Sync
+ *  u32 0x199c :: Track Length
+ *  u32 dat[6560/4]
+ *  u32 checksum :: Calculate EOR of all raw data including the track length
  */
 
 #include <libdisk/util.h>
