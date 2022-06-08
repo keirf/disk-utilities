@@ -95,6 +95,9 @@ probe_amiga
 
 "After The War" = amigados
 
+"Agony"
+    * amigados_long_105500 agony
+
 "Air Support"
     * amigados psygnosis_a
 
