@@ -78,6 +78,8 @@ static void *ubi_soft_write_raw(
         mfm_decode_bytes(bc_mfm_even_odd, (ti->bytes_per_sector+8), raw, &dat);
 
         sec = ((uint16_t)dat[0] >> 8) / 4;
+        if ((sec >= ti->nr_sectors) || is_valid_sector(ti, sec))
+            continue;
 
         /* verify type header */
         if ((uint8_t)(dat[0] >> 16) != info->hdr)
@@ -110,7 +112,7 @@ static void ubi_soft_read_raw(
 {
     struct track_info *ti = &d->di->track[tracknr];
     const struct ubi_soft_info *info = handlers[ti->type]->extra_data;
-    uint32_t dat[ti->bytes_per_sector+8], csum, hdr;
+    uint32_t dat[(ti->bytes_per_sector+8)/4], csum, hdr;
     unsigned int sec, i;
 
     for (sec = 0; sec < ti->nr_sectors; sec++) {
