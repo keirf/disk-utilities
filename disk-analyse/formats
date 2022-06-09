@@ -49,6 +49,11 @@ probe_amiga
 "9 Lives"
     * amigados apprentice
 
+"A Prehistoric Tale"
+    0-1 amigados
+    20-159 prehistoric_tale
+    * ignore
+
 "A-10 Tank Killer" = amigados
 
 # A-Train / A-Train Construction Kit!
@@ -96,7 +101,7 @@ probe_amiga
 "After The War" = amigados
 
 "Agony"
-    * amigados_long_105500 agony
+    * amigados_long_105500 grolet
 
 "Air Support"
     * amigados psygnosis_a
@@ -3405,6 +3410,9 @@ probe_amiga
 
 "Universal Military Simulator" = amigados
 
+"Unreal"
+    * amigados grolet
+
 "Uridium 2" = amigados_copylock
 
 # Some Tracks are not decoding properly on Disk 2, so use raw_dd for those tracks!
@@ -3596,7 +3604,7 @@ probe_amiga
 
 # Retail release has unsupported Anco protection on track 0.1
 # Re-Releases use Copylock
-"XR-35" = amiagdos_copylock
+"XR-35" = amigagdos_copylock
 
 "Xybots" = amigados_copylock
 
