@@ -15,10 +15,15 @@ else
 PLATFORM = linux
 endif
 
-PREFIX ?= /usr/local
-BINDIR = $(PREFIX)/bin
-INCLUDEDIR = $(PREFIX)/include
-LIBDIR = $(PREFIX)/lib
+# Override these on the command line eg. "make PREFIX=/usr"
+# These must be absolute paths
+PREFIX  := /usr/local
+DESTDIR :=
+
+INSTALLDIR := $(DESTDIR)$(PREFIX)
+BINDIR     := $(INSTALLDIR)/bin
+INCLUDEDIR := $(INSTALLDIR)/include
+LIBDIR     := $(INSTALLDIR)/lib
 
 $(ARCH) := y
 CFLAGS-$(x86_32) += -m32 -march=i686
