@@ -9,7 +9,7 @@ all:
 	$(MAKE) $(TARGET)
 
 disk-analyse: disk-analyse.o config.o
-	$(CC) $(CFLAGS) $^ $(LIBS) -o $@
+	$(CC) $(CFLAGS) $(LDFLAGS) $^ $(LIBS) -o $@
 
 install: all
 	$(INSTALL_DIR) $(BINDIR)
