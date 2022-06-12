@@ -1,7 +1,8 @@
 /*
- * disk/agony.c
+ * disk/grolet.c
  *
- * Custom format as used by Agony from Psygnosis:
+ * Custom format as used by Agony from Psygnosis and Unreal from UBI Soft
+ * Both games written by Yves Grolet
  *
  * Written in 2022 by Keith Krellwitz
  *
@@ -18,14 +19,14 @@
  *  Checksum is the sum of all decoded words
  * 
  * 
- * TRKTYP_agony data layout:
+ * TRKTYP_grolet data layout:
  *  u8 sector_data[12*512]
  */
 
 #include <libdisk/util.h>
 #include <private/disk.h>
 
-static void *agony_write_raw(
+static void *grolet_write_raw(
     struct disk *d, unsigned int tracknr, struct stream *s)
 {
     struct track_info *ti = &d->di->track[tracknr];
@@ -100,7 +101,7 @@ static void *agony_write_raw(
     return block;
 }
 
-static void agony_read_raw(
+static void grolet_read_raw(
     struct disk *d, unsigned int tracknr, struct tbuf *tbuf)
 {
     struct track_info *ti = &d->di->track[tracknr];
@@ -141,11 +142,11 @@ static void agony_read_raw(
     }
 }
 
-struct track_handler agony_handler = {
+struct track_handler grolet_handler = {
     .bytes_per_sector = 512,
     .nr_sectors = 12,
-    .write_raw = agony_write_raw,
-    .read_raw = agony_read_raw
+    .write_raw = grolet_write_raw,
+    .read_raw = grolet_read_raw
 };
 
 
