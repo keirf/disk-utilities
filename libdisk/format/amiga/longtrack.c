@@ -496,7 +496,7 @@ struct track_handler supermethanebros_longtrack_handler = {
     }
 };
 
-struct track_handler capone_protection_track_handler = {
+struct track_handler actionware_protection_handler = {
     .write_raw = gcr_protection_write_raw,
     .read_raw = gcr_protection_read_raw,
     .extra_data = & (struct gcr_protection_info) {
