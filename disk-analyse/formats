@@ -568,7 +568,7 @@ probe_amiga
 
 "Capone"
     0-83 amigados
-    84 capone_protection_track
+    84 actionware_protection
     85-159 amigados
     * ignore
 
@@ -945,6 +945,12 @@ probe_amiga
     * amigados
 
 "Dragon's Lair: Escape From Singe's Castle" = amigados
+
+"Dragon's Lair II: Time Warp"
+    * amigados_long_105500 readysoft
+
+"Dragon's Lair III: The Curse Of Mordread"
+    * amigados_long_105500 readysoft
 
 "Dragon Breed"
     * arc_development_a copylock amigados
@@ -1412,6 +1418,9 @@ probe_amiga
 "Gunboat" = amigados
 
 "Gunship 2000" = amigados
+
+"Guy Spy and the Crystals of Armageddon"
+    * amigados_long_105500 readysoft
 
 "H.A.T.E."
     0-1 amigados_unknown_length
@@ -1958,7 +1967,7 @@ probe_amiga
     * psygnosis_a
 
 "Maya"
-    158-159 amigados_long_10550
+    158-159 amigados_long_105500
     * amigados
 
 # Budget title called 'Mayday Squad Heroes'
@@ -2325,6 +2334,12 @@ probe_amiga
     * amigados rainbird  protec_longtrack
 
 "Postman Pat 3" = amigados
+
+"POW"
+    0-93 amigados
+    94 actionware_protection
+    95-159 amigados
+    * ignore
 
 # Retail release is unsupported, variant of Apprentice format?
 # Other releases may use Copylock
@@ -2780,6 +2795,12 @@ probe_amiga
 "Soccer Kid" = amigados
 
 "Sorcerer" = amigados
+
+"Space Ace"
+    * amigados_long_105500 readysoft
+
+"Space Ace II: Borf's Revenge"
+    * amigados_long_105500 readysoft
 
 "Space Gun" = amigados_copylock
 
@@ -3534,6 +3555,9 @@ probe_amiga
 
 "Wonderland" = amigados
 
+"World Championship Boxing Manager"
+    * amigados world_championship_boxing protec_longtrack
+
 # Tracks from 45.0 onwards are not used.
 # May also show 'Unexpected track length' warnings which can be ignored!
 "World Championship Soccer"
@@ -3562,7 +3586,11 @@ probe_amiga
 "Worlds Of Legend" = amigados_copylock
 
 "Worms" = amigados
+
 "Worms: The Director's Cut" = amigados
+
+"Wrath of the Demon"
+    * amigados_long_105500 readysoft
 
 # Tracks 158-159 on Disk 1 appear unused, ignore warning!
 "WWF European Rampage Tour"
@@ -3621,6 +3649,9 @@ probe_amiga
 "Yogi's Great Escape"
     * amigados hi_tec_b
 
+"Yollanda"
+    * amigados protec_longtrack ibm_pc_dd_10sec
+
 # T0.1 Amigados Extended (Sync)
 "Z-Out" = amigados
 
@@ -3633,6 +3664,8 @@ probe_amiga
 "Zeewolf" = amigados
 
 "Zeewolf 2" = amigados
+
+"Zero Gravity" = amigados
 
 "Zool"
     * amigados ss_mfm
