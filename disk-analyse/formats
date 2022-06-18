@@ -2028,6 +2028,12 @@ probe_amiga
     
 "Miami Chase" = amigados_copylock
 
+"Mickey Mouse"
+    0 amigados
+    2-139 mickey_mouse
+    158-159 protoscan_longtrack
+    * ignore
+
 "Micro Machines" = amigados_copylock
 
 "Microprose Formula One Grand Prix" = amigados

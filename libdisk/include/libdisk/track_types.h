@@ -270,5 +270,7 @@ X(sub_trade_b, "Subtrade: Return To Irata B")
 X(ilyad, "Ilyad")
 X(grolet, "Grolet")
 X(prehistoric_tale, "A Prehistoric Tale")
-X(world_championship_boxing, "World Championship Baxing Manager")
+X(world_championship_boxing, "World Championship Boxing Manager")
 X(readysoft, "ReadySoft")
+X(mickey_mouse, "Mickey Mouse")
+
