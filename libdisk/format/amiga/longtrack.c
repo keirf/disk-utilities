@@ -82,7 +82,7 @@ struct track_handler protec_longtrack_handler = {
 };
 
 /* TRKTYP_protoscan_longtrack: Lotus I/II, + many others
- *  u16 0x4124,0x4124
+ *  u16 0x4124,0x4124 (Mickey Mouse 0x4124,0x4324)
  *  Rest of track is (MFM-encoded) zeroes, and/or unformatted garbage.
  *  The contents are never checked, only successive sync marks are scanned for.
  * 
@@ -99,7 +99,8 @@ static void *protoscan_longtrack_write_raw(
 
     while (stream_next_bit(s) != -1) {
         ti->data_bitoff = s->index_offset_bc - 31;
-        if ((s->word != 0x41244124) || !check_sequence(s, 8, 0x00))
+        if ((s->word != 0x41244124 && s->word != 0x41244324) \
+            || !check_sequence(s, 8, 0x00))
             continue;
         if (ti->type != TRKTYP_tiertex_longtrack)
             ti->total_bits = 105500;
