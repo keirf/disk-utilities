@@ -273,4 +273,4 @@ X(prehistoric_tale, "A Prehistoric Tale")
 X(world_championship_boxing, "World Championship Boxing Manager")
 X(readysoft, "ReadySoft")
 X(mickey_mouse, "Mickey Mouse")
-
+X(hoi, "Hoi")

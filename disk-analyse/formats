@@ -1514,6 +1514,9 @@ probe_amiga
     157 amigados
     * ignore
 
+"Hoi"
+    * amigados_unknown_length hoi
+
 "Hong Kong Phooey"
     0 amigados
     4-138 psygnosis_a
