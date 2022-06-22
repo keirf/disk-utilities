@@ -297,6 +297,9 @@ probe_amiga
     98-99 prolance_longtrack
     * amigados bat
 
+"B.C. Kid"
+    * amigados bc_kid
+
 "B.S.S. Jane Seymour" = amigados_protoscan_longtrack
 
 "Baal"
@@ -2648,8 +2651,13 @@ probe_amiga
 
 "Shadow Fighter" = amigados
 
+"Shadow Of The Beast" WARN
+    "If 'Unexpected track length' message appears, use 'Shadow Of The Beast 190C' format instead"
 "Shadow Of The Beast"
     * amigados protec_longtrack shadow_beast
+
+"Shadow Of The Beast 190C"
+    * amigados protec_longtrack shadow_beast_190c
 
 "Shadow Of The Beast II"
     * amigados_unknown_length protec_longtrack shadow_beast_2
