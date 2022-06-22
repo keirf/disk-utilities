@@ -15,6 +15,9 @@
  *
  * TRKTYP_turrican_2 data layout:
  *  u8 sector_data[6832]
+ * 
+ * TRKTYP_bc_kid data layout:
+ *  u8 sector_data[6500]
  */
 
 #include <libdisk/util.h>
@@ -56,7 +59,8 @@ static void *turrican_write_raw(
             continue;
 
         stream_next_index(s);
-        ti->total_bits = (s->track_len_bc > 110000) ? 111600 : 108000;
+        ti->total_bits = (s->track_len_bc > 110000) ? 111600 : \
+            (s->track_len_bc > 106000) ? 108000 : 105600;
         
         block = memalloc(ti->len);
         memcpy(block, dat, ti->len);
@@ -96,6 +100,13 @@ struct track_handler turrican_handler = {
 
 struct track_handler turrican_2_handler = {
     .bytes_per_sector = 6800,
+    .nr_sectors = 1,
+    .write_raw = turrican_write_raw,
+    .read_raw = turrican_read_raw
+};
+
+struct track_handler bc_kid_handler = {
+    .bytes_per_sector = 6500,
     .nr_sectors = 1,
     .write_raw = turrican_write_raw,
     .read_raw = turrican_read_raw

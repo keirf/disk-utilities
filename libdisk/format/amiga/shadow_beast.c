@@ -4,12 +4,19 @@
  * Custom format as used on Shadow of the Beast I & II by Psygnosis.
  *
  * Written in 2014 by Keith Krellwitz
+ * Updated 2022 to suport Shadow of the Beast with 0x190c track length
  *
  * RAW TRACK LAYOUT:
  *  u16 0xA1 (4489 Sync)
- * Beast 1:
+ * 
+ * Beast 1 (0x1838):
  *  u32 0x534f5442 ('SOTB')
  *  u32 dat[6200/4]
+ * 
+ * Beast 1 (0x190c):
+ *  u32 0x534f5442 ('SOTB')
+ *  u32 dat[6412/4]
+ * 
  * Beast 2:
  *  u32 0x42535432 ('BST2')
  *  u32 dat[6300/4]
@@ -19,6 +26,9 @@
  * TRKTYP_shadow_beast data layout:
  *  u8 sector_data[6200]
  *
+ * TRKTYP_shadow_beast_190c data layout:
+ *  u8 sector_data[6412]
+ *
  * TRKTYP_shadow_beast_2 data layout:
  *  u8 sector_data[6300]
  */
@@ -27,29 +37,15 @@
 #include <private/disk.h>
 
 struct beast_info {
-    uint16_t type;
     uint32_t sig;
     unsigned int bitlen;
 };
-
-const static struct beast_info beast_infos[] = {
-    { TRKTYP_shadow_beast, 0x534f5442, 100400 },
-    { TRKTYP_shadow_beast_2, 0x42535432, 105700 }
-};
-
-static const struct beast_info *find_beast_info(uint16_t type)
-{
-    const struct beast_info *beast_info;
-    for (beast_info = beast_infos; beast_info->type != type; beast_info++)
-        continue;
-    return beast_info;
-}
 
 static void *shadow_beast_write_raw(
     struct disk *d, unsigned int tracknr, struct stream *s)
 {
     struct track_info *ti = &d->di->track[tracknr];
-    const struct beast_info *beast_info = find_beast_info(ti->type);
+    const struct beast_info *info = handlers[ti->type]->extra_data;
 
     while (stream_next_bit(s) != -1) {
 
@@ -67,7 +63,7 @@ static void *shadow_beast_write_raw(
         if (stream_next_bytes(s, raw, 8) == -1)
             goto fail;
         mfm_decode_bytes(bc_mfm_even_odd, 4, raw, &dat[0]);
-        if (be32toh(dat[0]) != beast_info->sig)
+        if (be32toh(dat[0]) != info->sig)
             continue;
 
         /* data */
@@ -80,7 +76,7 @@ static void *shadow_beast_write_raw(
         block = memalloc(ti->len);
         memcpy(block, dat, ti->len);
         set_all_sectors_valid(ti);
-        ti->total_bits = beast_info->bitlen;
+        ti->total_bits = info->bitlen;
         return block;
     }
 
@@ -92,12 +88,12 @@ static void shadow_beast_read_raw(
     struct disk *d, unsigned int tracknr, struct tbuf *tbuf)
 {
     struct track_info *ti = &d->di->track[tracknr];
-    const struct beast_info *beast_info = find_beast_info(ti->type);
+    const struct beast_info *info = handlers[ti->type]->extra_data;
     uint32_t *dat = (uint32_t *)ti->dat;
     unsigned int i;
 
     tbuf_bits(tbuf, SPEED_AVG, bc_raw, 16, 0x4489);
-    tbuf_bits(tbuf, SPEED_AVG, bc_mfm_even_odd, 32, beast_info->sig);
+    tbuf_bits(tbuf, SPEED_AVG, bc_mfm_even_odd, 32, info->sig);
 
     for (i = 0; i < ti->len/4; i++)
         tbuf_bits(tbuf, SPEED_AVG, bc_mfm_even_odd, 32, be32toh(dat[i]));
@@ -107,14 +103,33 @@ struct track_handler shadow_beast_handler = {
     .bytes_per_sector = 6200,
     .nr_sectors = 1,
     .write_raw = shadow_beast_write_raw,
-    .read_raw = shadow_beast_read_raw
+    .read_raw = shadow_beast_read_raw,
+    .extra_data = & (struct beast_info) {
+        .sig = 0x534f5442,
+        .bitlen = 100400
+    }
+};
+
+struct track_handler shadow_beast_190c_handler = {
+    .bytes_per_sector = 6412,
+    .nr_sectors = 1,
+    .write_raw = shadow_beast_write_raw,
+    .read_raw = shadow_beast_read_raw,
+    .extra_data = & (struct beast_info) {
+        .sig = 0x534f5442,
+        .bitlen = 105600
+    }
 };
 
 struct track_handler shadow_beast_2_handler = {
     .bytes_per_sector = 6300,
     .nr_sectors = 1,
     .write_raw = shadow_beast_write_raw,
-    .read_raw = shadow_beast_read_raw
+    .read_raw = shadow_beast_read_raw,
+    .extra_data = & (struct beast_info) {
+        .sig = 0x42535432,
+        .bitlen = 105700
+    }
 };
 
 /*
