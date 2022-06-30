@@ -2195,6 +2195,12 @@ probe_amiga
 # Retail is RNC GAP, other releases maybe copylock
 "Onslaught" = amigados_copylock
 
+"Ooops Up"
+    0 amigados
+    1 ooops_up_protecton
+    2-158 amigados
+    * ignore
+
 "Operation Spruance" = amigados
 
 "Operation Stealth" = amigados
@@ -2578,6 +2584,9 @@ probe_amiga
     0 amigados
     4-156 psygnosis_a
     * ignore
+
+"Ruffian"
+    * amigados ruffian
 
 "Rugby: The World Cup" = amigados_copylock
 

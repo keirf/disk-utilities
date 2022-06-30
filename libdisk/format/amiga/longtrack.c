@@ -682,6 +682,45 @@ struct track_handler gauntlet2_longtrack_handler = {
     .read_raw = gauntlet2_longtrack_read_raw
 };
 
+/* TRKTYP_ooops_up_protecton:
+ *  Looks for 1023 consecutive 0x4552 words right after the sync
+ */
+
+static void *ooops_up_protecton_write_raw(
+    struct disk *d, unsigned int tracknr, struct stream *s)
+{
+    struct track_info *ti = &d->di->track[tracknr];
+
+    while (stream_next_bit(s) != -1) {
+        if ((uint16_t)s->word != 0x4492)
+            continue;
+
+        if (!check_sequence(s, 1020, 0xbc))
+            continue;
+        if (!check_length(s, 100000))
+            break;
+
+        ti->data_bitoff = 0;
+        ti->total_bits = 100100;
+        return memalloc(0);
+    }
+    return NULL;
+}
+
+static void ooops_up_protecton_read_raw(
+    struct disk *d, unsigned int tracknr, struct tbuf *tbuf)
+{
+    unsigned int i;
+
+    tbuf_bits(tbuf, SPEED_AVG, bc_raw, 16, 0x4492);
+    for (i = 0; i < 1200; i++)
+        tbuf_bits(tbuf, SPEED_AVG, bc_raw, 16, 0x4552);
+}
+
+struct track_handler ooops_up_protecton_handler = {
+    .write_raw = ooops_up_protecton_write_raw,
+    .read_raw = ooops_up_protecton_read_raw
+};
 
 /*
  * Local variables:
