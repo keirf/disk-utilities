@@ -731,7 +731,7 @@ probe_amiga
     * amigados rainbird protoscan_longtrack
 
 "Crackdown"
-    158 tiertex_logtrack
+    158 tiertex_longtrack
     159 protoscan_longtrack
     * amigados crackdown
     
@@ -940,6 +940,12 @@ probe_amiga
 
 # PROTEC
 "Double Dragon" = amigados_copylock
+
+"Double Dragon II"
+    0 amigados
+    1 cyberdos_protecton
+    2-159 cyberdos
+    * ignore
 
 "Double Dragon 3" = amigados_copylock
 
@@ -2195,7 +2201,7 @@ probe_amiga
 # Retail is RNC GAP, other releases maybe copylock
 "Onslaught" = amigados_copylock
 
-"Ooops Up2"
+"Ooops Up"
     0 amigados
     1 ooops_up_protecton
     2-158 amigados

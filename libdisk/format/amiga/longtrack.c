@@ -722,6 +722,49 @@ struct track_handler ooops_up_protecton_handler = {
     .read_raw = ooops_up_protecton_read_raw
 };
 
+/* TRKTYP_cyberdos_protecton:
+ * The contents of the track are not checked, just the length of the
+ * track is checked
+ * 
+ * Tested with version 3.84 using the IPF
+ * Tested with version 4.01 with IPF and Fist of Fury edition from BarryB
+ * Version 4.16 does does not have a protection track and it is unformatted
+ * 
+ * Could have used Empty Longtrack instead, but wanted to keep the data and length
+ * like the original
+ */
+
+static void *cyberdos_protecton_write_raw(
+    struct disk *d, unsigned int tracknr, struct stream *s)
+{
+    struct track_info *ti = &d->di->track[tracknr];
+
+    while (stream_next_bit(s) != -1) {
+    
+        if (!check_length(s, 111000))
+            break;
+
+        ti->data_bitoff = 0;
+        ti->total_bits = 111320;
+        return memalloc(0);
+    }
+    return NULL;
+}
+
+static void cyberdos_protecton_read_raw(
+    struct disk *d, unsigned int tracknr, struct tbuf *tbuf)
+{
+    unsigned int i;
+    tbuf_bits(tbuf, SPEED_AVG, bc_mfm, 8, 0);
+    for (i = 0; i < 6900; i++)
+        tbuf_bits(tbuf, SPEED_AVG, bc_raw, 16, 0x9494);
+}
+
+struct track_handler cyberdos_protecton_handler = {
+    .write_raw = cyberdos_protecton_write_raw,
+    .read_raw = cyberdos_protecton_read_raw
+};
+
 /*
  * Local variables:
  * mode: C
