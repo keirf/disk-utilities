@@ -79,6 +79,8 @@ probe_amiga
 
 "Action Stations" = amigados
 
+"Addams Family" = amigados_copylock
+
 "Advanced Fruit Machine Simulator" = amigados_copylock
 
 "Advantage Tennis" = amigados
@@ -340,6 +342,9 @@ probe_amiga
 
 "Banshee" = amigados_copylock
 
+"Bar Games"
+    * amigados_unknown_length
+
 "Barbarian: The Ultimate Warrior"
     * rnc_protect_process
 
@@ -435,7 +440,9 @@ probe_amiga
 
 "Bio Challenge" = rnc_gap
 
-"Bionic Commando" = amigados
+# One version has track lengths > 102800
+"Bionic Commando"
+    * amigados_unknown_length
 
 "Birds Of Prey" = amigados
 
@@ -913,6 +920,9 @@ probe_amiga
 "Disco-Scopie"
     160 discoscopie
     * amigados
+
+"Disposable Heroes"
+    * amigados disposable_heroes
 
 "Dizzy Dice" = amigados
 
@@ -1460,6 +1470,9 @@ probe_amiga
 
 # Harpoon, Secenario Editor and All Battleset Disks!
 "Harpoon" = amigados
+
+"Head Coach Pro Football Simulation"
+    * amigados_unknown_length
 
 "Head Over Heels" # Tracks 82+ may be empty
     0-1 amigados_long_102200
@@ -2082,6 +2095,8 @@ probe_amiga
 
 # Various versions, ADOS or ADOS + Protec! 
 "Monopoly" = amigados_copylock
+
+"Monty Python's Flying Circus" = amigados_copylock
 
 "Moonmist" = amigados
 
@@ -3515,6 +3530,12 @@ probe_amiga
 "Vroom"
     158 silmarils_longtrack
     * amigados f1
+
+"Vyper"
+    0 amigados
+    1 amigados_long_111000
+    2-159 amigados
+    * ignore
 
 "Walker" = amigados_copylock
 

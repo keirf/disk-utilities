@@ -4,18 +4,9 @@ A320 Airbus:
 Disk 1 ADOS
 Disk 2 ADOS + Thalion key track on 79.0
 
-A Prehistoric Tale:
-ADOS + unformatted tracks / unsupported format
-
 Afterburner II (The Hit Squad):
 Disk 1 Firebird format + unformatted tracks
 Disk 2 unsupported format
-
-Agony:
-ADOS (tracks 0.0/0.1 on disks 1&2 are long 105500) + unsupported format
-
-Amiga Action Cover Disk 6: Ilyad (Possibly a format by Pierre Adane)
-Unsupported format!
 
 Astro Marine Corps:
 Disk 1 ADOS to tracks 61.1 rest unformatted! protection on track 79.0
@@ -46,14 +37,8 @@ Unsupported Titus protection on track 79.0 of Disk 1
 Cybernoid:
 ADOS + unsupported Rob Northen protection on track 0.1
 
-Deflektor:
-Seems to have a longtrack on 0.0, all other tracks are unsupported format
-
 Deluxe Strip Poker (AKA Strip Poker II)
 AmigaDOS + Protection on track 80.1
-
-Demolition Retail + Pocket Power Budget:
-ADOS + Protection on tracks 80.0/80.1
 
 Disposable Hero:
 Unsupported format, may have protection on 79.1 of Disk 1?
@@ -64,14 +49,8 @@ ADOS + 10 sector IBM/ATARI MFM, unsupported protection on track 0.1
 Elf Mania:
 Unsupported format!
 
-Eliminator: (From various compilations)
-Unsupported format!
-
 EPIC (First release):
 ADOS + rnc_protect_process + unsupported Rob Northen protection on track 0.1 of Disk 1
-
-Double Dragon II:
-CyberDOS (unsupported)
 
 FEARS:
 Unsupported format!
@@ -139,9 +118,6 @@ ADOS + unsupported Rob Northen protection on track 0.1
 No Second Prize:
 ADOS + IBM 10 sector (105500), protection (?) on tracks 0.1, 79.0/79.1
 
-Ooops Up:
-ADOS + unsupported protection on track 0.1. Track 79.1 on my dump is junk/broken/bad as IPF #1283 shows that track as unformatted!
-
 Operation Wolf:
 ADOS + unsupported Rob Northen protection on track 0.1
 
@@ -160,9 +136,6 @@ Unsupported format!
 Puffys Saga: (Thalion The First Year)
 ADOS + protection on tracks 70.0/70.1
 
-Ruffian:
-Unsupported format!
-
 Scorpio:
 ADOS + protection on tracks 80.0/80.1
 
@@ -170,9 +143,6 @@ Skidmarks:
 Unsupported format! (ACIDS own MFM, identified as Apprentice but it's not)
 
 Stardust:
-Unsupported format!
-
-Subtrade: Return to Irata:
 Unsupported format!
 
 Super Heroes Compilation:
@@ -195,9 +165,6 @@ ADOS + IBM 10 sectors + unsupported protection on tracks 79.0/79.1
 The Killing Game Show - Demo Disk:
 Unsupported format!
 
-The Plague:
-Unsupported format, protection (?) on tracks 79.0/79.1 or tracks 80.0/80.1 (duplicator info?)  
-
 The Seven Gates of Jambala: (Retail + Thalion The First Year)
 Track 0.0 ADOS + IBM MFM 6 sectors, protection on tracks 15.0/79.0, all tracks appear long, around 106100
 
@@ -210,17 +177,11 @@ ADOS + unsupported Xelock protection on track 0.1
 Universe:
 Unsupported format!
 
-Unreal:
-Unsupported format!
-
 WARP: (Thalion The First Year)
 Track 0.0 ADOS + IBM MFM 6 sectors + unsupported format, protection (?) on tracks 79.0/79.1, tracks appear long, approx 102500 or 105200
 
 Weird Dreams:
 ADOS + unsupported copylock
-
-World Championship Boxing Manager:
-Unsupported format!
 
 XR-35:
 ADOS + unsupported Anco protection on track 0.1
