@@ -2904,6 +2904,9 @@ probe_amiga
 # Star Wars Trilogy Release
 "Star Wars" = amigados
 
+"Stardust"
+    * amigados stardust
+
 "Starglider" = amigados
 
 # Track 158 may be empty.
