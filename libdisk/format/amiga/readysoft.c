@@ -54,7 +54,7 @@ static void *readysoft_write_raw(
     while ((stream_next_bit(s) != -1) &&
         (nr_valid_blocks != ti->nr_sectors)) {
 
-        uint32_t raw[2], hdr, hdrchk, dat[ti->bytes_per_sector];
+        uint32_t raw[2], hdr, hdrchk, dat[2*ti->bytes_per_sector/4];
         uint32_t csum, sum, sig, trk, disknr;
         unsigned int sec, i;
 

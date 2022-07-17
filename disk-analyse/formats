@@ -922,7 +922,7 @@ probe_amiga
     * amigados
 
 "Disposable Heroes"
-    * amigados disposable_heroes
+    * amigados disposable_hero
 
 "Dizzy Dice" = amigados
 
@@ -962,6 +962,12 @@ probe_amiga
 "Dragon's Breath"
     158 amigados speedlock
     * amigados
+
+"Dragon's Lair Disk 1"
+    * amigados_unknown_length visionary_design_b visionary_design_c visionary_design_d visionary_design_a
+
+"Dragon's Lair Disks 2-6"
+    * amigados_unknown_length visionary_design_b visionary_design_c visionary_design_d
 
 "Dragon's Lair: Escape From Singe's Castle" = amigados
 
@@ -3525,6 +3531,11 @@ probe_amiga
 
 "Viz"
     * amigados konami
+
+"Vortex"
+    0 amigados_long_106600
+    1 amigados_extended vortex_b
+    * visionary_design_b
 
 "Voyager" = amigados_copylock
 

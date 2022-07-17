@@ -1,7 +1,7 @@
 /*
- * disk/disposable_heroes.c
+ * disk/disposable_hero.c
  *
- * Custom format as used on Disposable Heroes by Gremlin.
+ * Custom format as used on Disposable Hero by Gremlin.
  *
  * Written in 2022 by Keith Krellwitz
  *
@@ -16,7 +16,7 @@
  * No checksum found.  Added a checksum check to validate the tracks
  * 
  * 
- * TRKTYP_disposable_heroes data layout:
+ * TRKTYP_disposable_hero data layout:
  *  u8 sector_data[0x1800]
  */
 
@@ -26,7 +26,7 @@
 
 static const uint16_t crcs[];
 
-static void *disposable_heroes_write_raw(
+static void *disposable_hero_write_raw(
     struct disk *d, unsigned int tracknr, struct stream *s)
 {
     struct track_info *ti = &d->di->track[tracknr];
@@ -67,7 +67,7 @@ fail:
     return NULL;
 }
 
-static void disposable_heroes_read_raw(
+static void disposable_hero_read_raw(
     struct disk *d, unsigned int tracknr, struct tbuf *tbuf)
 {
     struct track_info *ti = &d->di->track[tracknr];
@@ -82,11 +82,11 @@ static void disposable_heroes_read_raw(
     }
 }
 
-struct track_handler disposable_heroes_handler = {
+struct track_handler disposable_hero_handler = {
     .bytes_per_sector = 768,
     .nr_sectors = 8,
-    .write_raw = disposable_heroes_write_raw,
-    .read_raw = disposable_heroes_read_raw
+    .write_raw = disposable_hero_write_raw,
+    .read_raw = disposable_hero_read_raw
 };
 
 static const uint16_t crcs[] = {
