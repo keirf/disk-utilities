@@ -5,7 +5,7 @@
  *
  * Written in 2016, 2022 by Keir Fraser
  *
- * Stardust:
+ * ** STARDUST **
  * 6 sectors of:
  *  u32 0x44894489 :: Sync
  *  u32 header {disk_nr:16, track_nr:8, sec_nr:8} :: E/O long
@@ -15,7 +15,15 @@
  * header_csum = 'SSDT' EOR decoded header 
  * data_csum = 'SSDT' EOR all decoded data longs
  * 
- * Super Stardust:
+ * Two versions of Stardust:
+ * Version 1 (SPS #2102) formats 83 cylinders and on Disk 2 at least has
+ * data accessed all the way up to cylinder 82. The first such access occurs
+ * soon after Disk 2 is first inserted.
+ * Version 2 (SPS #2103) also formats 83 cylinders, but all cylinders >= 80
+ * contain no data and are not accessed by the game's loader. This latter
+ * version is highly recommended due to improved drive compatbility.
+ * 
+ * ** SUPER STARDUST **
  * 6 sectors of:
  *  u32 0x44894489 :: Sync
  *  u32 header {disk_nr:16, track_nr:8, sec_nr:8} :: E/O long
