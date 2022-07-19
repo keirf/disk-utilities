@@ -157,6 +157,12 @@ probe_amiga
 
 "All New World Of Lemmings" = amigados
 
+"Alternate Reality"
+    0-99 amigados
+    100 alternate_reality_gcr_protection
+    101-159 amigados
+    * ignore
+
 # Amiga Fun Magazine
 "Amber" = amigados
 

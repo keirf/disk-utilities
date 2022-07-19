@@ -505,6 +505,60 @@ struct track_handler actionware_protection_handler = {
         .bitlen = 100300
     }
 };
+
+/*
+ * Alternate Reality GCR Protection
+ * Long track (116778/2 GCR bits) but this isn't properly checked.
+ * 
+ * The protection checks for the pattern 0xcc96aa within the first 0x300
+ * bytes and if it finds it, it adds the offset of 0x1560 + offest of first 
+ * instance from the start of the raw data and checks for the same pattern.
+ * It then checks the next six bytes from the first instance against the
+ * next 6 bytes of the second instance and verifies they are the same.
+ * 
+ * The data between the gap is not checked and is was different in the 2
+ * dumps I tested against.
+ * 
+ * Filling the track with 0xffcc96aa passes the protection check.
+ */
+
+static void *alternate_reality_gcr_protection_write_raw(
+    struct disk *d, unsigned int tracknr, struct stream *s)
+{
+    struct track_info *ti = &d->di->track[tracknr];
+    const struct gcr_protection_info *info = handlers[ti->type]->extra_data;
+
+    /* GCR 4us bit time */
+    stream_set_density(s, 4000);
+
+    while (stream_next_bit(s) != -1) {
+        if (s->word == info->pattern)
+            break;
+    }
+
+    if (s->word != info->pattern)
+        goto fail;
+
+    /* We will generate a gap-less track, so make it a 32-bitcell multiple 
+     * starting exactly on the index. */
+    ti->total_bits = (info->bitlen/2) & ~31;
+    ti->data_bitoff = 0;
+    return memalloc(0);
+
+fail:
+    return NULL;
+}
+
+struct track_handler alternate_reality_gcr_protection_handler = {
+    .write_raw = alternate_reality_gcr_protection_write_raw,
+    .read_raw = gcr_protection_read_raw,
+    .extra_data = & (struct gcr_protection_info) {
+        .pattern = 0xffcc96aa,
+        .bitlen = 116778
+    }
+};
+
+
 /*
  * All MFM zeroes.
  */
