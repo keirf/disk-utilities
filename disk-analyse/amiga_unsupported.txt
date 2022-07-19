@@ -40,8 +40,6 @@ ADOS + unsupported Rob Northen protection on track 0.1
 Deluxe Strip Poker (AKA Strip Poker II)
 AmigaDOS + Protection on track 80.1
 
-Disposable Hero:
-Unsupported format, may have protection on 79.1 of Disk 1?
 
 Dogs of War:
 ADOS + 10 sector IBM/ATARI MFM, unsupported protection on track 0.1
@@ -141,9 +139,6 @@ ADOS + protection on tracks 80.0/80.1
 
 Skidmarks:
 Unsupported format! (ACIDS own MFM, identified as Apprentice but it's not)
-
-Stardust:
-Unsupported format!
 
 Super Heroes Compilation:
 Disks 1 & 3 use an MFM type longtrack!
