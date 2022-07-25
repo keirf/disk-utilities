@@ -60,8 +60,17 @@ static void *firebird_write_raw(
 
         if (stream_next_bytes(s, dat, sizeof(dat)) == -1)
             goto fail;
-        if (s->crc16_ccitt != 0)
-            continue;
+        if (s->crc16_ccitt != 0) {
+            if ((ti->type == TRKTYP_firebird)
+                && (tracknr == 15) && (s->crc16_ccitt == 0x1021)) {
+                /* Track 15 error is mentioned by WHDLoad and by HOL. */
+                /* Data matches SPS #0095 so just ignore the CRC error. */
+                trk_warn(ti, tracknr, "Fixing known After Burner Disk A "
+                         "CRC error");
+            } else {
+                continue;
+            }
+        }
 
         mfm_decode_bytes(bc_mfm, ti->len, dat, block);
         ti->data_bitoff = idx_off;
