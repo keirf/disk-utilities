@@ -63,8 +63,10 @@ static void *firebird_write_raw(
         if (s->crc16_ccitt != 0) {
             if ((ti->type == TRKTYP_firebird)
                 && (tracknr == 15) && (s->crc16_ccitt == 0x1021)) {
-                /* Track 15 error is mentioned by WHDLoad and by HOL. */
-                /* Data matches SPS #0095 so just ignore the CRC error. */
+                /* Track 15 error is mentioned by WHDLoad and by HOL.
+                 * Data matches SPS #0095 so just ignore the CRC error.
+                 * Bad master:  CRC MFM is 4a949455 then gap 12549254...
+                 * Good master: CRC MFM is 4a949454 then gap aaaaaaaa... */
                 trk_warn(ti, tracknr, "Fixing known After Burner Disk A "
                          "CRC error");
             } else {
