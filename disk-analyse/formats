@@ -516,6 +516,9 @@ probe_amiga
     159 protoscan_longtrack
     * ignore
 
+"Borobodur: The Planet Of Doom"
+    * amigados_unknown_length rhino
+
 "Botics"
     * amigados protec_longtrack robocod
 
@@ -558,7 +561,7 @@ probe_amiga
 
 # SPS IPF has normal-length tracks. Barry's dump has long tracks.
 "Bump 'n' Burn"
-    * amigados_unknown_length bump_n_burn
+    * amigados_unknown_length rhino
 
 "Burnout" = amigados
 
@@ -885,6 +888,9 @@ probe_amiga
     2-157 deflektor
     158-159 protoscan_longtrack
     * ignore
+
+"Deja Vu - A Nightmare Comes True"
+    * amigados_unknown_length
 
 "Deliverance"
     * amigados deliverance
@@ -1288,6 +1294,8 @@ probe_amiga
     91 hi_tec_b
     * ignore
 
+"Future Classics Collection" = amigados
+
 "Future Wars" = amigados
 
 "G.Nius"
@@ -1549,7 +1557,7 @@ probe_amiga
     * ignore
 
 "Hoi"
-    * amigados_unknown_length hoi
+    * amigados_unknown_length rhino
 
 "Hong Kong Phooey"
     0 amigados
@@ -3375,6 +3383,11 @@ probe_amiga
 
 "Tower Of Babel" = rnc_gap
 
+"Tower Toppler"
+    0 amigados
+    1 amigados_long_111000
+    * amigados
+
 # Tracks 2, 110 & 112-157 resolve to 'Phantom Fighter' format same
 # as SPS #1766 but are not used!
 "Toyota Celica GT Rally"
@@ -3569,6 +3582,12 @@ probe_amiga
 
 "War Zone" = amigados_copylock
 
+"Warlock"
+    0 amigados
+    1 amigados_long_111000
+    2-159 amigados
+    * ignore
+
 "Warlock: The Avenger" = amigados_copylock
 
 # Super Quintet Compilation / Future Dreams Compilation
@@ -3610,6 +3629,9 @@ probe_amiga
 "Wing Commander" = amigados
 
 "Wings" = amigados
+
+"Winter Camp"
+    * amigados_unknown_length rhino
 
 "Wishbringer" = amigados
 
