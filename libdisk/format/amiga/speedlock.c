@@ -23,23 +23,31 @@ static void *speedlock_write_raw(
     struct disk *d, unsigned int tracknr, struct stream *s)
 {
     struct track_info *ti = &d->di->track[tracknr];
-    struct speedlock_info *si;
+    struct speedlock_info *si = NULL;
     unsigned int i, len;
     uint64_t latency;
     unsigned int offs[3];
+
+    int old_period_adj_pct = s->pll_period_adj_pct;
+    int old_phase_adj_pct = s->pll_phase_adj_pct;
+
+    /* Speedlock is fussy about PLL setting. If we're not aggressive enough 
+     * we will fail to lock onto the bitstream fast enough. */
+    s->pll_period_adj_pct = 5;
+    s->pll_phase_adj_pct = 60;
 
     /* Get average 32-bits latency. */
     s->latency = 0;
     for (i = 0; i < 2000; i++)
         if (stream_next_bits(s, 32) == -1)
-            goto fail;
+            goto out;
     latency = s->latency / 2000;
 
     /* Scan for long bitcells (longer than +8%). */
     do {
         s->latency = 0;
         if (stream_next_bits(s, 32) == -1)
-            goto fail;
+            goto out;
     } while (s->latency < ((latency * 108) / 100));
     offs[0] = s->index_offset_bc;
 
@@ -47,7 +55,7 @@ static void *speedlock_write_raw(
     do {
         s->latency = 0;
         if (stream_next_bits(s, 32) == -1)
-            goto fail;
+            goto out;
     } while (s->latency > ((latency * 92) / 100));
     offs[1] = s->index_offset_bc;
 
@@ -55,24 +63,24 @@ static void *speedlock_write_raw(
     do {
         s->latency = 0;
         if (stream_next_bits(s, 32) == -1)
-            goto fail;
+            goto out;
     } while (s->latency < ((latency * 98) / 100));
     offs[2] = s->index_offset_bc;
 
     /* Check that each of the above regions is in correct relative order. */
     if ((offs[1] < offs[0]) || (offs[2] < offs[1]))
-        goto fail;
+        goto out;
 
     /* The long-bitcell region starts around 77500 bits after the index.
      * Check for that, with plenty of slack. */
     if ((offs[0] < 75000) || (offs[0] > 80000))
-        goto fail;
+        goto out;
 
     /* Each sector should be around 640 bits long.
      * Check for this, with plenty of slack. */
     len = (offs[2] - offs[0]) / 2;
     if ((len < 500) || (len > 800))
-        goto fail;
+        goto out;
 
     ti->len = sizeof(*si);
     si = memalloc(ti->len);
@@ -82,10 +90,10 @@ static void *speedlock_write_raw(
     si->seclen = 640 / 16; /* hardcoded for now */
     ti->data_bitoff = offs[0] - si->seclen*16;
 
+out:
+    s->pll_period_adj_pct = old_period_adj_pct;
+    s->pll_phase_adj_pct = old_phase_adj_pct;
     return si;
-
-fail:
-    return NULL;
 }
 
 static void speedlock_read_raw(
