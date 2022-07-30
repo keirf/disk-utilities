@@ -1,10 +1,14 @@
 /*
- * disk/hoi.c
+ * disk/rhino.c
  * 
- * Custom format as used on Hoi by Hollyware.
+ * Custom format as used By the following games:
  * 
- * Written in 2022 by Keith Krellwitz. This is based on
- * Keir Fraser's Bump N Burn decoder
+ * Borobodur
+ * Bump'n'Burn
+ * Hoi
+ * Winter Games
+ * 
+ * Written in 2016/2022 by Keir Fraser/Keith Krellwitz. 
  * 
  * RAW TRACK LAYOUT:
  *  u16 0x2291,0x2291
@@ -12,21 +16,25 @@
  *  u8  padding
  *  u8  checksum
  * 
- * Checksum is eor'd over the decoded data. The track loaders on disk 1
- * calculates the checksum and store it them compare it against itself.  The
- * disk 2 track loader decodes the checksum and compares it correctly with
- * the calclulated checksum.
+ * Checksum is eor'd bytes over the decoded data. 
+ * 
+ * Hoi: The track loaders on disk 1 calculates the checksum and stores it, 
+ * then compare it against itself.  The disk 2 track loader decodes the
+ * checksum and compares it correctly with the calculated checksum.
  * 
  * First data long contains header information (track number, disk identifier).
  * 
- * TRKTYP_hoi data layout:
+ * Winter Camp has a mastering error on disk 2 track 39.0.  Added a check for the
+ * error and apply the fix.
+ * 
+ * TRKTYP_rhino data layout:
  *  u8 sector_data[0x1810]
  */
 
 #include <libdisk/util.h>
 #include <private/disk.h>
 
-static void *hoi_write_raw(
+static void *rhino_write_raw(
     struct disk *d, unsigned int tracknr, struct stream *s)
 {
     struct track_info *ti = &d->di->track[tracknr];
@@ -36,7 +44,7 @@ static void *hoi_write_raw(
         uint32_t dat[(ti->len * 2) / 4], header;
         uint32_t idx_off = s->index_offset_bc - 31;
         uint8_t csum, chk[4], sum, raw[2];
-        unsigned int i;
+        unsigned int i, fix = 0;
         void *block;
 
         /* sync */
@@ -54,9 +62,19 @@ static void *hoi_write_raw(
             continue;
 
         /* check disk identifier */
-        if ((header & 0xffff) != 0x5256 && (header & 0xffff) != 0x5620)
+        if ((header & 0xfff0) != 0x3030 && (header & 0xffff) != 0x5256 
+            && (header & 0xffff) != 0x5620)
             continue;
 
+        /* Mastering error on track 39.0 of Winter Camp - check track and data*/
+        if (be32toh(header) == 0x3130ff4e && dat[ti->len/4-1] == 0x55555555 
+            && dat[96] == 0x6576656c) {
+            for (i = 680; i < ti->len/4; i++)
+                dat[i] = 0;
+            fix = 1;
+        }
+
+        /* calculate checksum */
         for (i = sum = 0; i < ti->len/4; i++) {
             *(uint32_t*)&chk = dat[i];
             sum ^= chk[0] ^ chk[1] ^ chk[2] ^ chk[3];
@@ -66,16 +84,24 @@ static void *hoi_write_raw(
         if (stream_next_bits(s, 16) == -1)
             goto fail;
 
+        if (mfm_decode_word((uint16_t)s->word) != 0 && fix != 1)
+            continue;
+
         /* checksum */
         if (stream_next_bytes(s, raw, 2) == -1)
             break;
         mfm_decode_bytes(bc_mfm_even_odd, 1, raw, &csum);
+        if (fix == 1)
+            csum = 0x24;
+
         if (csum != sum)
             continue;
 
         stream_next_index(s);
-        if (s->track_len_bc > 101500)
+        if (s->track_len_bc > 103000)
             ti->total_bits = 105700;
+        else if (s->track_len_bc > 101500)
+            ti->total_bits = 102800;
 
         ti->data_bitoff = idx_off;
         set_all_sectors_valid(ti);
@@ -88,7 +114,7 @@ fail:
     return NULL;
 }
 
-static void hoi_read_raw(
+static void rhino_read_raw(
     struct disk *d, unsigned int tracknr, struct tbuf *tbuf)
 {
     struct track_info *ti = &d->di->track[tracknr];
@@ -111,11 +137,11 @@ static void hoi_read_raw(
     tbuf_bits(tbuf, SPEED_AVG, bc_mfm_even_odd, 8, sum);
 }
 
-struct track_handler hoi_handler = {
+struct track_handler rhino_handler = {
     .bytes_per_sector = 0x1810,
     .nr_sectors = 1,
-    .write_raw = hoi_write_raw,
-    .read_raw = hoi_read_raw
+    .write_raw = rhino_write_raw,
+    .read_raw = rhino_read_raw
 };
 
 /*
