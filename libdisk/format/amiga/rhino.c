@@ -72,6 +72,7 @@ static void *rhino_write_raw(
             for (i = 680; i < ti->len/4; i++)
                 dat[i] = 0;
             fix = 1;
+            trk_warn(ti, tracknr, "Mastering error on track 39.0 of Winter Camp found and fixed!");
         }
 
         /* calculate checksum */
@@ -98,7 +99,7 @@ static void *rhino_write_raw(
             continue;
 
         stream_next_index(s);
-        if (s->track_len_bc > 103000)
+        if (s->track_len_bc > 103300)
             ti->total_bits = 105700;
         else if (s->track_len_bc > 101500)
             ti->total_bits = 102800;
