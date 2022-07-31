@@ -92,7 +92,8 @@ done:
 
     /* Some releases use long tracks. */
     stream_next_index(s);
-    ti->total_bits = (s->track_len_bc > 102000) ? 105500 : 100150;
+    ti->total_bits = ((s->track_len_bc > 102000) ? 105500 :
+                      (ti->nr_sectors == 6) ? 100500 : 100150);
 
     return block;
 }
