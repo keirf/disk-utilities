@@ -14,7 +14,7 @@ uint16_t custom_read_reg(struct amiga_state *s, uint16_t addr);
 
 void intreq_set_bit(struct amiga_state *s, uint8_t bit);
 
-const char *custom_reg_name[243];
+extern const char *custom_reg_name[243];
 
 #define CUST_dmaconr  (0x02/2)
 #define CUST_adkconr  (0x10/2)

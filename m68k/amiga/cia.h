@@ -37,7 +37,7 @@ uint8_t cia_read_reg(
 void cia_set_icr_flag(
     struct amiga_state *, struct cia *, uint8_t bit);
 
-const char *cia_reg_name[16];
+extern const char *cia_reg_name[16];
 
 /* CIA registers. */
 #define CIAPRA    0x0
