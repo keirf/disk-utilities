@@ -2107,6 +2107,13 @@ probe_amiga
 
 "Minskies ...the abduction" = amigados
 
+"Mission Elevator"
+    0-157 amigados
+    158 mission_elevator_prot_a
+    159 mission_elevator_prot_b
+    161 mission_elevator_prot_c
+    *ignore
+
 "Mobile Warfare" = amigados
 
 "Monkey Island" = amigados
