@@ -819,6 +819,49 @@ struct track_handler cyberdos_protecton_handler = {
     .read_raw = cyberdos_protecton_read_raw
 };
 
+/* TRKTYP_bomb_busters_longtrack:
+ *
+ *  This protections is used by Bomb Busters by Readysoft!
+ *  Check for 0xffe consecutive words.  It first reads the first word from the track
+ *  then compares the next 0xffe words with this value. The protection will fail if
+ *  it finds a different value.
+ */
+
+static void *bomb_busters_longtrack_write_raw(
+    struct disk *d, unsigned int tracknr, struct stream *s)
+{
+    struct track_info *ti = &d->di->track[tracknr];
+
+    while (stream_next_bit(s) != -1) {
+
+        if (!check_sequence(s, 3000, 0x55))
+            continue;
+
+        if (!check_length(s, 101200))
+            break;
+
+        ti->data_bitoff = 0;
+        ti->total_bits = 102400;
+        return memalloc(0);
+    }
+
+    return NULL;
+}
+
+static void bomb_busters_longtrack_read_raw(
+    struct disk *d, unsigned int tracknr, struct tbuf *tbuf)
+{
+    unsigned int i;
+
+    for (i = 0; i < 6400*2; i++)
+        tbuf_bits(tbuf, SPEED_AVG, bc_raw, 8, 0x11);
+}
+
+struct track_handler bomb_busters_longtrack_handler = {
+    .write_raw = bomb_busters_longtrack_write_raw,
+    .read_raw = bomb_busters_longtrack_read_raw
+};
+
 /*
  * Local variables:
  * mode: C

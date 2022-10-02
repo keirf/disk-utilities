@@ -499,6 +499,9 @@ probe_amiga
 
 "Body Blows Galactic" = rnc_pdos
 
+"Bomb Busters"
+    * amigados_long_102200 bomb_busters_longtrack
+
 # Retail release uses 'Long Tracks', game won't load if they are plain AmigaDOS!
 # Other releases may be unprotected. 
 "Bomb Jack"
@@ -1457,6 +1460,9 @@ probe_amiga
 "Gunboat" = amigados
 
 "Gunship 2000" = amigados
+
+"Gunshoot"
+    * amigados gunshoot_boot gunshoot
 
 "Guy Spy and the Crystals of Armageddon"
     * amigados_long_105500 readysoft
