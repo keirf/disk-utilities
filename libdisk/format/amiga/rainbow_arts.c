@@ -99,73 +99,96 @@ struct track_handler conqueror_handler = {
 /*  
  * disk/rainbow_arts.c
  *
- * This is the protection tracks for Crystal Hammer and Street Cat
- * 
+ * This is the protection tracks for the following games:
+ *  Crystal Hammer
+ *  Street Cat
+ *  Mission Elevator
+ *
  * Written in 2022 by Keith Krellwitz
- * 
+ *
  * TRKTYPE_crystal_hammer_prot_a
- * 
+ *
  *  Track 79.0
  *  u32 0x44894489 :: MFM sync
  *  u16 0x554A
  *  u16 0x52AA
  *  u16 0 (13 mfm encoded 0's)
- * 
+ *
  *  Only checks the sync and the first 2 u16's
  *
  * TRKTYPE_crystal_hammer_prot_b
- * 
+ *
  *  Track 79.1
  *  u32 0x44894489 :: MFM sync
  *  u16 0x2aaa
  *  u16 0xaaaa
  *  u16 0 (13 mfm encoded 0's)
- * 
+ *
  *  Does not check the data
- * 
+ *
  * TRKTYPE_crystal_hammer_prot_c
- * 
+ *
  *  Track 80.1
  *  u32 0x44894489 :: MFM sync
- *  u8 0 (0x16a mfm encoded 0's)
- *  u16 0x5552
- *  u16 0x244A
- *  u16 0x2449
- *  u8 0 (656 mfm encoded 0's)
- * 
+ *  u16 0x4489
+ *
  * Shifts the data at a specific offset and checks for 0x4489.w
- *  
+ *
  * TRKTYPE_street_cat_prot_a
- * 
+ *
  *  Track 79.0
  *  u32 0x92459245 :: MFM sync
  *  u16 0xAA94
  *  u16 0x94AA
  *  u16 0 (13 mfm encoded 0's)
- * 
+ *
  *  Only checks the sync and the first 2 u16's
  *
  * TRKTYPE_street_cat_prot_b
- * 
+ *
  *  Track 79.1
  *  u32 0x92459245 :: MFM sync
  *  u16 0x2aaa
  *  u16 0xaaaa
  *  u16 0 (13 mfm encoded 0's)
- * 
+ *
  *  Does not check the data
- * 
+ *
  * TRKTYPE_street_cat_prot_c
- * 
+ *
  *  Tracks 80.1-81.1, 83.0
  *  u16 0x9245 :: MFM sync
- *  u8 0 (0x166 mfm encoded 0's)
- *  u16 0x4924
- *  u16 0x5492
- *  u16 0x2155
- *  u8 0 (652 mfm encoded 0's)
- * 
+ *  u16 0x9245
+ *
  * Shifts the data at a specific offset and checks for 0x9245.w
+ *
+ * TRKTYPE_mission_elevator_prot_a
+ *
+ *  Track 79.0
+ *  u32 0x44894489 :: MFM sync
+ *  u16 0x554A
+ *  u16 0x52AA
+ *  u16 0 (13 mfm encoded 0's)
+ *
+ *  Only checks the sync and the first 2 u16's
+ *
+ * TRKTYPE_mission_elevator_prot_b
+ *
+ *  Track 79.1
+ *  u32 0x44894489 :: MFM sync
+ *  u16 0x2aaa
+ *  u16 0xaaaa
+ *  u16 0 (13 mfm encoded 0's)
+ *
+ *  Does not check the data
+ *
+ * TRKTYPE_mission_elevator_prot_c
+ *
+ *  Track 80.1
+ *  u32 0x44894489 :: MFM sync
+ *  u16 0x4489
+ *
+ * Shifts the data at a specific offset and checks for 0x4489.w
  */
 
 static int check_sequence(struct stream *s, unsigned int nr, uint8_t byte)
@@ -188,6 +211,7 @@ struct prot_info {
     uint16_t pad1;
     uint16_t pad2;
     uint32_t sync;
+    uint32_t check_length;
 };
 
 static void *rainbow_arts_prot_write_raw(
@@ -213,7 +237,7 @@ static void *rainbow_arts_prot_write_raw(
 
         if (!check_sequence(s, 13, 0))
             continue;
-        if (!check_length(s, 100000))
+        if (!check_length(s, info->check_length))
             break;
 
         stream_next_index(s);
@@ -245,7 +269,8 @@ struct track_handler street_cat_prot_a_handler = {
     .extra_data = & (struct prot_info) {
         .pad1 = 0xAA94,
         .pad2 = 0x94AA,
-        .sync = 0x92459245
+        .sync = 0x92459245,
+        .check_length = 100000
     }
 };
 
@@ -255,7 +280,8 @@ struct track_handler street_cat_prot_b_handler = {
     .extra_data = & (struct prot_info) {
         .pad1 = 0x2aaa,
         .pad2 = 0xaaaa,
-        .sync = 0x92459245
+        .sync = 0x92459245,
+        .check_length = 100000
     }
 };
 
@@ -265,7 +291,8 @@ struct track_handler crystal_hammer_prot_a_handler = {
     .extra_data = & (struct prot_info) {
         .pad1 = 0x554A,
         .pad2 = 0x52AA,
-        .sync = 0x44894489
+        .sync = 0x44894489,
+        .check_length = 100000
     }
 };
 
@@ -275,17 +302,37 @@ struct track_handler crystal_hammer_prot_b_handler = {
     .extra_data = & (struct prot_info) {
         .pad1 = 0x2aaa,
         .pad2 = 0xaaaa,
-        .sync = 0x44894489
+        .sync = 0x44894489,
+        .check_length = 100000
+    }
+};
+
+
+struct track_handler mission_elevator_prot_a_handler = {
+    .write_raw = rainbow_arts_prot_write_raw,
+    .read_raw = rainbow_arts_prot_read_raw,
+    .extra_data = & (struct prot_info) {
+        .pad1 = 0x554A,
+        .pad2 = 0x52AA,
+        .sync = 0x44894489,
+        .check_length = 99900
+    }
+};
+
+struct track_handler mission_elevator_prot_b_handler = {
+    .write_raw = rainbow_arts_prot_write_raw,
+    .read_raw = rainbow_arts_prot_read_raw,
+    .extra_data = & (struct prot_info) {
+        .pad1 = 0x2aaa,
+        .pad2 = 0xaaaa,
+        .sync = 0x44894489,
+        .check_length = 99900
     }
 };
 
 struct prot_c_info {
-    uint16_t pad1;
-    uint16_t pad2;
-    uint16_t pad3;
     uint32_t sync;
     uint32_t check_length;
-    unsigned int c_offset;
     unsigned int sync_count;
 };
 
@@ -323,35 +370,20 @@ static void rainbow_arts_prot_c_read_raw(
 {
     struct track_info *ti = &d->di->track[tracknr];
     const struct prot_c_info *info = handlers[ti->type]->extra_data;
-    unsigned int i;
 
     if (info->sync_count == 1)
         tbuf_bits(tbuf, SPEED_AVG, bc_raw, 16, (u_int16_t)info->sync);
     else
         tbuf_bits(tbuf, SPEED_AVG, bc_raw, 32, info->sync);
 
-    for (i = 0; i < info->c_offset; i++) {
-       tbuf_bits(tbuf, SPEED_AVG, bc_mfm, 8, 0);
-    }
-
-    tbuf_bits(tbuf, SPEED_AVG, bc_raw, 16, info->pad1);
-    tbuf_bits(tbuf, SPEED_AVG, bc_raw, 16, info->pad2);
-    tbuf_bits(tbuf, SPEED_AVG, bc_raw, 16, info->pad3);
-
-    for (i = 0; i < 1024-info->c_offset-6; i++) {
-        tbuf_bits(tbuf, SPEED_AVG, bc_mfm, 8, 0);
-    }
+    tbuf_bits(tbuf, SPEED_AVG, bc_raw, 16, (uint16_t)info->sync);
 }
 
 struct track_handler street_cat_prot_c_handler = {
     .write_raw = rainbow_arts_prot_c_write_raw,
     .read_raw = rainbow_arts_prot_c_read_raw,
     .extra_data = & (struct prot_c_info) {
-        .pad1 = 0x4924,
-        .pad2 = 0x5492,
-        .pad3 = 0x2155,
         .sync = 0x92459245,
-        .c_offset = 358,
         .check_length = 94000,
         .sync_count = 1
     }
@@ -361,12 +393,18 @@ struct track_handler crystal_hammer_prot_c_handler = {
     .write_raw = rainbow_arts_prot_c_write_raw,
     .read_raw = rainbow_arts_prot_c_read_raw,
     .extra_data = & (struct prot_c_info) {
-        .pad1 = 0x5552,
-        .pad2 = 0x244A,
-        .pad3 = 0x2449,
         .sync = 0x44894489,
-        .c_offset = 362,
         .check_length = 100000,
+        .sync_count = 2
+    }
+};
+
+struct track_handler mission_elevator_prot_c_handler = {
+    .write_raw = rainbow_arts_prot_c_write_raw,
+    .read_raw = rainbow_arts_prot_c_read_raw,
+    .extra_data = & (struct prot_c_info) {
+        .sync = 0x44894489,
+        .check_length = 99900,
         .sync_count = 2
     }
 };
