@@ -1704,6 +1704,8 @@ probe_amiga
     1 speedlock
     * amigados
 
+"Ivanhoe" = rnc_gap
+
 # Should cover all releases and Course Disks!
 "Jack Nicklaus' Greatest 18 Holes" = amigados
 
