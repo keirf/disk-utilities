@@ -862,6 +862,63 @@ struct track_handler bomb_busters_longtrack_handler = {
     .read_raw = bomb_busters_longtrack_read_raw
 };
 
+/* TRKTYP_the_oath: Protection used on The Oath by attic Entertainment.
+ * Normal length track 81.0, full of rubbish. Has a (poor) sync word 0x2195
+ * and expects to find 0x4489 at a certain offset later.
+ */
+
+static void *the_oath_write_raw(
+    struct disk *d, unsigned int tracknr, struct stream *s)
+{
+    struct track_info *ti = &d->di->track[tracknr];
+    int i;
+
+    while (stream_next_bit(s) != -1) {
+
+        /* Allow 0x2155 as a common corruption of 0x2195. */
+        if (((uint16_t)s->word != 0x2195) && ((uint16_t)s->word != 0x2155))
+            continue;
+
+        /* Allow some slack in looking for 4489 match, as original track
+         * matches on more than one 2195 sync and may thus "slip" some bits as 
+         * it WORDSYNCs each time. */
+        stream_next_bits(s, 0x3008*8);
+        for (i = 0; i < 32; i++) {
+            if ((uint16_t)s->word == 0x4489)
+                goto found;
+            stream_next_bit(s);
+        }
+    }
+
+    return NULL;
+
+found:
+    ti->data_bitoff = 1024;
+    ti->total_bits = 101500;
+    return memalloc(0);
+}
+
+static void the_oath_read_raw(
+    struct disk *d, unsigned int tracknr, struct tbuf *tbuf)
+{
+    unsigned int i;
+
+    /* Repeat the sync a few times to improve chances of a good read. */
+    for (i = 0; i < 2; i++)
+        tbuf_bits(tbuf, SPEED_AVG, bc_raw, 32, 0x21952195);
+    /* Garbage in original track replaced with emptiness. */
+    for (i = 0; i < 0x1800; i++)
+        tbuf_bits(tbuf, SPEED_AVG, bc_mfm, 8, 0);
+    /* Make a larger 4489 sync "landing strip". */
+    for (i = 0; i < 8; i++)
+        tbuf_bits(tbuf, SPEED_AVG, bc_raw, 32, 0x44894489);
+}
+
+struct track_handler the_oath_handler = {
+    .write_raw = the_oath_write_raw,
+    .read_raw = the_oath_read_raw
+};
+
 /*
  * Local variables:
  * mode: C

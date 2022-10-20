@@ -3280,6 +3280,10 @@ probe_amiga
 
 "The Munsters" = amigados_copylock
 
+"The Oath"
+    162 the_oath
+    * amigados
+
 "The Pawn" = amigados
 
 # Created with Innerprise version
