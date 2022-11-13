@@ -293,6 +293,15 @@ probe_amiga
 
 "Atomino" = amigados
 
+"Aunt Arctic Adventure"
+    0-1 amigados_unknown_length
+    2-3 aunt_arctic_adventure
+    4-13 amigados_unknown_length
+    14-159 aunt_arctic_adventure
+    160 ubi_protecton_b
+    161 ubi_protecton_validation_b
+    * ignore
+
 "AV8B Harrier Assault" = amigados
 
 "Awesome"
@@ -745,6 +754,13 @@ probe_amiga
 "Cosmic Pirate" = amigados_copylock
 
 "Cosmic Spacehead" = amigados_copylock
+
+"Cosmo Ranger"
+    0-1 amigados
+    2-159 cosmo_ranger
+    160 ubi_protecton_b
+    161 ubi_protecton_validation_b
+    * ignore
 
 "Count Duckula"
     * amigados rainbird protoscan_longtrack
@@ -1202,6 +1218,12 @@ probe_amiga
 
 "Fighting Soccer" = amigados_copylock
 
+"Final Command"
+    0-159 amigados
+    160 ubi_protecton_a
+    161 ubi_protecton_validation_a
+    * ignore
+
 # Needs amigados longtracks or game won't load!
 "Final Fight"
     158-159 protoscan_longtrack
@@ -1271,6 +1293,12 @@ probe_amiga
 "Foundation's Waste"
     1 amigados protec_longtrack
     * amigados
+
+"Fred"
+    0-159 amigados
+    160 ubi_protecton_a
+    161 ubi_protecton_validation_a
+    * ignore
 
 "Frontier: Elite II" = amigados
 
@@ -1683,6 +1711,12 @@ probe_amiga
     2-3 herndon_hls
     * amigados
 
+"Iron Lord"
+    0-159 amigados
+    160 ubi_protecton_a
+    161 ubi_protecton_validation_a
+    * ignore
+
 "Iron Trackers" = amigados
     
 "Ishar: Legend Of The Fortress"
@@ -1925,6 +1959,12 @@ probe_amiga
 
 "Licence To Kill" = amigados_copylock
 
+"Limes & Napoleon"
+    0-159 amigados
+    160 ubi_protecton_a
+    161 ubi_protecton_validation_a
+    * ignore
+
 "Line Of Fire"
     158 tiertex_longtrack
     159 protoscan_longtrack
@@ -2113,6 +2153,12 @@ probe_amiga
 
 "Millennium 2.2" = amigados_copylock
 
+"Minos"
+    0-159 amigados
+    160 ubi_protecton_b
+    161 ubi_protecton_validation_b
+    * ignore
+
 "Minskies ...the abduction" = amigados
 
 "Mission Elevator"
@@ -2166,6 +2212,12 @@ probe_amiga
 "Murders In Space" = amigados
 
 "Murders In Venice" = infogrames_protected
+
+"My Funny Maze"
+    0-159 amigados
+    160 ubi_protecton_b
+    161 ubi_protecton_validation_b
+    * ignore
 
 "Mystical" = amigados
 
@@ -2473,10 +2525,14 @@ probe_amiga
 
 "Pub Trivia" = amigados_copylock
 
-# TODO: Protection on tracks 140-141. Same as on RanX and Iron Lord, also
-# by Ubisoft (but on tracks 180-181 on those titles).
 "Puffy's Saga"
-    * amigados puffys_saga
+    0-111 amigados
+    112-139 puffys_saga
+    140 ubi_protecton_a
+    141 ubi_protecton_validation_a
+    142-147 amigados
+    148-159 puffys_saga
+    * ignore
 
 "Puggsy" = amigados
 
@@ -2520,6 +2576,12 @@ probe_amiga
 "Rambo III" = amigados
 
 "Rampage" = amigados
+
+"RanX"
+    0-159 amigados
+    160 ubi_protecton_a
+    161 ubi_protecton_validation_a
+    * ignore
 
 "Reach For The Skies" = amigados
 
@@ -2688,6 +2750,12 @@ probe_amiga
 
 "Scooby Doo"
     * amigados scooby_doo
+
+"Scorpio"
+    0-159 amigados
+    160 ubi_protecton_b
+    161 ubi_protecton_validation_b
+    * ignore
 
 # AKA Scrabble Deluxe, Computer Scrabble. Uses PROTEC or Copylock protection! 
 "Scrabble" = amigados_copylock
@@ -3122,6 +3190,12 @@ probe_amiga
     * sword_sodan amigados_long_102200
 
 "Syndicate" = amigados
+
+"Takado"
+    0-159 amigados
+    160 ubi_protecton_b
+    161 ubi_protecton_validation_b
+    * ignore
 
 "Tanglewood" = amigados
 
@@ -3780,6 +3854,12 @@ probe_amiga
 "Zeewolf 2" = amigados
 
 "Zero Gravity" = amigados
+
+"Zombi"
+    0-159 amigados
+    160 ubi_protecton_a
+    161 ubi_protecton_validation_a
+    * ignore
 
 "Zool"
     * amigados ss_mfm
