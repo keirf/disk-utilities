@@ -148,8 +148,9 @@ static void *ubi_protection_raw_write_raw(
     while (stream_next_bit(s) != -1) {
         uint32_t raw[2];
         uint16_t raw_buffer[13000/2], raw_buffer_decode[13000/2];
-        unsigned int i, j, k, protection_counter, offset;
+        unsigned int protection_counter, offset;
         uint16_t previous, current, upper;
+        int i, j, k;
 
         // sync
         if (s->word != 0x44894489) {
@@ -190,7 +191,7 @@ static void *ubi_protection_raw_write_raw(
 
         // Decode data and validate that the first decoded long before the sig is 0x00020001
         k = offset/4-1;
-        uint32_t dat[offset/4+4];
+        uint32_t dat[(offset+3)/4+4];
         protection_counter = 0;
         for (j = offset-1; j > 3; j-=4) {
             raw[0] = be32toh((raw_buffer_decode[j-3] << 16) | raw_buffer_decode[j-2]);
@@ -202,11 +203,13 @@ static void *ubi_protection_raw_write_raw(
             k--;
         }
 
-        // verify that the first decoded value is 0x00020001 and that the decoded data 
-        // size is greater than or equal to 0xc00. Lime & Napoleon fail as there is
-        // partial data at the beginning of the track, but the data length is less than
-        // 0xc00 and all games tested have a protection count > 0xc30.
-        if (be32toh(dat[offset/4-1]) != 0x00020001 || protection_counter < 0xc00)
+        /* Verify that the first decoded value is 0x00020001 and that the
+         * decoded data size is greater than or equal to 0xc00. Lime & Napoleon
+         * fail as there is partial data at the beginning of the track, but the
+         * data length is less than 0xc00 and all games tested have a
+         * protection count > 0xc30. */
+        if ((protection_counter < 0xc00)
+            || (be32toh(dat[offset/4-1]) != 0x00020001))
             continue;
 
         // pass the raw data length in
@@ -288,12 +291,12 @@ static void *ubi_protection_write_raw(
     const struct ubi_protection_info *info = handlers[ti->type]->extra_data;
     char *block;
 
-
     while (stream_next_bit(s) != -1) {
         uint32_t raw[2];
         uint16_t raw_buffer[13000/2], raw_buffer_decode[13000/2];
-        unsigned int i, j, k, protection_counter, offset;
+        unsigned int protection_counter, offset;
         uint16_t previous, current, upper;
+        int i, j, k;
 
         // sync
         if (s->word != 0x44894489) {
@@ -333,7 +336,7 @@ static void *ubi_protection_write_raw(
 
         // Decode data and validate that the first decoded long before the sig is 0x00020001
         k = offset/4;
-        uint32_t dat[offset/4+1];
+        uint32_t dat[(offset+3)/4+1];
         protection_counter = 0;
         for (j = offset-1; j > 3; j-=4) {
             raw[0] = be32toh((raw_buffer_decode[j-3] << 16) | raw_buffer_decode[j-2]);
@@ -345,12 +348,13 @@ static void *ubi_protection_write_raw(
             k--;
         }
 
-        // verify that the first decoded value is 0x00020001 and that the decoded data 
-        // size is greater than or equal to 0xc00. Lime & Napoleon fail as there is
-        // partial data at the beginning of the track, but the data length is less than
-        // 0xc00 and all games tested have a protection count > 0xc30.
-        if (be32toh(dat[offset/4]) != 0x00020001 || protection_counter < 0xc00)
-            continue;
+        /* Verify that the first decoded value is 0x00020001 and that the
+         * decoded data size is greater than or equal to 0xc00. Lime & Napoleon
+         * fail as there is partial data at the beginning of the track, but the
+         * data length is less than 0xc00 and all games tested have a
+         * protection count > 0xc30. */
+        if ((protection_counter < 0xc00)
+            || (be32toh(dat[offset/4]) != 0x00020001))
 
         // pass the raw data length and padding in fist position of the array
         dat[0] = (offset << 16) | (((k+j)%2 == 0) ? k+j : 0);
