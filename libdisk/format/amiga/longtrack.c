@@ -736,11 +736,11 @@ struct track_handler gauntlet2_longtrack_handler = {
     .read_raw = gauntlet2_longtrack_read_raw
 };
 
-/* TRKTYP_ooops_up_protecton:
+/* TRKTYP_ooops_up_protection:
  *  Looks for 1023 consecutive 0x4552 words right after the sync
  */
 
-static void *ooops_up_protecton_write_raw(
+static void *ooops_up_protection_write_raw(
     struct disk *d, unsigned int tracknr, struct stream *s)
 {
     struct track_info *ti = &d->di->track[tracknr];
@@ -761,7 +761,7 @@ static void *ooops_up_protecton_write_raw(
     return NULL;
 }
 
-static void ooops_up_protecton_read_raw(
+static void ooops_up_protection_read_raw(
     struct disk *d, unsigned int tracknr, struct tbuf *tbuf)
 {
     unsigned int i;
@@ -771,12 +771,12 @@ static void ooops_up_protecton_read_raw(
         tbuf_bits(tbuf, SPEED_AVG, bc_raw, 16, 0x4552);
 }
 
-struct track_handler ooops_up_protecton_handler = {
-    .write_raw = ooops_up_protecton_write_raw,
-    .read_raw = ooops_up_protecton_read_raw
+struct track_handler ooops_up_protection_handler = {
+    .write_raw = ooops_up_protection_write_raw,
+    .read_raw = ooops_up_protection_read_raw
 };
 
-/* TRKTYP_cyberdos_protecton:
+/* TRKTYP_cyberdos_protection:
  * The contents of the track are not checked, just the length of the
  * track is checked
  * 
@@ -788,7 +788,7 @@ struct track_handler ooops_up_protecton_handler = {
  * like the original
  */
 
-static void *cyberdos_protecton_write_raw(
+static void *cyberdos_protection_write_raw(
     struct disk *d, unsigned int tracknr, struct stream *s)
 {
     struct track_info *ti = &d->di->track[tracknr];
@@ -805,7 +805,7 @@ static void *cyberdos_protecton_write_raw(
     return NULL;
 }
 
-static void cyberdos_protecton_read_raw(
+static void cyberdos_protection_read_raw(
     struct disk *d, unsigned int tracknr, struct tbuf *tbuf)
 {
     unsigned int i;
@@ -814,9 +814,9 @@ static void cyberdos_protecton_read_raw(
         tbuf_bits(tbuf, SPEED_AVG, bc_raw, 16, 0x9494);
 }
 
-struct track_handler cyberdos_protecton_handler = {
-    .write_raw = cyberdos_protecton_write_raw,
-    .read_raw = cyberdos_protecton_read_raw
+struct track_handler cyberdos_protection_handler = {
+    .write_raw = cyberdos_protection_write_raw,
+    .read_raw = cyberdos_protection_read_raw
 };
 
 /* TRKTYP_bomb_busters_longtrack:

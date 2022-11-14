@@ -42,15 +42,15 @@
 #include <libdisk/util.h>
 #include <private/disk.h>
 
-struct ubi_protecton_info {
+struct ubi_protection_info {
     uint32_t sig;
 };
 
-static void *ubi_protecton_validation_write_raw(
+static void *ubi_protection_validation_write_raw(
     struct disk *d, unsigned int tracknr, struct stream *s)
 {
     struct track_info *ti = &d->di->track[tracknr];
-    const struct ubi_protecton_info *info = handlers[ti->type]->extra_data;
+    const struct ubi_protection_info *info = handlers[ti->type]->extra_data;
 
     while (stream_next_bit(s) != -1) {
         uint32_t raw[2], count, *data;
@@ -84,11 +84,11 @@ fail:
     return NULL;
 }
 
-static void ubi_protecton_validation_read_raw(
+static void ubi_protection_validation_read_raw(
     struct disk *d, unsigned int tracknr, struct tbuf *tbuf)
 {
     struct track_info *ti = &d->di->track[tracknr];
-    const struct ubi_protecton_info *info = handlers[ti->type]->extra_data;
+    const struct ubi_protection_info *info = handlers[ti->type]->extra_data;
     uint32_t *dat = (uint32_t *)ti->dat, count = *dat;
 
     tbuf_bits(tbuf, SPEED_AVG, bc_raw, 32, 0x44894489);
@@ -96,18 +96,18 @@ static void ubi_protecton_validation_read_raw(
     tbuf_bits(tbuf, SPEED_AVG, bc_mfm_even_odd, 32, be32toh(count));
 }
 
-struct track_handler ubi_protecton_validation_a_handler = {
-    .write_raw = ubi_protecton_validation_write_raw,
-    .read_raw = ubi_protecton_validation_read_raw,
-    .extra_data = & (struct ubi_protecton_info) {
+struct track_handler ubi_protection_validation_a_handler = {
+    .write_raw = ubi_protection_validation_write_raw,
+    .read_raw = ubi_protection_validation_read_raw,
+    .extra_data = & (struct ubi_protection_info) {
         .sig = 0x552aa549
     }
 };
 
-struct track_handler ubi_protecton_validation_b_handler = {
-    .write_raw = ubi_protecton_validation_write_raw,
-    .read_raw = ubi_protecton_validation_read_raw,
-    .extra_data = & (struct ubi_protecton_info) {
+struct track_handler ubi_protection_validation_b_handler = {
+    .write_raw = ubi_protection_validation_write_raw,
+    .read_raw = ubi_protection_validation_read_raw,
+    .extra_data = & (struct ubi_protection_info) {
         .sig = 0x5524a529
     }
 };
@@ -137,11 +137,11 @@ struct track_handler ubi_protecton_validation_b_handler = {
  * 
  */
 
-static void *ubi_protecton_raw_write_raw(
+static void *ubi_protection_raw_write_raw(
     struct disk *d, unsigned int tracknr, struct stream *s)
 {
     struct track_info *ti = &d->di->track[tracknr];
-    const struct ubi_protecton_info *info = handlers[ti->type]->extra_data;
+    const struct ubi_protection_info *info = handlers[ti->type]->extra_data;
     char *block;
 
 
@@ -223,7 +223,7 @@ fail:
 }
 
 
-static void ubi_protecton_raw_read_raw(
+static void ubi_protection_raw_read_raw(
     struct disk *d, unsigned int tracknr, struct tbuf *tbuf)
 {
     struct track_info *ti = &d->di->track[tracknr];
@@ -238,18 +238,18 @@ static void ubi_protecton_raw_read_raw(
         tbuf_bits(tbuf, SPEED_AVG, bc_raw, 16, dat[i]);
 }
 
-struct track_handler ubi_protecton_raw_a_handler = {
-    .write_raw = ubi_protecton_raw_write_raw,
-    .read_raw = ubi_protecton_raw_read_raw,
-    .extra_data = & (struct ubi_protecton_info) {
+struct track_handler ubi_protection_raw_a_handler = {
+    .write_raw = ubi_protection_raw_write_raw,
+    .read_raw = ubi_protection_raw_read_raw,
+    .extra_data = & (struct ubi_protection_info) {
         .sig = 0x552aa549
     }
 };
 
-struct track_handler ubi_protecton_raw_b_handler = {
-    .write_raw = ubi_protecton_raw_write_raw,
-    .read_raw = ubi_protecton_raw_read_raw,
-    .extra_data = & (struct ubi_protecton_info) {
+struct track_handler ubi_protection_raw_b_handler = {
+    .write_raw = ubi_protection_raw_write_raw,
+    .read_raw = ubi_protection_raw_read_raw,
+    .extra_data = & (struct ubi_protection_info) {
         .sig = 0x5524a529
     }
 };
@@ -281,11 +281,11 @@ struct track_handler ubi_protecton_raw_b_handler = {
  * 0x00080007, 0x00060005, 0x00040003, 0x00020001
  */
 
-static void *ubi_protecton_write_raw(
+static void *ubi_protection_write_raw(
     struct disk *d, unsigned int tracknr, struct stream *s)
 {
     struct track_info *ti = &d->di->track[tracknr];
-    const struct ubi_protecton_info *info = handlers[ti->type]->extra_data;
+    const struct ubi_protection_info *info = handlers[ti->type]->extra_data;
     char *block;
 
 
@@ -371,11 +371,11 @@ fail:
 }
 
 
-static void ubi_protecton_read_raw(
+static void ubi_protection_read_raw(
     struct disk *d, unsigned int tracknr, struct tbuf *tbuf)
 {
     struct track_info *ti = &d->di->track[tracknr];
-    const struct ubi_protecton_info *info = handlers[ti->type]->extra_data;
+    const struct ubi_protection_info *info = handlers[ti->type]->extra_data;
     uint32_t *dat = (uint32_t *)ti->dat;
     unsigned int i, start_offset, data_len, padding_len;
 
@@ -398,18 +398,18 @@ static void ubi_protecton_read_raw(
     tbuf_bits(tbuf, SPEED_AVG, bc_raw, 32, info->sig);
 }
 
-struct track_handler ubi_protecton_a_handler = {
-    .write_raw = ubi_protecton_write_raw,
-    .read_raw = ubi_protecton_read_raw,
-    .extra_data = & (struct ubi_protecton_info) {
+struct track_handler ubi_protection_a_handler = {
+    .write_raw = ubi_protection_write_raw,
+    .read_raw = ubi_protection_read_raw,
+    .extra_data = & (struct ubi_protection_info) {
         .sig = 0x552aa549
     }
 };
 
-struct track_handler ubi_protecton_b_handler = {
-    .write_raw = ubi_protecton_write_raw,
-    .read_raw = ubi_protecton_read_raw,
-    .extra_data = & (struct ubi_protecton_info) {
+struct track_handler ubi_protection_b_handler = {
+    .write_raw = ubi_protection_write_raw,
+    .read_raw = ubi_protection_read_raw,
+    .extra_data = & (struct ubi_protection_info) {
         .sig = 0x5524a529
     }
 };

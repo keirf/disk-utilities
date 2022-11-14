@@ -298,8 +298,8 @@ probe_amiga
     2-3 aunt_arctic_adventure
     4-13 amigados_unknown_length
     14-159 aunt_arctic_adventure
-    160 ubi_protecton_b
-    161 ubi_protecton_validation_b
+    160 ubi_protection_b
+    161 ubi_protection_validation_b
     * ignore
 
 "AV8B Harrier Assault" = amigados
@@ -758,8 +758,8 @@ probe_amiga
 "Cosmo Ranger"
     0-1 amigados
     2-159 cosmo_ranger
-    160 ubi_protecton_b
-    161 ubi_protecton_validation_b
+    160 ubi_protection_b
+    161 ubi_protection_validation_b
     * ignore
 
 "Count Duckula"
@@ -984,7 +984,7 @@ probe_amiga
 
 "Double Dragon II"
     0 amigados
-    1 cyberdos_protecton
+    1 cyberdos_protection
     2-159 cyberdos
     * ignore
 
@@ -1220,8 +1220,8 @@ probe_amiga
 
 "Final Command"
     0-159 amigados
-    160 ubi_protecton_a
-    161 ubi_protecton_validation_a
+    160 ubi_protection_a
+    161 ubi_protection_validation_a
     * ignore
 
 # Needs amigados longtracks or game won't load!
@@ -1296,8 +1296,8 @@ probe_amiga
 
 "Fred"
     0-159 amigados
-    160 ubi_protecton_a
-    161 ubi_protecton_validation_a
+    160 ubi_protection_a
+    161 ubi_protection_validation_a
     * ignore
 
 "Frontier: Elite II" = amigados
@@ -1713,8 +1713,8 @@ probe_amiga
 
 "Iron Lord"
     0-159 amigados
-    160 ubi_protecton_a
-    161 ubi_protecton_validation_a
+    160 ubi_protection_a
+    161 ubi_protection_validation_a
     * ignore
 
 "Iron Trackers" = amigados
@@ -1961,8 +1961,8 @@ probe_amiga
 
 "Limes & Napoleon"
     0-159 amigados
-    160 ubi_protecton_a
-    161 ubi_protecton_validation_a
+    160 ubi_protection_a
+    161 ubi_protection_validation_a
     * ignore
 
 "Line Of Fire"
@@ -2155,8 +2155,8 @@ probe_amiga
 
 "Minos"
     0-159 amigados
-    160 ubi_protecton_b
-    161 ubi_protecton_validation_b
+    160 ubi_protection_b
+    161 ubi_protection_validation_b
     * ignore
 
 "Minskies ...the abduction" = amigados
@@ -2215,8 +2215,8 @@ probe_amiga
 
 "My Funny Maze"
     0-159 amigados
-    160 ubi_protecton_b
-    161 ubi_protecton_validation_b
+    160 ubi_protection_b
+    161 ubi_protection_validation_b
     * ignore
 
 "Mystical" = amigados
@@ -2305,7 +2305,7 @@ probe_amiga
 
 "Ooops Up"
     0 amigados
-    1 ooops_up_protecton
+    1 ooops_up_protection
     2-158 amigados
     * ignore
 
@@ -2528,8 +2528,8 @@ probe_amiga
 "Puffy's Saga"
     0-111 amigados
     112-139 puffys_saga
-    140 ubi_protecton_a
-    141 ubi_protecton_validation_a
+    140 ubi_protection_a
+    141 ubi_protection_validation_a
     142-147 amigados
     148-159 puffys_saga
     * ignore
@@ -2579,8 +2579,8 @@ probe_amiga
 
 "RanX"
     0-159 amigados
-    160 ubi_protecton_a
-    161 ubi_protecton_validation_a
+    160 ubi_protection_a
+    161 ubi_protection_validation_a
     * ignore
 
 "Reach For The Skies" = amigados
@@ -2753,8 +2753,8 @@ probe_amiga
 
 "Scorpio"
     0-159 amigados
-    160 ubi_protecton_b
-    161 ubi_protecton_validation_b
+    160 ubi_protection_b
+    161 ubi_protection_validation_b
     * ignore
 
 # AKA Scrabble Deluxe, Computer Scrabble. Uses PROTEC or Copylock protection! 
@@ -3193,8 +3193,8 @@ probe_amiga
 
 "Takado"
     0-159 amigados
-    160 ubi_protecton_b
-    161 ubi_protecton_validation_b
+    160 ubi_protection_b
+    161 ubi_protection_validation_b
     * ignore
 
 "Tanglewood" = amigados
@@ -3857,8 +3857,8 @@ probe_amiga
 
 "Zombi"
     0-159 amigados
-    160 ubi_protecton_a
-    161 ubi_protecton_validation_a
+    160 ubi_protection_a
+    161 ubi_protection_validation_a
     * ignore
 
 "Zool"
