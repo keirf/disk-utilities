@@ -26,13 +26,16 @@
 
 static const uint16_t crcs[];
 
+/* KAF: This is the track data len corresponding to the CRC table. */
+#define track_data_len ((768+3)*8)
+
 static void *disposable_hero_write_raw(
     struct disk *d, unsigned int tracknr, struct stream *s)
 {
     struct track_info *ti = &d->di->track[tracknr];
 
     while (stream_next_bit(s) != -1) {
-        uint16_t raw[ti->nr_sectors], dat[(ti->len)/2+3];
+        uint16_t raw[8], dat[track_data_len/2];
         unsigned int i;
         char *block;
 
@@ -46,10 +49,10 @@ static void *disposable_hero_write_raw(
             continue;
 
         stream_start_crc(s);
-        for (i = 0; i < ti->bytes_per_sector+3; i++) {
-            if (stream_next_bytes(s, raw, 2*ti->nr_sectors) == -1)
+        for (i = 0; i < 768+3; i++) {
+            if (stream_next_bytes(s, raw, 2*8) == -1)
                 break;
-            mfm_decode_bytes(bc_mfm_even_odd, ti->nr_sectors, raw, &dat[i*4]);
+            mfm_decode_bytes(bc_mfm_even_odd, 8, raw, &dat[i*4]);
         }
 
         if (s->crc16_ccitt != crcs[tracknr] && s->crc16_ccitt != crcs[tracknr+160])
@@ -57,8 +60,9 @@ static void *disposable_hero_write_raw(
 
         stream_next_index(s);
         ti->total_bits = s->track_len_bc;
-        block = memalloc(ti->len+6);
-        memcpy(block, dat, ti->len+6);
+        ti->len = track_data_len;
+        block = memalloc(ti->len);
+        memcpy(block, dat, ti->len);
         set_all_sectors_valid(ti);
         return block;
     }
@@ -77,8 +81,8 @@ static void disposable_hero_read_raw(
     tbuf_bits(tbuf, SPEED_AVG, bc_raw, 16, 0x4489);
     tbuf_bits(tbuf, SPEED_AVG, bc_raw, 16, 0x5555);
 
-    for (i = 0; i < ti->bytes_per_sector+3; i++) {
-        tbuf_bytes(tbuf, SPEED_AVG, bc_mfm_even_odd, ti->nr_sectors, &dat[i*4]);
+    for (i = 0; i < 768+3; i++) {
+        tbuf_bytes(tbuf, SPEED_AVG, bc_mfm_even_odd, 8, &dat[i*4]);
     }
 }
 
