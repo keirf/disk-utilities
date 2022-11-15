@@ -3,20 +3,20 @@
  *
  * Protection definition for the following games:
  * 
- * Iron Lord                - 0x552aa549 - UBI 		    - 1989
- * Puffy's Saga             - 0x552aa549 - UBI 		    - 1989
- * Cosmo Ranger             - 0x5524a529 - Turtle Byte	- 1989
- * Minos                    - 0x5524a529 - Turtle Byte	- 1990
- * Takado                   - 0x5524a529 - King Soft	- 1988
- * Scorpio                  - 0x5524a529 - King Soft	- 1988
- * Aunt Arctic Adventure    - 0x5524a529 - Mindware	    - 1989
- * Limes & Napoleon         - 0x552aa549 - EAS		    - 1989
- * Fred                     - 0x552aa549 - UBI		    - 1989
- * RanX                     - 0x552aa549 - UBI		    - 1990
- * Zombi                    - 0x552aa549 - UBI		    - 1989
- * Final Command            - 0x552aa549 - UBI		    - 1989
- * My Funny Maze            - 0x5524a529 - Turtle Byte	- 1989
- * Vindex                   - 0x5524a529 - Turtle Byte	- 1989
+ * Iron Lord                - 0x552aa549 - UBI          - 1989
+ * Puffy's Saga             - 0x552aa549 - UBI          - 1989
+ * Cosmo Ranger             - 0x5524a529 - Turtle Byte  - 1989
+ * Minos                    - 0x5524a529 - Turtle Byte  - 1990
+ * Takado                   - 0x5524a529 - King Soft    - 1988
+ * Scorpio                  - 0x5524a529 - King Soft    - 1988
+ * Aunt Arctic Adventure    - 0x5524a529 - Mindware     - 1989
+ * Limes & Napoleon         - 0x552aa549 - EAS          - 1989
+ * Fred                     - 0x552aa549 - UBI          - 1989
+ * RanX                     - 0x552aa549 - UBI          - 1990
+ * Zombi                    - 0x552aa549 - UBI          - 1989
+ * Final Command            - 0x552aa549 - UBI          - 1989
+ * My Funny Maze            - 0x5524a529 - Turtle Byte  - 1989
+ * Vindex                   - 0x5524a529 - Turtle Byte  - 1989
  * 
  * 
  * Written in 2022 by Keith Krellwitz
@@ -190,8 +190,8 @@ static void *ubi_protection_raw_write_raw(
         }
 
         // Decode data and validate that the first decoded long before the sig is 0x00020001
-        k = offset/4-1;
-        uint32_t dat[(offset+3)/4+4];
+        k = offset/4;
+        uint32_t dat[(offset+3)/4+1];
         protection_counter = 0;
         for (j = offset-1; j > 3; j-=4) {
             raw[0] = be32toh((raw_buffer_decode[j-3] << 16) | raw_buffer_decode[j-2]);
@@ -209,7 +209,7 @@ static void *ubi_protection_raw_write_raw(
          * data length is less than 0xc00 and all games tested have a
          * protection count > 0xc30. */
         if ((protection_counter < 0xc00)
-            || (be32toh(dat[offset/4-1]) != 0x00020001))
+            || (be32toh(dat[offset/4]) != 0x00020001))
             continue;
 
         // pass the raw data length in
@@ -355,7 +355,7 @@ static void *ubi_protection_write_raw(
          * protection count > 0xc30. */
         if ((protection_counter < 0xc00)
             || (be32toh(dat[offset/4]) != 0x00020001))
-
+            continue;
         // pass the raw data length and padding in fist position of the array
         dat[0] = (offset << 16) | (((k+j)%2 == 0) ? k+j : 0);
 
@@ -417,3 +417,13 @@ struct track_handler ubi_protection_b_handler = {
         .sig = 0x5524a529
     }
 };
+
+/*
+ * Local variables:
+ * mode: C
+ * c-file-style: "Linux"
+ * c-basic-offset: 4
+ * tab-width: 4
+ * indent-tabs-mode: nil
+ * End:
+ */
