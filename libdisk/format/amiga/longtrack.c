@@ -737,7 +737,8 @@ struct track_handler gauntlet2_longtrack_handler = {
 };
 
 /* TRKTYP_demonware_protection:
- *  Looks for 1023 consecutive 0x4552 words right after the sync
+ *  Looks for 1023 consecutive 0x4552 words right after the sync.  This is used
+ *  by the game Ooops Up and The Power
  */
 
 static void *demonware_protection_write_raw(

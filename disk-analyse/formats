@@ -16,12 +16,6 @@ probe_amiga
 ####################
 # Game List - every checked game is listed here
 
-"The Power"
-    0 amigados
-    1-158 amigados
-    159 demonware_protection
-    * ignore
-
 "1000 Miglia" = amigados
 
 "1000cc Turbo"
@@ -3361,6 +3355,12 @@ probe_amiga
     * amigados
 
 "The Pawn" = amigados
+
+"The Power"
+    0 amigados
+    1-158 amigados
+    159 demonware_protection
+    * ignore
 
 # Created with Innerprise version
 "The Plague"
