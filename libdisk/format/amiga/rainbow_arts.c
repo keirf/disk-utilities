@@ -96,316 +96,140 @@ struct track_handler conqueror_handler = {
 };
 
 
-/*  
- * disk/rainbow_arts.c
+/*
+ * Custom protection track format as used on following games:
  *
- * This is the protection tracks for the following games:
- *  Crystal Hammer
- *  Street Cat
- *  Mission Elevator
- *
- * Written in 2022 by Keith Krellwitz
- *
- * TRKTYPE_crystal_hammer_prot_a
- *
- *  Track 79.0
- *  u32 0x44894489 :: MFM sync
- *  u16 0x554A
- *  u16 0x52AA
- *  u16 0 (13 mfm encoded 0's)
- *
- *  Only checks the sync and the first 2 u16's
- *
- * TRKTYPE_crystal_hammer_prot_b
- *
- *  Track 79.1
- *  u32 0x44894489 :: MFM sync
- *  u16 0x2aaa
- *  u16 0xaaaa
- *  u16 0 (13 mfm encoded 0's)
- *
- *  Does not check the data
- *
- * TRKTYPE_crystal_hammer_prot_c
- *
- *  Track 80.1
- *  u32 0x44894489 :: MFM sync
- *  u16 0x4489
- *
- * Shifts the data at a specific offset and checks for 0x4489.w
- *
- * TRKTYPE_street_cat_prot_a
- *
- *  Track 79.0
- *  u32 0x92459245 :: MFM sync
- *  u16 0xAA94
- *  u16 0x94AA
- *  u16 0 (13 mfm encoded 0's)
- *
- *  Only checks the sync and the first 2 u16's
- *
- * TRKTYPE_street_cat_prot_b
- *
- *  Track 79.1
- *  u32 0x92459245 :: MFM sync
- *  u16 0x2aaa
- *  u16 0xaaaa
- *  u16 0 (13 mfm encoded 0's)
- *
- *  Does not check the data
- *
- * TRKTYPE_street_cat_prot_c
- *
- *  Tracks 80.1-81.1, 83.0
- *  u16 0x9245 :: MFM sync
- *  u16 0x9245
- *
- * Shifts the data at a specific offset and checks for 0x9245.w
- *
- * TRKTYPE_mission_elevator_prot_a
- *
- *  Track 79.0
- *  u32 0x44894489 :: MFM sync
- *  u16 0x554A
- *  u16 0x52AA
- *  u16 0 (13 mfm encoded 0's)
- *
- *  Only checks the sync and the first 2 u16's
- *
- * TRKTYPE_mission_elevator_prot_b
- *
- *  Track 79.1
- *  u32 0x44894489 :: MFM sync
- *  u16 0x2aaa
- *  u16 0xaaaa
- *  u16 0 (13 mfm encoded 0's)
- *
- *  Does not check the data
- *
- * TRKTYPE_mission_elevator_prot_c
- *
- *  Track 80.1
- *  u32 0x44894489 :: MFM sync
- *  u16 0x4489
- *
- * Shifts the data at a specific offset and checks for 0x4489.w
+ * - Jinks                              Diamond Software / Rainbow Arts
+ * - Street Cat                         Rainbow Arts
+ * - Bad Cat                            Rainbow Arts
+ * - In Eighty Days Around The World    Rainbow Arts
+ * - Mission Elevator                   Reline/Rainbow Arts
+ * - Crystal Hammer                     Reline
+ * - Spaceport                          Reline
+ * 
+ * Written in 2014 by Keir Fraser
+ * Updated in 2022 by Keith Krellwitz
+ * 
+ * RAW TRACK LAYOUT:
+ * 
+ * rainbow_arts_protection_a
+ *  u32 0x92429242
+ *  u32 0xaa1191aa (track 158)
+ * 
+ * rainbow_arts_protection_b
+ *  u32 0x44894489
+ *  u32 0x554A52AA (track 158)
+ * 
+ * rainbow_arts_protection_c
+ *  u32 0x92459245
+ *  u32 0xAA9494AA (track 158)
+ * 
+ * rainbow_arts_protection_d
+ *  u32 0x92454922
+ *  u32 0xAA9494AA (track 158)
+ * 
+ * Normal length track.
+ * 
+ * Protection reads the longword following sync from track 158. Converts this
+ * to an offset X. Then syncs to track 159, then steps immediately to track
+ * 161 and does an unsynced read of 512 words. Then expects to find sync 
+ * at around offset X in the MFM buffer.
+ * 
+ * This is obviously quite imprecise, so we make the check a dead certainty
+ * by stamping sync throughout track 161. We adjust this track's start
+ * point to provide a large landing area for the protection check.
  */
 
-static int check_sequence(struct stream *s, unsigned int nr, uint8_t byte)
-{
-    while (--nr) {
-        stream_next_bits(s, 16);
-        if ((uint8_t)mfm_decode_word(s->word) != byte)
-            break;
-    }
-    return !nr;
-}
-
-static int check_length(struct stream *s, unsigned int min_bits)
-{
-    stream_next_index(s);
-    return (s->track_len_bc >= min_bits);
-}
-
-struct prot_info {
-    uint16_t pad1;
-    uint16_t pad2;
+struct rainbow_arts_info {
     uint32_t sync;
-    uint32_t check_length;
+    uint32_t encoded_offset;
 };
 
-static void *rainbow_arts_prot_write_raw(
+
+static void *rainbow_arts_protection_write_raw(
     struct disk *d, unsigned int tracknr, struct stream *s)
 {
     struct track_info *ti = &d->di->track[tracknr];
-    const struct prot_info *info = handlers[ti->type]->extra_data;
+    const struct rainbow_arts_info *info = handlers[ti->type]->extra_data;
+
     while (stream_next_bit(s) != -1) {
 
         if (s->word != info->sync)
             continue;
         ti->data_bitoff = s->index_offset_bc - 31;
 
-        if (stream_next_bits(s, 16) == -1)
-            continue;
-        if ((uint16_t)s->word != info->pad1)
-           continue;
-        
-        if (stream_next_bits(s, 16) == -1)
-            continue;
-        if ((uint16_t)s->word != info->pad2)
-           continue;
+        if (tracknr == 161)
+            ti->data_bitoff -= 1000;
 
-        if (!check_sequence(s, 13, 0))
-            continue;
-        if (!check_length(s, info->check_length))
-            break;
-
-        stream_next_index(s);
-        ti->total_bits = s->track_len_bc;
         return memalloc(0);
     }
 
     return NULL;
 }
 
-static void rainbow_arts_prot_read_raw(
+static void rainbow_arts_protection_read_raw(
     struct disk *d, unsigned int tracknr, struct tbuf *tbuf)
 {
+    unsigned int nr = (tracknr == 161) ? 3000 : 1;
     struct track_info *ti = &d->di->track[tracknr];
-    const struct prot_info *info = handlers[ti->type]->extra_data;
-    unsigned int i;
+    const struct rainbow_arts_info *info = handlers[ti->type]->extra_data;
 
-    tbuf_bits(tbuf, SPEED_AVG, bc_raw, 32, info->sync);
-    tbuf_bits(tbuf, SPEED_AVG, bc_raw, 16, info->pad1);
-    tbuf_bits(tbuf, SPEED_AVG, bc_raw, 16, info->pad2);
-    for (i = 0; i < 13; i++) {
-        tbuf_bits(tbuf, SPEED_AVG, bc_mfm, 16, 0);
-    }
-}
-
-struct track_handler street_cat_prot_a_handler = {
-    .write_raw = rainbow_arts_prot_write_raw,
-    .read_raw = rainbow_arts_prot_read_raw,
-    .extra_data = & (struct prot_info) {
-        .pad1 = 0xAA94,
-        .pad2 = 0x94AA,
-        .sync = 0x92459245,
-        .check_length = 100000
-    }
-};
-
-struct track_handler street_cat_prot_b_handler = {
-    .write_raw = rainbow_arts_prot_write_raw,
-    .read_raw = rainbow_arts_prot_read_raw,
-    .extra_data = & (struct prot_info) {
-        .pad1 = 0x2aaa,
-        .pad2 = 0xaaaa,
-        .sync = 0x92459245,
-        .check_length = 100000
-    }
-};
-
-struct track_handler crystal_hammer_prot_a_handler = {
-    .write_raw = rainbow_arts_prot_write_raw,
-    .read_raw = rainbow_arts_prot_read_raw,
-    .extra_data = & (struct prot_info) {
-        .pad1 = 0x554A,
-        .pad2 = 0x52AA,
-        .sync = 0x44894489,
-        .check_length = 100000
-    }
-};
-
-struct track_handler crystal_hammer_prot_b_handler = {
-    .write_raw = rainbow_arts_prot_write_raw,
-    .read_raw = rainbow_arts_prot_read_raw,
-    .extra_data = & (struct prot_info) {
-        .pad1 = 0x2aaa,
-        .pad2 = 0xaaaa,
-        .sync = 0x44894489,
-        .check_length = 100000
-    }
-};
-
-
-struct track_handler mission_elevator_prot_a_handler = {
-    .write_raw = rainbow_arts_prot_write_raw,
-    .read_raw = rainbow_arts_prot_read_raw,
-    .extra_data = & (struct prot_info) {
-        .pad1 = 0x554A,
-        .pad2 = 0x52AA,
-        .sync = 0x44894489,
-        .check_length = 99900
-    }
-};
-
-struct track_handler mission_elevator_prot_b_handler = {
-    .write_raw = rainbow_arts_prot_write_raw,
-    .read_raw = rainbow_arts_prot_read_raw,
-    .extra_data = & (struct prot_info) {
-        .pad1 = 0x2aaa,
-        .pad2 = 0xaaaa,
-        .sync = 0x44894489,
-        .check_length = 99900
-    }
-};
-
-struct prot_c_info {
-    uint32_t sync;
-    uint32_t check_length;
-    unsigned int sync_count;
-};
-
-static void *rainbow_arts_prot_c_write_raw(
-    struct disk *d, unsigned int tracknr, struct stream *s)
-{
-    struct track_info *ti = &d->di->track[tracknr];
-    const struct prot_c_info *info = handlers[ti->type]->extra_data;
-    while (stream_next_bit(s) != -1) {
-
-        if (info->sync_count == 1) {
-            if ((uint16_t)s->word != (uint16_t)info->sync)
-                continue;
-            ti->data_bitoff = s->index_offset_bc - 15;
-        }
-        else {
-            if (s->word != info->sync)
-                continue;
-            ti->data_bitoff = s->index_offset_bc - 31;
-        }
-
-        if (!check_length(s, info->check_length))
-            break;
-
-        stream_next_index(s);
-        ti->total_bits = s->track_len_bc;
-        return memalloc(0);
-    }
-
-    return NULL;
-}
-
-static void rainbow_arts_prot_c_read_raw(
-    struct disk *d, unsigned int tracknr, struct tbuf *tbuf)
-{
-    struct track_info *ti = &d->di->track[tracknr];
-    const struct prot_c_info *info = handlers[ti->type]->extra_data;
-
-    if (info->sync_count == 1)
-        tbuf_bits(tbuf, SPEED_AVG, bc_raw, 16, (u_int16_t)info->sync);
-    else
+    while (nr--)
         tbuf_bits(tbuf, SPEED_AVG, bc_raw, 32, info->sync);
-
-    tbuf_bits(tbuf, SPEED_AVG, bc_raw, 16, (uint16_t)info->sync);
+    if (tracknr == 158)
+        tbuf_bits(tbuf, SPEED_AVG, bc_raw, 32, info->encoded_offset);
 }
 
-struct track_handler street_cat_prot_c_handler = {
-    .write_raw = rainbow_arts_prot_c_write_raw,
-    .read_raw = rainbow_arts_prot_c_read_raw,
-    .extra_data = & (struct prot_c_info) {
+/*
+  Jinks
+*/
+struct track_handler rainbow_arts_protection_a_handler = {
+    .write_raw = rainbow_arts_protection_write_raw,
+    .read_raw = rainbow_arts_protection_read_raw,
+    .extra_data = & (struct rainbow_arts_info) {
+        .sync = 0x92429242,
+        .encoded_offset = 0xaa1191aa
+    }
+};
+
+/*
+  Mission Elevator
+  Cristal Hammer
+  Spaceport
+*/
+struct track_handler rainbow_arts_protection_b_handler = {
+    .write_raw = rainbow_arts_protection_write_raw,
+    .read_raw = rainbow_arts_protection_read_raw,
+    .extra_data = & (struct rainbow_arts_info) {
+        .sync = 0x44894489,
+        .encoded_offset = 0x554A52AA
+    }
+};
+
+/*
+  Street Cat
+  Bad Cat
+  In 80 Days Around the Wolrd
+*/
+
+struct track_handler rainbow_arts_protection_c_handler = {
+    .write_raw = rainbow_arts_protection_write_raw,
+    .read_raw = rainbow_arts_protection_read_raw,
+    .extra_data = & (struct rainbow_arts_info) {
         .sync = 0x92459245,
-        .check_length = 94000,
-        .sync_count = 1
+        .encoded_offset = 0xAA9494AA
     }
 };
 
-struct track_handler crystal_hammer_prot_c_handler = {
-    .write_raw = rainbow_arts_prot_c_write_raw,
-    .read_raw = rainbow_arts_prot_c_read_raw,
-    .extra_data = & (struct prot_c_info) {
-        .sync = 0x44894489,
-        .check_length = 100000,
-        .sync_count = 2
-    }
-};
-
-struct track_handler mission_elevator_prot_c_handler = {
-    .write_raw = rainbow_arts_prot_c_write_raw,
-    .read_raw = rainbow_arts_prot_c_read_raw,
-    .extra_data = & (struct prot_c_info) {
-        .sync = 0x44894489,
-        .check_length = 99900,
-        .sync_count = 2
+/*
+  Street Cat
+*/
+struct track_handler rainbow_arts_protection_d_handler = {
+    .write_raw = rainbow_arts_protection_write_raw,
+    .read_raw = rainbow_arts_protection_read_raw,
+    .extra_data = & (struct rainbow_arts_info) {
+        .sync = 0x92454922,
+        .encoded_offset = 0xAA9494AA
     }
 };
 

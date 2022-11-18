@@ -334,6 +334,10 @@ probe_amiga
     2-153 novagen
     * ignore
 
+"Bad Cat"
+    158-161 amigados rainbow_arts_protection_c
+    * amigados
+
 # Retail Release
 "Bad Company"
     0 amigados
@@ -793,11 +797,8 @@ probe_amiga
 "Cruise For A Corpse" = amigados
 
 "Crystal Hammer"
-    0-157 amigados_long_103300
-    158 crystal_hammer_prot_a
-    159 crystal_hammer_prot_b
-    161 crystal_hammer_prot_c
-    *ignore
+    158-161 amigados_long_103300 rainbow_arts_protection_b
+    * amigados_long_103300
 
 "Crystal Kingdom Dizzy" # Disk 2 Track 0 may be empty
     * amigados copylock fun_factory
@@ -1634,6 +1635,10 @@ probe_amiga
 
 "Impossible Mission 2025" = amigados
 
+"In Eighty Days Around The World"
+    158-161 amigados rainbow_arts_protection_c
+    * amigados
+
 "Incredible Shrinking Sphere" = amigados_copylock
 
 "Indiana Jones And The Fate Of Atlantis" = amigados
@@ -1780,7 +1785,7 @@ probe_amiga
 "Jimmy White's Whirlwind Snooker" = amigados_copylock
 
 "Jinks"
-    158-161 amigados jinks
+    158-161 amigados rainbow_arts_protection_a
     * amigados
 
 "Jinxter" = amigados
@@ -2162,11 +2167,8 @@ probe_amiga
 "Minskies ...the abduction" = amigados
 
 "Mission Elevator"
-    0-157 amigados
-    158 mission_elevator_prot_a
-    159 mission_elevator_prot_b
-    161 mission_elevator_prot_c
-    *ignore
+    158-161 amigados rainbow_arts_protection_b
+    * amigados
 
 "Mobile Warfare" = amigados
 
@@ -2305,7 +2307,7 @@ probe_amiga
 
 "Ooops Up"
     0 amigados
-    1 ooops_up_protection
+    1 demonware_protection
     2-158 amigados
     * ignore
 
@@ -2962,6 +2964,10 @@ probe_amiga
 
 "Space Quest IV" = amigados
 
+"Spaceport"
+    158-161 amigados rainbow_arts_protection_b
+    * amigados
+
 "Special Forces" = amigados
 
 # Tracks 37.0-49.1 (74-99) maybe be empty/unformatted
@@ -3044,19 +3050,9 @@ probe_amiga
 
 "Stratego" = amigados
 
-"Street Cat Disk 1"
-    0-157 amigados
-    158 street_cat_prot_a
-    159 street_cat_prot_b
-    160-163 street_cat_prot_c
-    166 street_cat_prot_c
-    *ignore
-
-"Street Cat Disk 2"
-    0-159 amigados
-    160 street_cat_prot_c
-    167 street_cat_prot_c
-    * ignore
+"Street Cat"
+    158-163 amigados rainbow_arts_protection_c rainbow_arts_protection_d
+    * amigados
 
 # Retail, Kixx re-releases: Amiga + Amiga/PC
 "Street Fighter"
@@ -3359,6 +3355,12 @@ probe_amiga
     * amigados
 
 "The Pawn" = amigados
+
+"The Power"
+    0 amigados
+    1-158 amigados
+    159 demonware_protection
+    * ignore
 
 # Created with Innerprise version
 "The Plague"
