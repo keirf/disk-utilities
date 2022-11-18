@@ -736,11 +736,11 @@ struct track_handler gauntlet2_longtrack_handler = {
     .read_raw = gauntlet2_longtrack_read_raw
 };
 
-/* TRKTYP_ooops_up_protection:
+/* TRKTYP_demonware_protection:
  *  Looks for 1023 consecutive 0x4552 words right after the sync
  */
 
-static void *ooops_up_protection_write_raw(
+static void *demonware_protection_write_raw(
     struct disk *d, unsigned int tracknr, struct stream *s)
 {
     struct track_info *ti = &d->di->track[tracknr];
@@ -751,17 +751,17 @@ static void *ooops_up_protection_write_raw(
 
         if (!check_sequence(s, 1020, 0xbc))
             continue;
-        if (!check_length(s, 100000))
+
+        if (!check_length(s, 99800))
             break;
 
         ti->data_bitoff = 0;
-        ti->total_bits = 100100;
         return memalloc(0);
     }
     return NULL;
 }
 
-static void ooops_up_protection_read_raw(
+static void demonware_protection_read_raw(
     struct disk *d, unsigned int tracknr, struct tbuf *tbuf)
 {
     unsigned int i;
@@ -771,9 +771,9 @@ static void ooops_up_protection_read_raw(
         tbuf_bits(tbuf, SPEED_AVG, bc_raw, 16, 0x4552);
 }
 
-struct track_handler ooops_up_protection_handler = {
-    .write_raw = ooops_up_protection_write_raw,
-    .read_raw = ooops_up_protection_read_raw
+struct track_handler demonware_protection_handler = {
+    .write_raw = demonware_protection_write_raw,
+    .read_raw = demonware_protection_read_raw
 };
 
 /* TRKTYP_cyberdos_protection:
