@@ -1305,6 +1305,9 @@ probe_amiga
 
 "Frost Byte" = amigados
 
+"Full Contact"
+    * amigados full_contact
+
 "Full Metal Planete" = infogrames_protected
 
 # All tracks mastered long + data up to track 163!
@@ -1358,22 +1361,20 @@ probe_amiga
 # EU Version
 "Garrison Disk 1" = amigados
 
+# "Unexpected track length' warnings may occur for track 1.0 and 1.1 which can be ignored!
 "Garrison Disk 2"
     0 amigados
     1 garrison_dir
-    2 garrison_empty
-    3 garrison_protection
-    4-159 garrison_data
+    2-159 garrison
     * ignore
 
 "Garrison II Disk 1" = amigados
 
+# "Unexpected track length' warnings may occur for track 1.0 and 1.1 which can be ignored!
 "Garrison II Disk 2"
     0 amigados
     1 garrison_dir
-    2 garrison_ii_empty
-    3 garrison_ii_protection
-    4-159 garrison_data
+    2-159 garrison
     * ignore
 
 "Gateway To The Savage Frontier" = amigados
