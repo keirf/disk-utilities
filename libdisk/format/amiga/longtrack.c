@@ -920,6 +920,54 @@ struct track_handler the_oath_handler = {
     .read_raw = the_oath_read_raw
 };
 
+/* TRKTYP_golden_path_longtrack:
+ *
+ *  This protections is used by Golden Path from Firebird Software.
+ *  Locates the first instance of 0x4454 and then calculates the length of
+ *  the gap to the next instance of 0x4454. The gap must be larger than
+ *  0x1a2c. The Computer Hits Volume 2 version has the protection check
+ *  code in place, but has been modified to always pass the protection 
+ *  check.
+ */
+
+static void *golden_path_longtrack_write_raw(
+    struct disk *d, unsigned int tracknr, struct stream *s)
+{
+    struct track_info *ti = &d->di->track[tracknr];
+
+    while (stream_next_bit(s) != -1) {
+
+        if (!check_sequence(s, 16, 0x66))
+            continue;
+
+        if (!check_length(s, 110000))
+            break;
+
+        ti->data_bitoff = 0;
+        ti->total_bits = 111632;
+        return memalloc(0);
+    }
+
+    return NULL;
+}
+
+static void golden_path_longtrack_read_raw(
+    struct disk *d, unsigned int tracknr, struct tbuf *tbuf)
+{
+    unsigned int i;
+    for (i = 0; i < 0x20; i++)
+        tbuf_bits(tbuf, SPEED_AVG, bc_raw, 16, 0x9494);
+    tbuf_bits(tbuf, SPEED_AVG, bc_raw, 16, 0x4454);
+    for (i = 0; i < 0x1b10; i++)
+        tbuf_bits(tbuf, SPEED_AVG, bc_raw, 16, 0x9494);
+    tbuf_bits(tbuf, SPEED_AVG, bc_raw, 32, 0x44544454);
+}
+
+struct track_handler golden_path_longtrack_handler = {
+    .write_raw = golden_path_longtrack_write_raw,
+    .read_raw = golden_path_longtrack_read_raw
+};
+
 /*
  * Local variables:
  * mode: C

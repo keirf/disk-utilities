@@ -51,18 +51,6 @@ Unsupported format!
 Flimbos Quest: (Kixx)
 Unsupported format!
 
-Full Contact:
-ADOS + protection on track 76.1 of Disk 1 is unsupported!
-
-Garrison:
-Unsupported format!
-
-Garrison II:
-Unsupported format!
-
-Golden Path:
-ADOS + unsupported protection on track 0.1 
-
 Goldrunner II:
 ADOS + IBM 10 sector, unsupported 10 x 256 byte IBM/ST high score track on 64.1
 

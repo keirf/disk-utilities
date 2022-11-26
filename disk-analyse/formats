@@ -1445,6 +1445,12 @@ probe_amiga
 
 "Golden Eagle" = amigados
 
+# The computer Hits 2 version has been modified to always pass the protection
+# check and just has garbage on track 0.1.  
+"Golden Path"
+    1 golden_path_longtrack
+    * amigados
+
 "Goldrunner"
     0-1 amigados
     2-12/2 ibm_pc_dd_10sec
