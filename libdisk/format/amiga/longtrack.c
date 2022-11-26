@@ -922,7 +922,7 @@ struct track_handler the_oath_handler = {
 
 /* TRKTYP_golden_path_longtrack:
  *
- *  This protections is used by Golden Path from Firebird Software.
+ *  This protection is used by Golden Path from Firebird Software.
  *  Locates the first instance of 0x4454 and then calculates the length of
  *  the gap to the next instance of 0x4454. The gap must be larger than
  *  0x1a2c. The Computer Hits Volume 2 version has the protection check
