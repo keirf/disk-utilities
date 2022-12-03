@@ -310,6 +310,9 @@ probe_amiga
     2-159 psygnosis_a
     * ignore 
 
+"Awesome Demo"
+    * amigados awesome_demo
+
 "B.A.T." # Disk 1, Tracks 100+, and Disk 2, Tracks 1 & 96, may be empty
     98-99 prolance_longtrack
     * amigados bat
@@ -1913,6 +1916,12 @@ probe_amiga
 "Killing Game Show"
     1 protec_longtrack
     * psygnosis_c
+
+"Killing Game Show Demo"
+    0 amigados 
+    1 killing_gameshow_demo_a 
+    2-159 killing_gameshow_demo_b 
+    * ignore
 
 "King's Quest" = herndon_longtrack
 "King's Quest II" = herndon_longtrack
