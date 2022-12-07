@@ -654,6 +654,14 @@ probe_amiga
 "Celtic Legends"
     * amigados celtic_legends_a celtic_legends_b
 
+"Chambers Of Shaolin"
+    0 amigados_unknown_length 
+    1 chambers_of_shaolin
+    2-136 ibm_mfm_dd_unknown_length
+    137 chambers_of_shaolin
+    138-159 ibm_mfm_dd_unknown_length
+    * ignore
+
 # Super Quintet Compilation
 "Chamonix Challenge" = amigados
 
@@ -2815,6 +2823,17 @@ probe_amiga
     1 sevencities_longtrack amigados
     * amigados
 
+"Seven Gates Of Jambala"
+    0 amigados_unknown_length 
+    1-29 ibm_mfm_dd_unknown_length
+    30 seven_gates_of_jambala
+    31 ibm_mfm_dd_unknown_length
+    32-62/2 ibm_mfm_dd_unknown_length
+    64-156/2 ibm_mfm_dd_unknown_length
+    31-159/2 ibm_mfm_dd_unknown_length
+    158 seven_gates_of_jambala
+    * ignore
+
 "Sextett"
     158-161 sextett_protection amigados
     * amigados
@@ -3724,6 +3743,9 @@ probe_amiga
 
 # Super Quintet Compilation / Future Dreams Compilation
 "Warlock's Quest" = amigados
+
+"Warp"
+    * amigados_unknown_length ibm_mfm_dd_unknown_length warp_a warp_b warp_c
 
 "Watchtower" = amigados
 

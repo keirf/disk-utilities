@@ -15,9 +15,6 @@ Disk 2 ADOS to tracks 64.1 rest unformatted! protection on track 79.0
 APB:
 ADOS + unsupported copylock
 
-Awesome DEMO Disk:
-Unsupported format!
-
 Carcharadon:
 Unsupported format!
 
@@ -121,9 +118,6 @@ ADOS + IBM 10 sector, protection on track 1.0
 
 The Blues Brothers: (Hits For Six Volume 2 + Triple Action Volume 4)
 ADOS + IBM 10 sectors + unsupported protection on tracks 79.0/79.1
-
-The Killing Game Show - Demo Disk:
-Unsupported format!
 
 The Seven Gates of Jambala: (Retail + Thalion The First Year)
 Track 0.0 ADOS + IBM MFM 6 sectors, protection on tracks 15.0/79.0, all tracks appear long, around 106100

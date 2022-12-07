@@ -632,6 +632,74 @@ struct track_handler ibm_mfm_dd_recovery_handler = {
 };
 
 
+/* IBM MFM DD Long Tracks:
+ * Dummy types and write handler which increase track gap by a defined amount.
+ * These are used where the protection routine does not check for any data
+ * in the track gap, or expects only (MFM-encoded) zeros. */
+
+static void *ibm_mfm_dd_longtrack_write_raw(
+    struct disk *d, unsigned int tracknr, struct stream *s)
+{
+    struct track_info *ti = &d->di->track[tracknr];
+    /* handler.bytes_per_sector is overloaded to contain track bit length */
+    unsigned int total_bits = handlers[ti->type]->bytes_per_sector;
+    const char *typename = ti->typename;
+    char *ablk;
+
+    init_track_info(ti, TRKTYP_ibm_mfm_dd);
+    ablk = handlers[TRKTYP_ibm_mfm_dd]->write_raw(d, tracknr, s);
+    if (ablk == NULL)
+        return NULL;
+
+    if (total_bits == 0) {
+        static const uint16_t types[] = {
+            TRKTYP_ibm_mfm_dd_long_102200,
+            TRKTYP_ibm_mfm_dd_long_103300,
+            TRKTYP_ibm_mfm_dd_long_104400,
+            TRKTYP_ibm_mfm_dd_long_105500,
+            TRKTYP_ibm_mfm_dd_long_106600};
+        unsigned int i;
+        stream_next_index(s);
+        if (s->track_len_bc <= 101100)
+            return ablk; /* not long */
+        for (i = 0; i < ARRAY_SIZE(types)-1; i++) {
+            uint32_t midpoint = (handlers[types[i]]->bytes_per_sector +
+                                 handlers[types[i+1]]->bytes_per_sector) / 2;
+            if (s->track_len_bc <= midpoint)
+                break;
+        }
+        total_bits = handlers[types[i]]->bytes_per_sector;
+        typename = disk_get_format_desc_name(types[i]);
+    }
+
+    ti->total_bits = total_bits;
+    ti->typename = typename;
+    return ablk;
+}
+
+struct track_handler ibm_mfm_dd_long_102200_handler = {
+    .bytes_per_sector = 102200,
+    .write_raw = ibm_mfm_dd_longtrack_write_raw,
+};
+struct track_handler ibm_mfm_dd_long_103300_handler = {
+    .bytes_per_sector = 103300,
+    .write_raw = ibm_mfm_dd_longtrack_write_raw,
+};
+struct track_handler ibm_mfm_dd_long_104400_handler = {
+    .bytes_per_sector = 104400,
+    .write_raw = ibm_mfm_dd_longtrack_write_raw,
+};
+struct track_handler ibm_mfm_dd_long_105500_handler = {
+    .bytes_per_sector = 105500,
+    .write_raw = ibm_mfm_dd_longtrack_write_raw,
+};
+struct track_handler ibm_mfm_dd_long_106600_handler = {
+    .bytes_per_sector = 106600,
+    .write_raw = ibm_mfm_dd_longtrack_write_raw,
+};
+struct track_handler ibm_mfm_dd_unknown_length_handler = {
+    .write_raw = ibm_mfm_dd_longtrack_write_raw,
+};
 /**********************************
  * Single-density (IBM-FM) handlers
  */
