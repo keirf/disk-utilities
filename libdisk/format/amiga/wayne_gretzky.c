@@ -35,7 +35,7 @@ static void *wayne_gretzky_write_raw(
 
         if (stream_next_bits(s, 16) == -1)
             goto fail;
-        if ((u_int16_t)s->word != 0x5555)
+        if ((uint16_t)s->word != 0x5555)
             continue;
 
         for (i = sum = 0; i < ti->len/2; i++) {
