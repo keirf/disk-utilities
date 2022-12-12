@@ -1002,6 +1002,10 @@ probe_amiga
 
 "Double Dragon 3" = amigados_copylock
 
+"Draconia"
+    1 draconia
+    * amigados_long_102200
+
 "Dragon's Breath"
     158 amigados speedlock
     * amigados

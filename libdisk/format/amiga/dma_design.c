@@ -100,6 +100,80 @@ struct track_handler blood_money_handler = {
     .read_raw = dma_design_read_raw
 };
 
+//const static uint16_t key[] = {
+//   0x183c, 0x060f, 0xc103, 0xf080, 0x3c60, 0x0f18, 0x0306, 0x80c1, 0x60f0
+//};
+/* A5 52 A9 4A A -> 3c180 `*/
+
+static void *draconia_write_raw(
+    struct disk *d, unsigned int tracknr, struct stream *s)
+{
+    struct track_info *ti = &d->di->track[tracknr];
+
+    while (stream_next_bit(s) != -1) {
+
+        uint32_t raw[3150], csum;
+        uint16_t dat[3150];
+        unsigned int i;
+
+        /* Sync seems to be easier to find at usual bit timing. */
+        s->clock = 2000;
+
+        if ((uint16_t)s->word != 0x9889)
+            continue;
+
+        ti->data_bitoff = s->index_offset_bc - 15;
+
+        /* This track is *long*. Help the bitcell decoder. */
+        s->clock_centre = s->clock = 1800;
+
+        stream_next_bytes(s, raw, 3150*4);
+        mfm_decode_bytes(bc_mfm, 3150*2, raw, dat);
+
+        csum = 0;
+        for (i = 0; i < 3150; i++)
+            csum ^= raw[i];
+        if (csum != 0)
+            continue;
+
+        for (i = 0; i < sizeof(dat); i++) {
+            uint8_t x = (0xf0603c << (i<<3)%18) >> 18;
+            if (x != ((uint8_t *)dat)[i])
+                break;
+        }
+        if (i != sizeof(dat))
+            continue;
+
+        ti->total_bits = 102200;
+        return memalloc(0);
+    }
+
+    return NULL;
+}
+
+static void draconia_read_raw(
+    struct disk *d, unsigned int tracknr, struct tbuf *tbuf)
+{
+    unsigned int i;
+
+    /* Emit first data byte as raw, as first data clock bit is invalid: 
+     * Should be 0, but is 1. And this is part of the game loader's XOR 
+     * pad, so we *must* emit 1. */
+    tbuf_bits(tbuf, SPEED_AVG, bc_raw, 32, 0x9889a552);
+
+    /* Emit repeating pad, skipping very first bytes which we emitted as 
+     * raw, above. */
+    for (i = 1; i < 50400/8; i++) {
+        uint32_t x = (0xf0603c << (i<<3)%18) >> 18;
+        tbuf_bits(tbuf, SPEED_AVG, bc_mfm, 8, x);
+    }
+}
+
+struct track_handler draconia_handler = {
+    .write_raw = draconia_write_raw,
+    .read_raw = draconia_read_raw
+};
+
 /*
  * Local variables:
  * mode: C
