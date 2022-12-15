@@ -128,13 +128,24 @@ static void dungeon_master_weak_read_raw(
             uint16_t crc = crc16_ccitt(&dat[sec*512], 512, tbuf->crc16_ccitt);
             tbuf_bytes(tbuf, SPEED_AVG, bc_mfm, 20, &dat[sec*512]);
             /* Protection sector: randomise MSB of each byte in weak area. */
-            for (i = 20, j = 0; i < 20+16*30; i++) {
-                delta = (((SPEED_AVG*7)/10) * (j < 15 ? j : 30 - j)) / 15;
-                if (j++ == 30)
-                    j = 0;
-                tbuf_bits(tbuf, SPEED_AVG+delta, bc_raw, 1, 1);
-                tbuf_bits(tbuf, SPEED_AVG-delta, bc_raw, 1, 0);
-                tbuf_bits(tbuf, SPEED_AVG,       bc_mfm, 7, 0x68);
+            if (tbuf->weak != NULL) {
+                /* IPF: We explicitly randomise occasional MSBs. */
+                for (i = 20; i < 20+16*30; i += 16) {
+                    tbuf_bytes(tbuf, SPEED_AVG, bc_mfm, 7, &dat[sec*512+i]);
+                    tbuf_weak(tbuf, 1);
+                    tbuf_bits(tbuf, SPEED_AVG, bc_mfm, 7, 0x68);
+                    tbuf_bytes(tbuf, SPEED_AVG, bc_mfm, 8, &dat[sec*512+i+8]);
+                }
+            } else {
+                /* Default: generate accurate flux timings. */
+                for (i = 20, j = 0; i < 20+16*30; i++) {
+                    delta = (((SPEED_AVG*7)/10) * (j < 15 ? j : 30 - j)) / 15;
+                    if (j++ == 30)
+                        j = 0;
+                    tbuf_bits(tbuf, SPEED_AVG+delta, bc_raw, 1, 1);
+                    tbuf_bits(tbuf, SPEED_AVG-delta, bc_raw, 1, 0);
+                    tbuf_bits(tbuf, SPEED_AVG,       bc_mfm, 7, 0x68);
+                }
             }
             tbuf_bytes(tbuf, SPEED_AVG, bc_mfm, 512-i, &dat[sec*512+i]);
             /* CRC is generated pre-randomisation. Restore it now. */
