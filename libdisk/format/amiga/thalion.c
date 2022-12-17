@@ -95,7 +95,7 @@ static void *thalion_a_write_raw(
         if (ti->type == TRKTYP_seven_gates_of_jambala) {
             if (tracknr == 30 && sum != 0x48f0dfdc)
                 continue;
-            else if (tracknr == 158 && sum != 0x35d08d19)
+            else if (tracknr == 158 && sum != 0x35d08d19 && sum != 0x32a637b6)
                 continue;
         } else if (ti->type == TRKTYP_chambers_of_shaolin) {
             if (tracknr == 1 && sum != 0x1ec71617 && sum != 0x752c1e64)

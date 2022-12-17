@@ -1525,6 +1525,12 @@ probe_amiga
     161 zoom_longtrack
     * ignore
 
+"Grid Start V2"
+    0 amigados_unknown_length
+    1 xelok_longtrack
+    2-159 amigados_unknown_length
+    * ignore
+
 "Gunboat" = amigados
 
 "Gunship 2000" = amigados
@@ -2216,6 +2222,12 @@ probe_amiga
     * amigados
 
 "Mobile Warfare" = amigados
+
+"Moebius: The Orb Of Celestial Harmony"
+    0 amigados_unknown_length
+    1 xelok_longtrack
+    2-159 amigados_unknown_length
+    * ignore
 
 "Monkey Island" = amigados
 
@@ -3496,6 +3508,12 @@ probe_amiga
 # Original Timekeepers + Expansion Disk
 "Timekeepers" = amigados
 
+"Times Of Lore"
+    0 amigados_unknown_length
+    1 xelok_longtrack
+    2-159 amigados_unknown_length
+    * ignore
+
 "Tin Toy" amigados
 
 "Tintin On The Moon" = amigados
@@ -3631,6 +3649,18 @@ probe_amiga
     * amigados typhoon
 
 "UFO Enemy Unknown" = amigados
+
+"Ultima III: Exodus"
+    0 amigados_unknown_length
+    1 xelok_longtrack
+    2-159 amigados_unknown_length
+    * ignore
+
+"Ultima IV: Quest Of The Avatar"
+    0 amigados_unknown_length
+    1 xelok_longtrack
+    2-159 amigados_unknown_length
+    * ignore
 
 "Ultima V"
     * amigados core_design

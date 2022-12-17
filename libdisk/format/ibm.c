@@ -697,6 +697,14 @@ struct track_handler ibm_mfm_dd_long_106600_handler = {
     .bytes_per_sector = 106600,
     .write_raw = ibm_mfm_dd_longtrack_write_raw,
 };
+struct track_handler ibm_mfm_dd_long_108800_handler = {
+    .bytes_per_sector = 108800,
+    .write_raw = ibm_mfm_dd_longtrack_write_raw,
+};
+struct track_handler ibm_mfm_dd_long_111000_handler = {
+    .bytes_per_sector = 111000,
+    .write_raw = ibm_mfm_dd_longtrack_write_raw,
+};
 struct track_handler ibm_mfm_dd_unknown_length_handler = {
     .write_raw = ibm_mfm_dd_longtrack_write_raw,
 };
