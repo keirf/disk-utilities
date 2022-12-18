@@ -410,6 +410,9 @@ probe_amiga
 "Battle Squadron" 
     * amigados_long_103300 battle_squadron
 
+"Battle Storm"
+    * amigados_unknown_length
+
 # Retail release uses RNC Gap protection, Prism Leisure release is unprotected!
 "Battle Valley" = rnc_gap
 
@@ -489,6 +492,9 @@ probe_amiga
 
 "Blazing Thunder"
     * amigados blazing_thunder
+
+"Blockbuster"
+    * amigados_unknown_length
 
 "Blood Money"
     * amigados blood_money protec_longtrack
@@ -1677,6 +1683,12 @@ probe_amiga
 
 "Ilyad"
     * amigados ilyad
+
+"Impact"
+    0 amigados_unknown_length
+    1 xelok_longtrack
+    2-159 amigados_unknown_length
+    * ignore
 
 "Impossible Mission 2025" = amigados
 
@@ -3278,6 +3290,16 @@ probe_amiga
 
 "Team Yankee" = amigados
 
+"Tech"
+    0 amigados_unknown_length 
+    1 tech_boot 
+    21-33/2 tech
+    6-22/2 tech
+    26-74/2 tech
+    84-140/2 tech
+    144/2 tech
+    * ignore
+
 "Tecnoball"
     * amigados tlk_dos_1
 
@@ -3909,9 +3931,15 @@ probe_amiga
 
 "XP8" = amigados
 
-# Retail release has unsupported Anco protection on track 0.1
 # Re-Releases use Copylock
 "XR-35" = amigagdos_copylock
+
+# Retail release has Xelok protection on track 0.1
+"XR-35 Retail"
+    0 amigados_unknown_length
+    1 xelok_longtrack
+    2-159 amigados_unknown_length
+    * ignore
 
 "Xybots" = amigados_copylock
 
