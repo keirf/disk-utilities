@@ -34,20 +34,35 @@ static int check_length(struct stream *s, unsigned int min_bits)
  *  Track is checked to be >= 107200 bits long
  *  Specifically, protection checks for >= 6700 raw words between successive
  *  sync marks. Track contents are not otherwise checked or tested. 
- * NOTES: 
+ * NOTES:
  *  1. Repeated pattern byte can differ (e.g. SPS 1352, Robocod, uses pattern
  *     byte 0x44). We simply check for any repeated value, and use that same
- *     value when regenerating the MFM data. */
+ *     value when regenerating the MFM data.
+ *
+ * TRKTYP_protec_alt_longtrack: PROTEC protection track, used on Robbeary by
+ *  Anco
+ *  u16 0x924a
+ *  u8 encoded byte may different for each game that uses it
+ *
+ *  Other than the sync being different the track definition is the same as
+ *  TRKTYP_protec_longtrack definition above
+ *
+ */
+
+struct protec_info {
+    uint16_t sync;
+};
 
 static void *protec_longtrack_write_raw(
     struct disk *d, unsigned int tracknr, struct stream *s)
 {
     struct track_info *ti = &d->di->track[tracknr];
+    const struct protec_info *info = handlers[ti->type]->extra_data;
     uint8_t byte, *data;
 
     while (stream_next_bit(s) != -1) {
         ti->data_bitoff = s->index_offset_bc - 31;
-        if ((s->word >> 16) != 0x4454)
+        if ((s->word >> 16) != info->sync)
             continue;
         byte = (uint8_t)mfm_decode_word(s->word);
         if (!check_sequence(s, 1000, byte))
@@ -68,17 +83,29 @@ static void protec_longtrack_read_raw(
     struct disk *d, unsigned int tracknr, struct tbuf *tbuf)
 {
     struct track_info *ti = &d->di->track[tracknr];
+    const struct protec_info *info = handlers[ti->type]->extra_data;
     uint8_t *dat = (uint8_t *)ti->dat, byte = *dat;
     unsigned int i;
 
-    tbuf_bits(tbuf, SPEED_AVG, bc_raw, 16, 0x4454);
+    tbuf_bits(tbuf, SPEED_AVG, bc_raw, 16, info->sync);
     for (i = 0; i < 6000; i++)
         tbuf_bits(tbuf, SPEED_AVG, bc_mfm, 8, byte);
 }
 
 struct track_handler protec_longtrack_handler = {
     .write_raw = protec_longtrack_write_raw,
-    .read_raw = protec_longtrack_read_raw
+    .read_raw = protec_longtrack_read_raw,
+    .extra_data = & (struct protec_info) {
+        .sync = 0x4454
+    }
+};
+
+struct track_handler protec_alt_longtrack_handler = {
+    .write_raw = protec_longtrack_write_raw,
+    .read_raw = protec_longtrack_read_raw ,
+    .extra_data = & (struct protec_info) {
+        .sync = 0x924a
+    }
 };
 
 /* TRKTYP_protoscan_longtrack: Lotus I/II, + many others
@@ -920,30 +947,37 @@ struct track_handler the_oath_handler = {
     .read_raw = the_oath_read_raw
 };
 
-/* TRKTYP_golden_path_longtrack:
+/* TRKTYP_dogs_of_war_longtrack:
  *
- *  This protection is used by Golden Path from Firebird Software.
+ *  This protection is used by Dogs Of War from Elite.
  *  Locates the first instance of 0x4454 and then calculates the length of
  *  the gap to the next instance of 0x4454. The gap must be larger than
- *  0x1a2c. The Computer Hits Volume 2 version has the protection check
- *  code in place, but has been modified to always pass the protection 
- *  check.
+ *  0x1a2c. The protection code looks identicle to that of PROTEC format,
+ *  but has random data between the gap. The track will be written 
+ *  as a standard PROTEC track.
  */
 
-static void *golden_path_longtrack_write_raw(
+static void *dogs_of_war_longtrack_write_raw(
     struct disk *d, unsigned int tracknr, struct stream *s)
 {
     struct track_info *ti = &d->di->track[tracknr];
-
+    unsigned int bit_count = 0;
     while (stream_next_bit(s) != -1) {
-
-        if (!check_sequence(s, 16, 0x66))
+        if ((uint16_t)s->word == 0x4454)
+            break;
+    }
+    while (stream_next_bit(s) != -1) {
+        bit_count++;
+        if ((uint16_t)s->word != 0x4454)
             continue;
 
         if (!check_length(s, 110000))
             break;
 
-        ti->data_bitoff = 0;
+        if (bit_count/16 <= 0x1ac)
+            continue;
+
+        ti->data_bitoff = 31;
         ti->total_bits = 111632;
         return memalloc(0);
     }
@@ -951,28 +985,25 @@ static void *golden_path_longtrack_write_raw(
     return NULL;
 }
 
-static void golden_path_longtrack_read_raw(
+static void dogs_of_war_longtrack_read_raw(
     struct disk *d, unsigned int tracknr, struct tbuf *tbuf)
 {
     unsigned int i;
-    for (i = 0; i < 0x20; i++)
-        tbuf_bits(tbuf, SPEED_AVG, bc_raw, 16, 0x9494);
     tbuf_bits(tbuf, SPEED_AVG, bc_raw, 16, 0x4454);
     for (i = 0; i < 0x1b10; i++)
         tbuf_bits(tbuf, SPEED_AVG, bc_raw, 16, 0x9494);
-    tbuf_bits(tbuf, SPEED_AVG, bc_raw, 32, 0x44544454);
 }
 
-struct track_handler golden_path_longtrack_handler = {
-    .write_raw = golden_path_longtrack_write_raw,
-    .read_raw = golden_path_longtrack_read_raw
+struct track_handler dogs_of_war_longtrack_handler = {
+    .write_raw = dogs_of_war_longtrack_write_raw,
+    .read_raw = dogs_of_war_longtrack_read_raw
 };
 
 
 /* TRKTYP_xelok_longtrack:
  *
  *  This protection is used by Grid Start V2, Ultima III - Exodus, Times
- *  Of Lore, Ultima IV.
+ *  Of Lore, Ultima IV, Impact, XR-35.
  *
  *  The length of the track is checked and a check for the word 0x924a is
  *  done.
@@ -982,6 +1013,16 @@ static void *xelok_longtrack_write_raw(
     struct disk *d, unsigned int tracknr, struct stream *s)
 {
     struct track_info *ti = &d->di->track[tracknr];
+
+    while (stream_next_bit(s) != -1) {
+        if ((uint16_t)s->word != 0x928a)
+            continue;
+
+        if (!check_sequence(s, 3000, 0x40))
+            continue;
+
+        break;
+    }
 
     while (stream_next_bit(s) != -1) {
 
@@ -1008,16 +1049,116 @@ static void xelok_longtrack_read_raw(
 {
     unsigned int i;
 
-    for (i = 0; i < 600; i++)
-        tbuf_bits(tbuf, SPEED_AVG, bc_mfm, 8, 0x40);
+    for (i = 0; i < 5200; i++)
+        tbuf_bits(tbuf, SPEED_AVG, bc_raw, 16, 0x928a);
     tbuf_bits(tbuf, SPEED_AVG, bc_raw, 16, 0x924a);
-    for (i = 0; i < 6000; i++)
+    for (i = 0; i < 1400; i++)
         tbuf_bits(tbuf, SPEED_AVG, bc_mfm, 8, 0xdc);
 }
 
 struct track_handler xelok_longtrack_handler = {
     .write_raw = xelok_longtrack_write_raw,
     .read_raw = xelok_longtrack_read_raw
+};
+
+
+/* AmigaDOS-based protection, use by several games by Anco/Kingsoft.
+ * 
+ * Challenger
+ * Cruncher Factory
+ * Demolition
+ * Phalanx
+ * Space Battle
+ * 
+ * Written in 2023 by Keith Krellwitz
+ *
+ *  u16 sync
+ *  u16 7x 0x5544
+ *  u16 0x8892
+ *  u16 0x5544
+ *  u16 key
+ * 
+ * Sync can be one of the following:
+ *     0x4489, 0x4894, 0x48aa, 0x44a2, 0xa425, 0x29a9
+*/
+
+const static uint16_t anco_kingsoft_syncs[] = {
+    0x4489, 0x4894, 0x48aa, 0x44a2, 0xa425, 0x29a9
+};
+
+static void *anco_kingsoft_protection_write_raw(
+    struct disk *d, unsigned int tracknr, struct stream *s)
+{
+    struct track_info *ti = &d->di->track[tracknr];
+    unsigned int i, k;
+    uint16_t sync, dat[2], *data;
+
+    for (k = 0; k < ARRAY_SIZE(anco_kingsoft_syncs); k++) {
+
+        sync = anco_kingsoft_syncs[k];
+        while (stream_next_bit(s) != -1) {
+
+            if ((uint16_t)s->word != sync)
+                continue;
+            ti->data_bitoff = s->index_offset_bc - 15;
+
+            dat[0] = sync;
+            for (i = 0; i < 7; i++) {
+                if (stream_next_bits(s, 16) == -1)
+                    goto fail;
+                if ((uint16_t)s->word != 0x5544)
+                    continue;
+            }
+
+            if (stream_next_bits(s, 16) == -1)
+                goto fail;
+            if ((uint16_t)s->word != 0x8892)
+                continue;
+
+            if (stream_next_bits(s, 16) == -1)
+                goto fail;
+            if ((uint16_t)s->word != 0x5544)
+                continue;
+
+            if (stream_next_bits(s, 16) == -1)
+                goto fail;
+
+            dat[1] = (uint16_t)s->word;
+
+            stream_next_index(s);
+            ti->total_bits = s->track_len_bc;
+            data = memalloc(sizeof(dat));
+            memcpy(data, dat, sizeof(dat));
+            return data;
+        }
+        stream_reset(s);
+    }
+fail:
+    return NULL;
+}
+
+static void anco_kingsoft_protection_read_raw(
+    struct disk *d, unsigned int tracknr, struct tbuf *tbuf)
+{
+    struct track_info *ti = &d->di->track[tracknr];
+    uint16_t *dat = (uint16_t *)ti->dat;
+    unsigned int i;
+
+    tbuf_bits(tbuf, SPEED_AVG, bc_raw, 16, dat[0]);
+    for (i = 0; i < 7; i++)
+        tbuf_bits(tbuf, SPEED_AVG, bc_raw, 16, 0x5544);
+    tbuf_bits(tbuf, SPEED_AVG, bc_raw, 16, 0x8892);
+    tbuf_bits(tbuf, SPEED_AVG, bc_raw, 16, 0x5544);
+    tbuf_bits(tbuf, SPEED_AVG, bc_raw, 16, dat[1]);
+
+    for (i = 0; i < 236/2; i++)
+        tbuf_bits(tbuf, SPEED_AVG, bc_mfm, 16, 0);
+
+}
+
+struct track_handler anco_kingsoft_protection_handler = {
+    .write_raw = anco_kingsoft_protection_write_raw,
+    .read_raw = anco_kingsoft_protection_read_raw
 };
 
 
