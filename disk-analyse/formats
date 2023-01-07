@@ -916,8 +916,9 @@ probe_amiga
 
 "Darkmere" = amigados_copylock
 
-# Astra Pack Game 1
-"Datastorm" = amigados
+# Astra Pack Game 1 & Retail
+"Datastorm"
+    * amigados_unknown_length visionary_design_b
 
 "Day Of The Pharaoh" = amigados
 
@@ -3068,6 +3069,9 @@ probe_amiga
 
 "Skeleton Krew" = amigados_copylock
 
+"Skidmarks"
+    * amigados acid
+
 "Skidz"
     * amigados federation_of_free_traders protoscan_longtrack
 
@@ -3078,6 +3082,9 @@ probe_amiga
 "Skweek"
     158-159 amigados_long_105500 
     * amigados
+
+"Sky Fighter"
+    * amigados xelok_longtrack
 
 "Skyblaster" = amigados
 
