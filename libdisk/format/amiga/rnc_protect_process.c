@@ -4,11 +4,14 @@
  * AmigaDOS-based weak-bit protection as used on various early releases:
  *  Barbarian: The Ultimate Warrior (Palace)
  *  Buggy Boy (Tenstar Pack)
+ *  Eco (Ocean, Denton Designs) (Variant A)
  *  .. and others
  * 
  * Written in 2015 by Keir Fraser
  * 
  * Weak bits a short distance before first sector.
+ * 
+ * Variant A also has weak bits a short distance after the last sector.
  * 
  * TRKTYP_rnc_protect_process data layout:
  *  As AmigaDOS
@@ -51,17 +54,19 @@ static int find_pattern(struct stream *s, struct track_info *ti, uint32_t *p)
     /* Shift the scan window according to this revolution's skew. */
     if (off < 0) {
         off = -off;
-        x[2] = (x[2] >> off) | (x[1] << (32-off));
-        x[1] = (x[1] >> off) | (x[0] << (32-off));
-        x[0] = (x[0] >> off);
+        p[0] = (x[1] >> off) | (x[0] << (32-off));
     } else if (off > 0) {
-        x[0] = (x[0] << off) | (x[1] >> (32-off));
-        x[1] = (x[1] << off) | (x[2] >> (32-off));
-        x[2] = (x[2] << off);
+        p[0] = (x[1] << off) | (x[2] >> (32-off));
+    } else {
+        p[0] = x[1];
     }
 
-    /* Success. Return middle 32 bits of the scan window. */
-    *p = x[1];
+    /* Now scan for weak bits after the last sector. */
+    if (stream_next_bits(s, 544*11*16 + 24) == -1)
+        return -1;
+    p[1] = s->word;
+
+    /* Success. */
     return 1;
 }
 
@@ -69,8 +74,8 @@ static void *rnc_protect_process_write_raw(
     struct disk *d, unsigned int tracknr, struct stream *s)
 {
     struct track_info *ti = &d->di->track[tracknr];
-    uint32_t patterns[5];
-    unsigned int i, nr;
+    uint32_t patterns[5][2];
+    unsigned int i, nr, weak_mask, type = ti->type;
     char *ablk;
 
     init_track_info(ti, TRKTYP_amigados);
@@ -83,7 +88,7 @@ static void *rnc_protect_process_write_raw(
     /* Scan for disk data at the magic offset before first sync mark. */
     stream_reset(s);
     for (nr = 0; nr < 5;) {
-        switch (find_pattern(s, ti, &patterns[nr])) {
+        switch (find_pattern(s, ti, patterns[nr])) {
         case -1:
             goto done;
         case 1:
@@ -93,14 +98,18 @@ static void *rnc_protect_process_write_raw(
     }
 
 done:
-    /* If any of the scanned patterns differ then we have weak bits. 
-     * Mark this as a 'Barbarian' special track. */
+    /* Scan for weak bits differing across disk revolutions. */
+    weak_mask = 0;
     for (i = 1; i < nr; i++) {
-        if (patterns[0] != patterns[i]) {
-            init_track_info(ti, TRKTYP_rnc_protect_process);
-            break;
-        }
+        if (patterns[0][0] != patterns[i][0])
+            weak_mask |= 1;
+        if (patterns[0][1] != patterns[i][1])
+            weak_mask |= 2;
     }
+
+    if (((type == TRKTYP_rnc_protect_process) && (weak_mask == 1))
+        || ((type == TRKTYP_rnc_protect_process_a) && (weak_mask == 3)))
+        init_track_info(ti, type);
 
     return ablk;
 }
@@ -108,13 +117,27 @@ done:
 static void rnc_protect_process_read_raw(
     struct disk *d, unsigned int tracknr, struct tbuf *tbuf)
 {
+    struct track_info *ti = &d->di->track[tracknr];
+
     tbuf_weak(tbuf, 32);
     tbuf_bits(tbuf, SPEED_AVG, bc_mfm, 32, 0);
 
     handlers[TRKTYP_amigados]->read_raw(d, tracknr, tbuf);
+
+    if (ti->type == TRKTYP_rnc_protect_process_a) {
+        tbuf_bits(tbuf, SPEED_AVG, bc_mfm, 32, 0);
+        tbuf_weak(tbuf, 32);
+    }
 }
 
 struct track_handler rnc_protect_process_handler = {
+    .bytes_per_sector = 512,
+    .nr_sectors = 11,
+    .write_raw = rnc_protect_process_write_raw,
+    .read_raw = rnc_protect_process_read_raw
+};
+
+struct track_handler rnc_protect_process_a_handler = {
     .bytes_per_sector = 512,
     .nr_sectors = 11,
     .write_raw = rnc_protect_process_write_raw,

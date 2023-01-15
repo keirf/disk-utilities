@@ -1116,6 +1116,9 @@ probe_amiga
 
 "Ebonstar" = amigados
 
+"Eco"
+    * rnc_protect_process_a
+
 # Side 1 is empty apart from 4 AmigaDOS tracks
 "Electronic Pool"
     0-1 amigados
