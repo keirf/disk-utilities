@@ -160,7 +160,8 @@ static void *afterburner_sega_write_raw(
         ti->data_bitoff = s->index_offset_bc - 31;
 
         for (i = csum = 0; i < ARRAY_SIZE(dat); i++) {
- 
+            if (stream_next_bytes(s, raw, 8) == -1)
+                goto fail;
             mfm_decode_bytes(bc_mfm_even_odd, 4, raw, &dat[i]);
             csum -= be32toh(raw[0]) + be32toh(raw[1]);
         }
@@ -179,8 +180,7 @@ static void *afterburner_sega_write_raw(
         block = memalloc(ti->len);
         memcpy(block, &dat, ti->len);
         set_all_sectors_valid(ti);
-        return block;           if (stream_next_bytes(s, raw, 8) == -1)
-                goto fail;
+        return block;
     }
 
 fail:
