@@ -11,7 +11,7 @@
  *  u32 dat[6152/4]
  * 
  * The checksum is in the last u32 of the data and the checksum
- * calculation is the sum of al decoded u32 via addx.  Then this
+ * calculation is the sum of all decoded u32 via addx.  Then this
  * value is subtracted from 0xffffffff. The last 2 u32 of data
  * are not counted in the checksum.
  * 
@@ -69,6 +69,8 @@ static void *acid_write_raw(
         if (sum != be32toh(dat[ti->len/4-1]))
             continue;
 
+        stream_next_index(s);
+        ti->total_bits = s->track_len_bc > 104500 ? 105500 :100150;
         block = memalloc(ti->len);
         memcpy(block, dat, ti->len);
         set_all_sectors_valid(ti);

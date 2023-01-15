@@ -961,20 +961,21 @@ static void *dogs_of_war_longtrack_write_raw(
     struct disk *d, unsigned int tracknr, struct stream *s)
 {
     struct track_info *ti = &d->di->track[tracknr];
+    const struct protec_info *info = handlers[ti->type]->extra_data;
     unsigned int bit_count = 0;
     while (stream_next_bit(s) != -1) {
-        if ((uint16_t)s->word == 0x4454)
+        if ((uint16_t)s->word == info->sync)
             break;
     }
     while (stream_next_bit(s) != -1) {
         bit_count++;
-        if ((uint16_t)s->word != 0x4454)
+        if ((uint16_t)s->word != info->sync)
             continue;
 
         if (!check_length(s, 110000))
             break;
 
-        if (bit_count/16 <= 0x1ac)
+        if (bit_count/16 <= 0x1a2c)
             continue;
 
         ti->data_bitoff = 31;
@@ -988,15 +989,29 @@ static void *dogs_of_war_longtrack_write_raw(
 static void dogs_of_war_longtrack_read_raw(
     struct disk *d, unsigned int tracknr, struct tbuf *tbuf)
 {
+    struct track_info *ti = &d->di->track[tracknr];
+    const struct protec_info *info = handlers[ti->type]->extra_data;
     unsigned int i;
-    tbuf_bits(tbuf, SPEED_AVG, bc_raw, 16, 0x4454);
+
+    tbuf_bits(tbuf, SPEED_AVG, bc_raw, 16, info->sync);
     for (i = 0; i < 0x1b10; i++)
         tbuf_bits(tbuf, SPEED_AVG, bc_raw, 16, 0x9494);
 }
 
 struct track_handler dogs_of_war_longtrack_handler = {
     .write_raw = dogs_of_war_longtrack_write_raw,
-    .read_raw = dogs_of_war_longtrack_read_raw
+    .read_raw = dogs_of_war_longtrack_read_raw,
+    .extra_data = & (struct protec_info) {
+        .sync = 0x4454
+    }
+};
+
+struct track_handler silent_service_longtrack_handler = {
+    .write_raw = dogs_of_war_longtrack_write_raw,
+    .read_raw = dogs_of_war_longtrack_read_raw,
+    .extra_data = & (struct protec_info) {
+        .sync = 0x924a
+    }
 };
 
 
@@ -1159,6 +1174,61 @@ static void anco_kingsoft_protection_read_raw(
 struct track_handler anco_kingsoft_protection_handler = {
     .write_raw = anco_kingsoft_protection_write_raw,
     .read_raw = anco_kingsoft_protection_read_raw
+};
+
+/* TRKTYP_tennis_cup_longtrack:
+ *
+ *  This protection is used by Tennis Cup from Electronic Zoo.
+ * 
+ *  Gets the gap from the start of the track until the first instance 
+ *  of 0x4a4a and then gets the gap to the next instance of 0x4a4a and
+ *  adds it to the first gap length. The total of both gaps need to be 
+ *  greater than 0x1920 and less than 0x1b00
+ */
+
+static void *tennis_cup_longtrack_write_raw(
+    struct disk *d, unsigned int tracknr, struct stream *s)
+{
+    struct track_info *ti = &d->di->track[tracknr];
+
+    while (stream_next_bit(s) != -1) {
+        if ((uint16_t)s->word != 0x4a4a)
+            continue;
+        break;
+    }
+
+    while (stream_next_bit(s) != -1) {
+
+        if ((uint16_t)s->word != 0x8894)
+            continue;
+
+        if (!check_sequence(s, 2500, 0x06))
+            continue;
+
+        if (!check_length(s, 105000))
+            break;
+
+        ti->data_bitoff = 0;
+        ti->total_bits = 106000;
+        return memalloc(0);
+    }
+
+    return NULL;
+}
+
+static void tennis_cup_longtrack_read_raw(
+    struct disk *d, unsigned int tracknr, struct tbuf *tbuf)
+{
+    unsigned int i;
+
+    tbuf_bits(tbuf, SPEED_AVG, bc_raw, 16, 0x4a4a);
+    for (i = 0; i < 4400; i++)
+        tbuf_bits(tbuf, SPEED_AVG, bc_raw, 16, 0x8894);
+}
+
+struct track_handler tennis_cup_longtrack_handler = {
+    .write_raw = tennis_cup_longtrack_write_raw,
+    .read_raw = tennis_cup_longtrack_read_raw
 };
 
 

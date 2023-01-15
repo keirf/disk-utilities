@@ -14,7 +14,13 @@
  *  u32 dat[1000]         :: even/odd
  *  Checksum is EOR.Lsum of all decoded data longs
  * 
+ * The US version only has a single u16 sync. The rest of the decoder is
+ * the same.
+ * 
  * TRKTYP_speedball data layout:
+ *  u8 sector_data[5952]
+ * 
+ * TRKTYP_speedball_us data layout:
  *  u8 sector_data[5952]
  */
 
@@ -31,12 +37,20 @@ static void *speedball_write_raw(
     while (stream_next_bit(s) != -1) {
 
         uint32_t dat[10000], track_len, csum;
-        uint32_t idx_off = s->index_offset_bc - 31;
+
         unsigned int i;
         void *block;
 
-        if (s->word != 0x44894489)
-            continue;
+        if (ti->type == TRKTYP_speedball) {
+            if (s->word != 0x44894489)
+                continue;
+            ti->data_bitoff = s->index_offset_bc - 31;
+        } else {
+            if ((uint16_t)s->word != 0x4489)
+                continue;
+            ti->data_bitoff = s->index_offset_bc - 15;
+        }
+
         if (stream_next_bits(s, 32) == -1)
             goto fail;
         if (mfm_decode_word(s->word) != 0xfefe)
@@ -63,7 +77,6 @@ static void *speedball_write_raw(
         if (csum != 0)
             continue;
 
-        ti->data_bitoff = idx_off;
         set_all_sectors_valid(ti);
         ti->bytes_per_sector = ti->len = track_len;
         block = memalloc(ti->len);
@@ -82,7 +95,10 @@ static void speedball_read_raw(
     uint32_t csum = 0, *dat = (uint32_t *)ti->dat;
     unsigned int i;
 
-    tbuf_bits(tbuf, SPEED_AVG, bc_raw, 32, 0x44894489);
+    if (ti->type == TRKTYP_speedball)
+        tbuf_bits(tbuf, SPEED_AVG, bc_raw, 32, 0x44894489);
+    else
+        tbuf_bits(tbuf, SPEED_AVG, bc_raw, 16, 0x4489);
     tbuf_bits(tbuf, SPEED_AVG, bc_mfm, 16, 0xfefe);
     tbuf_bits(tbuf, SPEED_AVG, bc_mfm_even_odd, 32, ID_THBB);
     tbuf_bits(tbuf, SPEED_AVG, bc_mfm_even_odd, 32, ti->len);
@@ -95,6 +111,12 @@ static void speedball_read_raw(
 }
 
 struct track_handler speedball_handler = {
+    .nr_sectors = 1,
+    .write_raw = speedball_write_raw,
+    .read_raw = speedball_read_raw
+};
+
+struct track_handler speedball_us_handler = {
     .nr_sectors = 1,
     .write_raw = speedball_write_raw,
     .read_raw = speedball_read_raw

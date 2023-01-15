@@ -36,6 +36,9 @@ probe_amiga
 
 "4th & Inches" = herndon_longtrack
 
+"4X4 Off-Road Racing"
+    * amigados_unknown_length
+
 # Tracks may be mastered long causing harmless warnings!
 "5 Intelligent Strategy Games" = amigados
 
@@ -147,7 +150,9 @@ probe_amiga
     * amigados
 
 # No apparent copy protection on several tested releases
-"Alien Syndrome" = amigados
+# One NTSC version found has track 0.1 with 111451 bit length
+"Alien Syndrome"
+    * amigados_unknown_length
 
 "Alien World"
     * amigados alien_world
@@ -279,6 +284,9 @@ probe_amiga
 "Arnie 2"
     * amigados_unknown_length copylock
 
+"Art Of Chess"
+    * amigados protec_longtrack
+
 "Arthur The Quest For Excalibur" = amigados
 
 "Artura"
@@ -354,6 +362,9 @@ probe_amiga
     78-83 amigados
     * ignore
 
+"Bad Dudes"
+    * amigados_unknown_length
+
 # Budget Hit Squad Release is not protected and may have all tracks mastered long!
 "Bad Dudes vs Dragon Ninja" = amigados_copylock
 
@@ -403,7 +414,10 @@ probe_amiga
 "Battle Bound"
     * amigados konami
 
-"Battle Chess" = amigados
+"Battle Chess"
+    * amigados_unknown_length
+
+"Battle Chess II" = amigados
 
 "Battle Command" = amigados_copylock
 
@@ -498,6 +512,9 @@ probe_amiga
 "Blade Warrior" = amigados_copylock
 
 "Blades Of Steel" = amigados
+
+"Blastaball"
+    * amigados_unknown_length
 
 # The Kixx Tri Format release with tracks 0.1-35.1, 39.0-39.1, and 41.0-41.1
 # as unformatted. The WHDLoad Installer does not work for the version, but 
@@ -611,6 +628,8 @@ probe_amiga
 
 "Cadaver" = amigados_copylock
 
+"Cadaver: The Pay Off" = amigados_copylock
+
 "Caesar" = amigados
 
 "Caesar Deluxe" = amigados
@@ -697,6 +716,10 @@ probe_amiga
 
 # UK version may have tracks mastered long causing harmless warnings!
 "Champions Of Krynn" = amigados
+
+# Gamestar - Championship Golf: The Great Courses Of The World Volume 1 - Pebble Beach
+"Championship Golf"
+    * amigados xelok_longtrack
 
 "Championship Manager 93" = amigados
 
@@ -839,6 +862,9 @@ probe_amiga
 
 # Requires a dongle in Joystick port
 "Cricket Captain" = amigados
+
+"Crime Does Not Pay"
+    * amigados_unknown_length
 
 "Cruise For A Corpse" = amigados
 
@@ -1019,6 +1045,9 @@ probe_amiga
 "Dizzy Prince Of The Yolkfolk" = amigados_copylock
 
 "Dogs of War"
+    * amigados ibm_pc_dd_10sec dogs_of_war_longtrack 
+
+"Dogs Of War"
     0 amigados
     1 dogs_of_war_longtrack
     2-76/2 ibm_pc_dd_10sec
@@ -1268,6 +1297,8 @@ probe_amiga
 
 "Fields Of Glory" = amigados
 
+"Fiendish Freddy's Big Top O' Fun" = amigados
+
 "FIFA Soccer" = amigados
 
 "Fighter Bomber" = rnc_gap
@@ -1367,6 +1398,8 @@ probe_amiga
 
 # All tracks mastered long + data up to track 163!
 "Fun School 2" = amigados
+
+"Fun School 3 (For The 5 To 7 Year Olds)" = amigados
 
 "Fun School Spelling" = amigados
 
@@ -1579,6 +1612,8 @@ probe_amiga
     2-159 amigados_unknown_length
     * ignore
 
+"Guardian Angel" = amigados_copylock
+
 "Gunboat" = amigados
 
 "Gunship 2000" = amigados
@@ -1613,6 +1648,12 @@ probe_amiga
 "Hardball"
     1 amigados_long_111000
     * amigados
+
+"Hardball II"
+    * amigados_unknown_length
+
+"Harrier Combat Simulator"
+    * amigados_unknown_length
 
 "Harlequin"
     * amigados ss_mfm
@@ -1688,6 +1729,9 @@ probe_amiga
 "Hoi"
     * amigados_unknown_length rhino
 
+"Hollywood Poker"
+    * amigados
+
 "Hong Kong Phooey"
     0 amigados
     4-138 psygnosis_a
@@ -1697,7 +1741,15 @@ probe_amiga
 
 "Horror Zombies From The Crypt" = amigados_copylock
 
+"Hostage: Rescue Mission"
+    * amigados
+
 "Hostages" = infogrames_protected
+
+"HoverForce"
+    * amigados
+
+"Howzat! One Day International Cricket" = amigados
 
 "Hudson Hawk"
     * amigados head_over_heels
@@ -2062,6 +2114,9 @@ probe_amiga
 
 "Lemmings 2" = amigados_copylock
 
+"Leonardo"
+    * amigados_unknown_length chw
+
 "Les Manley In: Search For the King" = amigados
 
 "Lethal Weapon" = amigados_copylock
@@ -2161,7 +2216,8 @@ probe_amiga
     1 protec_longtrack amigados_long_102200
     * amigados
 
-"Match Of The Day" = amigados_copylock
+"Match Of The Day"
+    * amigados_unknown_length copylock
 
 "Matrix Marauders"
     0 amigados
@@ -2476,6 +2532,9 @@ probe_amiga
 "Out Run"
     * amigados outrun_sega
 
+"Over The Net"
+    * amigados_unknown_length
+
 "Overlander"
     * amigados elite_e
 
@@ -2615,6 +2674,9 @@ probe_amiga
 
 "Power Glove Reloaded" = amigados
 
+"Power Pinball"
+    * amigados_unknown_length
+
 # PROTEC Protection!
 "Power Struggle" = amigados_copylock
 
@@ -2721,7 +2783,8 @@ probe_amiga
 "Rainbow Islands" = amigados_copylock
 
 # All tracks mastered long + T0.1 shows AmigaDOS Extended (Header)
-"Rambo III" = amigados
+# Other versions have a copylock
+"Rambo III" = amigados_copylock
 
 "Rampage" = amigados
 
@@ -2770,6 +2833,9 @@ probe_amiga
 # Original uses Copylock
 # Arcade Action Game 7 uses RNC Gap!
 "Rick Dangerous" = amigados_copylock
+
+"Ringside"
+    * amigados chw
 
 "Rise Of The Dragon" = amigados
 
@@ -2870,7 +2936,11 @@ probe_amiga
 # Sports Collection (Addicted to Fun)
 "Run The Gauntlet" = amigados
 
-"RVF Honda" = amigados_copylock
+"RVF Honda" 
+    * amigados_unknown_length copylock
+
+"S.D.I."
+    * amigados_unknown_length
 
 "S.T.U.N. Runner" = amigados_copylock
 
@@ -2977,6 +3047,8 @@ probe_amiga
 
 "Shadoworlds" = amigados
 
+"Shanghai" = amigados_copylock
+
 "Shaq Fu"
     1 amigados_long_111000
     * amigados
@@ -2999,7 +3071,8 @@ probe_amiga
     1 copylock  # empty/unformatted on some versions
     * digital_magic
 
-"Shoot 'Em Up Construction Kit" = amigados_copylock
+"Shoot 'Em Up Construction Kit"
+    * amigados_unknown_length copylock
 
 "Shuffle"
     0-1 amigados 
@@ -3021,12 +3094,12 @@ probe_amiga
     2-12/2 ignore
     * amigados
 
+# Arcadia version does not appear to have protection
 "SideWinder"
-    1 protec_longtrack
-    * amigados
+    * amigados_unknown_length protec_longtrack
 
 "Silent Service"
-    * amigados protec_alt_longtrack
+    * amigados protec_alt_longtrack silent_service_longtrack
 
 "Silent Service II" = amigados
 
@@ -3132,6 +3205,9 @@ probe_amiga
 
 "Space Gun" = amigados_copylock
 
+"Space Harrier"
+    *  amigados space_harrier_sega  
+
 "Space Hulk" = amigados
 
 "Space Rogue" = amigados
@@ -3153,7 +3229,7 @@ probe_amiga
 "Speedball"
     0 amigados
     1 protec_longtrack copylock
-    * speedball
+    * speedball speedball_us
 
 "Speedball 2" = amigados_copylock
 
@@ -3203,8 +3279,9 @@ probe_amiga
 # Track 158 may be empty.
 # Tracks 3/15/21/25/53/85 may possibly be missing sector 5 -- hard to test
 # as these are only used when running on Atari ST.
+# NTSC version requires ibm_mfm_dd
 "Starglider 2"
-    * amigados firebird adls
+    * amigados firebird adls ibm_mfm_dd
 
 "Starlord" = amigados
 
@@ -3339,6 +3416,9 @@ probe_amiga
 
 "Super Ski 2" = amigados
 
+"Super Skidmarks"
+    * amigados acid
+
 "Super Space Invaders" = amigados_copylock
 
 "Super Stardust"
@@ -3367,7 +3447,7 @@ probe_amiga
     * amigados sales_curve
 
 # Track 8.1 May be empty
-"Sword of Sodan"
+"Sword Of Sodan"
     * sword_sodan amigados_long_102200
 
 "Syndicate" = amigados
@@ -3387,6 +3467,9 @@ probe_amiga
 # not care about gap contents. Actual length is almost exactly 105500 bits.
 "Targhan"
     158-159 amigados_long_105500
+    * amigados
+
+"Targis"
     * amigados
 
 "Team Suzuki"
@@ -3421,6 +3504,14 @@ probe_amiga
     * konami amigados copylock
 
 "Teenage Queen" = infogrames_protected
+
+# The ELectronic Zoo version has a custom protection track 
+# 79.0 similar to PROTEC, but not as long of a track.  The
+# Loriciel release has a standard amigados longtrack
+# protection on tracks 79.0 and 79.1
+"Tennis Cup"
+    158 amigados_unknown_length tennis_cup_longtrack 
+    * amigados_unknown_length 
 
 "Tennis Cup II" = amigados
 
@@ -3461,6 +3552,8 @@ probe_amiga
 "The Art Of Chess"
     1 protec_longtrack
     * amigados
+
+"The Ball Game" = amigados_copylock
 
 "The Bard's Tale"
     1 amigados_unknown_length
@@ -3763,6 +3856,8 @@ probe_amiga
 "Tusker"
     * amigados rainbird copylock
 
+"TV Sports Baseball" = amigados
+
 "TV Sports Basketball" = rnc_gap
 
 "TV Sports Boxing" = amigados 
@@ -3771,10 +3866,11 @@ probe_amiga
 # separately below, or track 3 would be misidentified as plain amigados. The
 # reason is subtle: in a shared format list, the last-accepted format is tested
 # first for the next track. Hence T2 = amigados -> T3 identified the same.
+# Other versions have a long amigados track
 "TV Sports Football"
     2 herndon_hls amigados
     3 herndon_hls amigados
-    * amigados
+    * amigados_unknown_length
 
 "Twin Turbos"
     * amigados fun_factory
@@ -3976,6 +4072,11 @@ probe_amiga
     * protec_longtrack rnc_protect_process amigados
 
 "Wizkid" = sensible
+
+"Wolfpack"
+    * amigados
+
+"Wonder Dog" = amigados_copylock
 
 "Wonderland" = amigados
 
