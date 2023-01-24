@@ -957,7 +957,7 @@ struct track_handler the_oath_handler = {
  *  as a standard PROTEC track.
  */
 
-static void *dogs_of_war_longtrack_write_raw(
+static void *protec_variant_longtrack_write_raw(
     struct disk *d, unsigned int tracknr, struct stream *s)
 {
     struct track_info *ti = &d->di->track[tracknr];
@@ -986,7 +986,7 @@ static void *dogs_of_war_longtrack_write_raw(
     return NULL;
 }
 
-static void dogs_of_war_longtrack_read_raw(
+static void protec_variant_longtrack_read_raw(
     struct disk *d, unsigned int tracknr, struct tbuf *tbuf)
 {
     struct track_info *ti = &d->di->track[tracknr];
@@ -998,17 +998,17 @@ static void dogs_of_war_longtrack_read_raw(
         tbuf_bits(tbuf, SPEED_AVG, bc_raw, 16, 0x9494);
 }
 
-struct track_handler dogs_of_war_longtrack_handler = {
-    .write_raw = dogs_of_war_longtrack_write_raw,
-    .read_raw = dogs_of_war_longtrack_read_raw,
+struct track_handler protec_variant_4454_longtrack_handler = {
+    .write_raw = protec_variant_longtrack_write_raw,
+    .read_raw = protec_variant_longtrack_read_raw,
     .extra_data = & (struct protec_info) {
         .sync = 0x4454
     }
 };
 
-struct track_handler silent_service_longtrack_handler = {
-    .write_raw = dogs_of_war_longtrack_write_raw,
-    .read_raw = dogs_of_war_longtrack_read_raw,
+struct track_handler protec_variant_924a_longtrack_handler = {
+    .write_raw = protec_variant_longtrack_write_raw,
+    .read_raw = protec_variant_longtrack_read_raw,
     .extra_data = & (struct protec_info) {
         .sync = 0x924a
     }
