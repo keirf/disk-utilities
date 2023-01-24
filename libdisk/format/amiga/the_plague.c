@@ -236,7 +236,7 @@ static void *the_plague_c_write_raw(
         if (!check_sequence(s, 6000, 0xa244))
             continue;
 
-        if (!check_length(s, 100100))
+        if (!check_length(s, 99000))
             break;
 
         ti->total_bits = 100200;
