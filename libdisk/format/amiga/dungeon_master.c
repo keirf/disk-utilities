@@ -154,7 +154,7 @@ static void dungeon_master_weak_read_raw(
             tbuf_bytes(tbuf, SPEED_AVG, bc_mfm, 512, &dat[sec*512]);
         }
         tbuf_emit_crc16_ccitt(tbuf, SPEED_AVG);
-        for (i = 0; i < 40; i++)
+        for (i = 0; i < 41; i++)
             tbuf_bits(tbuf, SPEED_AVG, bc_mfm, 8, 0x4e);
         tbuf_gap(tbuf, SPEED_AVG, 12*8);
     }
