@@ -36,6 +36,8 @@ probe_amiga
 
 "4th & Inches" = herndon_longtrack
 
+"4th & Inches Team Construction Disk"  = herndon_longtrack
+
 "4X4 Off-Road Racing"
     * amigados_unknown_length
 
@@ -315,6 +317,8 @@ probe_amiga
 "Atomic Robo-Kid" = amigados_copylock
 
 "Atomino" = amigados
+
+"Atron 5000" = amigados
 
 "Aunt Arctic Adventure"
     0-1 amigados_unknown_length
@@ -619,6 +623,8 @@ probe_amiga
 
 "Bubba 'n' Stix" = amigados_copylock
 
+"Bubble And Squeak" = amigados_copylock
+
 # US Version has Copylock, UK version has PROTEC
 "Bubble Bobble" = amigados_copylock
 
@@ -775,6 +781,8 @@ probe_amiga
 
 "Chrono Quest" = amigados
 
+"Chrono Quest II" = amigados
+
 "Chubby Gristle" = amigados
 
 "Chuck Rock" = amigados_copylock
@@ -803,6 +811,9 @@ probe_amiga
 "Classic Arcadia & Baby Arcadia" = amigados
 
 "Classic Board Games" = amigados
+
+"Classic Four"
+    * amigados
 
 "Codename Iceman" = amigados
 
@@ -866,6 +877,8 @@ probe_amiga
     158 tiertex_longtrack
     159 protoscan_longtrack
     * amigados crackdown
+
+"Craps Academy" = amigados
 
 "Crash Garrett"
     * amigados
@@ -964,6 +977,8 @@ probe_amiga
     72-82 amigados
     158-159 protoscan_longtrack
     * ignore
+
+"Dark Side" = amigados_copylock
 
 "Dark Spyre"
     * amigados rainbird
@@ -1128,6 +1143,9 @@ probe_amiga
 "Dragon Breed"
     * arc_development_a copylock amigados
 
+"Dragon Force"
+    * amigados_unknown_length
+
 "DragonScape"
     * amigados_unknown_length
 
@@ -1182,6 +1200,8 @@ probe_amiga
     158 tiertex_longtrack
     159 protoscan_longtrack
     * amigados
+
+"Earl Weaver Baseball: The Commissioner's Disk" = amigados
 
 "Ebonstar" = amigados
 
@@ -1252,9 +1272,19 @@ probe_amiga
 
 "Evil Garden" = amigados
 
+"Evolution Cryser"
+    0-1 amigados_unknown_length
+    2-137 evolution_cryser
+    161 sextett_protection
+    * ignore
+
 "Exile" = amigados_copylock
 
 "Exolon" = amigados_copylock
+
+"Extensor"
+    1 gauntlet2_longtrack
+    * amigados
 
 # Seems to have AmigaDOS tracks 61-63 with sectors 8-9 missing.
 # In UAE, resulting IPF loads partway then endlessly steps the drive heads.
@@ -1337,6 +1367,8 @@ probe_amiga
 "Ferrari Formula One"
     1 amigados_long_111000
     * amigados
+
+"Feud" = amigados_copylock
 
 "Fields Of Glory" = amigados
 
@@ -1617,6 +1649,9 @@ probe_amiga
     1-147/2 ibm_pc_dd_10sec
     * ignore
 
+"Gone Fish'n"
+    * amigados_unknown_length
+
 "Graham Gooch's Second Innings" = amigados
 
 # Graham Gooch has an oddly formed Copylock track with missing sector 0
@@ -1765,6 +1800,8 @@ probe_amiga
 # Retail release has unsupported Titus protection on 79.0/79.1!
 # Budget releases are AmigaDOS!
 "Highway Patrol II" = amigados
+
+"Hillsfar" = amigados
 
 "Hired Guns" = amigados
 
@@ -2392,7 +2429,12 @@ probe_amiga
 "Mike The Magic Dragon"
     * amigados sextett_protection
 
+"Millenium: Return To Earth" = amigados_copylock
+
 "Millennium 2.2" = amigados_copylock
+
+"Mind Force"
+    * amigados mind_force sextett_protection
 
 "Minos"
     0-159 amigados
@@ -2413,6 +2455,8 @@ probe_amiga
     1 xelok_longtrack
     2-159 amigados_unknown_length
     * ignore
+
+"Monday Night Football" = amigados
 
 "Monkey Island" = amigados
 
@@ -2703,6 +2747,9 @@ probe_amiga
 
 "Planetfall" = amigados
 
+"Platou"
+    * amigados platou sextett_protection
+
 "Player Manager"
     * kickoff2
 
@@ -2875,6 +2922,9 @@ probe_amiga
     * ignore
 
 "Reach For The Skies" = amigados
+
+"Real Ghostbusters"
+    * amigados
 
 # Disk 1 AmigaDOS
 # Disk 2 similar protection as Airball but only ibm_mfm_dd worked! 
@@ -3067,6 +3117,9 @@ probe_amiga
 
 # AKA Scrabble Deluxe, Computer Scrabble. Uses PROTEC or Copylock protection! 
 "Scrabble" = amigados_copylock
+
+"Screaming Wings"
+    * amigados_unknown_length
 
 # AmigaDOS Extended (Header)
 "Second Samurai" = amigados
@@ -3685,6 +3738,9 @@ probe_amiga
 
 "The Colonel's Bequest" = amigados
 
+"The Colony"
+    * amigados
+
 "The Complete Chess System" = amigados
 
 "The Curse Of Enchantia" = amigados_copylock
@@ -3834,6 +3890,8 @@ probe_amiga
 
 "Tiger Claw" = amigados
 
+"Tiger Road" = amigados_copylock
+
 "Time" = rnc_gap
 
 # Version with no copy protection on Track 2 (1.0), some tracks mastered long!
@@ -3935,6 +3993,8 @@ probe_amiga
 
 # Tracks may be mastered long causing harmless warnings!
 "Trolls" = amigados
+
+"Turbo" = amigados
 
 "Turbo OutRun Disk 1"
     0-95 amigados 
@@ -4060,6 +4120,8 @@ probe_amiga
 
 "Venus The Flytrap" = ss_mfm_protected
 
+"Veteran" = amigados_copylock
+
 "Viaje Al Centro De La Tierra"
     * amigados ibm_pc_dd viaje
 
@@ -4174,6 +4236,9 @@ probe_amiga
 
 "Winter Camp"
     * amigados_unknown_length rhino
+
+"Winter Challenge: World Class Competition"
+    * amigados_unknown_length
 
 "Winter Games"
     * amigados_unknown_length
