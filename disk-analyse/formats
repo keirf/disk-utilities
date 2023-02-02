@@ -417,6 +417,9 @@ probe_amiga
 "Barbarian II / Psygnosis"
     * amigados protec_longtrack psygnosis_a
 
+"Barney Mouse"
+    * amigados barney_mouse 
+
 "Batman Returns" = amigados_copylock
 
 # Re-releases maybe AmigaDOS
@@ -488,6 +491,9 @@ probe_amiga
     * behind_the_iron_gate amigados
 
 "Beneath A Steel Sky" = amigados
+
+"Berlin 1948"
+    * amigados_unknown_length
 
 "Bermuda Project" = amigados
 
@@ -3173,7 +3179,7 @@ probe_amiga
     * amigados_unknown_length protec_longtrack shadow_beast_2
 
 "Shadow Of The Beast III"
-    * amigados protec_longtrack psygnosis_a psygnosis_b
+    * amigados protec_longtrack psygnosis_a psygnosis_b protec_variant_4454_longtrack
 
 # Some releases have no Copylock!
 "Shadow Warriors"
@@ -3488,6 +3494,8 @@ probe_amiga
 # Many tracks are Unformatted (inc all odd tracks except Copylock).
 "Street Fighter II: The World Warrior"
     * amigados copylock digital_magic rainbird
+
+"Street Rod II" = amigados
 
 # Tracks maybe mastered long!
 "Strider"
@@ -4251,6 +4259,15 @@ probe_amiga
 
 "Wizardry Bane Of The Cosmic Forge" = amigados
 
+"Wizard's Castle Disk 1"
+    0-1 amigados_unknown_length
+    2-25 wizards_castle_a
+    * ignore
+
+"Wizard's Castle Disk 2"
+    0-123 wizards_castle_b
+    * ignore    
+
 # Retail release uses RNC Protect Process
 # Re-releases may use PROTEC or no protection!
 "Wizball"
@@ -4338,7 +4355,6 @@ probe_amiga
 
 # Budget KIXX version, altered intro removes Imageworks logo
 "Xenon 2, KIXX" = rnc_pdos
-
 
 "Xiphos"
     112 speedlock
