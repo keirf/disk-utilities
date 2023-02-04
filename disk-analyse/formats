@@ -4360,6 +4360,19 @@ probe_amiga
     112 speedlock
     * amigados
 
+"Xorron 2001"
+    0 amigados_unknown_length
+    1-2 xorron_2001
+    6 ubi_protection_raw_b
+    7 ubi_protection_validation_b
+    8-36 xorron_2001
+    40-73 xorron_2001
+    80 amigados_unknown_length
+    81 xorron_2001_short
+    82-95 xorron_2001
+    100-116 xorron_2001
+    * ignore
+
 "XP8" = amigados
 
 # Re-Releases use Copylock
