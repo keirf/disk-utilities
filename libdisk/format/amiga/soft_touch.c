@@ -110,8 +110,9 @@ static const uint16_t platou_crcs[] = {
  * Mind Force
  * Barney Mouse
  * Wizard's Castle
+ * Sixiang
  *
- * Non of the games have a data checksum
+ * None of the games have a data checksum
  * 
  * Written in 2023 by Keith Krellwitz
  *
@@ -131,14 +132,16 @@ static const uint16_t platou_crcs[] = {
  * TRKTYP_barney_mouse data layout:
  *  u8 sector_data[6300]
  * 
- * Sync is always 0x4489
+ *  Sync is always 0x4489
  * 
  * TRKTYP_wizards_castle_a data layout:
  *  u8 sector_data[6300]
  *
- * TRKTYP_bwizards_castle_b data layout:
+ * TRKTYP_wizards_castle_b data layout:
  *  u8 sector_data[6300]
  * 
+ * TRKTYP_sixiang data layout:
+ *  u8 sector_data[6300]
  */
 
 
@@ -151,8 +154,10 @@ static const uint16_t wizards_castle_a_crcs[];
 static const uint16_t wizards_castle_a_syncs[];
 static const uint16_t wizards_castle_b_crcs[];
 static const uint16_t wizards_castle_b_syncs[];
+static const uint16_t sixiang_crcs[];
 
-static void *sextett_3_write_raw(
+
+static void *soft_touch_write_raw(
     struct disk *d, unsigned int tracknr, struct stream *s)
 {
     struct track_info *ti = &d->di->track[tracknr];
@@ -179,6 +184,10 @@ static void *sextett_3_write_raw(
                 continue;
         }
         else if (ti->type == TRKTYP_wizards_castle_b) {
+            if ((uint16_t)s->word != wizards_castle_b_syncs[tracknr])
+                continue;
+        }
+        else if (ti->type == TRKTYP_sixiang) {
             if ((uint16_t)s->word != wizards_castle_b_syncs[tracknr])
                 continue;
         }
@@ -216,6 +225,10 @@ static void *sextett_3_write_raw(
             if(s->crc16_ccitt != wizards_castle_b_crcs[tracknr])
                 continue;
         }
+        else  if (ti->type == TRKTYP_sixiang) {
+            if(s->crc16_ccitt != sixiang_crcs[tracknr])
+                continue;
+        }
         // get last raw u32 and pass it via dat
         if (stream_next_bits(s, 32) == -1)
             goto fail;
@@ -233,7 +246,7 @@ fail:
     return NULL;
 }
 
-static void sextett_3_read_raw(
+static void soft_touch_read_raw(
     struct disk *d, unsigned int tracknr, struct tbuf *tbuf)
 {
     struct track_info *ti = &d->di->track[tracknr];
@@ -250,7 +263,8 @@ static void sextett_3_read_raw(
         tbuf_bits(tbuf, SPEED_AVG, bc_raw, 16, wizards_castle_a_syncs[tracknr]);
     else if (ti->type == TRKTYP_wizards_castle_b)
         tbuf_bits(tbuf, SPEED_AVG, bc_raw, 16, wizards_castle_b_syncs[tracknr]);
-
+    else if (ti->type == TRKTYP_sixiang)
+        tbuf_bits(tbuf, SPEED_AVG, bc_raw, 16, wizards_castle_b_syncs[tracknr]);
     tbuf_bits(tbuf, SPEED_AVG, bc_raw, 32, 0xaaaaaaaa);
 
     for (i = sum = 0; i < ti->len/4; i++) {
@@ -263,36 +277,43 @@ static void sextett_3_read_raw(
 struct track_handler evolution_cryser_handler = {
     .bytes_per_sector = 6300,
     .nr_sectors = 1,
-    .write_raw = sextett_3_write_raw,
-    .read_raw = sextett_3_read_raw
+    .write_raw = soft_touch_write_raw,
+    .read_raw = soft_touch_read_raw
 };
 
 struct track_handler mind_force_handler = {
     .bytes_per_sector = 6300,
     .nr_sectors = 1,
-    .write_raw = sextett_3_write_raw,
-    .read_raw = sextett_3_read_raw
+    .write_raw = soft_touch_write_raw,
+    .read_raw = soft_touch_read_raw
 };
 
 struct track_handler barney_mouse_handler = {
     .bytes_per_sector = 6300,
     .nr_sectors = 1,
-    .write_raw = sextett_3_write_raw,
-    .read_raw = sextett_3_read_raw
+    .write_raw = soft_touch_write_raw,
+    .read_raw = soft_touch_read_raw
 };
 
 struct track_handler wizards_castle_a_handler = {
     .bytes_per_sector = 6300,
     .nr_sectors = 1,
-    .write_raw = sextett_3_write_raw,
-    .read_raw = sextett_3_read_raw
+    .write_raw = soft_touch_write_raw,
+    .read_raw = soft_touch_read_raw
 };
 
 struct track_handler wizards_castle_b_handler = {
     .bytes_per_sector = 6300,
     .nr_sectors = 1,
-    .write_raw = sextett_3_write_raw,
-    .read_raw = sextett_3_read_raw
+    .write_raw = soft_touch_write_raw,
+    .read_raw = soft_touch_read_raw
+};
+
+struct track_handler sixiang_handler = {
+    .bytes_per_sector = 6300,
+    .nr_sectors = 1,
+    .write_raw = soft_touch_write_raw,
+    .read_raw = soft_touch_read_raw
 };
 
 static const uint16_t evolution_cryser_crcs[] = {
@@ -532,6 +553,31 @@ static const uint16_t wizards_castle_b_syncs[] = {
     0x4489, 0x4489, 0x4489, 0x4489, 0x4489, 0x4489, 0x4489, 0x4489,
     0x4489, 0x4489
 };
+
+static const uint16_t sixiang_crcs[] = {
+    0x0000, 0xc3c6, 0x701e, 0x0000, 0x8a03, 0x5b90, 0x8b2c, 0xa38c, 
+    0x6510, 0x6f8d, 0x0a58, 0xf771, 0xe994, 0x22c1, 0xc262, 0x4df4, 
+    0xe2c8, 0xf22b, 0x65ab, 0xa15c, 0xb857, 0xaab6, 0x1c5a, 0xcd8e, 
+    0x4e9f, 0x5ebd, 0xac2c, 0x524f, 0xfa87, 0x4b48, 0xefec, 0xcd53, 
+    0x5734, 0x650d, 0x111c, 0x9ce8, 0xbc63, 0x5fe9, 0xfc1e, 0x88c7, 
+    0x1638, 0xec47, 0x2a4d, 0x1c56, 0x5e32, 0x0b20, 0xa487, 0x3c8d, 
+    0xb8b6, 0x16c0, 0xc172, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 
+    0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 
+    0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 
+    0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 
+    0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 
+    0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 
+    0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x59ad, 0x3fc6, 0x0000, 
+    0x7f85, 0x0000, 0x861d, 0x0000, 0x0000, 0x57b5, 0x0000, 0x0000, 
+    0x0000, 0x0000, 0xafa0, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 
+    0x0000, 0x0000, 0x0000, 0x0000, 0x5e29, 0x0000, 0x0000, 0x0000, 
+    0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 
+    0x0000, 0x0000, 0x0000, 0x9f97, 0x0000, 0x0000, 0xcde9, 0xe37f, 
+    0x0000, 0x0273, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 
+    0x0000, 0x0000, 0x0000, 0x0000, 0x9630, 0x0000, 0x0000, 0x0000, 
+    0x66f5, 0x0000, 0x3c9b, 0x9ac4, 0x413a, 0x08a3, 0xca19, 0x2506
+};
+
 
 /*
  * Local variables:
