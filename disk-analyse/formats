@@ -821,6 +821,9 @@ probe_amiga
 "Classic Four"
     * amigados
 
+"Cobra"
+    * amigados cobra
+
 "Codename Iceman" = amigados
 
 "Colonization" = amigados
@@ -850,6 +853,8 @@ probe_amiga
 
 "Conqueror"
     * amigados spherical conqueror
+
+"Conquest Of Japan" = amigados
 
 "Conquests Of Camelot" = amigados
 
@@ -1043,6 +1048,9 @@ probe_amiga
 
 "Deja Vu - A Nightmare Comes True"
     * amigados_unknown_length
+
+"Deja Vu II - Lost In Las Vegas"
+    * amigados_unknown_length deja_vu_ii_protection
 
 "Deliverance"
     * amigados deliverance
@@ -2151,6 +2159,9 @@ probe_amiga
     2-159 killing_gameshow_demo_b 
     * ignore
 
+"King Of Chicago"
+    * amigados_unknown_length
+
 "King's Quest" = herndon_longtrack
 "King's Quest II" = herndon_longtrack
 "King's Quest III" = herndon_longtrack
@@ -2173,6 +2184,9 @@ probe_amiga
     1 copylock
     80 amigados
     * ratt_dos_1810
+
+"Knights Of The Sky"
+    * amigados
 
 "Krypton Egg" = infogrames_protected
 
@@ -2202,6 +2216,9 @@ probe_amiga
     * psygnosis_b
 
 "Leeds United Champions" = amigados
+
+"Leisure Suit Larry"
+    * amigados_unknown_length 
 
 "Leisure Suit Larry II" = amigados
 
@@ -2441,6 +2458,9 @@ probe_amiga
 
 "Mind Force"
     * amigados mind_force sextett_protection
+
+"Mindbreaker"
+    *amigados
 
 "Minos"
     0-159 amigados
@@ -2940,7 +2960,8 @@ probe_amiga
 "Rebellion"
     * amigados fun_factory
 
-"Red Storm Rising" = amigados
+"Red Storm Rising"
+    * amigados_unknown_length
 
 "Renaissance 1" = amigados
 
@@ -3285,6 +3306,9 @@ probe_amiga
 
 "Sink Or Swim"
     * sink_or_swim amigados
+
+"Sixiang"
+    * amigados sixiang sextett_protection
 
 "Skaermtrolden Hugo"
     * amigados skaermtrolden_hugo
@@ -3751,6 +3775,9 @@ probe_amiga
 
 "The Complete Chess System" = amigados
 
+"The Crimson Crown"
+    * amigados_unknown_length xelok_longtrack
+
 "The Curse Of Enchantia" = amigados_copylock
 
 "The Duel: Test Drive II"
@@ -3869,6 +3896,8 @@ probe_amiga
     0-1 amigados
     * special_fx
 
+"The Way Of The Little Dragon" = amigados
+
 "Theatre Of Death" = amigados
 
 "Their Finest Hour" = amigados
@@ -3885,6 +3914,9 @@ probe_amiga
 # US Gold: (Commando-style tracks): Tracks 135+ may be empty
 "Thunder Blade"
     * amigados sega_boot thunderblade_sega elite_a
+
+"Thunder Boy"
+    * amigados zoom_longtrack
 
 # Tracks 78.0-79.1 on Disk 1 and 74.1-79.1 on Disk 2 appear unused as WHDLoad skips them!
 # Ignore any errors on those tracks!
