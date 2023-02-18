@@ -194,8 +194,9 @@ struct track_handler rainbow_arts_protection_a_handler = {
 
 /*
   Mission Elevator
-  Cristal Hammer
+  Crystal Hammer
   Spaceport
+  Clever & Smart
 */
 struct track_handler rainbow_arts_protection_b_handler = {
     .write_raw = rainbow_arts_protection_write_raw,

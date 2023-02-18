@@ -685,48 +685,59 @@ struct track_handler empty_longtrack_handler = {
     .read_raw = empty_longtrack_read_raw
 };
 
-/* TRKTYP_zoom_longtrack:
- *  This protections is used by Zoom!, Grid Start and Cyber World
+/* TRKTYP_frank_neuhaus_protection:
+ *
+ *  Orignally named zoom_longtrack. The format was created by Frank Neuhaus.
+ *  Thanks to Galahad for the info.
+ *
+ *  This protections is used by Zoom!, Grid Start, Cyber World, Ganymed,
+ *  Triple X, Emetic Skimmer (German Release), Thunder Boy, Vampires
+ *  Empire (Gold Rush Compilation)
+ *
  *  Check for 0x31f8 bytes of either 0x11, 0x22, 0x44, or 0x88 with a single
  *  byte that is not 0x11, 0x22, 0x44, or 0x88
  *  example: 0x22 0x22.....0x22 0xaa 0x22
+ *
+ *  The protection is pretty identical to the pattern track of the sextett
+ *  protection.  Main difference is that this protection is not just on
+ *  track 161.
  */
 
-static void *zoom_longtrack_write_raw(
+static void *frank_neuhaus_protection_write_raw(
     struct disk *d, unsigned int tracknr, struct stream *s)
 {
     struct track_info *ti = &d->di->track[tracknr];
 
     while (stream_next_bit(s) != -1) {
 
-        ti->data_bitoff = s->index_offset_bc - 15;
         if (!check_sequence(s, 3000, 0xaa))
             continue;
-        if (!check_length(s, 101200))
+
+        if (!check_length(s, 101000))
             break;
 
-        ti->total_bits = 102400;
+        stream_next_index(s);
+        ti->total_bits = (s->track_len_bc/8)*8;
         return memalloc(0);
     }
 
     return NULL;
 }
 
-static void zoom_longtrack_read_raw(
+static void frank_neuhaus_protection_read_raw(
     struct disk *d, unsigned int tracknr, struct tbuf *tbuf)
 {
+    struct track_info *ti = &d->di->track[tracknr];
     unsigned int i;
 
-    for (i = 0; i < 6200*2; i++)
-        tbuf_bits(tbuf, SPEED_AVG, bc_raw, 8, 0x22);
-    tbuf_bits(tbuf, SPEED_AVG, bc_raw, 8, 0xaa);
-    for (i = 0; i < 200*2-1; i++)
-        tbuf_bits(tbuf, SPEED_AVG, bc_raw, 8, 0x22);
+    for (i = 0; i < ti->total_bits/8-1; i++)
+        tbuf_bits(tbuf, SPEED_AVG, bc_mfm, 4, 0xa);
+    tbuf_bits(tbuf, SPEED_AVG, bc_mfm, 4, 0x9);
 }
 
-struct track_handler zoom_longtrack_handler = {
-    .write_raw = zoom_longtrack_write_raw,
-    .read_raw = zoom_longtrack_read_raw
+struct track_handler frank_neuhaus_protection_handler = {
+    .write_raw = frank_neuhaus_protection_write_raw,
+    .read_raw = frank_neuhaus_protection_read_raw
 };
 
 /* TRKTYP_gauntlet2_longtrack:
@@ -947,7 +958,7 @@ struct track_handler the_oath_handler = {
     .read_raw = the_oath_read_raw
 };
 
-/* TRKTYP_dogs_of_war_longtrack:
+/* TRKTYP_protec_variant_longtrack:
  *
  *  This protection is used by Dogs Of War from Elite.
  *  Locates the first instance of 0x4454 and then calculates the length of
@@ -1078,20 +1089,27 @@ struct track_handler xelok_longtrack_handler = {
 
 
 /* AmigaDOS-based protection, use by several games by Anco/Kingsoft.
- * 
- * Challenger
- * Cruncher Factory
- * Demolition
- * Phalanx
- * Space Battle
- * 
+ *
  * Written in 2023 by Keith Krellwitz
  *
+ * TRKTYP_anco_kingsoft_protection
+ *   Challenger
+ *   Cruncher Factory
+ *   Demolition
+ *   Phalanx
+ *   Space Battle
+ * 
+ * TRKTYP_anco_kingsoft_weak_protection
+ *   Flip Flop
+ * 
  *  u16 sync
  *  u16 7x 0x5544
  *  u16 0x8892
  *  u16 0x5544
  *  u16 key
+ * 
+ * The key for Flip Flop has to be different between
+ * the 2 reads
  * 
  * Sync can be one of the following:
  *     0x4489, 0x4894, 0x48aa, 0x44a2, 0xa425, 0x29a9
@@ -1164,14 +1182,23 @@ static void anco_kingsoft_protection_read_raw(
         tbuf_bits(tbuf, SPEED_AVG, bc_raw, 16, 0x5544);
     tbuf_bits(tbuf, SPEED_AVG, bc_raw, 16, 0x8892);
     tbuf_bits(tbuf, SPEED_AVG, bc_raw, 16, 0x5544);
-    tbuf_bits(tbuf, SPEED_AVG, bc_raw, 16, dat[1]);
-
-    for (i = 0; i < 236/2; i++)
-        tbuf_bits(tbuf, SPEED_AVG, bc_mfm, 16, 0);
+    if(ti->type == TRKTYP_anco_kingsoft_protection)
+        tbuf_bits(tbuf, SPEED_AVG, bc_raw, 16, dat[1]);
+    else {
+        tbuf_bits(tbuf, SPEED_AVG, bc_raw, 8, dat[1] >> 8);
+        tbuf_weak(tbuf, 8);
+    }
+    for (i = 0; i < 224/2; i++)
+        tbuf_bits(tbuf, SPEED_AVG, bc_mfm, 8, 0);
 
 }
 
 struct track_handler anco_kingsoft_protection_handler = {
+    .write_raw = anco_kingsoft_protection_write_raw,
+    .read_raw = anco_kingsoft_protection_read_raw
+};
+
+struct track_handler anco_kingsoft_weak_protection_handler = {
     .write_raw = anco_kingsoft_protection_write_raw,
     .read_raw = anco_kingsoft_protection_read_raw
 };
