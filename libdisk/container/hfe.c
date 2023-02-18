@@ -19,7 +19,8 @@ enum {
     OP_nop,     /* no effect */
     OP_index,   /* index mark */
     OP_bitrate, /* +1byte: new bitrate */
-    OP_skip     /* +1byte: skip 0-8 bits in next byte */
+    OP_skip,    /* +1byte: skip 0-8 bits in next byte */
+    OP_rand     /* random/weak byte */
 };
 
 /* NB. Fields are little endian. */
@@ -152,6 +153,7 @@ static struct container *hfe_open(struct disk *d)
                 uint8_t *new_dat = memalloc(len/2);
                 uint8_t br = 0, *brs = memalloc(len/2+1);
                 unsigned int inb = 0, outb = 0, opc, index_bc = 0, len_bc;
+                unsigned int rand = 0;
                 while (inb/8 < len/2) {
                     brs[outb/8] = br;
                     BUG_ON(inb & 7);
@@ -175,6 +177,11 @@ static struct container *hfe_open(struct disk *d)
                             BUG_ON(skip > 8);
                             bit_copy(new_dat, outb, raw_dat[j], inb, 8-skip);
                             inb += 8-skip; outb += 8-skip;
+                            break;
+                        }
+                        case OP_rand: {
+                            rand++;
+                            inb += 8; outb += 8;
                             break;
                         }
                         default:
@@ -210,6 +217,9 @@ static struct container *hfe_open(struct disk *d)
                 }
                 memfree(raw_dat[j]);
                 memfree(brs);
+                if (rand != 0)
+                    fprintf(stderr, "T%d.%d: HFEv3: WARNING: %d unsupported "
+                            "random bytes\n", i, j, rand);
             }
         } else {
             /* Original HFE */
@@ -295,8 +305,8 @@ static void hfe_close(struct disk *d)
             if (raw[i]->speed[j] == 1000)
                 continue;
             fprintf(stderr, "*** T%u.%u: Variable-density track cannot be "
-                    "correctly written to an HFE file %u\n",
-                    i/2, i&1, raw[i]->speed[j]);
+                    "correctly written to an HFE file\n",
+                    i/2, i&1);
             break;
         }
     }
