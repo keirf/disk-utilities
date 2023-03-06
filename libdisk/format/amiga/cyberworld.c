@@ -85,7 +85,7 @@ static void cyberworld_read_raw(
         tbuf_bits(tbuf, SPEED_AVG, bc_mfm_even_odd, 32, be32toh(dat[i]));
         sum += be32toh(dat[i]);
     }
-   tbuf_bits(tbuf, SPEED_AVG, bc_mfm_even_odd, 32, sum);
+    tbuf_bits(tbuf, SPEED_AVG, bc_mfm_even_odd, 32, sum);
 }
 
 struct track_handler cyberworld_handler = {
