@@ -15,7 +15,7 @@
  *  u32 dat[ti->len/4]
  *  u32 checksum
  *
- * The checksum is calulated eor over the raw data including the track length 
+ * The checksum is calculated eor over the raw data including the track length 
  * and header
  * 
  * Note: Loanardo uses 10+ different track lengths

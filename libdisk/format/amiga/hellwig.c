@@ -72,12 +72,12 @@ static void *hellwig_write_raw(
             if (csum != sum)
                 continue;
         }
-
+        stream_next_index(s);
         ti->len += 1;
         block = memalloc(ti->len);
         memcpy(block, dat, ti->len-1);
         block[ti->len-1] = checksum_type | ((two_sync?2:1) << 4);
-        ti->total_bits = 102000;
+        ti->total_bits = (s->track_len_bc/100)*100+100;
         set_all_sectors_valid(ti);
         return block;
     }
@@ -123,8 +123,6 @@ struct track_handler apprentice_handler = {
     .write_raw = hellwig_write_raw,
     .read_raw = hellwig_read_raw
 };
-
-
 
 /*
  * Local variables:

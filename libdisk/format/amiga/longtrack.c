@@ -983,14 +983,14 @@ static void *protec_variant_longtrack_write_raw(
         if ((uint16_t)s->word != info->sync)
             continue;
 
-        if (!check_length(s, 110000))
+        if (!check_length(s, 109000))
             break;
 
         if (bit_count/16 <= 0x1a2c)
             continue;
 
         ti->data_bitoff = 31;
-        ti->total_bits = 111632;
+        ti->total_bits = 111000;
         return memalloc(0);
     }
 
