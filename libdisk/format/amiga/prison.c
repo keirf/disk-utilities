@@ -10,6 +10,13 @@
  *  u8  0xff,trknr,0x0a,0x09 :: Even/Odd long
  *  u8  zeroes[18]
  *  u8  flakey[512]
+ *
+ * The US Actionware version has a slightly different
+ * lower ui16 in the header to identify the track, but
+ * the lower u16 is not checked by the protection
+ *
+ *  u8  0xff,trknr,0x0a,0x01 :: Even/Odd long
+ *
  */
 
 #include <libdisk/util.h>
@@ -36,7 +43,8 @@ static void *prison_write_raw(
             goto fail;
         mfm_decode_bytes(bc_mfm_even_odd, 4, raw_dat, raw_dat);
         hdr = be32toh(raw_dat[0]);
-        if (hdr != ((0xff000a09) | (tracknr<<16)))
+        if (hdr != ((0xff000a09) | (tracknr<<16)) &&
+            hdr != ((0xff000a01) | (tracknr<<16)))
             continue;
 
         /* Check for 18 MFM-encoded zero bytes */
