@@ -55,7 +55,8 @@
 const static uint32_t syncs[] = {
     0x44894489,
     0x45214521,  /* Z Out, track 1 */
-    0x48914891   /* Turbo Outrun, track s */
+    0x48914891,  /* Turbo Outrun, track s */
+    0x4A844A84   /* Future Tank */
 };
 
 struct ados_hdr {
