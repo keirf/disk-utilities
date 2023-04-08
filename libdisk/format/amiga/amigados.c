@@ -52,10 +52,12 @@
 #define STD_SEC 512
 #define EXT_SEC (STD_SEC + offsetof(struct ados_ext, dat))
 
+#define STD_SYNC 0x44894489
+
 const static uint32_t syncs[] = {
     0x44894489,
     0x45214521,  /* Z Out, track 1 */
-    0x48914891,  /* Turbo Outrun, track s */
+    0x48914891,  /* Turbo Outrun */
     0x4A844A84   /* Future Tank */
 };
 
@@ -73,6 +75,10 @@ struct ados_ext {
     uint8_t dat[0];
 };
 
+struct ados_info {
+    uint32_t sync;
+};
+
 static void *ados_write_raw(
     struct disk *d, unsigned int tracknr, struct stream *s)
 {
@@ -82,6 +88,7 @@ static void *ados_write_raw(
     unsigned int i, j, nr_valid_blocks = 0, has_extended_blocks = 0;
     unsigned int least_block = 0;
     uint64_t lat, latency[ti->nr_sectors];
+    const struct ados_info *info = handlers[ti->type]->extra_data;
 
     block = memalloc(EXT_SEC * ti->nr_sectors);
     for (i = 0; i < ti->nr_sectors; i++) {
@@ -97,11 +104,17 @@ static void *ados_write_raw(
         char dat[STD_SEC], raw[2*(sizeof(struct ados_hdr)+STD_SEC)];
         uint32_t sync = s->word, idx_off = s->index_offset_bc - 31;
 
-        for (i = 0; i < ARRAY_SIZE(syncs); i++)
-            if (sync == syncs[i])
-                break;
-        if (i == ARRAY_SIZE(syncs))
-            continue;
+        if (info != NULL) {
+            if (sync != info->sync)
+                continue;
+        }
+        else {
+            for (i = 0; i < ARRAY_SIZE(syncs); i++)
+                if (sync == syncs[i])
+                    break;
+            if (i == ARRAY_SIZE(syncs))
+                continue;
+        }
 
         lat = s->latency;
         if (stream_next_bytes(s, raw, sizeof(raw)) == -1)
@@ -328,6 +341,28 @@ struct track_handler amigados_extended_handler = {
     .write_raw = ados_write_raw,
     .read_raw = ados_read_raw,
     .get_name = ados_get_name
+};
+
+struct track_handler amigados_448a_handler = {
+    .bytes_per_sector = STD_SEC,
+    .nr_sectors = 11,
+    .write_raw = ados_write_raw,
+    .read_raw = ados_read_raw,
+    .read_sectors = ados_read_sectors,
+    .extra_data = & (struct ados_info) {
+        .sync = 0x448a448a
+    }
+};
+
+struct track_handler amigados_8912_handler = {
+    .bytes_per_sector = STD_SEC,
+    .nr_sectors = 11,
+    .write_raw = ados_write_raw,
+    .read_raw = ados_read_raw,
+    .read_sectors = ados_read_sectors,
+    .extra_data = & (struct ados_info) {
+        .sync = 0x89128912
+    }
 };
 
 /* AmigaDOS Long Tracks:
