@@ -17,6 +17,14 @@
  * 
  * TRKTYP_rnc_pdos_old data layout:
  *  u8 sector_data[12][512]
+ * 
+ * The US version of Bill's Tomato Game had quite a few tracks
+ * that would not decode as the decoder assumed that a good 
+ * sector 0 would be at the beginning of the data.  Added a counter
+ * for the sectors so it would not autmatically fail the track, 
+ * but rather continue the while loop. This resolved the issue
+ * and it was then tested with the other 2 supported games and
+ * they decoded 100% as well.
  */
 
 #include <libdisk/util.h>
@@ -33,7 +41,7 @@ static void *rnc_pdos_old_write_raw(
         uint32_t raw_dat[2*ti->bytes_per_sector/4];
         uint32_t dat[ti->nr_sectors][ti->bytes_per_sector/4];
         uint32_t hdr, csum;
-        unsigned int sec;
+        unsigned int sec, nr_valid_blocks = 0;
 
         if (s->word != 0x44894489)
             continue;
@@ -57,15 +65,21 @@ static void *rnc_pdos_old_write_raw(
                              raw_dat, dat[sec]);
             if (amigados_checksum(dat[sec], ti->bytes_per_sector) != csum)
                 break;
+
+            nr_valid_blocks++;
         }
+
+        if (nr_valid_blocks != ti->nr_sectors)
+            continue;
 
         if (sec != ti->nr_sectors)
             goto fail;
 
+        stream_next_index(s);
         block = memalloc(ti->len);
         memcpy(block, dat, ti->len);
         set_all_sectors_valid(ti);
-        ti->total_bits = 105500;
+        ti->total_bits = (s->track_len_bc/100)*100+100;
         return block;
     }
 
