@@ -2396,6 +2396,10 @@ probe_amiga
 "Knights Of The Sky"
     * amigados
 
+"Kosmobit"
+    160 okay_protection
+    * amigados
+
 "Krypton Egg" = infogrames_protected
 
 "Kult" = infogrames_protected
@@ -2419,6 +2423,10 @@ probe_amiga
 
 "Laser Squad"
     * protec_longtrack amigados
+
+"Laser World"
+    160 promic_protection
+    * amigados
 
 "Last Duel"
     * amigados

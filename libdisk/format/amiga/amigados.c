@@ -52,8 +52,6 @@
 #define STD_SEC 512
 #define EXT_SEC (STD_SEC + offsetof(struct ados_ext, dat))
 
-#define STD_SYNC 0x44894489
-
 const static uint32_t syncs[] = {
     0x44894489,
     0x45214521,  /* Z Out, track 1 */
