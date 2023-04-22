@@ -17,7 +17,7 @@
  * Final Command            - 0x552aa549 - UBI          - 1989
  * My Funny Maze            - 0x5524a529 - Turtle Byte  - 1989
  * Vindex                   - 0x5524a529 - Turtle Byte  - 1989
- * 
+ * Space Pilot 89           - 0x5524a529 - King Soft    - 1989
  * 
  * Written in 2022 by Keith Krellwitz
  * 
@@ -58,8 +58,6 @@ static void *ubi_protection_validation_write_raw(
         // sync
         if (s->word != 0x44894489)
             continue;
-
-        ti->data_bitoff = s->index_offset_bc - 15;
 
         // signature
         if (stream_next_bits(s, 32) == -1)
