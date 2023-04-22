@@ -36,9 +36,6 @@ Unsupported format!
 EPIC (First release):
 ADOS + rnc_protect_process + unsupported Rob Northen protection on track 0.1 of Disk 1
 
-FEARS:
-Unsupported format!
-
 Flimbos Quest: (Kixx)
 Unsupported format!
 
@@ -57,20 +54,11 @@ ADOS (track 0.0 may be long) + protection on track 0.1
 Leatherneck + Major Motion: (Hit Disks Volume 2)
 ADOS + protection on track 1.0/1.1
 
-Leavin' Teramis: (Thalion The First Year)
-ADOS + unsupported format, protection on track 3.1?
-
 Lombard RAC Rally:
 ADOS + unsupported Rob Northen protection on track 0.1
 
-Manic Miner
-Unsupported format!
-
 Manhattan Dealers:
 ADOS + unsupported Rob Northen protection on track 0.1
-
-Mega Motion:
-ADOS to track 49.1, tracks 50.0+ Unsupported format!
 
 Nebulus:
 ADOS + unsupported Rob Northen protection on track 0.1
