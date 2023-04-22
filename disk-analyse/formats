@@ -1504,6 +1504,10 @@ probe_amiga
     1 speedlock
     * amigados
 
+# track 78.1 on disk 1 appears to be blank
+"Fears"
+    * amigados fears
+
 "Federation Of Free Traders" # Track 1 may be empty
     0-1 amigados
     158-159 protoscan_longtrack
@@ -2444,6 +2448,15 @@ probe_amiga
     2 raw_dd
     * amigados ibm_mfm_dd
 
+"Leavin' Teramis"
+    0-4 amigados_unknown_length
+    5-6 amigados
+    7 amigados leavin_teramis_high
+    8-26/2 leavin_teramis_b
+    28-158/2 leavin_teramis_a
+    9-159/2 leavin_teramis_a
+    * ignore
+
 "LED Storm"
     * amigados_unknown_length
 
@@ -2572,6 +2585,14 @@ probe_amiga
 "Manhunter 2: San Francisco" = amigados
 
 "Maniac Mansion" = amigados
+
+# Track 69.0 on the offical IPF appears to be bad
+# but is not used.  The raw dump I used to create the 
+# decoder decodes the track as expected
+"Manic Miner"
+    0 amigados 
+    1-159 manic_miner
+    * ignore
 
 "Manix" = amigados_copylock
 
@@ -3802,6 +3823,11 @@ probe_amiga
 "Space Hulk" = amigados
 
 "Space Job" = amigados
+
+"Space Pilot 89"
+    160 ubi_protection_b
+    161 ubi_protection_validation_b
+    * amigados_unknown_length
 
 "Space Ranger"
     * amigados_unknown_length
