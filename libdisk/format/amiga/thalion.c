@@ -86,8 +86,7 @@ static void *thalion_a_write_raw(
             }
         }
         
-        if (tracknr != 30 && tracknr != 158 && tracknr != 1  
-            && tracknr != 137)
+        if (tracknr != 30 && tracknr != 158 && tracknr != 1 && tracknr != 137)
             goto fail;
 
         if (ti->type == TRKTYP_seven_gates_of_jambala) {
@@ -318,7 +317,7 @@ struct track_handler warp_b_handler = {
  *
  * RAW TRACK LAYOUT:
  *  u16 0x4489 :: Sync
- *  u16 0x44a9 0x44a9 0x44a9 :: padding
+ *  u8  0xa1,0xa1,0xa1 :: padding
  *  u32 tracknr/2
  *  u32 dat[6144/4]
  *  u32 checksum
@@ -346,21 +345,15 @@ static void *prehistoric_tale_write_raw(
         unsigned int i;
         char *block;
 
-        /* sync */
-        if ((uint16_t)s->word != 0x4489)
+        /* sync + padding */
+        if ((uint16_t)s->word != 0x448944a9)
             continue;
-        ti->data_bitoff = s->index_offset_bc - 15;
+        ti->data_bitoff = s->index_offset_bc - 31;
 
         /* padding */
         if (stream_next_bits(s, 32) == -1)
             goto fail;
-        if (s->word != 0x44a944a9)
-            continue;
-
-        /* padding */
-        if (stream_next_bits(s, 16) == -1)
-            goto fail;
-        if ((uint16_t)s->word != 0x44a9)
+        if (mfm_decode_word(s->word) != 0xa1a1)
             continue;
 
         /* track number / 2 */
@@ -411,8 +404,7 @@ static void prehistoric_tale_read_raw(
     tbuf_bits(tbuf, SPEED_AVG, bc_raw, 16, 0x4489);
 
     /* padding */
-    tbuf_bits(tbuf, SPEED_AVG, bc_raw, 32, 0x44a944a9);
-    tbuf_bits(tbuf, SPEED_AVG, bc_raw, 16, 0x44a9);
+    tbuf_bits(tbuf, SPEED_AVG, bc_mfm, 24, 0xa1a1a1);
 
     /* track number / 2 */
     tbuf_bits(tbuf, SPEED_AVG, bc_mfm_even_odd, 32, tracknr/2);
@@ -445,7 +437,7 @@ struct track_handler prehistoric_tale_handler = {
  * 
  * Protection
  *  u16 0x5224 :: Sync
- *  u16 0x44a9 :: Padding
+ *  u8  0xa1   :: Padding
  *  weak bits
  * 
  * The protection appears to be on all tracks, but only seen the check
@@ -453,7 +445,7 @@ struct track_handler prehistoric_tale_handler = {
  * 
  * Data
  *  u16 0x4489 :: Sync
- *  u16 0x44a9 0x44a9 0x44a9 :: padding
+ *  u8  0xa1,0xa1,0xa1 :: padding
  *  u32 tracknr/2
  *  u32 dat[6016/4]
  *  u32 checksum
@@ -473,7 +465,7 @@ static void *leavin_teramis_a_write_raw(
     /* check for presence of the protection */
     while (stream_next_bit(s) != -1) {
         if (s->word == 0x522444a9)
-            break;    
+            break;
     }
 
     while (stream_next_bit(s) != -1) {
@@ -482,21 +474,15 @@ static void *leavin_teramis_a_write_raw(
         unsigned int i;
         char *block;
 
-        /* sync */
-        if ((uint16_t)s->word != 0x4489)
+        /* sync + padding */
+        if (s->word != 0x448944a9)
             continue;
-        ti->data_bitoff = s->index_offset_bc - 15;
+        ti->data_bitoff = s->index_offset_bc - 31;
 
         /* padding */
         if (stream_next_bits(s, 32) == -1)
             goto fail;
-        if (s->word != 0x44a944a9)
-            continue;
-
-        /* padding */
-        if (stream_next_bits(s, 16) == -1)
-            goto fail;
-        if ((uint16_t)s->word != 0x44a9)
+        if (mfm_decode_word(s->word) != 0xa1a1)
             continue;
 
         /* track number / 2 */
@@ -544,7 +530,8 @@ static void leavin_teramis_a_read_raw(
     unsigned int i;
 
     /* weak bit protection appears on all tracks */
-    tbuf_bits(tbuf, SPEED_AVG, bc_raw, 32, 0x522444a9);
+    tbuf_bits(tbuf, SPEED_AVG, bc_raw, 16, 0x5224);
+    tbuf_bits(tbuf, SPEED_AVG, bc_mfm, 8, 0xa1);
     tbuf_weak(tbuf, 64);
 
     /* small gap */
@@ -556,8 +543,7 @@ static void leavin_teramis_a_read_raw(
     tbuf_bits(tbuf, SPEED_AVG, bc_raw, 16, 0x4489);
 
     /* padding */
-    tbuf_bits(tbuf, SPEED_AVG, bc_raw, 32, 0x44a944a9);
-    tbuf_bits(tbuf, SPEED_AVG, bc_raw, 16, 0x44a9);
+    tbuf_bits(tbuf, SPEED_AVG, bc_mfm, 24, 0xa1a1a1);
 
     /* track number / 2 */
     tbuf_bits(tbuf, SPEED_AVG, bc_mfm_even_odd, 32, tracknr/2);
