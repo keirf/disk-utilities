@@ -544,15 +544,10 @@ static void leavin_teramis_a_read_raw(
     unsigned int i;
 
     /* weak bit protection appears on all tracks */
-    tbuf_bits(tbuf, SPEED_AVG, bc_raw, 16, 0x5224);
-    tbuf_bits(tbuf, SPEED_AVG, bc_raw, 16, 0x44a9);
-    tbuf_weak(tbuf, 8);
-    tbuf_bits(tbuf, SPEED_AVG, bc_raw, 16, 0x4000);
-    tbuf_bits(tbuf, SPEED_AVG, bc_raw, 32, 0x00011484);
-    tbuf_weak(tbuf, 16);
-    tbuf_weak(tbuf, 8);
-    tbuf_bits(tbuf, SPEED_AVG, bc_raw, 16, 0x1128);
+    tbuf_bits(tbuf, SPEED_AVG, bc_raw, 32, 0x522444a9);
+    tbuf_weak(tbuf, 64);
 
+    /* small gap */
     for (i = 0; i < 4; i++) {
         tbuf_bits(tbuf, SPEED_AVG, bc_mfm, 32, 0);
     }
