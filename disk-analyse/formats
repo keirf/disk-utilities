@@ -121,6 +121,9 @@ probe_amiga
 "Airball"
     * amigados_unknown_length ibm_mfm_dd_unknown_length
 
+"Airborne Ranger"
+    * amigados_unknown_length
+
 "Akira" = amigados
 
 # Protected, shows as AmigaDOS Extended (Header)
@@ -334,6 +337,16 @@ probe_amiga
 
 "Asterix Operation Getafix" = amigados
 
+"Astro Marine Corps (A.M.C.) Disk 1"
+    158 creepsoft_protection
+    0-123 amigados
+    * ignore
+
+"Astro Marine Corps (A.M.C.) Disk 2"
+    158 creepsoft_protection amigados
+    0-129 amigados
+    * ignore
+
 "At the Zoo Electric Crayon Deluxe"
     * amigados_unknown_length
 
@@ -493,6 +506,9 @@ probe_amiga
 # Retail release uses RNC Gap protection, Prism Leisure release is unprotected!
 "Battle Valley" = rnc_gap
 
+"Battlehawks 1942"
+    * amigados
+
 # Ignore any *Unformatted tracks!
 "Battleships"
     0 amigados
@@ -585,9 +601,10 @@ probe_amiga
 
 # The Kixx Tri Format release with tracks 0.1-35.1, 39.0-39.1, and 41.0-41.1
 # as unformatted. The WHDLoad Installer does not work for the version, but 
-# with a simple modification to the install script it will work.
+# with a simple modification to the install script it will work.  Kixx version
+#is dual format
 "Blasteroids"
-    * amigados
+    * amigados ibm_mfm_dd_unknown_length
 
 "Blazing Thunder"
     * amigados blazing_thunder
@@ -1090,6 +1107,8 @@ probe_amiga
 
 "Day Of The Pharaoh" = amigados
 
+"Day Of The Viper" = amigados
+
 "Days Of Thunder" = amigados_copylock
 
 "Dawn Patrol" = amigados_copylock
@@ -1150,7 +1169,9 @@ probe_amiga
 
 # The secret is ABUSS
 "Demolition"
-    * amigados anco_kingsoft_protection
+    160 anco_kingsoft_protection
+    161 anco_kingsoft_protection
+    * amigados 
 
 "Denaris Disk 1" #NTSC - Hard Wired Release / Also PAL - Rainbow Arts
     * amigados denaris_a  
@@ -1683,11 +1704,21 @@ probe_amiga
 
 # anigados with a custom sync of $4a84
 # Track 46.1 is the high scores and is missing 1 sector, but
-# only 1 sector contins the data
+# only 1 sector contains the data
 "Future Tank"
     * amigados_unknown_length
 
 "Future Wars" = amigados
+
+# Track 77.1 on disk 1 is unformatted
+"Fuzzball Disk 1"
+    155 ignore
+    156-159 fuzzball amigados
+    * amigados
+
+# Intro
+"Fuzzball Disk 1A"
+    * amigados
 
 "G.Nius"
     * amigados lankhor2_longtrack
@@ -1762,6 +1793,10 @@ probe_amiga
 
 "Ghost Battle"
     * amigados ghost_battle
+
+# Finale Compilation
+"Ghost'N Goblins"
+    * amigados elite_c
 
 # Retail has RNC Gap, other releases maybe AmigaDOS
 "Ghostbusters II" = rnc_gap
@@ -2681,6 +2716,11 @@ probe_amiga
 
 "MegaTraveller 2" = amigados
 
+"Mega Phoenix"
+    0-127 amigados
+    158 creepsoft_protection amigados
+    * ignore
+
 "Menace"
     159 protec_longtrack
     * amigados menace
@@ -3037,6 +3077,8 @@ probe_amiga
     158-159 amigados_long_105500
     * amigados
 
+# Finale Compilation shows tracks 19.0 and 27.0
+# as bad, but installs and play fine
 "Paperboy"
     * amigados elite_b
 
@@ -3480,6 +3522,10 @@ probe_amiga
 
 "Rotox" = amigados
 
+"Rubicon"
+    159 rubicon_protection amigados
+    * amigados
+
 "Ruff 'n' Tumble" = amigados_copylock
 
 "Ruff and Reddy"
@@ -3529,7 +3575,7 @@ probe_amiga
 # Hits For Six Volume 1 has some ibm tracks, version in Magnum The
 # Compilation has all AmigaDOS tracks!
 "Satan"
-    150-159 amigados ibm_pc_dd
+    150-159 amigados ibm_pc_dd creepsoft_protection
     * amigados
 
 "Savage"
@@ -3823,8 +3869,9 @@ probe_amiga
 
 "Space Gun" = amigados_copylock
 
+# The version in the Finale Compilation uses Elite C
 "Space Harrier"
-    *  amigados space_harrier_sega  
+    *  amigados space_harrier_sega elite_c
 
 "Space Hulk" = amigados
 
@@ -4057,6 +4104,14 @@ probe_amiga
     78-81 amigados
     82-159 ibm_pc_dd_10sec
     * ignore
+
+"Supaplex"
+    0 amigados
+    1 speedlock
+    87 ignore
+    92 ignore
+    131 ignore
+    * supaplex
 
 "Super All-Stars" = amigados_copylock
 
@@ -4572,6 +4627,9 @@ probe_amiga
 
 "Turbo" = amigados
 
+"Turbo Cup"
+    * amigados_unknown_length
+
 "Turbo OutRun Disk 1"
     0-95 amigados 
     * ignore
@@ -4711,6 +4769,13 @@ probe_amiga
 # May have tracks mastered long, ignore warnings!
 "Vikings: Fields Of Conquest" = amigados
 
+"Vindex"
+    0-1 amigados
+    2-159 cosmo_ranger
+    160 ubi_protection_b
+    161 ubi_protection_validation_b
+    * ignore
+
 "Vindicators" = amigados_copylock
 
 "Virocop" = amigados
@@ -4827,6 +4892,9 @@ probe_amiga
 
 "Wings" = amigados
 
+"Wings Of Death"
+    * amigados ibm_mfm_dd_unknown_length
+
 "Winnie The Pooh In The Hundred Acre Wood" = amigados
 
 "Winter Camp"
@@ -4862,6 +4930,8 @@ probe_amiga
 
 "Wizkid" = sensible
 
+"Wolfchild" = amigados_copylock
+
 "Wolfpack"
     * amigados
 
@@ -4889,7 +4959,9 @@ probe_amiga
 "World Circuit"
     * amigados
 
-"World Class Leaderboard" = amigados     
+# Kixx dual format release hs amiga and pc
+"World Class Leaderboard"
+    * amigados ibm_mfm_dd_unknown_length
 
 "World Class Rugby '95" = amigados_copylock
 
