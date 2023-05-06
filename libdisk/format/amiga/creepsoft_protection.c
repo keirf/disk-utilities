@@ -39,7 +39,7 @@ static void *creepsoft_protection_write_raw(
     }
 
     while (stream_next_bit(s) != -1) {
-        if (s->word != 0x44895554)
+        if ((uint16_t)mfm_decode_word(s->word) != 0xa1fe)
             continue;
         if (stream_next_bits(s, 32) == -1)
             goto fail;
