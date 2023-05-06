@@ -346,7 +346,7 @@ static void *prehistoric_tale_write_raw(
         char *block;
 
         /* sync + padding */
-        if ((uint16_t)s->word != 0x448944a9)
+        if (s->word != 0x448944a9)
             continue;
         ti->data_bitoff = s->index_offset_bc - 31;
 
