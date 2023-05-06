@@ -1182,12 +1182,11 @@ static void anco_kingsoft_protection_read_raw(
         tbuf_bits(tbuf, SPEED_AVG, bc_raw, 16, 0x5544);
     tbuf_bits(tbuf, SPEED_AVG, bc_raw, 16, 0x8892);
     tbuf_bits(tbuf, SPEED_AVG, bc_raw, 16, 0x5544);
-    if(ti->type == TRKTYP_anco_kingsoft_protection)
-        tbuf_bits(tbuf, SPEED_AVG, bc_raw, 16, dat[1]);
-    else {
-        tbuf_bits(tbuf, SPEED_AVG, bc_raw, 8, dat[1] >> 8);
-        tbuf_weak(tbuf, 8);
-    }
+    tbuf_bits(tbuf, SPEED_AVG, bc_raw, 16, dat[1]);
+
+    if(ti->type == TRKTYP_anco_kingsoft_weak_protection)
+        tbuf_weak(tbuf, 5*8);
+
     for (i = 0; i < 224/2; i++)
         tbuf_bits(tbuf, SPEED_AVG, bc_mfm, 8, 0);
 
@@ -1206,10 +1205,10 @@ struct track_handler anco_kingsoft_weak_protection_handler = {
 /* TRKTYP_tennis_cup_longtrack:
  *
  *  This protection is used by Tennis Cup from Electronic Zoo.
- * 
- *  Gets the gap from the start of the track until the first instance 
+ *
+ *  Gets the gap from the start of the track until the first instance
  *  of 0x4a4a and then gets the gap to the next instance of 0x4a4a and
- *  adds it to the first gap length. The total of both gaps need to be 
+ *  adds it to the first gap length. The total of both gaps need to be
  *  greater than 0x1920 and less than 0x1b00
  */
 
@@ -1258,6 +1257,75 @@ struct track_handler tennis_cup_longtrack_handler = {
     .read_raw = tennis_cup_longtrack_read_raw
 };
 
+/*
+ * TRKTYP_rubicon_protection.c
+ *
+ * This protection is used by the Rubicon from 21st Century
+ *
+ * Sync :: 0x48494849
+ * Weak Bits :: 2*8
+ *
+ * The track is read 10 times and the code locates the first instance
+ * of 0x48494849. The data can be shifted up to 0x20 times to locate
+ * the sync. The next 2 longs after the double sync are put into d0
+ * and d1 and shifted and rotated several times.  Then d0 is swapped
+ * and the word (u16) is stored.
+ *
+ * After the 10 reads of the track, the stored values are compared
+ * and must not match. A few can match as long as the count of the
+ * duplicate values is less than the count of unique values. But,
+ * it would be extremely rare to get duplicate values.
+ *
+ */
+
+#include <libdisk/util.h>
+#include <private/disk.h>
+
+static void *rubicon_protection_write_raw(
+    struct disk *d, unsigned int tracknr, struct stream *s)
+{
+    struct track_info *ti = &d->di->track[tracknr];
+    //unsigned int i = 0;
+    while (stream_next_bit(s) != -1) {
+
+        if (s->word != 0x48494849)
+            continue;
+
+        /* read the next u32 and ignore it */
+        if (stream_next_bits(s, 32) == -1)
+            goto fail;
+
+        /* check for 1200 consecutive 0s */
+        if (!check_sequence(s, 1200, 0))
+            continue;
+
+        if (!check_length(s, 104500))
+            break;
+
+        ti->data_bitoff = 31;
+        ti->total_bits = 105500;
+        return memalloc(0);
+    }
+
+fail:
+    return NULL;
+}
+
+static void rubicon_protection_read_raw(
+    struct disk *d, unsigned int tracknr, struct tbuf *tbuf)
+{
+    unsigned int i;
+
+    tbuf_bits(tbuf, SPEED_AVG, bc_raw, 32, 0x48494849);
+    tbuf_weak(tbuf, 2*8);
+    for (i = 0; i < 1640; i++)
+        tbuf_bits(tbuf, SPEED_AVG, bc_mfm, 32, 0);
+}
+
+struct track_handler rubicon_protection_handler = {
+    .write_raw = rubicon_protection_write_raw,
+    .read_raw = rubicon_protection_read_raw
+};
 
 /*
  * Local variables:
