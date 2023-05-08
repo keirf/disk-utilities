@@ -30,6 +30,7 @@ struct scp_stream {
     unsigned int dat_idx;    /* current index into dat[] */
     unsigned int index_pos;  /* next index offset */
     int jitter;              /* accumulated injected jitter */
+    bool_t apply_jitter;
 
     int total_ticks;         /* total ticks to final index pulse */
     int acc_ticks;           /* accumulated ticks so far */
@@ -176,6 +177,11 @@ static int scp_select_track(struct stream *s, unsigned int tracknr)
 
     scss->track = tracknr;
 
+    /* Don't jitter ED tracks (average bitcell shorter than 2us). */
+    scss->apply_jitter = ((scss->revs == 1) &&
+                          ((scss->total_ticks / scss->datsz)
+                           > (2000 / SCK_NS_PER_TICK)));
+
     s->max_revolutions = scss->revs + 1;
     return 0;
 }
@@ -231,7 +237,7 @@ static int scp_next_flux(struct stream *s)
 
     /* If we are replaying a single revolution then jitter it a little to
      * trigger weak-bit variations. */
-    if (scss->revs == 1) {
+    if (scss->apply_jitter) {
         int32_t jitter = rnd16(&s->prng_seed) & 3;
         if ((scss->jitter >= 4) || (scss->jitter <= -4)) {
             /* Already accumulated significant jitter; adjust for it. */
@@ -252,7 +258,7 @@ static int scp_next_flux(struct stream *s)
 
     /* If we are replaying a single revolution then randomly ignore 
      * very short pulses (<1us). */
-    if ((scss->revs == 1) && (val < 1000) && (rnd16(&s->prng_seed) & 1)) {
+    if (scss->apply_jitter && (val < 1000) && (rnd16(&s->prng_seed) & 1)) {
         scss->jitter += val;
         val = 0;
     }
