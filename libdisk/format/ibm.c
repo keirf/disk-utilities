@@ -29,7 +29,7 @@ struct ibm_track {
 
 struct ibm_psector {
     struct ibm_psector *next;
-    int offset;
+    int offset, end_offset;
     struct ibm_sector s;
 };
 
@@ -324,6 +324,7 @@ static void *ibm_mfm_write_raw(
 
                     /* Replace the previous bad sector header/data. */
                     cur_sec->offset = idx_off;
+                    cur_sec->end_offset = s->index_offset_bc;
                     cur_sec->s.crc = crc;
                     cur_sec->s.mark = mark;
                     mfm_decode_bytes(bc_mfm, sec_sz, dat, dat);
@@ -361,6 +362,7 @@ static void *ibm_mfm_write_raw(
         mfm_decode_bytes(bc_mfm, sec_sz, dat, dat);
         new_sec = memalloc(sizeof(*new_sec) + sec_sz);
         new_sec->offset = idx_off;
+        new_sec->end_offset = s->index_offset_bc;
         new_sec->s.crc = crc;
         new_sec->s.mark = mark;
         memcpy(&new_sec->s.dat[0], dat, sec_sz);
@@ -372,14 +374,14 @@ static void *ibm_mfm_write_raw(
 
     gap_bits = ti->total_bits - s->track_len_bc;
     for (cur_sec = ibm_secs; cur_sec; cur_sec = cur_sec->next) {
-        int distance, cur_size;
+        int distance;
         next_sec = cur_sec->next ?: ibm_secs;
-        distance = next_sec->offset - cur_sec->offset;
+        distance = next_sec->offset - cur_sec->end_offset;
         if (distance <= 0)
             distance += s->track_len_bc;
         sec_sz = 128 << cur_sec->s.idam.no;
-        cur_size = 62 + sec_sz;
-        if ((distance -= cur_size * 16) < 0) {
+        distance -= 12*16; /* pre-sync header */
+        if (distance < 0) {
             trk_warn(ti, tracknr, "Overlapping sectors");
             goto out;
         }
@@ -929,6 +931,7 @@ static void *ibm_fm_write_raw(
 
                     /* Replace the previous bad sector header/data. */
                     cur_sec->offset = idx_off;
+                    cur_sec->end_offset = s->index_offset_bc;
                     cur_sec->s.crc = crc;
                     cur_sec->s.mark = mark;
                     memcpy(&cur_sec->s.dat[0], dat, sec_sz);
@@ -964,6 +967,7 @@ static void *ibm_fm_write_raw(
         /* Add a new sector. */
         new_sec = memalloc(sizeof(*new_sec) + sec_sz);
         new_sec->offset = idx_off;
+        new_sec->end_offset = s->index_offset_bc;
         new_sec->s.crc = crc;
         new_sec->s.mark = mark;
         memcpy(&new_sec->s.dat[0], dat, sec_sz);
@@ -975,14 +979,14 @@ static void *ibm_fm_write_raw(
 
     gap_bits = ti->total_bits - s->track_len_bc;
     for (cur_sec = ibm_secs; cur_sec; cur_sec = cur_sec->next) {
-        int distance, cur_size;
+        int distance;
         next_sec = cur_sec->next ?: ibm_secs;
-        distance = next_sec->offset - cur_sec->offset;
+        distance = next_sec->offset - cur_sec->end_offset;
         if (distance <= 0)
             distance += s->track_len_bc;
         sec_sz = 128 << cur_sec->s.idam.no;
-        cur_size = 33 + sec_sz;
-        if ((distance -= cur_size * 16) < 0) {
+        distance -= 6 * 16; /* pre-sync header */
+        if (distance < 0) {
             trk_warn(ti, tracknr, "Overlapping sectors");
             goto out;
         }
