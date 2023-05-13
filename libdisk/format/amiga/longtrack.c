@@ -1327,6 +1327,159 @@ struct track_handler rubicon_protection_handler = {
     .read_raw = rubicon_protection_read_raw
 };
 
+/* TRKTYP_protec_4489_longtrack: PROTEC like protection track, used on
+ * Cardiaxx
+ *
+ *  u16 0x4489 0x4489 0x4489 0x4489
+ *  u8 0x0 (encoded in-place, 1000+ times, to track gap)
+ *  Track is checked to be >= 106000 bits long
+ *
+ *  Specifically, protection checks for >= 6500 raw words between successive
+ *  sync marks. Track contents are not otherwise checked or tested.
+ *
+ */
+
+static void *protec_4489_longtrack_write_raw(
+    struct disk *d, unsigned int tracknr, struct stream *s)
+{
+    struct track_info *ti = &d->di->track[tracknr];
+    uint8_t byte, *data;
+
+    while (stream_next_bit(s) != -1) {
+        ti->data_bitoff = s->index_offset_bc - 63;
+        if (s->word != 0x44894489)
+            continue;
+
+        if (stream_next_bits(s, 32) == -1)
+            goto fail;
+        if (s->word != 0x44894489)
+            continue;
+
+        if (stream_next_bits(s, 32) == -1)
+            goto fail;
+        byte = (uint8_t)mfm_decode_word((uint16_t)s->word);
+        if (!check_sequence(s, 1000, byte))
+            continue;
+        if (!check_length(s, 105000))
+            break;
+        ti->total_bits = 106000;
+        ti->len = 1;
+        data = memalloc(ti->len);
+        *data = byte;
+        return data;
+    }
+fail:
+    return NULL;
+}
+
+static void protec_4489_longtrack_read_raw(
+    struct disk *d, unsigned int tracknr, struct tbuf *tbuf)
+{
+    struct track_info *ti = &d->di->track[tracknr];
+    uint8_t *dat = (uint8_t *)ti->dat, byte = *dat;
+    unsigned int i;
+
+    tbuf_bits(tbuf, SPEED_AVG, bc_raw, 32, 0x44894489);
+    tbuf_bits(tbuf, SPEED_AVG, bc_raw, 32, 0x44894489);
+    for (i = 0; i < 6000; i++)
+        tbuf_bits(tbuf, SPEED_AVG, bc_mfm, 8, byte);
+}
+
+struct track_handler protec_4489_longtrack_handler = {
+    .write_raw = protec_4489_longtrack_write_raw,
+    .read_raw = protec_4489_longtrack_read_raw,
+};
+
+
+
+/* TRKTYP_plotting_longtrack:
+ *
+ * This protection is for the game Plotting by Ocean. Simple protection
+ * checks to see if the first decoded word is equal to tracknr/2. Then
+ * decodes the data and calculates the checksum (eor over decoded data).
+ * Finally retrieves the checksum and compares it with 0xffff - calculated
+ * checksum. The decoded data is never writen to memory.
+ *
+ *  u16 0x4124 :: sync
+ *  u16 track number / 2
+ *  u16 dat[6300/2]
+ *  u16 checksum - eor over decoded data
+ *
+ *
+ */
+
+static void *plotting_longtrack_write_raw(
+    struct disk *d, unsigned int tracknr, struct stream *s)
+{
+    struct track_info *ti = &d->di->track[tracknr];
+
+    while (stream_next_bit(s) != -1) {
+
+        uint16_t raw[2], dat[ti->len/2], csum, sum, trk;
+        unsigned int i;
+        char *block;
+
+        if ((uint16_t)s->word != 0x4124)
+            continue;
+        ti->data_bitoff = s->index_offset_bc - 15;
+
+        if (stream_next_bytes(s, raw, 4) == -1)
+            goto fail;
+        mfm_decode_bytes(bc_mfm_even_odd, 2, raw, &trk);
+
+        if(be16toh(trk) != tracknr/2)
+            continue;
+
+        for (i = sum = 0; i < ti->len/2; i++) {
+            if (stream_next_bytes(s, raw, 4) == -1)
+                goto fail;
+            mfm_decode_bytes(bc_mfm_even_odd, 2, raw, &dat[i]);
+            sum ^= be16toh(dat[i]);
+        }
+
+        if (stream_next_bytes(s, raw, 4) == -1)
+            goto fail;
+        mfm_decode_bytes(bc_mfm_even_odd, 2, raw, &csum);
+
+        if (be16toh(csum) != 0xffff-sum)
+            goto fail;
+
+        stream_next_index(s);
+        block = memalloc(ti->len);
+        memcpy(block, dat, ti->len);
+        set_all_sectors_valid(ti);
+        ti->total_bits = s->track_len_bc;
+        return block;
+    }
+
+fail:
+    return NULL;
+}
+
+static void plotting_longtrack_read_raw(
+    struct disk *d, unsigned int tracknr, struct tbuf *tbuf)
+{
+    struct track_info *ti = &d->di->track[tracknr];
+    uint16_t *dat = (uint16_t *)ti->dat, sum;
+    unsigned int i;
+
+    tbuf_bits(tbuf, SPEED_AVG, bc_raw, 16, 0x4124);
+    tbuf_bits(tbuf, SPEED_AVG, bc_mfm_even_odd, 16, tracknr/2);
+
+    for (i = sum = 0; i < ti->len/2; i++) {
+        tbuf_bits(tbuf, SPEED_AVG, bc_mfm_even_odd, 16, be16toh(dat[i]));
+        sum ^= be16toh(dat[i]);
+    }
+    tbuf_bits(tbuf, SPEED_AVG, bc_mfm_even_odd, 16, 0xffff-sum);
+}
+
+struct track_handler plotting_longtrack_handler = {
+    .bytes_per_sector = 6300,
+    .nr_sectors = 1,
+    .write_raw = plotting_longtrack_write_raw,
+    .read_raw = plotting_longtrack_read_raw
+};
+
 /*
  * Local variables:
  * mode: C
