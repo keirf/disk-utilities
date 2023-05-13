@@ -779,6 +779,14 @@ probe_amiga
 "Car-Vup" 
     * rnc_dualformat amigados copylock ibm_pc_dd_10sec
 
+"Cardiaxx" WARN
+    "You must specify --index-align to create a working image"
+"Cardiaxx"
+    0 amigados
+    159 protec_4489_longtrack
+    1-153 cardiaxx
+    * ignore
+
 # Original release (SPS 0813) uses Rainbird custom format
 # A subsequent compilation release (SPS 1580) uses AmigaDOS+Copylock
 "Carrier Command"
@@ -1970,6 +1978,9 @@ probe_amiga
 
 "Hard Drivin'" = rnc_gap
 
+"Hard'N Heavy"
+    * amigados hellwig
+
 "Hardball"
     1 amigados_long_111000
     * amigados
@@ -2981,10 +2992,6 @@ probe_amiga
 # All games in the 'On The Ball / Anstoss' series are amigados!
 "On The Ball" = amigados
 
-"One On One"
-    1 xelok2_longtrack
-    * amigados_unknown_length
-
 # Retail is RNC GAP, other releases maybe copylock
 "Onslaught" = amigados_copylock
 
@@ -3175,6 +3182,11 @@ probe_amiga
 
 "Player Manager 2"
     * kickoff2
+
+"Plotting"
+    158 amigados_long_105500
+    159 plotting_longtrack
+    * amigados
 
 # US Mindscape release uses Herndon HLS protection, other releases may be unprotected!
 "Plutos" = herndon_longtrack
@@ -3832,6 +3844,9 @@ probe_amiga
 "Slip Stream" = amigados
 
 "Sly Spy" = amigados_copylock
+
+"Smash TV"
+    * amigados zzkj_boot zzkj_11sec
 
 "Snapperazzi"
     1 alternative amigados
