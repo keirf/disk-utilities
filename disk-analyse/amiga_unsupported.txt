@@ -12,9 +12,6 @@ Astro Marine Corps:
 Disk 1 ADOS to tracks 61.1 rest unformatted! protection on track 79.0
 Disk 2 ADOS to tracks 64.1 rest unformatted! protection on track 79.0
 
-APB:
-ADOS + unsupported copylock
-
 Carcharadon:
 Unsupported format!
 
@@ -103,9 +100,6 @@ ADOS + unsupported Xelock protection on track 0.1
 
 Universe:
 Unsupported format!
-
-Weird Dreams:
-ADOS + unsupported copylock
 
 Zynaps:
 Version with unsupported Rob Northen protection on track 0.1

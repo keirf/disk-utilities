@@ -40,6 +40,33 @@
 #include <libdisk/util.h>
 #include <private/disk.h>
 
+struct copylock_info {
+    uint32_t lfsr_seed;
+    uint8_t sec6_discontiguity;
+    uint8_t ext_sig_id;
+};
+
+struct copylock_ext_info {
+    struct copylock_info info;
+    uint32_t latency[11];
+    uint32_t nr_valid_blocks;
+    unsigned int least_block;
+};
+
+/* APB (SPS #1240) and Weird Dreams (SPS #2100) have an extended signature 
+ * in sector 6. The extended signature differs, but the titles do share the 
+ * same LFSR seed. */
+#define EXT_SIG_LFSR_SEED 0x3e2896
+struct copylock_extended_signature {
+    const char *name;
+    uint8_t sig_bytes[8];
+} ext_sig[] = {
+    { "APB",
+      { 0x54, 0xe1, 0xed, 0x5b, 0x64, 0x85, 0x22, 0x7d } },
+    { "Weird Dreams",
+      { 0x78, 0x26, 0x46, 0xf4, 0xd5, 0x24, 0xa0, 0x03 } },
+};
+
 static const uint16_t sync_list[] = {
     0x8a91, 0x8a44, 0x8a45, 0x8a51, 0x8912, 0x8911,
     0x8914, 0x8915, 0x8944, 0x8945, 0x8951 };
@@ -64,7 +91,8 @@ static uint8_t lfsr_state_byte(uint32_t x)
 
 /* Take LFSR state from start of one sector, to another. */
 static uint32_t lfsr_seek(
-    struct track_info *ti, uint32_t x, unsigned int from, unsigned int to)
+    struct copylock_info *info, uint32_t x,
+    unsigned int from, unsigned int to)
 {
     unsigned int sz;
 
@@ -74,7 +102,7 @@ static uint32_t lfsr_seek(
         sz = 512;
         if (from == 6)
             sz -= sizeof(sec6_sig);
-        if ((ti->type == TRKTYP_copylock_old) && (from == 5))
+        if (info->sec6_discontiguity && (from == 5))
             sz += sizeof(sec6_sig);
         while (sz--)
             x = (from < to) ? lfsr_next_state(x) : lfsr_prev_state(x);
@@ -83,6 +111,17 @@ static uint32_t lfsr_seek(
     }
 
     return x;
+}
+
+static bool_t lfsr_check(uint32_t lfsr, const uint8_t *dat, unsigned int nr)
+{
+    while (nr) {
+        if (*dat++ != lfsr_state_byte(lfsr))
+            break;
+        lfsr = lfsr_next_state(lfsr);
+        nr--;
+    }
+    return nr == 0;
 }
 
 /* Might have got LFSR discontiguity at sector-6 signature wrong? */
@@ -102,29 +141,20 @@ static bool_t sec6_discontiguity(struct track_info *ti)
 bool_t track_is_copylock(struct track_info *ti)
 {
     return ((ti->type == TRKTYP_copylock)
-            || (ti->type == TRKTYP_copylock_old)
-            || (ti->type == TRKTYP_copylock_old_variant));
+            || (ti->type == TRKTYP_copylock_old));
 }
 
-struct copylock_info {
-    uint32_t lfsr_seed;
-    uint32_t latency[11];
-    uint32_t nr_valid_blocks;
-    unsigned int least_block;
-};
-
 static void copylock_decode(
-    struct track_info *ti, struct stream *s, struct copylock_info *info)
+    struct track_info *ti, struct stream *s, struct copylock_ext_info *ext)
 {
-    memset(info, 0, sizeof(*info));
-    info->least_block = ~0u;
+    ext->least_block = ~0u;
 
     while ((stream_next_bit(s) != -1) &&
-           (info->nr_valid_blocks != ti->nr_sectors)) {
+           (ext->nr_valid_blocks != ti->nr_sectors)) {
 
         uint8_t dat[2*512];
         uint32_t lfsr, lfsr_sec, idx_off = s->index_offset_bc - 15;
-        unsigned int i, sec;
+        unsigned int i, j, sec;
 
         /* Are we at the start of a sector we have not yet analysed? */
         if (ti->type == TRKTYP_copylock) {
@@ -165,34 +195,45 @@ static void copylock_decode(
          * seed then we work it out from that, else we get it from sector
          * data. */
         lfsr = lfsr_sec =
-            (info->lfsr_seed != 0)
-            ? lfsr_seek(ti, info->lfsr_seed, 0, sec)
+            (ext->info.lfsr_seed != 0)
+            ? lfsr_seek(&ext->info, ext->info.lfsr_seed, 0, sec)
             : (dat[i] << 15) | (dat[i+8] << 7) | (dat[i+16] >> 1);
 
         /* Check that the data matches the LFSR-generated stream. */
-        for (; i < 512; i++) {
-            if (dat[i] != lfsr_state_byte(lfsr))
-                break;
-            lfsr = lfsr_next_state(lfsr);
+        if (!lfsr_check(lfsr, &dat[i], 512-i)) {
+            if ((sec == 6) && (ext->info.lfsr_seed == EXT_SIG_LFSR_SEED)) {
+                /* This track may have the signature extended by 8 bytes. */
+                for (j = 0; j < ARRAY_SIZE(ext_sig); j++)
+                    if (!memcmp(ext_sig[j].sig_bytes, &dat[i], 8))
+                        ext->info.ext_sig_id = j+1;
+                if (!ext->info.ext_sig_id)
+                    continue;
+                /* Matched an extended signature: re-check rest of sector. */
+                for (j = 0; j < 8; j++)
+                    lfsr = lfsr_next_state(lfsr);
+                if (!lfsr_check(lfsr, &dat[i+j], 512-i-j))
+                    continue;
+            } else {
+                /* This sector is a fail. */
+                continue;
+            }
         }
-        if (i != 512)
-            continue;
 
         /* All good. Finally, stash the LFSR seed if we didn't know it. */
-        if (info->lfsr_seed == 0) {
-            info->lfsr_seed = lfsr_seek(ti, lfsr_sec, sec, 0);
+        if (ext->info.lfsr_seed == 0) {
+            ext->info.lfsr_seed = lfsr_seek(&ext->info, lfsr_sec, sec, 0);
             /* Paranoia: Reject the degenerate case of endless zero bytes. */
-            if (info->lfsr_seed == 0)
+            if (ext->info.lfsr_seed == 0)
                 continue;
         }
 
         /* Good sector: remember its details. */
-        info->latency[sec] = s->latency;
+        ext->latency[sec] = s->latency;
         set_sector_valid(ti, sec);
-        info->nr_valid_blocks++;
-        if (info->least_block > sec) {
+        ext->nr_valid_blocks++;
+        if (ext->least_block > sec) {
             ti->data_bitoff = idx_off;
-            info->least_block = sec;
+            ext->least_block = sec;
         }
     }
 }
@@ -201,37 +242,37 @@ static void *copylock_write_raw(
     struct disk *d, unsigned int tracknr, struct stream *s)
 {
     struct track_info *ti = &d->di->track[tracknr];
-    struct copylock_info info;
+    struct copylock_ext_info ext = { 0 };
     unsigned int sec;
-    uint32_t *block;
+    struct copylock_info *info;
 
-    copylock_decode(ti, s, &info);
+    copylock_decode(ti, s, &ext);
 
-    if (info.nr_valid_blocks == 0)
+    if (ext.nr_valid_blocks == 0)
         return NULL;
 
     /* It varies as to whether the LFSR sector data continues across the
      * signature at the start of sector 6. We try to auto-detect that here. */
     if ((ti->type == TRKTYP_copylock_old) && sec6_discontiguity(ti)) {
-        struct track_info new_ti;
-        struct copylock_info new_info;
+        struct track_info new_ti = { 0 };
+        struct copylock_ext_info new_ext = { .info.sec6_discontiguity = TRUE };
         memset(&new_ti, 0, sizeof(new_ti));
-        init_track_info(&new_ti, TRKTYP_copylock_old_variant);
+        init_track_info(&new_ti, ti->type);
         stream_reset(s);
-        copylock_decode(&new_ti, s, &new_info);
+        copylock_decode(&new_ti, s, &new_ext);
         if (!sec6_discontiguity(&new_ti)) {
             /* Variant Copylock decode is an improvement, so let's use that. */
-            info = new_info;
+            ext = new_ext;
             *ti = new_ti;
         }
     }
 
     /* Check validity of the non-uniform track timings. */
     if (!is_valid_sector(ti, 5))
-        info.latency[5] = 514*8*2*2000; /* bodge it */
+        ext.latency[5] = 514*8*2*2000; /* bodge it */
     for (sec = 0; sec < ti->nr_sectors; sec++) {
-        float d = (100.0 * ((int)info.latency[sec] - (int)info.latency[5]))
-            / (int)info.latency[5];
+        float d = (100.0 * ((int)ext.latency[sec] - (int)ext.latency[5]))
+            / (int)ext.latency[5];
         if (!is_valid_sector(ti, sec))
             continue;
         switch (sec) {
@@ -263,24 +304,26 @@ static void *copylock_write_raw(
     ti->data_bitoff -= 3*8*2;
 
     /* Magic: We can reconstruct the entire track from the LFSR seed! */
-    if (info.nr_valid_blocks != ti->nr_sectors) {
+    if (ext.nr_valid_blocks != ti->nr_sectors) {
         trk_warn(ti, tracknr, "Reconstructed damaged track (%u bad sectors)",
-                 ti->nr_sectors - info.nr_valid_blocks);
+                 ti->nr_sectors - ext.nr_valid_blocks);
         set_all_sectors_valid(ti);
     }
 
-    ti->len = 4;
-    block = memalloc(ti->len);
-    *block = htobe32(info.lfsr_seed);
-    return block;
+    ti->len = sizeof(ext.info);
+    info = memalloc(ti->len);
+    *info = ext.info;
+    info->lfsr_seed = htobe32(info->lfsr_seed);
+    return info;
 }
 
 static void copylock_read_raw(
     struct disk *d, unsigned int tracknr, struct tbuf *tbuf)
 {
     struct track_info *ti = &d->di->track[tracknr];
-    uint32_t lfsr, lfsr_seed = be32toh(*(uint32_t *)ti->dat);
-    unsigned int i, sec = 0;
+    struct copylock_info *info = (struct copylock_info *)ti->dat;
+    uint32_t lfsr, lfsr_seed = be32toh(info->lfsr_seed);
+    unsigned int i, j, sec = 0;
     uint16_t speed = SPEED_AVG;
 
     tbuf_disable_auto_sector_split(tbuf);
@@ -300,11 +343,20 @@ static void copylock_read_raw(
         }
         tbuf_bits(tbuf, speed, bc_mfm, 8, sec);
         /* Data */
-        lfsr = lfsr_seek(ti, lfsr_seed, 0, sec);
+        lfsr = lfsr_seek(info, lfsr_seed, 0, sec);
         for (i = 0; i < 512; i++) {
-            if ((sec == 6) && (i == 0))
+            if ((sec == 6) && (i == 0)) {
                 for (i = 0; i < sizeof(sec6_sig); i++)
                     tbuf_bits(tbuf, speed, bc_mfm, 8, sec6_sig[i]);
+                if (info->ext_sig_id) {
+                    struct copylock_extended_signature *sig
+                        = &ext_sig[info->ext_sig_id-1];
+                    for (j = 0; j < 8; j++) {
+                        tbuf_bits(tbuf, speed, bc_mfm, 8, sig->sig_bytes[j]);
+                        lfsr = lfsr_next_state(lfsr);
+                    }
+                }
+            }
             tbuf_bits(tbuf, speed, bc_mfm, 8, lfsr_state_byte(lfsr));
             lfsr = lfsr_next_state(lfsr);
         }
@@ -320,25 +372,35 @@ static void copylock_read_raw(
     }
 }
 
+static void copylock_get_name(
+    struct disk *d, unsigned int tracknr, char *str, size_t size)
+{
+    struct track_info *ti = &d->di->track[tracknr];
+    struct copylock_info *info = (struct copylock_info *)ti->dat;
+    int len;
+
+    len = snprintf(str, size, "%s", ti->typename);
+    if ((ti->type == TRKTYP_copylock_old) ^ info->sec6_discontiguity)
+        len += snprintf(str+len, size-len, " (Variant)");
+    if (info->ext_sig_id)
+        len += snprintf(str+len, size-len, " (%s Signature)",
+                        ext_sig[info->ext_sig_id-1].name);
+}
+
 struct track_handler copylock_handler = {
     .bytes_per_sector = 512,
     .nr_sectors = 11,
     .write_raw = copylock_write_raw,
-    .read_raw = copylock_read_raw
+    .read_raw = copylock_read_raw,
+    .get_name = copylock_get_name
 };
 
 struct track_handler copylock_old_handler = {
     .bytes_per_sector = 512,
     .nr_sectors = 11,
     .write_raw = copylock_write_raw,
-    .read_raw = copylock_read_raw
-};
-
-struct track_handler copylock_old_variant_handler = {
-    .bytes_per_sector = 512,
-    .nr_sectors = 11,
-    .write_raw = copylock_write_raw,
-    .read_raw = copylock_read_raw
+    .read_raw = copylock_read_raw,
+    .get_name = copylock_get_name
 };
 
 /*
