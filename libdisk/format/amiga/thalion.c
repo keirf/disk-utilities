@@ -791,6 +791,178 @@ struct track_handler leavin_teramis_high_handler = {
     .read_raw = leavin_teramis_high_read_raw
 };
 
+
+/*
+ * Custom format as used on Dragonsflight by Thalion.
+ *
+ * Written in 2023 by Keith Krellwitz
+ *
+ * RAW TRACK LAYOUT:
+ * 
+ * Protection
+ *  u16 0x5224 :: Sync
+ *  u32 0x40-0x44  :: disk/side
+ *  u32 0
+ *  weak bits
+ *  u32 2x 0x55555555
+ * 
+ * The protection appears to be on all tracks, but only seen the check
+ * against track 79
+ * 
+ * Data
+ *  u16 0x4489 :: Sync
+ *  u8  0xa1,0xa1,0xa1 :: padding
+ *  u32 tracknr/2
+ *  u32 dat[ti->len/4]
+ *  u32 checksum
+ *
+ * The checksum is eor'd over the decoded data, tracknr/2 and 
+ * the seed (0x4a4f4348)
+ * 
+ * TRKTYP_dragonflight_a data layout:
+ *  u8 sector_data[6144]
+ * 
+* TRKTYP_dragonflight_b data layout:
+ *  u8 sector_data[1536]
+ */
+
+static void *dragonflight_write_raw(
+    struct disk *d, unsigned int tracknr, struct stream *s)
+{
+    struct track_info *ti = &d->di->track[tracknr];
+    uint32_t raw[2], dat[ti->len/4+1], dsk;
+
+    /* check for presence of the protection */
+    while (stream_next_bit(s) != -1) {
+        if ((uint16_t)s->word != 0x5224)
+            continue;;
+        
+        /* get disk id and side */
+        if (stream_next_bytes(s, raw, 8) == -1)
+            goto fail;
+        mfm_decode_bytes(bc_mfm_even_odd, 4, raw, &dsk);
+        dsk = be32toh(dsk);
+        if (dsk < 0x40 || dsk > 0x44)
+            continue;
+
+        break;
+    }
+
+    while (stream_next_bit(s) != -1) {
+        uint32_t csum, sum, trk;
+        unsigned int i;
+        char *block;
+
+        /* sync + padding */
+        if (s->word != 0x448944a9)
+            continue;
+        ti->data_bitoff = s->index_offset_bc - 31;
+
+        /* padding */
+        if (stream_next_bits(s, 32) == -1)
+            goto fail;
+        if (mfm_decode_word(s->word) != 0xa1a1)
+            continue;
+
+        /* track number / 2 */
+        if (stream_next_bytes(s, raw, 8) == -1)
+            goto fail;
+        mfm_decode_bytes(bc_mfm_even_odd, 4, raw, &trk);
+
+        if (tracknr/2 != be32toh(trk))
+            continue;
+        sum = be32toh(trk) ^ SEED;
+
+        /* data */
+        for (i = 0; i < ti->len/4; i++) {
+            if (stream_next_bytes(s, raw, 8) == -1)
+                goto fail;
+            mfm_decode_bytes(bc_mfm_even_odd, 4, raw, &dat[i]);
+            sum ^= be32toh(dat[i]);
+        }
+
+        /* checksum */
+        if (stream_next_bytes(s, raw, 8) == -1)
+            goto fail;
+        mfm_decode_bytes(bc_mfm_even_odd, 4, raw, &csum);
+
+        if (be32toh(csum) != sum)
+            goto fail;
+
+        /* The raw dump I have had 3 tracks that had the disk
+           identifier as 0x40, but based on the official IPFs
+           it should be 0x41. Since the tracks checksum passed,
+           the value is corrected.
+        */
+        if (dsk == 0x40)
+            dsk = 0x41;
+        dat[ti->len/4] = dsk;
+
+        stream_next_index(s);
+        block = memalloc(ti->len+4);
+        memcpy(block, dat, ti->len+4);
+        set_all_sectors_valid(ti);
+        ti->total_bits = s->track_len_bc;
+        return block;
+    }
+
+fail:
+    return NULL;
+}
+
+static void dragonflight_read_raw(
+    struct disk *d, unsigned int tracknr, struct tbuf *tbuf)
+{
+    struct track_info *ti = &d->di->track[tracknr];
+    uint32_t *dat = (uint32_t *)ti->dat, sum;
+    unsigned int i;
+
+    /* weak bit protection appears on all tracks */
+    tbuf_bits(tbuf, SPEED_AVG, bc_raw, 16, 0x5224);
+    tbuf_bits(tbuf, SPEED_AVG, bc_mfm_even_odd, 32, dat[ti->len/4]);
+    tbuf_bits(tbuf, SPEED_AVG, bc_raw, 32, 0);
+    tbuf_weak(tbuf, 48);
+
+    /* small gap */
+    for (i = 0; i < 2; i++) {
+        tbuf_bits(tbuf, SPEED_AVG, bc_raw, 32, 0x55555555);
+    }
+
+    /* sync */
+    tbuf_bits(tbuf, SPEED_AVG, bc_raw, 16, 0x4489);
+
+    /* padding */
+    tbuf_bits(tbuf, SPEED_AVG, bc_mfm, 24, 0xa1a1a1);
+
+    /* track number / 2 */
+    tbuf_bits(tbuf, SPEED_AVG, bc_mfm_even_odd, 32, tracknr/2);
+    sum = (tracknr/2) ^ SEED;
+
+    /* data */
+    for (i = 0; i < ti->len/4; i++) {
+        tbuf_bits(tbuf, SPEED_AVG, bc_mfm_even_odd, 32, be32toh(dat[i]));
+        sum ^= be32toh(dat[i]);
+    }
+
+    /* checksum */
+    tbuf_bits(tbuf, SPEED_AVG, bc_mfm_even_odd, 32, sum);
+}
+
+
+struct track_handler dragonflight_a_handler = {
+    .bytes_per_sector = 6144,
+    .nr_sectors = 1,
+    .write_raw = dragonflight_write_raw,
+    .read_raw = dragonflight_read_raw
+};
+
+struct track_handler dragonflight_b_handler = {
+    .bytes_per_sector = 1536,
+    .nr_sectors = 1,
+    .write_raw = dragonflight_write_raw,
+    .read_raw = dragonflight_read_raw
+};
+
 /*
  * Local variables:
  * mode: C
