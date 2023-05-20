@@ -74,17 +74,31 @@ static const uint8_t sec6_sig[] = {
     0x52, 0x6f, 0x62, 0x20, 0x4e, 0x6f, 0x72, 0x74, /* "Rob Northen Comp" */
     0x68, 0x65, 0x6e, 0x20, 0x43, 0x6f, 0x6d, 0x70 };
 
-static uint32_t lfsr_prev_state(uint32_t x)
+static uint32_t lfsr_prev(uint32_t x)
 {
     return (x >> 1) | ((((x >> 1) ^ x) & 1) << 22);
 }
 
-static uint32_t lfsr_next_state(uint32_t x)
+static uint32_t lfsr_next(uint32_t x)
 {
     return ((x << 1) & ((1u << 23) - 1)) | (((x >> 22) ^ x) & 1);
 }
 
-static uint8_t lfsr_state_byte(uint32_t x)
+static uint32_t lfsr_backward(uint32_t x, unsigned int delta)
+{
+    while (delta--)
+        x = lfsr_prev(x);
+    return x;
+}
+
+static uint32_t lfsr_forward(uint32_t x, unsigned int delta)
+{
+    while (delta--)
+        x = lfsr_next(x);
+    return x;
+}
+
+static uint8_t lfsr_byte(uint32_t x)
 {
     return (uint8_t)(x >> 15);
 }
@@ -105,7 +119,7 @@ static uint32_t lfsr_seek(
         if (!info->sec6_lfsr_skips_sig && (from == 5))
             sz += sizeof(sec6_sig);
         while (sz--)
-            x = (from < to) ? lfsr_next_state(x) : lfsr_prev_state(x);
+            x = (from < to) ? lfsr_next(x) : lfsr_prev(x);
         if (from < to)
             from++;
     }
@@ -116,9 +130,9 @@ static uint32_t lfsr_seek(
 static bool_t lfsr_check(uint32_t lfsr, const uint8_t *dat, unsigned int nr)
 {
     while (nr) {
-        if (*dat++ != lfsr_state_byte(lfsr))
+        if (*dat++ != lfsr_byte(lfsr))
             break;
-        lfsr = lfsr_next_state(lfsr);
+        lfsr = lfsr_next(lfsr);
         nr--;
     }
     return nr == 0;
@@ -153,7 +167,8 @@ static void copylock_decode(
            (ext->nr_valid_blocks != ti->nr_sectors)) {
 
         uint8_t dat[2*512];
-        uint32_t lfsr, lfsr_sec, idx_off = s->index_offset_bc - 15;
+        uint32_t lfsr, idx_off = s->index_offset_bc - 15;
+        uint32_t lfsr_seed;
         unsigned int i, j, sec;
 
         /* Are we at the start of a sector we have not yet analysed? */
@@ -194,14 +209,18 @@ static void copylock_decode(
         /* Get the LFSR start value for this sector. If we know the track LFSR
          * seed then we work it out from that, else we get it from sector
          * data. */
-        lfsr = lfsr_sec =
-            (ext->info.lfsr_seed != 0)
-            ? lfsr_seek(&ext->info, ext->info.lfsr_seed, 0, sec)
-            : (dat[i] << 15) | (dat[i+8] << 7) | (dat[i+16] >> 1);
+        if ((lfsr_seed = ext->info.lfsr_seed) == 0) {
+            j = 256; /* An arbitray point at which to sample the LFSR */
+            lfsr = (dat[j] << 15) | (dat[j+8] << 7) | (dat[j+16] >> 1);
+            lfsr = lfsr_backward(lfsr, j-i);
+            lfsr_seed = lfsr_seek(&ext->info, lfsr, sec, 0);
+        } else {
+            lfsr = lfsr_seek(&ext->info, lfsr_seed, 0, sec);
+        }
 
         /* Check that the data matches the LFSR-generated stream. */
         if (!lfsr_check(lfsr, &dat[i], 512-i)) {
-            if ((sec == 6) && (ext->info.lfsr_seed == EXT_SIG_LFSR_SEED)) {
+            if ((sec == 6) && (lfsr_seed == EXT_SIG_LFSR_SEED)) {
                 /* This track may have the signature extended by 8 bytes. */
                 for (j = 0; j < ARRAY_SIZE(ext_sig); j++)
                     if (!memcmp(ext_sig[j].sig_bytes, &dat[i], 8))
@@ -209,9 +228,8 @@ static void copylock_decode(
                 if (!ext->info.ext_sig_id)
                     continue;
                 /* Matched an extended signature: re-check rest of sector. */
-                for (j = 0; j < 8; j++)
-                    lfsr = lfsr_next_state(lfsr);
-                if (!lfsr_check(lfsr, &dat[i+j], 512-i-j))
+                lfsr = lfsr_forward(lfsr, 8);
+                if (!lfsr_check(lfsr, &dat[i+8], 512-i-8))
                     continue;
             } else {
                 /* This sector is a fail. */
@@ -221,10 +239,10 @@ static void copylock_decode(
 
         /* All good. Finally, stash the LFSR seed if we didn't know it. */
         if (ext->info.lfsr_seed == 0) {
-            ext->info.lfsr_seed = lfsr_seek(&ext->info, lfsr_sec, sec, 0);
             /* Paranoia: Reject the degenerate case of endless zero bytes. */
-            if (ext->info.lfsr_seed == 0)
+            if (lfsr_seed == 0)
                 continue;
+            ext->info.lfsr_seed = lfsr_seed;
         }
 
         /* Good sector: remember its details. */
@@ -353,14 +371,13 @@ static void copylock_read_raw(
                 if (info->ext_sig_id) {
                     struct copylock_extended_signature *sig
                         = &ext_sig[info->ext_sig_id-1];
-                    for (j = 0; j < 8; j++) {
+                    for (j = 0; j < 8; j++)
                         tbuf_bits(tbuf, speed, bc_mfm, 8, sig->sig_bytes[j]);
-                        lfsr = lfsr_next_state(lfsr);
-                    }
+                    lfsr = lfsr_forward(lfsr, 8);
                 }
             }
-            tbuf_bits(tbuf, speed, bc_mfm, 8, lfsr_state_byte(lfsr));
-            lfsr = lfsr_next_state(lfsr);
+            tbuf_bits(tbuf, speed, bc_mfm, 8, lfsr_byte(lfsr));
+            lfsr = lfsr_next(lfsr);
         }
         /* Footer */
         tbuf_bits(tbuf, speed, bc_mfm, 8, 0);
