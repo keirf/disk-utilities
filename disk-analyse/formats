@@ -1299,6 +1299,12 @@ probe_amiga
 "Dragon Force"
     * amigados_unknown_length
 
+"Dragonflight"
+    0-1 amigados dragonflight_a
+    2-157 dragonflight_a
+    158-159 dragonflight_b
+    * ignore
+
 "DragonScape"
     * amigados_unknown_length
 
@@ -1705,10 +1711,10 @@ probe_amiga
 
 "Future Basketball" = amigados_copylock
 
-"Future Bike Simulator"
-    0-1 amigados 
-    2-89 hi_tec_b
-    91 hi_tec_b
+ "Future Bike Simulator"
+    0-1 amigados
+    2-89 antcliffe_no_checksum
+    91 antcliffe_no_checksum
     * ignore
 
 "Future Classics Collection" = amigados
@@ -4748,6 +4754,17 @@ probe_amiga
 
 "Universal Military Simulator" = amigados
 
+"Universal Warrior"
+    0-1 amigados
+    2-7 universal_warrior
+    9-34 universal_warrior
+    36-59 universal_warrior
+    61-161 universal_warrior
+    * ignore
+
+"Universe"
+    * amigados universe
+
 "Unreal"
     * amigados grolet
 
@@ -5095,10 +5112,10 @@ probe_amiga
     * rainbird
 
 "Yogi's Big Clean Up"
-    * amigados yogis_escape
+    * amigados yogis_big_clean_up
 
 "Yogi's Great Escape"
-    * amigados hi_tec_b
+    * amigados antcliffe_no_checksum
 
 "Yollanda"
     * amigados protec_longtrack ibm_pc_dd_10sec
