@@ -1711,7 +1711,7 @@ probe_amiga
 
 "Future Basketball" = amigados_copylock
 
- "Future Bike Simulator"
+"Future Bike Simulator"
     0-1 amigados
     2-89 antcliffe_no_checksum
     91 antcliffe_no_checksum
