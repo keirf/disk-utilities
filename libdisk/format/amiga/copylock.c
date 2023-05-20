@@ -42,7 +42,7 @@
 
 struct copylock_info {
     uint32_t lfsr_seed;
-    uint8_t sec6_discontiguity;
+    uint8_t sec6_lfsr_skips_sig;
     uint8_t ext_sig_id;
 };
 
@@ -102,7 +102,7 @@ static uint32_t lfsr_seek(
         sz = 512;
         if (from == 6)
             sz -= sizeof(sec6_sig);
-        if (info->sec6_discontiguity && (from == 5))
+        if (!info->sec6_lfsr_skips_sig && (from == 5))
             sz += sizeof(sec6_sig);
         while (sz--)
             x = (from < to) ? lfsr_next_state(x) : lfsr_prev_state(x);
@@ -124,8 +124,8 @@ static bool_t lfsr_check(uint32_t lfsr, const uint8_t *dat, unsigned int nr)
     return nr == 0;
 }
 
-/* Might have got LFSR discontiguity at sector-6 signature wrong? */
-static bool_t sec6_discontiguity(struct track_info *ti)
+/* Does sector-map validity have a discontiguity at specified sector? */
+static bool_t secmap_discontiguity_at(struct track_info *ti, unsigned int nr)
 {
     unsigned int sec, min = ~0u, max = 0;
     for (sec = 0; sec < ti->nr_sectors; sec++) {
@@ -135,7 +135,7 @@ static bool_t sec6_discontiguity(struct track_info *ti)
             min = sec;
         max = sec;
     }
-    return (max < 6) || (min >= 6);
+    return (max < nr) || (min >= nr);
 }
 
 bool_t track_is_copylock(struct track_info *ti)
@@ -242,7 +242,8 @@ static void *copylock_write_raw(
     struct disk *d, unsigned int tracknr, struct stream *s)
 {
     struct track_info *ti = &d->di->track[tracknr];
-    struct copylock_ext_info ext = { .info.sec6_discontiguity = FALSE };
+    struct copylock_ext_info ext = {
+        .info.sec6_lfsr_skips_sig = (ti->type == TRKTYP_copylock) };
     unsigned int sec;
     struct copylock_info *info;
 
@@ -251,16 +252,17 @@ static void *copylock_write_raw(
     if (ext.nr_valid_blocks == 0)
         return NULL;
 
-    /* It varies as to whether the LFSR sector data continues across the
-     * signature at the start of sector 6. We try to auto-detect that here. */
-    if ((ti->type == TRKTYP_copylock_old) && sec6_discontiguity(ti)) {
+    /* One variant of copylock_old does skip the LFSR across the signature
+     * at the start of sector 6. We try to auto-detect that here. */
+    if ((ti->type == TRKTYP_copylock_old) && secmap_discontiguity_at(ti, 6)) {
         struct track_info new_ti = { 0 };
-        struct copylock_ext_info new_ext = { .info.sec6_discontiguity = TRUE };
+        struct copylock_ext_info new_ext = {
+            .info.sec6_lfsr_skips_sig = TRUE };
         memset(&new_ti, 0, sizeof(new_ti));
         init_track_info(&new_ti, ti->type);
         stream_reset(s);
         copylock_decode(&new_ti, s, &new_ext);
-        if (!sec6_discontiguity(&new_ti)) {
+        if (!secmap_discontiguity_at(&new_ti, 6)) {
             /* Variant Copylock decode is an improvement, so let's use that. */
             ext = new_ext;
             *ti = new_ti;
@@ -380,7 +382,7 @@ static void copylock_get_name(
     int len;
 
     len = snprintf(str, size, "%s", ti->typename);
-    if ((ti->type == TRKTYP_copylock_old) ^ info->sec6_discontiguity)
+    if ((ti->type == TRKTYP_copylock) ^ info->sec6_lfsr_skips_sig)
         len += snprintf(str+len, size-len, " (Variant)");
     if (info->ext_sig_id)
         len += snprintf(str+len, size-len, " (%s Signature)",

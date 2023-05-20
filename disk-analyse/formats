@@ -963,7 +963,7 @@ probe_amiga
 
 "Corruption" = amigados
 
-# Protected by copylock_old with "sec6_discontiguity"
+# Protected by copylock_old variant with "sec6_lfsr_skips_sig"
 "Cosmic Pirate" = amigados_copylock
 
 "Cosmic Spacehead" = amigados_copylock
