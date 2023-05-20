@@ -242,7 +242,7 @@ static void *copylock_write_raw(
     struct disk *d, unsigned int tracknr, struct stream *s)
 {
     struct track_info *ti = &d->di->track[tracknr];
-    struct copylock_ext_info ext = { 0 };
+    struct copylock_ext_info ext = { .info.sec6_discontiguity = FALSE };
     unsigned int sec;
     struct copylock_info *info;
 
