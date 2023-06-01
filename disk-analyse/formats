@@ -3370,10 +3370,6 @@ probe_amiga
 
 "Questron II" = amigados
 
-"Quik The Thunder Rabbit"
-    158-159 ibm_mfm_dd_unknown_length amigados
-    * amigados
-
 "Quizam!"
     * amigados_unknown_length
 
