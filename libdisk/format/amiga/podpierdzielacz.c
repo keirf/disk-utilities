@@ -1,30 +1,34 @@
 /*
- * disk/diamenty.c
+ * disk/podpierdzielacz.c
  * 
- * AmigaDOS-based protection, used on Diamenty by Okay.
+ * AmigaDOS-based protection Diamentry and Edukacja Zestaw 2.
  * 
  * Written in 2023 by Keith Krellwitz
  * 
  * Track is ~101300 bits. The track is standard amiga dos with data 
  * after the 11th sector:
- *  u32 0xAAA5292A   :: Data
- *  u32 0x4445512A   :: Data
- *  U32 u32 dat[64/4] :: includes the decodes long above
+ *  u32 0xAAA5292A :: Data - Used to verify data
+ *  u32 0x4445512A :: Data - Used to verify data
+ *  U32 dat[64] :: iData ncludes the decoded longs above
  * 
- * TRKTYP_diamenty data layout:
+ * TRKTYP_podpierdzielacz data layout:
  *  u8 amigados[11][512]
- *  u8 extra_data[64]
+ *  u8 extra_data[64*4]
+ * 
+ * Supports:
+ * 
+ * PODPIERDZIELACZ v0.01 & v0.04. Authors: Kiniu, Geniu Wrocław
  */
 
 #include <libdisk/util.h>
 #include <private/disk.h>
 
-static void *diamenty_write_raw(
+static void *podpierdzielacz_write_raw(
     struct disk *d, unsigned int tracknr, struct stream *s)
 {
     struct track_info *ti = &d->di->track[tracknr];
     char *ablk, *block;
-    uint32_t dat[64/4], raw[2], sum;
+    uint32_t dat[64], raw[2];
     unsigned int i;
 
     init_track_info(ti, TRKTYP_amigados);
@@ -47,19 +51,16 @@ static void *diamenty_write_raw(
         raw[1] = be32toh(s->word);
 
         mfm_decode_bytes(bc_mfm_even_odd, 4, raw, &dat[0]);
-        sum = be32toh(dat[0]);
-        for (i = 1; i < 64/4; i++) {
+        for (i = 1; i < 64; i++) {
             if (stream_next_bytes(s, raw, 8) == -1)
                 goto fail;
             mfm_decode_bytes(bc_mfm_even_odd, 4, raw, &dat[i]);
-            sum += be32toh(dat[i]);
         }
 
-        /* Our own checksum over the data. */
-        if (sum != 0xfffffffc)
+        if (be32toh(dat[0]) != 0x444f5300)
             continue;
 
-        init_track_info(ti, TRKTYP_diamenty);
+        init_track_info(ti, TRKTYP_podpierdzielacz);
         ti->total_bits = 101300;
         block = memalloc(ti->len + sizeof(dat));
         memcpy(block, ablk, ti->len);
@@ -74,7 +75,7 @@ fail:
     return NULL;
 }
 
-static void diamenty_read_raw(
+static void podpierdzielacz_read_raw(
     struct disk *d, unsigned int tracknr, struct tbuf *tbuf)
 {
     struct track_info *ti = &d->di->track[tracknr];
@@ -82,15 +83,15 @@ static void diamenty_read_raw(
     unsigned int i;
 
     handlers[TRKTYP_amigados]->read_raw(d, tracknr, tbuf);
-    for (i = 0; i < 64/4; i++)
+    for (i = 0; i < 64; i++)
         tbuf_bits(tbuf, SPEED_AVG, bc_mfm_even_odd, 32, be32toh(dat[i]));
 }
 
-struct track_handler diamenty_handler = {
+struct track_handler podpierdzielacz_handler = {
     .bytes_per_sector = 512,
     .nr_sectors = 11,
-    .write_raw = diamenty_write_raw,
-    .read_raw = diamenty_read_raw
+    .write_raw = podpierdzielacz_write_raw,
+    .read_raw = podpierdzielacz_read_raw
 };
 
 /*

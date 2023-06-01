@@ -1,7 +1,7 @@
 /*
- * disk/pang.c
+ * disk/pierre_adane.c
  *
- * Custom format as used on Pang by Ocean.
+ * Custom format as used on Pang, Toki, and Snow Bros by Ocean.
  *
  * Written in 2022 by Keith Krellwitz
  *
@@ -30,15 +30,15 @@
 
 #define PA_SIG 0x50410000
 
-struct pang_info {
+struct pierre_adane_info {
     uint16_t sync;
 };
 
-static void *pang_write_raw(
+static void *pierre_adane_write_raw(
     struct disk *d, unsigned int tracknr, struct stream *s)
 {
     struct track_info *ti = &d->di->track[tracknr];
-    const struct pang_info *info = handlers[ti->type]->extra_data;
+    const struct pierre_adane_info *info = handlers[ti->type]->extra_data;
 
     while (stream_next_bit(s) != -1) {
 
@@ -72,11 +72,11 @@ static void *pang_write_raw(
         mfm_decode_bytes(bc_mfm_odd_even, 4, raw, &csum);
         if (be32toh(csum) != sum)
             goto fail;
-
+        stream_next_index(s);
         block = memalloc(ti->len);
         memcpy(block, dat, ti->len);
         set_all_sectors_valid(ti);
-        ti->total_bits = 105500;
+        ti->total_bits = s->track_len_bc > 103000 ? 105500 : 102200;
         return block;
     }
 
@@ -84,11 +84,11 @@ fail:
     return NULL;
 }
 
-static void pang_read_raw(
+static void pierre_adane_read_raw(
     struct disk *d, unsigned int tracknr, struct tbuf *tbuf)
 {
     struct track_info *ti = &d->di->track[tracknr];
-    const struct pang_info *info = handlers[ti->type]->extra_data;
+    const struct pierre_adane_info *info = handlers[ti->type]->extra_data;
 
     uint32_t *dat = (uint32_t *)ti->dat, sum, hdr;
     unsigned int i;
@@ -108,19 +108,37 @@ static void pang_read_raw(
 struct track_handler pang_a_handler = {
     .bytes_per_sector = 6304,
     .nr_sectors = 1,
-    .write_raw = pang_write_raw,
-    .read_raw = pang_read_raw,
-    .extra_data = & (struct pang_info) {
+    .write_raw = pierre_adane_write_raw,
+    .read_raw = pierre_adane_read_raw,
+    .extra_data = & (struct pierre_adane_info) {
         .sync = 0x4124}
 };
 
 struct track_handler pang_b_handler = {
     .bytes_per_sector = 6304,
     .nr_sectors = 1,
-    .write_raw = pang_write_raw,
-    .read_raw = pang_read_raw,
-    .extra_data = & (struct pang_info) {
+    .write_raw = pierre_adane_write_raw,
+    .read_raw = pierre_adane_read_raw,
+    .extra_data = & (struct pierre_adane_info) {
         .sync = 0x4489}
+};
+
+struct track_handler toki_a_handler = {
+    .bytes_per_sector = 6328,
+    .nr_sectors = 1,
+    .write_raw = pierre_adane_write_raw,
+    .read_raw = pierre_adane_read_raw,
+    .extra_data = & (struct pierre_adane_info) {
+        .sync = 0x4124}
+};
+
+struct track_handler toki_b_handler = {
+    .bytes_per_sector = 6328,
+    .nr_sectors = 1,
+    .write_raw = pierre_adane_write_raw,
+    .read_raw = pierre_adane_read_raw,
+    .extra_data = & (struct pierre_adane_info) {
+        .sync = 0x4488}
 };
 
 /*
