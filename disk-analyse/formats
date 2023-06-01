@@ -581,6 +581,9 @@ probe_amiga
 
 "Black Dawn Rebirth" = amigagdos
 
+"Black Sect"
+    * amigados lankhor
+
 "Black Shadow" = amigados
 
 # Platinum Compilation
@@ -1206,7 +1209,7 @@ probe_amiga
 "Devious Designs" = amigados_copylock
 
 "Diamenty Disk 1"
-    0 diamenty
+    0 podpierdzielacz
     * amigados
 
 "Diamenty Disk 2"
@@ -1325,6 +1328,12 @@ probe_amiga
 "Dream Zone"
     * amigados_long_102200
 
+"Dreenshar"
+    0 amigados
+    1-2 amigados raw_dd
+    3-159 amigados
+    * ignore
+
 # Retail uses speedlock, other releases seen do not!
 "Drivin' Force"
     0 amigados
@@ -1381,6 +1390,11 @@ probe_amiga
 
 "Eco"
     * rnc_protect_process_a
+
+"Edukacja Zestaw 2"
+    0 podpierdzielacz
+    1-159 amigados
+    * ignore
 
 # Side 1 is empty apart from 4 AmigaDOS tracks
 "Electronic Pool"
@@ -1481,7 +1495,7 @@ probe_amiga
 
 "F1"
     158 silmarils_longtrack
-    * amigados f1
+    * amigados lankhor
 
 # Some tracks maybe mastered long causing harmless warnings!
 "F1 Tornado" = amigados
@@ -2310,6 +2324,12 @@ probe_amiga
 
 "Jigsaw Puzzle Mania" = amigados
 
+"Jim Power"
+    0-157 amigados
+    158 amigados_long_106600
+    159 amigados_long_105500
+    * ignore
+
 "Jimmy White's Whirlwind Snooker" = amigados_copylock
 
 "Jinks"
@@ -2690,6 +2710,10 @@ probe_amiga
     159 ignore
     * psygnosis_a
 
+"Maupiti Island"
+    1 lankhor_loader lankhor
+    * amigados lankhor silmarils_longtrack
+
 "Maya"
     158-159 amigados_long_105500
     * amigados
@@ -2936,7 +2960,7 @@ probe_amiga
 "Nightbreed The Interactive Movie" = amigados_copylock
 
 "Nightdawn"
-    * amigados nightdawn nightdawn_prot
+    * amigados nightdawn zeroes
 
 "Ninja Warriors"
     * amigados protec_longtrack ninja_warriors
@@ -3057,7 +3081,7 @@ probe_amiga
     * amigados
 
 "Outzone"
-    * amigados outzone lankhor1_longtrack
+    * amigados lankhor_alt_a lankhor1_longtrack
 
 # Sega: (Sega-style tracks): Tracks 126 and 128+ may be empty
 # US Gold: (AmigaDOS-style tracks): Tracks 86/88/90 may be empty
@@ -3453,6 +3477,12 @@ probe_amiga
 # Arcade Action Game 7 uses RNC Gap!
 "Rick Dangerous" = amigados_copylock
 
+"Rings Of Medua"
+    0-159 amigados
+    160 ubi_protection_b
+    161 ubi_protection_validation_b
+    * ignore
+
 "Ringside"
     * amigados chw
 
@@ -3466,7 +3496,6 @@ probe_amiga
 "RISK"
     1 speedlock amigados
     * amigados
-
 
 "Roadkill"
     * amigados
@@ -3529,6 +3558,10 @@ probe_amiga
 "Rockford" = amigados
 
 "Rodland" = amigados_copylock
+
+"Rody & Mastico"
+    1-4 lankhor_loader
+    * amigados lankhor_alt_a silmarils_longtrack
 
 "Rogue Trooper"
     0 amigados
@@ -3861,16 +3894,10 @@ probe_amiga
     1 alternative amigados
     * amigados
 
-"Space Math" = amigados
-
-"Speller Bee"
-    * amigados
-
-"Spy vs Spy" = amigados
-
-"Spy vs Spy: The Island Caper" = amigados
-
 "Snoball In Hell" = amigados
+
+"Snow Bros"
+    * amigados toki_b
 
 "Soccer Kid" = amigados
 
@@ -3900,6 +3927,8 @@ probe_amiga
 "Space Hulk" = amigados
 
 "Space Job" = amigados
+
+"Space Math" = amigados
 
 "Space Pilot 89"
     160 ubi_protection_b
@@ -3945,6 +3974,9 @@ probe_amiga
     1 protec_longtrack
     * spell_bound
 
+"Speller Bee"
+    * amigados
+
 # Lander
 "Spellbound!" = amigados
 
@@ -3969,6 +4001,10 @@ probe_amiga
 
 "SportTime Superstar Indoor Sports"
     * amigados_unknown_length
+
+"Spy vs Spy" = amigados
+
+"Spy vs Spy: The Island Caper" = amigados
 
 "St. Thomas" = amigados
 
@@ -4567,7 +4603,8 @@ probe_amiga
     158-159 amigados_long_105500
     * amigados
 
-"Toki" = amigados_copylock
+"Toki"
+    * amigados copylock toki_a toki_b
 
 "Tom And The Ghost" = amigados
 
@@ -4836,9 +4873,10 @@ probe_amiga
 
 "Voyages Of Discovery" = amigados
 
+# The data disk uses the same format
 "Vroom"
     158 silmarils_longtrack
-    * amigados f1
+    * amigados lankhor
 
 "Vulcan" = amigados
 
