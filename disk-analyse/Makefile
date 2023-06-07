@@ -3,10 +3,10 @@ include $(ROOT)/Rules.mk
 
 TARGET := disk-analyse
 
-LIBS := -L../libdisk -ldisk
-
 ifeq ($(SHARED_LIB),n)
 LIBS := ../libdisk/libdisk.a
+else
+LIBS := -L../libdisk -ldisk
 endif
 
 all:
