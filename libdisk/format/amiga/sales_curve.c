@@ -6,8 +6,8 @@
  * Written in 2019 by Keith Krellwitz
  *
  * RAW TRACK LAYOUT:
- *  u16 0x4489  :: Sync
- *  u16 0x5555  :: Padding
+ *  u16 0x4489 :: Sync
+ *  u16 0x5555 :: Padding
  *  u32 dat[6240/4]
  *  u32 checksum
  *
@@ -19,7 +19,7 @@
  * Written in 2019 by Keith Krellwitz
  *
  * RAW TRACK LAYOUT:
- *  u16 0x448A  :: Sync
+ *  u16 0x448A :: Sync
  *  u16 0xAAAA :: Padding
  *  u32 dat[6240/4]
  *  u32 checksum
