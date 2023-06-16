@@ -1480,6 +1480,77 @@ struct track_handler plotting_longtrack_handler = {
     .read_raw = plotting_longtrack_read_raw
 };
 
+
+/*
+ * TRKTYP_interplay_protection
+ *
+ * This protection is used by Borrowed Time and Mindshadow
+ * by Interplay/Activision
+ *
+ * First a check is done for 0x9245 key 1 and stores the address
+ * and then a check is done for 0x9254 key 2 and stores
+ * the address. The address of key 1 is then subtracted from
+ * the address 0of key 2. Finally subtract 0x17a7d from this.
+ * The result needs to be between 0xfffffffb and 5.
+ *
+ */
+
+static void *interplay_protection_write_raw(
+    struct disk *d, unsigned int tracknr, struct stream *s)
+{
+    struct track_info *ti = &d->di->track[tracknr];
+
+    if (tracknr == 158) {
+        unsigned int count = 0;
+        while (stream_next_bit(s) != -1) {
+            count++;
+            if ((uint16_t)s->word == 0x9245)
+                break;
+        }
+
+        while (stream_next_bit(s) != -1) {
+            count++;
+            if ((uint16_t)s->word != 0x9254)
+                continue;
+
+            if (count/8 < 12000)
+                break;
+
+            if (!check_length(s, 101200))
+                break;
+
+            ti->data_bitoff = s->index_offset_bc - 15;
+            ti->total_bits = 102312;
+            return memalloc(0);
+        }
+    }
+    return NULL;
+}
+
+static void interplay_protection_read_raw(
+    struct disk *d, unsigned int tracknr, struct tbuf *tbuf)
+{
+    unsigned int i;
+
+    /* key 1 */
+    tbuf_bits(tbuf, SPEED_AVG, bc_raw, 16, 0x9245);
+    for (i = 0; i < 6054; i++)
+        tbuf_bits(tbuf, SPEED_AVG, bc_mfm, 8, 0);
+
+    /* In order to get the get the protection check value to
+    be in the center we need to write 13 bits, which will
+    make the protection check value to be 0 */
+    tbuf_bits(tbuf, SPEED_AVG, bc_raw, 13, 0);
+    /* key 2 */
+    tbuf_bits(tbuf, SPEED_AVG, bc_raw, 16, 0x9254);
+}
+
+struct track_handler interplay_protection_handler = {
+    .write_raw = interplay_protection_write_raw,
+    .read_raw = interplay_protection_read_raw
+};
+
+
 /*
  * Local variables:
  * mode: C

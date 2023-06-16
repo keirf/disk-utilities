@@ -681,6 +681,10 @@ probe_amiga
 "Borobodur: The Planet Of Doom"
     * amigados_unknown_length rhino
 
+"Borrowed Time"
+    158 interplay_protection
+    * amigados_unknown_length
+
 "Botics"
     * amigados protec_longtrack robocod
 
@@ -2836,6 +2840,10 @@ probe_amiga
 "Mindbreaker"
     *amigados
 
+"Mindshadow"
+    158 interplay_protection
+    * amigados
+
 "Minos"
     0-159 amigados
     160 ubi_protection_b
@@ -3201,6 +3209,9 @@ probe_amiga
 "Pit-Fighter" = amigados_copylock
 
 "Playdays Paint" = amigados
+
+"Plan 9 From Outer Space"
+    * amigados plan9 ibm_pc_dd
 
 "Planet Probe"
     * amigados_long_102200
@@ -4134,7 +4145,11 @@ probe_amiga
 "Striker Number 9"
     0-1 amigados_long_102200
     * amigados
-    
+
+"Strip Poker II"
+    1 protec_longtrack protec_alt_longtrack
+    * amigados
+
 "Strip Poker II Plus"
     1 protec_longtrack
     * amigados
@@ -4234,6 +4249,9 @@ probe_amiga
 
 "Suspicious Cargo" = amigados
 
+"Switchblade"
+    * amigados_long_105500 federation_of_free_traders protoscan_longtrack
+
 "Switchblade 2" = ss_mfm_protected
 
 "Swiv"
@@ -4273,6 +4291,10 @@ probe_amiga
     * amigados
 
 "Targis"
+    * amigados
+
+"Tass Times In Tonetown"
+    6 xelok_longtrack protec_alt_longtrack
     * amigados
 
 "Team Suzuki"
@@ -4478,6 +4500,9 @@ probe_amiga
     1 protec_longtrack
     * amigados
 
+"The Moochies"
+    * amigados moochies
+
 "The Munsters" = amigados_copylock
 
 "The Oath"
@@ -4552,6 +4577,11 @@ probe_amiga
 # another one has a amigados long track with header
 "Thunder Boy"
     * amigados_unknown_length frank_neuhaus_protection
+
+"Thunder Burner"
+    0-157 amigados
+    158-159 amigados_long_105500
+    * ignore
 
 # Tracks 78.0-79.1 on Disk 1 and 74.1-79.1 on Disk 2 appear unused as WHDLoad skips them!
 # Ignore any errors on those tracks!
@@ -4667,6 +4697,10 @@ probe_amiga
     * amigados
 
 "Transputor" = amigados
+
+"Transylvania"
+    1 protec_variant_924a_longtrack
+    * amigados_unknown_length 
 
 "Treasure Island Dizzy" = amigados_copylock
 
@@ -5203,6 +5237,9 @@ probe_amiga
 "Zork Trilogy" = amigados
 
 "Zork Zero" = amigados
+
+"Zyconix"
+    * amigados zyconix
 
 # Some releases may use an unsupported Rob Northern protection! 
 "Zynaps" = amigados_copylock

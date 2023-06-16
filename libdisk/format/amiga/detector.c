@@ -59,7 +59,7 @@ static void *detector_write_raw(
         /* signature 1 */
         if (stream_next_bits(s, 32) == -1)
             goto fail;
-        if (s->word !=SIG_1)
+        if (s->word != SIG_1)
             continue;
 
         /* signature 2 */

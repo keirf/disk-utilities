@@ -6,26 +6,26 @@
  * Written in 2019 by Keith Krellwitz
  *
  * RAW TRACK LAYOUT:
- *  u16 0x4489  :: Sync
- *  u16 0x5555  :: Sync
- *  u32 dat[‭6240‬/4]
+ *  u16 0x4489 :: Sync
+ *  u16 0x5555 :: Padding
+ *  u32 dat[6240/4]
  *  u32 checksum
  *
  * TRKTYP_sales_Curve data layout:
- *  u8 sector_data[‭6240‬]
+ *  u8 sector_data[6240]
  *
  * Custom format as used on Ninja Warriors by Sales Curve.
  *
  * Written in 2019 by Keith Krellwitz
  *
  * RAW TRACK LAYOUT:
- *  u16 0x448A  :: Sync
- *  u16 0xAAAA :: Sync
- *  u32 dat[‭6240‬/4]
+ *  u16 0x448A :: Sync
+ *  u16 0xAAAA :: Padding
+ *  u32 dat[6240/4]
  *  u32 checksum
  *
  * TRKTYP_sales_Curve data layout:
- *  u8 sector_data[‭6240‬]
+ *  u8 sector_data[6240]
  */
 
 #include <libdisk/util.h>
