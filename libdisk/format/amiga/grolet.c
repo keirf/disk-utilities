@@ -105,7 +105,7 @@ static void grolet_read_raw(
     struct disk *d, unsigned int tracknr, struct tbuf *tbuf)
 {
     struct track_info *ti = &d->di->track[tracknr];
-    uint32_t dat[ti->bytes_per_sector/4], hdr;
+    uint32_t dat[ti->bytes_per_sector/4+1], hdr;
     uint16_t csum;
     unsigned int sec, i;
 
