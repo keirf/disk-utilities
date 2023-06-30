@@ -66,7 +66,7 @@ static void *pick_n_pile_write_raw(
         if (sum != be32toh(dat[1]))
             continue;
 
-        sec = (u_int8_t)(be32toh(dat[0]) >> 16)/4;
+        sec = (uint8_t)(be32toh(dat[0]) >> 16)/4;
 
         if ((sec >= ti->nr_sectors) || is_valid_sector(ti, sec))
             continue;

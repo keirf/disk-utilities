@@ -61,7 +61,7 @@ static void *cobra_write_raw(
         /* end sync */
         if (stream_next_bits(s, 16) == -1)
             goto fail;
-        if ((u_int16_t)s->word != 0x4489)
+        if ((uint16_t)s->word != 0x4489)
             continue;
 
 
