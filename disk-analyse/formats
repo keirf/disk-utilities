@@ -340,13 +340,16 @@ probe_amiga
 
 "Asterix Operation Getafix" = amigados
 
+# A budget release of the game contains garbage on track 79.0
+# after the sync. The budget release has been modified to
+# ignore the results of the protection check.
 "Astro Marine Corps (A.M.C.) Disk 1"
-    158 creepsoft_protection
+    158 creepsoft_protection creepsoft_protection_alt
     0-123 amigados
     * ignore
 
 "Astro Marine Corps (A.M.C.) Disk 2"
-    158 creepsoft_protection amigados
+    158 creepsoft_protection amigados creepsoft_protection_alt
     0-129 amigados
     * ignore
 
@@ -1056,6 +1059,10 @@ probe_amiga
 
 "Cyberblast"
     * amigados cyberblast
+
+"Cybernoid"
+    1 rn_a145_protection
+    * amigados
 
 "Cybernoid II" = amigados_copylock
 
@@ -1768,6 +1775,12 @@ probe_amiga
 
 "Galactic Warrior Rats" = amigados
 
+"Galaxy 89"
+    0-159 amigados
+    160 ubi_protection_b
+    161 ubi_protection_validation_b
+    * ignore
+
 "Galaxy Fight" = amigados
 
 "Galaxy Force II" = rnc_gap
@@ -1779,6 +1792,10 @@ probe_amiga
     1 frank_neuhaus_protection
     2-159 amigados_long_102200
     * ignore
+
+"Garfield: Big, Fat, Hairy Deal"
+    1 rn_a145_protection
+    * amigados
 
 # US Version
 "Garrison" = amigados
@@ -2117,6 +2134,10 @@ probe_amiga
 
 "Hostages" = infogrames_protected
 
+"Hotshot"
+    1 rn_a145_protection
+    * amigados
+
 "HoverForce"
     * amigados
 
@@ -2159,6 +2180,13 @@ probe_amiga
     0 amigados_unknown_length
     1 xelok_longtrack
     2-159 amigados_unknown_length
+    * ignore
+
+"Impossamole"
+    0 amigados_long_105500
+    2-157 federation_of_free_traders
+    158 tiertex_longtrack
+    159 protoscan_longtrack
     * ignore
 
 "Impossible Mission 2025" = amigados
@@ -2654,7 +2682,11 @@ probe_amiga
     1 protec_longtrack
     * amigados
 
-# Retail uses unsupported Rob Northen protection on Track 1
+# Retail
+"Manhattan Dealer"
+    1 rn_a145_protection
+    * amigados
+
 # Pocket Power release is uprotected!
 "Manhattan Dealers Pocket Power" = amigados
 
@@ -3270,10 +3302,21 @@ probe_amiga
     95-159 amigados
     * ignore
 
-# Retail release is unsupported, variant of Apprentice format?
 # Other releases may use Copylock
 "Power Drift" = amigados_copylock
  
+# Retail 2 disk version 
+"Power Drift Disk 1"
+    0 amigados
+    1 power_drift
+    2 power_drift_loader 
+    3-159 power_drift
+    * ignore
+
+"Power Drift Disk 2"
+    * power_drift_disk_2
+
+
 "Power Drive" = amigados_copylock
 
 "Power Glove Reloaded" = amigados
@@ -3893,6 +3936,9 @@ probe_amiga
 "Sleeping Gods Lie" = amigados_copylock
 
 "Sleepwalker" = amigados_copylock
+
+"Sliders"
+    * amigados sliders
 
 "Slip Stream" = amigados
 
@@ -4710,6 +4756,11 @@ probe_amiga
     * amigados
 
 "Treble Champions 2" = amigados
+
+"Trex Warrior"
+    154 raw_dd
+    158 raw_dd
+    * amigados ibm_mfm_dd_unknown_length 
 
 "Triple X"
     * amigados frank_neuhaus_protection

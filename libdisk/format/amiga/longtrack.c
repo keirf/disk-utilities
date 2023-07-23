@@ -1550,6 +1550,113 @@ struct track_handler interplay_protection_handler = {
     .read_raw = interplay_protection_read_raw
 };
 
+/*
+ * TRKTYP_rn_a145_protection
+ *
+ * AmigaDOS-based long-track protection used by the following games
+ * 
+ *  Cybernoid - Hewson
+ *  Garfield: Big Fat Hairy Deal - Softek
+ *  Manhattan Dealers - Silmarils
+ *  Bombuzal - Imageworks
+ *  Hotshot - 16 Bit Pocket Power Collection, The (Prism Leisure)
+ *
+ * Track is ~105500 bits. Track begins with a short sector:
+ *  u16 0xa145   :: Sync
+ *  u16 data[19] :: bc_mfm
+ * 
+ * Two versions of Cybernoid have data after the sync, but the 
+ * Action Amiga Compilation version just contains encoded 0's
+ * 
+ * The sector with the sync a145 can either be before or after the
+ * AmigaDOS track data. Originally I had it after and then discovered
+ * that Bombuzal decoder was similar, so I checked the game code
+ * and found it to be identical. I converted the read method to the
+ * same as the Bombuzal decoder.
+ * 
+ * This appears to an early version of Rob Northen protetion, before
+ * trace vector decoding was introduced. Lombard RAC Rally protection is
+ * similar, but appears to missing sector 0 from the amigados 
+ * track and uses trace vector decoding.
+ */
+
+static void *rn_a145_protection_write_raw(
+    struct disk *d, unsigned int tracknr, struct stream *s)
+{
+    struct track_info *ti = &d->di->track[tracknr];
+    char *ablk, *block;
+    uint8_t dat[19];
+    unsigned int i;
+
+    init_track_info(ti, TRKTYP_amigados);
+    ablk = handlers[TRKTYP_amigados]->write_raw(d, tracknr, s);
+    if ((ablk == NULL) || (ti->type != TRKTYP_amigados))
+        goto fail;
+
+    if (!check_length(s, 104500))
+        goto fail;
+
+    stream_reset(s);
+
+    while (stream_next_bit(s) != -1) {
+
+        if ((uint16_t)s->word != 0xa145)
+            continue;
+        ti->data_bitoff = s->index_offset_bc - 15;
+
+        for (i = 0; i < sizeof(dat); i++) {
+            if (stream_next_bits(s, 16) == -1)
+                goto fail;
+            dat[i] = mfm_decode_word((uint16_t)s->word);
+        }
+
+        stream_next_index(s);
+        init_track_info(ti, TRKTYP_rn_a145_protection);
+        ti->total_bits = 105500;
+        block = memalloc(ti->len + sizeof(dat));
+        memcpy(block, ablk, ti->len);
+        memcpy(&block[ti->len], dat, sizeof(dat));
+        ti->len += sizeof(dat);
+        memfree(ablk);
+        return block;
+    }
+
+fail:
+    memfree(ablk);
+    return NULL;
+}
+
+static void rn_a145_protection_read_raw(
+    struct disk *d, unsigned int tracknr, struct tbuf *tbuf)
+{
+    struct track_info *ti = &d->di->track[tracknr];
+    uint8_t *dat = (uint8_t *)&ti->dat[512*11];
+    unsigned int i;
+/*
+    handlers[TRKTYP_amigados]->read_raw(d, tracknr, tbuf);
+
+    for (i = 0; i < 400; i++)
+        tbuf_bits(tbuf, SPEED_AVG, bc_mfm, 8, 0);
+    tbuf_bits(tbuf, SPEED_AVG, bc_raw, 16, 0xa145);
+    for (i = 0; i < 19; i++)
+        tbuf_bits(tbuf, SPEED_AVG, bc_mfm, 8, dat[i]);
+*/
+    tbuf_bits(tbuf, SPEED_AVG, bc_raw, 16, 0xa145);
+    for (i = 0; i < 19; i++)
+        tbuf_bits(tbuf, SPEED_AVG, bc_mfm, 8, dat[i]);
+    for (i = 0; i < 168; i++)
+        tbuf_bits(tbuf, SPEED_AVG, bc_mfm, 8, 0);
+
+    handlers[TRKTYP_amigados]->read_raw(d, tracknr, tbuf);
+}
+
+struct track_handler rn_a145_protection_handler = {
+    .bytes_per_sector = 512,
+    .nr_sectors = 11,
+    .write_raw = rn_a145_protection_write_raw,
+    .read_raw = rn_a145_protection_read_raw
+};
+
 
 /*
  * Local variables:
