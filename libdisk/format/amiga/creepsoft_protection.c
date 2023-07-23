@@ -29,16 +29,17 @@ static void *creepsoft_protection_write_raw(
         if ((uint16_t)mfm_decode_word(s->word) != 0x4078)
             continue;
         if (stream_next_bits(s, 32) == -1)
-                goto fail;
+            goto fail;
         if ((uint16_t)mfm_decode_word(s->word) != 0x9080)
             continue;
         if (stream_next_bits(s, 32) == -1)
-                goto fail;
+            goto fail;
         if ((uint16_t)mfm_decode_word(s->word) == 0x8090)
             break;
     }
 
     while (stream_next_bit(s) != -1) {
+
         if ((uint16_t)mfm_decode_word(s->word) != 0xa1fe)
             continue;
         if (stream_next_bits(s, 32) == -1)
@@ -85,6 +86,70 @@ struct track_handler creepsoft_protection_handler = {
     .read_raw = creepsoft_protection_read_raw
 };
 
+/*
+ *
+ * This is an alternate version of the creepsoft protection
+ * which is used by another possibly budget release of 
+ * Astro Marine Corps (A.M.C.)
+ *  
+ * The protection code is still in place and does check
+ * track 79.0, but always fails. Normally on success the 
+ * long 0x54455441 is written to 0x37d7c.  On failer the 
+ * address is cleared. The check for the value at this 
+ * address has been modified to always pass.
+ * 
+ * The track can contain anything as long as it has a
+ * sync of 0x4489. The correct protection track is 
+ * written.
+ * 
+ */
+static void *creepsoft_protection_alt_write_raw(
+    struct disk *d, unsigned int tracknr, struct stream *s)
+{
+    struct track_info *ti = &d->di->track[tracknr];
+
+    if (tracknr != 158)
+        goto fail;
+
+
+    while (stream_next_bit(s) != -1) {
+
+        if ((uint16_t)s->word == 0x4489)
+            break;  
+    }
+
+    while (stream_next_bit(s) != -1) {
+
+        if ((uint16_t)mfm_decode_word(s->word) == 0x4078)
+            break;
+    }
+
+    while (stream_next_bit(s) != -1) {
+
+        if ((uint16_t)mfm_decode_word(s->word) == 0x9080)
+            break;
+    }
+
+    while (stream_next_bit(s) != -1) {
+
+        if ((uint16_t)mfm_decode_word(s->word) != 0x8090)
+            continue;
+
+        stream_next_index(s);
+        printf("%i %i\n", tracknr, s->track_len_bc);
+        ti->data_bitoff = 0;
+        ti->total_bits = (s->track_len_bc/100)*100+100;
+        return memalloc(0);
+    }
+
+fail:
+    return NULL;
+}
+
+struct track_handler creepsoft_protection_alt_handler = {
+    .write_raw = creepsoft_protection_alt_write_raw,
+    .read_raw = creepsoft_protection_read_raw
+};
 
 /*
  * Local variables:

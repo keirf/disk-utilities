@@ -14,9 +14,6 @@ Unsupported format!
 Crazy Cars III:
 Unsupported Titus protection on track 79.0 of Disk 1
 
-Cybernoid:
-ADOS + unsupported Rob Northen protection on track 0.1
-
 Deluxe Strip Poker (AKA Strip Poker II)
 AmigaDOS + Protection on track 80.1
 
@@ -35,9 +32,6 @@ ADOS + IBM 10 sector, unsupported 10 x 256 byte IBM/ST high score track on 64.1
 Gunship:
 ADOS + unsupported Speedlock(?) on track 0.1
 
-Hot Shot:
-ADOS + unsupported Rob Northen protection on track 0.1
-
 Insector Hecti In The Inter Change:
 ADOS (track 0.0 may be long) + protection on track 0.1
 
@@ -45,9 +39,6 @@ Leatherneck + Major Motion: (Hit Disks Volume 2)
 ADOS + protection on track 1.0/1.1
 
 Lombard RAC Rally:
-ADOS + unsupported Rob Northen protection on track 0.1
-
-Manhattan Dealers:
 ADOS + unsupported Rob Northen protection on track 0.1
 
 Nebulus:
@@ -63,12 +54,6 @@ Periheliom:
 Unsupported format!
 
 Pinball Prelude:
-Unsupported format!
-
-Plan 9 From Outer Space:
-Unsupported format!
-
-Power Drift:
 Unsupported format!
 
 Super Heroes Compilation:
