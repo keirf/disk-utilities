@@ -4757,11 +4757,6 @@ probe_amiga
 
 "Treble Champions 2" = amigados
 
-"Trex Warrior"
-    154 raw_dd
-    158 raw_dd
-    * amigados ibm_mfm_dd_unknown_length 
-
 "Triple X"
     * amigados frank_neuhaus_protection
 
