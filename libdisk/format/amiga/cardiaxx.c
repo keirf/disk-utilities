@@ -25,21 +25,22 @@ static void *cardiaxx_write_raw(
     struct disk *d, unsigned int tracknr, struct stream *s)
 {
     struct track_info *ti = &d->di->track[tracknr];
-    unsigned int nr_valid_blocks = 0, sec = 0;
+    unsigned int nr_valid_blocks = 0, least_block = ~0u, sec = 0;
 
     char *block = memalloc(ti->nr_sectors*ti->bytes_per_sector);
-    ti->data_bitoff = s->index_offset_bc - 31;
 
     while ((stream_next_bit(s) != -1) &&
            (nr_valid_blocks != ti->nr_sectors)) {
 
         uint16_t raw[2], csum, sum;
         uint16_t dat[ti->bytes_per_sector/2];
-        unsigned int i;
+        unsigned int i, bitoff;
 
         /* sync */
         if (s->word != 0x448a448a)
             continue;
+
+        bitoff = s->index_offset_bc - 31;
 
         /* padding - never checked */
         if (stream_next_bits(s, 16) == -1)
@@ -70,6 +71,11 @@ static void *cardiaxx_write_raw(
         set_sector_valid(ti, sec);
         nr_valid_blocks++;
         sec++;
+
+        if (least_block > sec) {
+            ti->data_bitoff = bitoff;
+            least_block = sec;
+        }
     }
 
     if (nr_valid_blocks == 0)

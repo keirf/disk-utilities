@@ -1571,10 +1571,9 @@ struct track_handler interplay_protection_handler = {
  * The sector with the sync a145 can either be before or after the
  * AmigaDOS track data. Originally I had it after and then discovered
  * that Bombuzal decoder was similar, so I checked the game code
- * and found it to be identical. I converted the read method to the
- * same as the Bombuzal decoder.
+ * and found it to be identical.
  * 
- * This appears to an early version of Rob Northen protetion, before
+ * This appears to be an early version of Rob Northen protection, before
  * trace vector decoding was introduced. Lombard RAC Rally protection is
  * similar, but appears to missing sector 0 from the amigados 
  * track and uses trace vector decoding.
@@ -1632,19 +1631,11 @@ static void rn_a145_protection_read_raw(
     struct track_info *ti = &d->di->track[tracknr];
     uint8_t *dat = (uint8_t *)&ti->dat[512*11];
     unsigned int i;
-/*
-    handlers[TRKTYP_amigados]->read_raw(d, tracknr, tbuf);
 
-    for (i = 0; i < 400; i++)
-        tbuf_bits(tbuf, SPEED_AVG, bc_mfm, 8, 0);
     tbuf_bits(tbuf, SPEED_AVG, bc_raw, 16, 0xa145);
     for (i = 0; i < 19; i++)
         tbuf_bits(tbuf, SPEED_AVG, bc_mfm, 8, dat[i]);
-*/
-    tbuf_bits(tbuf, SPEED_AVG, bc_raw, 16, 0xa145);
-    for (i = 0; i < 19; i++)
-        tbuf_bits(tbuf, SPEED_AVG, bc_mfm, 8, dat[i]);
-    for (i = 0; i < 168; i++)
+    for (i = 0; i < 316; i++)
         tbuf_bits(tbuf, SPEED_AVG, bc_mfm, 8, 0);
 
     handlers[TRKTYP_amigados]->read_raw(d, tracknr, tbuf);
@@ -1657,6 +1648,80 @@ struct track_handler rn_a145_protection_handler = {
     .read_raw = rn_a145_protection_read_raw
 };
 
+/*
+ * TRKTYP_rn_a145_alt_protection
+ *
+ * long-track protection used by the following games
+ * 
+ *  Operation Wolf (Retail) - Ocean
+ *
+ * Track is ~105500 bits. Track begins with a short sector:
+ *  u16 0xa145   :: Sync
+ *  u16 data[19] :: bc_mfm
+ * 
+ * One version uses a standard copylock, but another version
+ * uses a very early version of the RN protection that 
+ * just checks for a sync of 0xa245. The odd thing about this 
+ * version is that track 0.1 does not contain any valid amigados
+ * sectors
+ * 
+ */
+
+static void *rn_a145_alt_protection_write_raw(
+    struct disk *d, unsigned int tracknr, struct stream *s)
+{
+    struct track_info *ti = &d->di->track[tracknr];
+    char *block;
+    uint8_t dat[19];
+    unsigned int i;
+
+    if (!check_length(s, 104500))
+        goto fail;
+
+    stream_reset(s);
+
+    while (stream_next_bit(s) != -1) {
+
+        if ((uint16_t)s->word != 0xa145)
+            continue;
+        ti->data_bitoff = s->index_offset_bc - 15;
+
+        for (i = 0; i < sizeof(dat); i++) {
+            if (stream_next_bits(s, 16) == -1)
+                goto fail;
+            dat[i] = mfm_decode_word((uint16_t)s->word);
+        }
+
+        stream_next_index(s);
+        ti->total_bits = 105500;
+        block = memalloc(sizeof(dat));
+        memcpy(block, dat, sizeof(dat));
+        return block;
+    }
+
+fail:
+    return NULL;
+}
+
+static void rn_a145_alt_protection_read_raw(
+    struct disk *d, unsigned int tracknr, struct tbuf *tbuf)
+{
+    struct track_info *ti = &d->di->track[tracknr];
+    uint8_t *dat = (uint8_t *)&ti->dat;
+    unsigned int i;
+
+    tbuf_bits(tbuf, SPEED_AVG, bc_raw, 16, 0xa145);
+    for (i = 0; i < 19; i++)
+        tbuf_bits(tbuf, SPEED_AVG, bc_mfm, 8, dat[i]);
+    for (i = 0; i < 316; i++)
+        tbuf_bits(tbuf, SPEED_AVG, bc_mfm, 8, 0);
+
+}
+
+struct track_handler rn_a145_alt_protection_handler = {
+    .write_raw = rn_a145_alt_protection_write_raw,
+    .read_raw = rn_a145_alt_protection_read_raw
+};
 
 /*
  * Local variables:

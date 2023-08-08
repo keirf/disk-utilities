@@ -44,7 +44,7 @@ static void *readysoft_write_raw(
     struct disktag_disk_nr *disktag = (struct disktag_disk_nr *)
         disk_get_tag_by_id(d, DSKTAG_disk_nr);
     char *block;
-    unsigned int nr_valid_blocks = 0;
+    unsigned int nr_valid_blocks = 0, least_block = ~0u;
 
     block = memalloc(ti->nr_sectors*ti->bytes_per_sector);
 
@@ -56,7 +56,7 @@ static void *readysoft_write_raw(
 
         uint32_t raw[2], hdr, hdrchk, dat[2*ti->bytes_per_sector/4];
         uint32_t csum, sum, sig, trk, disknr;
-        unsigned int sec, i;
+        unsigned int sec, i, bitoff;
 
         /* sync */
         if ((uint16_t)s->word != 0x4489)
@@ -67,6 +67,8 @@ static void *readysoft_write_raw(
             break;
         if (s->word != 0x44894489)
             continue;
+
+        bitoff = s->index_offset_bc - 47;
 
         /* header */
         if (stream_next_bytes(s, raw, 8) == -1)
@@ -126,6 +128,11 @@ static void *readysoft_write_raw(
         memcpy(&block[sec*ti->bytes_per_sector], &dat, ti->bytes_per_sector);
         set_sector_valid(ti, sec);
         nr_valid_blocks++;
+
+        if (least_block > sec) {
+            ti->data_bitoff = bitoff;
+            least_block = sec;
+        }
     }
 
     if (nr_valid_blocks == 0) {

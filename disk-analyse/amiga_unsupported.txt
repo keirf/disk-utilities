@@ -17,9 +17,6 @@ Unsupported Titus protection on track 79.0 of Disk 1
 Deluxe Strip Poker (AKA Strip Poker II)
 AmigaDOS + Protection on track 80.1
 
-Elf Mania:
-Unsupported format!
-
 EPIC (First release):
 ADOS + rnc_protect_process + unsupported Rob Northen protection on track 0.1 of Disk 1
 
@@ -72,8 +69,4 @@ ADOS + IBM 10 sector + unformatted tracks + unsupported 128 byte MFM tracks on 1
 
 Ultima V:
 ADOS + unsupported Xelock protection on track 0.1
-
-Zynaps:
-Version with unsupported Rob Northen protection on track 0.1
-Other releases use a supported Copylock!
 

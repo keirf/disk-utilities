@@ -28,7 +28,7 @@ static void *savage_write_raw(
 {
     struct track_info *ti = &d->di->track[tracknr];
     char *block;
-    unsigned int nr_valid_blocks = 0;
+    unsigned int nr_valid_blocks = 0, least_block = ~0u;
 
     block = memalloc(ti->nr_sectors*ti->bytes_per_sector);
 
@@ -38,12 +38,12 @@ static void *savage_write_raw(
         uint32_t csum, hdr, zero;
         uint32_t raw[2], raw2[2*ti->bytes_per_sector/4];
         uint32_t dat[ti->bytes_per_sector/4];
-        unsigned int sec;
+        unsigned int sec, bitoff;
 
         /* sync */
         if (s->word != 0x44894489)
             continue;
-        ti->data_bitoff = s->index_offset_bc - 31;
+        bitoff = s->index_offset_bc - 31;
 
         /* Read and validate header longword. */
         if (stream_next_bytes(s, raw, 8) == -1)
@@ -89,6 +89,11 @@ static void *savage_write_raw(
         memcpy(&block[sec*ti->bytes_per_sector], &dat, ti->bytes_per_sector);
         set_sector_valid(ti, sec);
         nr_valid_blocks++;
+
+        if (least_block > sec) {
+            ti->data_bitoff = bitoff;
+            least_block = sec;
+        }
     }
     if (nr_valid_blocks == 0) {
         memfree(block);

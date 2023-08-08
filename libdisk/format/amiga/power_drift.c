@@ -269,18 +269,21 @@ static void *power_drift_disk_2_write_raw(
 {
    struct track_info *ti = &d->di->track[tracknr];
     char *block;
-    unsigned int nr_valid_blocks = 0, sec, i;
+    unsigned int nr_valid_blocks = 0, least_block = ~0u, sec, i;
+    
 
     block = memalloc(ti->nr_sectors*ti->bytes_per_sector);
     ti->data_bitoff = s->index_offset_bc - 31;
     while ((stream_next_bit(s) != -1) &&
            (nr_valid_blocks != ti->nr_sectors)) {
 
-        uint32_t dat[2*ti->bytes_per_sector/4], sum;
+        uint32_t dat[2*ti->bytes_per_sector/4], sum, bitoff;
 
         /* sync */
         if (s->word != 0x44894489)
             continue;
+
+        bitoff = s->index_offset_bc - 31;
 
         if (stream_next_bits(s, 16) == -1)
             break;
@@ -302,13 +305,21 @@ static void *power_drift_disk_2_write_raw(
         /* sector */
         sec = (uint8_t)be32toh(dat[0]);
 
+        if ((sec >= ti->nr_sectors) || is_valid_sector(ti, sec))
+            continue;
+
         if (be32toh(dat[ti->bytes_per_sector/4-1]) != sum)
            continue;
 
         memcpy(&block[sec*ti->bytes_per_sector], &dat, ti->bytes_per_sector);
         set_sector_valid(ti, sec);
         nr_valid_blocks++;
-        sec += 1;
+
+        if (least_block > sec) {
+            ti->data_bitoff = bitoff;
+            least_block = sec;
+        }
+
     }
     if (nr_valid_blocks == 0) {
         memfree(block);
