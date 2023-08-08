@@ -1418,6 +1418,9 @@ probe_amiga
 # Retail uses PROTEC, re-releases may use Copylock!
 "Elf" = amigados_copylock
 
+"Elfmania"
+    * amigados elfmania
+
 "Eliminator"
     0 amigados_unknown_length
     1-79 chw
@@ -3088,6 +3091,9 @@ probe_amiga
 # Original release has unsupported Rob Northen protection
 # Other releases use Copylock or no protection 
 "Operation Wolf" = amigados_copylock
+
+"Operation Wolf Retail"
+    * amigados rn_a145_alt_protection
 
 "Operation: Cleanstreets"
     * amigados_unknown_length
@@ -5299,7 +5305,7 @@ amigados_varrate
     * amigados_varrate
 # Copylock sometimes later replaced with no protection, or PROTEC
 amigados_copylock
-    1 rnc_gap amigados copylock protec_longtrack copylock_old
+    1 rnc_gap amigados copylock protec_longtrack copylock_old 
     * amigados
 diskspare_dd
     * diskspare_dd

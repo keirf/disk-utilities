@@ -29,7 +29,7 @@ static void *full_contact_write_raw(
 {
     struct track_info *ti = &d->di->track[tracknr];
     char *block;
-    unsigned int j, k, nr_valid_blocks = 0;
+    unsigned int j, k, nr_valid_blocks = 0, least_block = ~0u;
 
     block = memalloc(ti->nr_sectors*ti->bytes_per_sector);
 
@@ -39,7 +39,7 @@ static void *full_contact_write_raw(
         uint16_t hdr, raw16[2];
         uint32_t raw[2*(ti->bytes_per_sector)/4], csum, sum;
         uint32_t dat[(ti->bytes_per_sector)/4];
-        unsigned int sec, i;
+        unsigned int sec, i, bitoff;
 
         /* sync */
         if (s->word != 0xa245a245)
@@ -50,7 +50,7 @@ static void *full_contact_write_raw(
              break;
         if ((uint16_t)s->word != 0x4489)
             continue;
-        ti->data_bitoff = s->index_offset_bc - 47;
+        bitoff = s->index_offset_bc - 47;
 
         /* header */
         if (stream_next_bytes(s, raw16, 4) == -1)
@@ -85,6 +85,11 @@ static void *full_contact_write_raw(
         memcpy(&block[sec*ti->bytes_per_sector], &dat, ti->bytes_per_sector);
         set_sector_valid(ti, sec);
         nr_valid_blocks++;
+
+        if (least_block > sec) {
+            ti->data_bitoff = bitoff;
+            least_block = sec;
+        }
     }
 
     /* check for missing sectors and add if missing.  Check if there are some valid

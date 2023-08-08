@@ -28,7 +28,7 @@ static void *plan9_write_raw(
 {
     struct track_info *ti = &d->di->track[tracknr];
     uint8_t *block = memalloc(ti->nr_sectors*(ti->bytes_per_sector));
-    unsigned int i, nr_valid_blocks = 0;
+    unsigned int i, nr_valid_blocks = 0, least_block = ~0u, bitoff;
 
     while ((stream_next_bit(s) != -1) &&
            (nr_valid_blocks != ti->nr_sectors)) {
@@ -41,6 +41,8 @@ static void *plan9_write_raw(
             goto done;
         if (s->word != 0x44895555)
             continue;
+
+        bitoff = s->index_offset_bc - 47;
 
         /* sector */
         if (stream_next_bytes(s, raw, 4) == -1)
@@ -67,8 +69,13 @@ static void *plan9_write_raw(
             continue;
 
         set_sector_valid(ti, sec);
-        nr_valid_blocks++;
         memcpy(&block[sec*(ti->bytes_per_sector)], &dat, (ti->bytes_per_sector)); 
+        nr_valid_blocks++;
+
+        if (least_block > sec) {
+            ti->data_bitoff = bitoff;
+            least_block = sec;
+        }
     }
 
 done:
@@ -78,7 +85,6 @@ done:
     }
 
     stream_next_index(s);
-    ti->data_bitoff = s->index_offset_bc - 47;
     ti->total_bits = (s->track_len_bc/100)*100+100;
     return block;
 }

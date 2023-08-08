@@ -30,7 +30,7 @@ static void *pick_n_pile_write_raw(
 {
     struct track_info *ti = &d->di->track[tracknr];
     char *block;
-    unsigned int nr_valid_blocks = 0;
+    unsigned int nr_valid_blocks = 0, least_block = ~0u;
 
     block = memalloc(ti->nr_sectors*ti->bytes_per_sector);
 
@@ -39,12 +39,12 @@ static void *pick_n_pile_write_raw(
 
         uint32_t raw[2*ti->bytes_per_sector/4], sum;
         uint32_t dat[ti->bytes_per_sector/4];
-        unsigned int sec, i;
+        unsigned int sec, i, bitoff;
 
         /* sync */
         if (s->word != 0x44894489)
             continue;
-        ti->data_bitoff = s->index_offset_bc - 31;
+        bitoff = s->index_offset_bc - 31;
 
         /* padding/sig */
         if (stream_next_bits(s, 32) == -1)
@@ -74,6 +74,11 @@ static void *pick_n_pile_write_raw(
         memcpy(&block[sec*ti->bytes_per_sector], &dat, ti->bytes_per_sector);
         set_sector_valid(ti, sec);
         nr_valid_blocks++;
+
+        if (least_block > sec) {
+            ti->data_bitoff = bitoff;
+            least_block = sec;
+        }
     }
 
     if (nr_valid_blocks == 0) {
