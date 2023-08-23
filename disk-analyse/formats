@@ -873,6 +873,13 @@ probe_amiga
 
 "Chicago 90" = amigados
 
+"Chinese Karate"
+    0-1 amigados
+    2-159 cosmo_ranger
+    160 ubi_protection_b
+    161 ubi_protection_validation_b
+    * ignore
+
 "Chronicles Of Omega" = amigados_copylock
 
 "Chrono Quest" = amigados
@@ -1267,6 +1274,9 @@ probe_amiga
     85-159/2 ibm_pc_dd_10sec
     * ignore
 
+"Domination"
+    * amigados domination
+
 "Dominator" = amigados_copylock
 
 "Dominium" = amigados
@@ -1458,6 +1468,11 @@ probe_amiga
 # Initial retail release has unsupported Rob Northen protection!
 # Subsequent re-releases are AmigaDOS, Disk 1 may have first 30 tracks mastered long!
 "Epic" = amigados
+
+# May require some tweaking, but works fine
+"Epic Initial Release"
+    1-59 epic
+    * amigados
 
 "Escape From The Planet Of The Robot Monsters" = amigados_copylock
 
@@ -1930,6 +1945,12 @@ probe_amiga
 
 "Gone Fish'n"
     * amigados_unknown_length
+
+"Gotcha!"
+    0-159 amigados
+    160 ubi_protection_b
+    161 ubi_protection_validation_b
+    * ignore
 
 "Graham Gooch's Second Innings" = amigados
 
@@ -3230,6 +3251,9 @@ probe_amiga
     158-159 amigados_long_105500
     * amigados
 
+"Pinball Prelude"
+    * amigados pinball_prelude
+
 "Pinkie" = amigados
 
 "Pioneer Plague" = amigados
@@ -3608,7 +3632,10 @@ probe_amiga
     * arc_development_a copylock amigados
 
 # Arcade Action Game 8
-"Rock N' Roll" = amigados
+"Rock 'n Roll" = amigados
+
+"Rock 'n Roll Retail"
+    * amigados rock_n_roll_a rock_n_roll_b rock_n_roll_c
 
 "Rock Star Ate My Hamster" = rnc_gap
 
@@ -4163,6 +4190,11 @@ probe_amiga
 # Many tracks are Unformatted (inc all odd tracks except Copylock).
 "Street Fighter II: The World Warrior"
     * amigados copylock digital_magic rainbird
+
+"Street Hockey"
+    0 amigados 
+    1-159 street_hockey
+    * ignore
 
 "Street Rod II" = amigados
 
@@ -5045,6 +5077,9 @@ probe_amiga
 "Whizz" = amigados
 
 "Who Framed Roger Rabbit" = amigados
+
+"Wild Life"
+    * amigados_unknown_length
 
 "Windsurf Willy"
     158-159 amigados_unknown_length
