@@ -1562,7 +1562,9 @@ struct track_handler interplay_protection_handler = {
  *  Hotshot - 16 Bit Pocket Power Collection, The (Prism Leisure)
  *
  * Track is ~105500 bits. Track begins with a short sector:
- *  u16 0xa145   :: Sync
+ *  u32 0xaaaaa144 :: Sync
+ *  u32 0 :: padding
+ *  u16 0xa145 :: Sync
  *  u16 data[19] :: bc_mfm
  * 
  * Two versions of Cybernoid have data after the sync, but the 
@@ -1599,9 +1601,19 @@ static void *rn_a145_protection_write_raw(
 
     while (stream_next_bit(s) != -1) {
 
-        if ((uint16_t)s->word != 0xa145)
+        if ((uint16_t)s->word != 0xa144)
             continue;
         ti->data_bitoff = s->index_offset_bc - 15;
+
+        if (stream_next_bits(s, 32) == -1)
+             break;
+        if (mfm_decode_word(s->word) != 0)
+            continue;
+
+        if (stream_next_bits(s, 16) == -1)
+             break;
+        if ((uint16_t)s->word != 0xa145)
+            continue;
 
         for (i = 0; i < sizeof(dat); i++) {
             if (stream_next_bits(s, 16) == -1)
@@ -1632,13 +1644,16 @@ static void rn_a145_protection_read_raw(
     uint8_t *dat = (uint8_t *)&ti->dat[512*11];
     unsigned int i;
 
+    handlers[TRKTYP_amigados]->read_raw(d, tracknr, tbuf);
+
+    tbuf_bits(tbuf, SPEED_AVG, bc_raw, 32, 0xaaaaa144);
+    tbuf_bits(tbuf, SPEED_AVG, bc_mfm, 16, 0);
     tbuf_bits(tbuf, SPEED_AVG, bc_raw, 16, 0xa145);
     for (i = 0; i < 19; i++)
         tbuf_bits(tbuf, SPEED_AVG, bc_mfm, 8, dat[i]);
     for (i = 0; i < 316; i++)
         tbuf_bits(tbuf, SPEED_AVG, bc_mfm, 8, 0);
 
-    handlers[TRKTYP_amigados]->read_raw(d, tracknr, tbuf);
 }
 
 struct track_handler rn_a145_protection_handler = {
@@ -1656,7 +1671,9 @@ struct track_handler rn_a145_protection_handler = {
  *  Operation Wolf (Retail) - Ocean
  *
  * Track is ~105500 bits. Track begins with a short sector:
- *  u16 0xa145   :: Sync
+ *  u32 0xaaaaa144 :: Sync
+ *  u32 0 :: padding
+ *  u16 0xa145 :: Sync
  *  u16 data[19] :: bc_mfm
  * 
  * One version uses a standard copylock, but another version
@@ -1682,9 +1699,19 @@ static void *rn_a145_alt_protection_write_raw(
 
     while (stream_next_bit(s) != -1) {
 
-        if ((uint16_t)s->word != 0xa145)
+        if ((uint16_t)s->word != 0xa144)
             continue;
         ti->data_bitoff = s->index_offset_bc - 15;
+
+        if (stream_next_bits(s, 32) == -1)
+             break;
+        if (mfm_decode_word(s->word) != 0)
+            continue;
+
+        if (stream_next_bits(s, 16) == -1)
+             break;
+        if ((uint16_t)s->word != 0xa145)
+            continue;
 
         for (i = 0; i < sizeof(dat); i++) {
             if (stream_next_bits(s, 16) == -1)
@@ -1710,6 +1737,8 @@ static void rn_a145_alt_protection_read_raw(
     uint8_t *dat = (uint8_t *)&ti->dat;
     unsigned int i;
 
+    tbuf_bits(tbuf, SPEED_AVG, bc_raw, 32, 0xaaaaa144);
+    tbuf_bits(tbuf, SPEED_AVG, bc_mfm, 16, 0);
     tbuf_bits(tbuf, SPEED_AVG, bc_raw, 16, 0xa145);
     for (i = 0; i < 19; i++)
         tbuf_bits(tbuf, SPEED_AVG, bc_mfm, 8, dat[i]);

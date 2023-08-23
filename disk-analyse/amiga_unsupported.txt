@@ -42,15 +42,12 @@ Nebulus:
 ADOS + unsupported Rob Northen protection on track 0.1
 
 No Second Prize:
-ADOS + IBM 10 sector (105500), protection (?) on tracks 0.1, 79.0/79.1
+ADOS + IBM 10 sector (105500), protection on tracks 0.1, save game in on 79.0/79.1
 
 Operation Wolf:
 ADOS + unsupported Rob Northen protection on track 0.1
 
 Periheliom:
-Unsupported format!
-
-Pinball Prelude:
 Unsupported format!
 
 Super Heroes Compilation:
