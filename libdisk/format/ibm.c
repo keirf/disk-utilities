@@ -186,7 +186,7 @@ int ibm_scan_dam(struct stream *s)
 
 static int choose_post_data_gap(
     struct track_info *ti, struct ibm_track *ibm_track,
-    int gap_bits, unsigned int nr_secs)
+    int gap_bits, int nr_secs)
 {
     int post_data_gap, iam_bits = (type_is_fm(ti->type) ? 7 : 16) * 16;
     int pre_index_gap = 40, post_index_gap = type_is_fm(ti->type) ? 40 : 80;
@@ -380,11 +380,11 @@ static void *ibm_mfm_write_raw(
         if (distance <= 0)
             distance += s->track_len_bc;
         sec_sz = 128 << cur_sec->s.idam.no;
-        distance -= 12*16; /* pre-sync header */
         if (distance < 0) {
             trk_warn(ti, tracknr, "Overlapping sectors");
             goto out;
         }
+        distance -= 12*16; /* pre-sync header */
         gap_bits += distance;
         nr_blocks++;
         dat_bytes += sec_sz;
@@ -985,11 +985,11 @@ static void *ibm_fm_write_raw(
         if (distance <= 0)
             distance += s->track_len_bc;
         sec_sz = 128 << cur_sec->s.idam.no;
-        distance -= 6 * 16; /* pre-sync header */
         if (distance < 0) {
             trk_warn(ti, tracknr, "Overlapping sectors");
             goto out;
         }
+        distance -= 6 * 16; /* pre-sync header */
         gap_bits += distance;
         nr_blocks++;
         dat_bytes += sec_sz;

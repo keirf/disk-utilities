@@ -107,7 +107,10 @@ probe_amiga
     4-146 afterburner_sega
     * ignore
 
+# Including Atari ST version (using IBM MFM tracks of course).
+# Both Amiga and ST may have Creepsoft protection on T79.0.
 "After The War"
+    158 creepsoft_protection amigados ibm_mfm_dd_unknown_length
     * amigados ibm_mfm_dd_unknown_length
 
 "Agony"
