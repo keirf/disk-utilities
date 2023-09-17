@@ -46,7 +46,7 @@ const static uint16_t syncs[] = {
     0x44A2, 0x4522, 0x5122, 0x2244
 };
 
-uint32_t rol(uint32_t n, uint32_t value){
+static uint32_t rol(uint32_t n, uint32_t value){
   return (value << n) | (value >> (32-n));
 }
 

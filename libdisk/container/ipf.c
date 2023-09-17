@@ -42,7 +42,7 @@
 #define PREPEND_BITS 0
 
 /* Maximum bounds for track data. */
-#define MAX_BLOCKS_PER_TRACK 100
+#define MAX_BLOCKS_PER_TRACK 200
 #define MAX_DATA_PER_TRACK   (MAX_BLOCKS_PER_TRACK * 1024)
 
 struct ipf_header {

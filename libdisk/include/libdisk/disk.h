@@ -28,8 +28,8 @@ struct track_info {
 
     /* Sector layout and vailidity. */
     uint16_t bytes_per_sector;
-    uint8_t  nr_sectors;
-    uint8_t valid_sectors[8]; /* bitmap of valid sectors */
+    uint8_t nr_sectors;
+    uint8_t valid_sectors[20]; /* bitmap of valid sectors */
 
     /* Pointer and length of type-specific track data. */
     uint8_t *dat;
