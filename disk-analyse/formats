@@ -16,6 +16,18 @@ probe_amiga
 ####################
 # Game List - every checked game is listed here
 
+
+
+
+
+"Goldrunner II"
+    129 microdeal
+    * amigados_unknown_length ibm_pc_dd_10sec
+
+"Leatherneck/Major Motion"
+    2-3 microdeal 
+    * amigados_unknown_length ibm_pc_dd_10sec
+ 
 "1000 Miglia" = amigados
 
 "1000cc Turbo"
@@ -1420,6 +1432,10 @@ probe_amiga
     1-159 amigados
     * ignore
 
+"Edukacja Zestaw 3"
+    0 rattleheads_disk_protector
+    * amigados
+
 # Side 1 is empty apart from 4 AmigaDOS tracks
 "Electronic Pool"
     0-1 amigados
@@ -1474,7 +1490,7 @@ probe_amiga
 
 # May require some tweaking, but works fine
 "Epic Initial Release"
-    1-59 epic
+    1-59 epic amigados
     * amigados
 
 "Escape From The Planet Of The Robot Monsters" = amigados_copylock
@@ -1937,7 +1953,7 @@ probe_amiga
     0-40/2 amigados
     1-41 ibm_pc_dd_10sec
     42-128 ibm_pc_dd_10sec
-    129 raw_dd
+    129 microdeal
     130-159 ibm_pc_dd_10sec
     * ignore
 
@@ -3039,6 +3055,13 @@ probe_amiga
 "Nitro Ados"
     * amigados
 
+"No Second Prize"
+    0 amigados
+    1 no_second_prize_protection
+    2-157 ibm_mfm_dd_unknown_length 
+    158-159 no_second_prize_save
+    * ignore
+
 "North & South" = infogrames_protected
 
 "Nova 9: The Return Of Gir Draxon" = amigados
@@ -3920,6 +3943,10 @@ probe_amiga
 
 "Skat Deluxe" = amigados
 
+"Skaut"
+    160 skaut_protection
+    * amigados
+
 # Requires a Trojan Phazer Lightgun
 "Skeet Shoot" = amigados
 
@@ -4686,9 +4713,9 @@ probe_amiga
 
 "Time" = rnc_gap
 
-# Version with no copy protection on Track 2 (1.0), some tracks mastered long!
 "Time Bandit"
-    * amigados ibm_pc_dd_10sec     
+    2 amigados ibm_pc_dd_10sec time_bandit
+    * amigados_unknown_length ibm_pc_dd_10sec   
 
 "Time And Magik" = amigados
 
@@ -4722,6 +4749,10 @@ probe_amiga
 
 "Toki"
     * amigados copylock toki_a toki_b
+
+"Tolteka"
+    158-159 tolteka_protection
+    * amigados
 
 "Tom And The Ghost" = amigados
 
