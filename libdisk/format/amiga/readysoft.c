@@ -197,6 +197,136 @@ struct track_handler readysoft_handler = {
     .read_raw = readysoft_read_raw
 };
 
+/*
+ * Custom format as used by Cosmic Bouncer
+ * Written in 2022 by Keith Krellwitz
+ *
+ * RAW TRACK LAYOUT:
+ *  u32 0x44894489 :: Sync
+ *  u16 0x5555 :: Padding
+ *  u32 track number
+ *  u32 data[6600]
+ *  u32 checksum 1 :: Sum of decoded data
+ *  u32 checksum 2 :: Eor'd over decoded data
+ *
+
+ *
+ * TRKTYP_cosmic_bouncer data layout:
+ *  u8 sector_data[6600]
+ */
+
+static void *cosmic_bouncer_write_raw(
+    struct disk *d, unsigned int tracknr, struct stream *s)
+{
+    struct track_info *ti = &d->di->track[tracknr];
+
+    while (stream_next_bit(s) != -1) {
+        uint32_t raw[2], dat[ti->len/4];
+        uint32_t sum1, sum2, trk, chk1, chk2;
+        unsigned int i, track_len;
+        char *block;
+
+        /* sync */
+        if (s->word != 0x44894489)
+            continue;
+        ti->data_bitoff = s->index_offset_bc - 15;
+
+        /* padding */
+        if (stream_next_bits(s, 16) == -1)
+            goto fail;
+        if ((uint16_t)s->word != 0x5555)
+            continue;
+
+        /* header */
+        if (stream_next_bytes(s, raw, 8) == -1)
+            break;
+        mfm_decode_bytes(bc_mfm_even_odd, 4, raw, &trk);
+        if (be32toh(trk) != tracknr)
+            continue;
+
+        /* data */
+        track_len = ti->len/4;
+        if (tracknr == 52)
+            track_len = 1550;
+        for (i = sum1 = sum2 = 0; i < track_len; i++){
+            if (stream_next_bytes(s, raw, 8) == -1)
+                goto fail;
+            mfm_decode_bytes(bc_mfm_even_odd, 4, raw, &dat[i]);
+            sum1 += be32toh(dat[i]);
+            sum2 ^= be32toh(dat[i]);
+            if (tracknr == 52){
+                printf("%i %08x\n",i ,be32toh(dat[i]));
+            }
+        }
+
+        if (stream_next_bytes(s, raw, 8) == -1)
+            break;
+        mfm_decode_bytes(bc_mfm_even_odd, 4, raw, &chk1);
+
+        if (stream_next_bytes(s, raw, 8) == -1)
+            break;
+        mfm_decode_bytes(bc_mfm_even_odd, 4, raw, &chk2);
+
+        if (sum1 != be32toh(chk1))
+            continue;
+
+        if (sum2 != be32toh(chk2))
+            continue;
+
+        stream_next_index(s);
+        ti->total_bits = s->track_len_bc;
+        block = memalloc(ti->len);
+        memcpy(block, dat, ti->len);
+        set_all_sectors_valid(ti);
+        return block;
+    }
+
+fail:
+    return NULL;
+}
+
+static void cosmic_bouncer_read_raw(
+    struct disk *d, unsigned int tracknr, struct tbuf *tbuf)
+{
+    struct track_info *ti = &d->di->track[tracknr];
+    uint32_t *dat = (uint32_t *)ti->dat, sum1, sum2;
+    unsigned int i, track_len;
+
+    /* sync */
+    tbuf_bits(tbuf, SPEED_AVG, bc_raw, 32, 0x44894489);
+    /* padding */
+    tbuf_bits(tbuf, SPEED_AVG, bc_raw, 16, 0x5555);
+    /* track number */
+    tbuf_bits(tbuf, SPEED_AVG, bc_mfm_even_odd, 32, tracknr);
+
+    /* data */
+    track_len = ti->len/4;
+    if (tracknr == 52)
+        track_len = 1550;
+    for (i = sum1 = sum2 = 0; i < track_len; i++) {
+        tbuf_bits(tbuf, SPEED_AVG, bc_mfm_even_odd, 32, be32toh(dat[i]));
+        sum1 += be32toh(dat[i]);
+        sum2 ^= be32toh(dat[i]);
+    }
+
+    /* checksum 1 */
+    tbuf_bits(tbuf, SPEED_AVG, bc_mfm_even_odd, 32, sum1);
+
+    /* checksum 2 */
+    tbuf_bits(tbuf, SPEED_AVG, bc_mfm_even_odd, 32, sum2);
+
+    if (tracknr == 52)
+        for (i = 0; i < 98; i++) {
+            tbuf_bits(tbuf, SPEED_AVG, bc_mfm_even_odd, 32, 0);
+        }
+}
+
+struct track_handler cosmic_bouncer_handler = {
+    .bytes_per_sector = 6600,
+    .nr_sectors = 1,
+    .write_raw = cosmic_bouncer_write_raw,
+    .read_raw = cosmic_bouncer_read_raw
+};
 
 /*
  * Local variables:
