@@ -16,17 +16,6 @@ probe_amiga
 ####################
 # Game List - every checked game is listed here
 
-
-
-
-
-"Goldrunner II"
-    129 microdeal
-    * amigados_unknown_length ibm_pc_dd_10sec
-
-"Leatherneck/Major Motion"
-    2-3 microdeal 
-    * amigados_unknown_length ibm_pc_dd_10sec
  
 "1000 Miglia" = amigados
 
@@ -195,6 +184,14 @@ probe_amiga
 "All New World Of Lemmings" = amigados
 
 "Altered Beast" = amigados_copylock
+
+# For the SCP image this was created from it required
+# setting -P 46 to correctly decode the track 0.0 and 14.0
+"Altered Beast (Sega)" # US version
+    0-1 amigados
+    2-3 sega_boot
+    28 amigados_unknown_length
+    * altered_beast_sega
 
 "Altered Destiny" = amigados
 
@@ -994,6 +991,9 @@ probe_amiga
 "Corporation" = amigados_copylock
 
 "Corruption" = amigados
+
+"Cosmic Bouncer"
+    * amigados cosmic_bouncer
 
 # Protected by copylock_old variant with "sec6_lfsr_skips_sig"
 "Cosmic Pirate" = amigados_copylock
@@ -2598,6 +2598,10 @@ probe_amiga
     2 raw_dd
     * amigados ibm_mfm_dd
 
+"Leatherneck/Major Motion"
+    2-3 microdeal 
+    * amigados_unknown_length ibm_pc_dd_10sec
+
 "Leavin' Teramis"
     0-4 amigados_unknown_length
     5-6 amigados
@@ -3476,12 +3480,16 @@ probe_amiga
 "Quartz"
     * amigados quartz_a quartz_b
 
-"Qwak" = amigados
-
 "Questron II" = amigados
+
+"Quik: The Thunder Rabbit"
+    158-159 ibm_mfm_dd_unknown_length
+    * amigados
 
 "Quizam!"
     * amigados_unknown_length
+
+"Qwak" = amigados
 
 "R-Type" # Track 159 may be empty
     0-9 amigados
