@@ -109,11 +109,8 @@ static void *microdeal_write_raw(
             if (stream_next_bytes(s, raw, 2) == -1)
                 break;
             mfm_decode_bytes(bc_mfm, 1, raw, &hdr[i]);
-            if (counter < 2)
-                printf("%02x ", hdr[i]);
         }
-        if (counter < 2)
-            printf("\n\n");
+
         if (stream_next_bits(s, 32) == -1)
             break;
 
@@ -134,11 +131,7 @@ static void *microdeal_write_raw(
             if (stream_next_bytes(s, raw, 2) == -1)
                 break;
             mfm_decode_bytes(bc_mfm, 1, raw, &dat[i]);
-            if (counter < 2)
-                printf("%02x ", dat[i]);
         }
-        if (counter < 2)
-            printf("\n\n");
 
         memcpy(&block[counter*(ti->bytes_per_sector+40)], &hdr, 40);
         memcpy(&block[counter*(ti->bytes_per_sector+40)+40], &dat, ti->bytes_per_sector);

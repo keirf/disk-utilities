@@ -136,7 +136,6 @@ static void *creepsoft_protection_alt_write_raw(
             continue;
 
         stream_next_index(s);
-        printf("%i %i\n", tracknr, s->track_len_bc);
         ti->data_bitoff = 0;
         ti->total_bits = (s->track_len_bc/100)*100+100;
         return memalloc(0);

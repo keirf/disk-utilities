@@ -16,13 +16,19 @@ probe_amiga
 ####################
 # Game List - every checked game is listed here
 
- 
 "1000 Miglia" = amigados
 
 "1000cc Turbo"
     * amigados turbo1000cc_a turbo1000cc_b
 
 "1st Division Manager" = amigados_copylock
+
+"3D Galax"
+    0 amigados_long_105500
+    2-132 federation_of_free_traders
+    134-157 federation_of_free_traders
+    158-159 protoscan_longtrack
+    * ignore 
 
 # Original Release + Kixx IBM/Amiga version!
 # Resolves Copylock + Rob Northen Amiga/PC formats!
@@ -53,7 +59,13 @@ probe_amiga
 "688 Attack Sub" = amigados
 
 "9 Lives"
-    * amigados apprentice
+    0 amigados_unknown_length
+    2-26/2 nine_lives_a
+    28-98/2 nine_lives_b
+    98-150/2 nine_lives_a
+    1-91/2 nine_lives_b
+    93-159/2 nine_lives_a
+    * amigados
 
 "A Mouse In The Dark" = amigados
 
@@ -260,6 +272,10 @@ probe_amiga
     * amigados elite_b
 
 "Aquatic Games" = Robocod
+
+"Aquaventura"
+    1 protec_longtrack
+    * amigados psygnosis_a psygnosis_b
 
 "Arabian Nights" = amigados
 
@@ -656,6 +672,8 @@ probe_amiga
 
 "BMX Simulator" = amigados_copylock
 
+"Bob's Bad Day" = amigados_copylock
+
 "BoBo" = amigados
 
 # ECS versions can have incomplete or unformatted tracks:
@@ -828,6 +846,9 @@ probe_amiga
 
 # Original Castles + Data Disk: Northern Campaign 
 "Castles" = amigados
+
+"Cavemania"
+    * amigados konami
 
 "Celtic Legends"
     * amigados celtic_legends_a celtic_legends_b
@@ -1876,6 +1897,11 @@ probe_amiga
 
 "Gemini Wing"
     1 protec_longtrack
+    * amigados
+
+# Geometria and Geometria II
+"Geometria"
+    62 alderan_protection
     * amigados
 
 "Gettysburg" = amigados
@@ -3160,6 +3186,10 @@ probe_amiga
 "Ork"
     * amigados ork_a ork_b
 
+"Ortografia: Gra Slow"
+    62 alderan_protection
+    * amigados
+
 "Overdrive" = rnc_pdos
 
 "Overrun!" = amigados
@@ -3265,6 +3295,10 @@ probe_amiga
     * amigados pick_n_pile
 
 "Pictionary" = amigados
+
+"Pierwsze Kroki"
+    62 alderan_protection
+    * amigados
 
 "Pinball Dreams" # Tracks 1, 66-155, 158+ may be empty on either disk
     * amigados pinball_dreams
@@ -5323,6 +5357,12 @@ probe_amiga
 
 # T0.1 Amigados Extended (Sync)
 "Z-Out" = amigados
+
+"Za Zelazna Brama"
+    0 za_zelazna_brama_boot 
+    1-150 za_zelazna_brama amigados
+    151-159 ibm_mfm_dd_unknown_length amigados
+    * ignore
 
 "Zak McKracken And The Alien Mindbenders" = amigados
 

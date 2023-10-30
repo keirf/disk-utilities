@@ -66,6 +66,12 @@ struct disktag_disk_nr {
     uint32_t disk_nr;
 };
 
+#define DSKTAG_za_zelazna_brama_protection 3
+struct disktag_za_zelazna_brama_protection {
+    struct disktag tag;
+    uint16_t protection[160];
+};
+
 #define DSKTAG_end 0xffffu
 
 struct disk_info {
