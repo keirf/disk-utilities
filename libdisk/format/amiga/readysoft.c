@@ -254,9 +254,6 @@ static void *cosmic_bouncer_write_raw(
             mfm_decode_bytes(bc_mfm_even_odd, 4, raw, &dat[i]);
             sum1 += be32toh(dat[i]);
             sum2 ^= be32toh(dat[i]);
-            if (tracknr == 52){
-                printf("%i %08x\n",i ,be32toh(dat[i]));
-            }
         }
 
         if (stream_next_bytes(s, raw, 8) == -1)
