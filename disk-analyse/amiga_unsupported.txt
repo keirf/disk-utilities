@@ -8,6 +8,9 @@ Afterburner II (The Hit Squad):
 Disk 1 Firebird format + unformatted tracks
 Disk 2 unsupported format
 
+Black Hornet:
+ADOS (track 0.0 may be long) + protection on track 0.1
+
 Carcharadon:
 Unsupported format!
 
@@ -23,28 +26,13 @@ ADOS + rnc_protect_process + unsupported Rob Northen protection on track 0.1 of 
 Flimbos Quest: (Kixx)
 Unsupported format!
 
-Goldrunner II:
-ADOS + IBM 10 sector, unsupported 10 x 256 byte IBM/ST high score track on 64.1
-
 Gunship:
 ADOS + unsupported Speedlock(?) on track 0.1
 
 Insector Hecti In The Inter Change:
-ADOS (track 0.0 may be long) + protection on track 0.1
-
-Leatherneck + Major Motion: (Hit Disks Volume 2)
-ADOS + protection on track 1.0/1.1
+ADOS (track 0.0 may be long) + protection on track 0.1 - Same protection as Black Hornet
 
 Lombard RAC Rally:
-ADOS + unsupported Rob Northen protection on track 0.1
-
-Nebulus:
-ADOS + unsupported Rob Northen protection on track 0.1
-
-No Second Prize:
-ADOS + IBM 10 sector (105500), protection on tracks 0.1, save game in on 79.0/79.1
-
-Operation Wolf:
 ADOS + unsupported Rob Northen protection on track 0.1
 
 Periheliom:
@@ -55,9 +43,6 @@ Disks 1 & 3 use an MFM type longtrack!
 Disk 1 has a 10 sector MFM longtrack on 79.0
 Disk 3 has a 10 sector MFM longtrack on 79.0 and a 9 sector MFM longtrack on 79.1
 
-Time Bandit: (Hit Disks Volume 2)
-ADOS + IBM 10 sector, protection on track 1.0
-
 The Blues Brothers: (Hits For Six Volume 2 + Triple Action Volume 4)
 ADOS + IBM 10 sectors + unsupported protection on tracks 79.0/79.1
 
@@ -65,5 +50,5 @@ Turbo Trax: (Budget)
 ADOS + IBM 10 sector + unformatted tracks + unsupported 128 byte MFM tracks on 1.1, 4.1, 5.1, 6.1, 7.1, 8.1
 
 Ultima V:
-ADOS + unsupported Xelock protection on track 0.1
+ADOS + unsupported Xelock protection on track 0.1 - The track is identified as xelok, but I have not seen any code that does the check.
 
