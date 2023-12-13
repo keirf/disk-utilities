@@ -86,6 +86,9 @@ probe_amiga
 
 "Abandoned Places 2" = amigados
 
+"ABC Chem II"
+    * amigados_unknown_length abc_chemi_a abc_chemi_b
+
 "Action Fighter (Sega)" # US version
     0-1 amigados
     2-3 sega_boot
@@ -2697,7 +2700,9 @@ probe_amiga
 
 # Initial release uses unsupported Rob Northen protection
 # Later releases ADOS and may have tracks mastered long causing harmless warnings
-"Lombard RAC Rally" = amigados
+"Lombard RAC Rally"
+    1 rn_a145_protection amigados
+    * amigados
 
 "Loom" = amigados
 
@@ -3552,6 +3557,10 @@ probe_amiga
 "Rainbow Warrior"
     * amigados rainbird
 
+"Rajd Przez Polske"
+    160-161 ak_avalon_protection
+    * amigados
+
 "Rallye Master"
     160-165 rallye_master_protection
     * amigados
@@ -4263,6 +4272,9 @@ probe_amiga
 "Street Fighter II: The World Warrior"
     * amigados copylock digital_magic rainbird
 
+"Street Gang"
+    * amigados street_gang
+
 "Street Hockey"
     0 amigados 
     1-159 street_hockey
@@ -4425,6 +4437,15 @@ probe_amiga
 "Syndicate" = amigados
 
 "Tactical Manager 2" = amigados
+
+"Taekwondo"
+    1 protec_alt_longtrack
+    * amigados
+
+"Tajemnica Bursztynowej Komnaty"
+    1 amigados_4251 amigados
+    2 amigados_2149 amigados
+    * amigados
 
 "Takado"
     0-159 amigados
@@ -4894,6 +4915,12 @@ probe_amiga
     159 protoscan_longtrack
     * amigados
 
+# Microdeal
+"Turbo Trax"
+    3 microdeal
+    9-17/2 microdeal
+    * amigados ibm_mfm_dd
+
 # Track 76.0 and 79.1 had missing sectors, but the tracks do 
 # not appear to be used
 "Turn It"
@@ -5232,9 +5259,8 @@ probe_amiga
 "World Circuit"
     * amigados
 
-# Kixx dual format release hs amiga and pc
-"World Class Leaderboard"
-    * amigados ibm_mfm_dd_unknown_length
+# Kixx dual format release has amiga and pc
+"World Class Leaderboard" = rnc_triformat
 
 "World Class Rugby '95" = amigados_copylock
 
