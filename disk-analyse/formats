@@ -1710,6 +1710,9 @@ probe_amiga
 "Flight Simulator"
     * amigados
 
+"Flimbos Quest"
+    * amigados flimbos_quest_a flimbos_quest_b
+
 "Flip Flop"
     * amigados anco_kingsoft_weak_protection
 
