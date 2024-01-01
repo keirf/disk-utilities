@@ -15,7 +15,7 @@ ifeq ($(PLATFORM),osx)
 SOLIB   := $(SOLIB_PFX).dylib
 SONAME  := $(SOLIB_PFX).$(MAJOR_VERSION).dylib
 SOVERS  := $(SOLIB_PFX).$(MAJOR_VERSION).$(MINOR_VERSION).dylib
-LDFLAGS += -dynamiclib -install_name $(SONAME)
+LDFLAGS += -dynamiclib -install_name "$(LIBDIR)/$(SONAME)"
 endif
 
 ifeq ($(PLATFORM),linux)
