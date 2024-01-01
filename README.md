@@ -23,6 +23,15 @@ Run these commands in the *root directory* of the source tree:
   # sudo make install
 ```
 
+To install to a local path (substitute `path/to/install`):
+```
+  # make PREFIX=path/to/install
+  # make install PREFIX=path/to/install
+```
+
+On systems other than macOS, you may need to update your library
+search path for a local install. See guidance below.
+
 [Tomse](http://retro-commodore.eu) has made a
 [beginners' guide](docs/LinuxSubsysOnWindows.md) for building
 Disk-Utilities on Windows 10 using the Linux Subsystem.
