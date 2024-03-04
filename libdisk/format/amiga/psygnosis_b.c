@@ -5,11 +5,13 @@
  *   Amnios (Disk 2)
  *   Aquaventura (Disk 2)
  *   Lemmings
+ *   Lemmings demo (using different sync code)
  * 
  * Written in 2011 by Keir Fraser
  * 
  * RAW TRACK LAYOUT:
- *  u16 0x4489,0x552a,0xaaaaa :: Sync
+ *  u16 0x4489,0x552a,0xaaaa :: Sync (Psygnosis B)
+ *  u16 0x4489,0x552a,0x2a55 :: Sync (Lemmings demo)
  *  6 back-to-back sectors (no gaps)
  * Decoded sector:
  *  u16 csum       :: sum of all 16-bit data words
@@ -48,7 +50,7 @@ static void *psygnosis_b_write_raw(
         if (stream_next_bits(s, 32) == -1)
             goto done;
 
-        if (s->word != 0x552aaaaa)
+        if (s->word != ((ti->type == TRKTYP_lemmings_demo) ? 0x552a2a55 : 0x552aaaaa))
             continue;
 
         for (j = 0; j < sizeof(raw_dat)/2; j++) {
@@ -92,7 +94,8 @@ static void psygnosis_b_read_raw(
     unsigned int i, j;
 
     tbuf_bits(tbuf, SPEED_AVG, bc_raw, 16, 0x4489);
-    tbuf_bits(tbuf, SPEED_AVG, bc_mfm, 16, 0xf000);
+    tbuf_bits(tbuf, SPEED_AVG, bc_raw, 32,
+              (ti->type == TRKTYP_lemmings_demo) ? 0x552a2a55 : 0x552aaaaa);
 
     for (i = 0; i < 6; i++) {
         uint16_t csum = 0;
@@ -107,6 +110,13 @@ static void psygnosis_b_read_raw(
 }
 
 struct track_handler psygnosis_b_handler = {
+    .bytes_per_sector = 1024,
+    .nr_sectors = 6,
+    .write_raw = psygnosis_b_write_raw,
+    .read_raw = psygnosis_b_read_raw
+};
+
+struct track_handler lemmings_demo_handler = {
     .bytes_per_sector = 1024,
     .nr_sectors = 6,
     .write_raw = psygnosis_b_write_raw,
