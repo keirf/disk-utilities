@@ -2665,6 +2665,10 @@ probe_amiga
 
 "Legends Of Valour" = amigados
 
+# Files go up to 21.0; 21.1 is valid on CU Amiga 1990-12, but unformatted on Amiga Format 18
+"Lemmings Demo"
+    * amigados lemmings_demo
+
 "Lemmings"
     * amigados copylock psygnosis_b
 
