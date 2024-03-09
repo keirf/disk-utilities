@@ -326,6 +326,170 @@ struct track_handler cosmic_bouncer_handler = {
 };
 
 /*
+ * Custom format as used on The C64 Emulator by Readysoft.
+ *
+ * Written in 2024 by Keith Krellwitz
+ *
+ * RAW TRACK LAYOUT:
+ *  u16 Sync (multiple see sync array) 
+ *  u32 0x55555555
+ *  u32 0x55555555
+ *  u32 0x55555555
+ *  u32 0x55555555
+ *  u32 dat[ti->len/4]
+ * 
+ * Checksum decoded as part of the data dat[ti->len/4-3]
+ * The lower word of the checksum is calculated by EORing of all words (u16)
+ * The upper word of the checksum is calculated by adding all words (u16)
+ *
+ * The last 2 u32's are not part of the checksum
+ * 
+ * TRKTYP_c64 data layout:
+ *  u8 sector_data[6592]
+ * 
+ */
+
+#include <libdisk/util.h>
+#include <private/disk.h>
+
+
+static const uint16_t syncs[];
+
+static void *c64_write_raw(
+    struct disk *d, unsigned int tracknr, struct stream *s)
+{
+    struct track_info *ti = &d->di->track[tracknr];
+
+    while (stream_next_bit(s) != -1) {
+
+        uint32_t raw[2], dat[ti->len/4], pad;
+        uint16_t sum1, sum2;
+        unsigned int i;
+        char *block;
+
+        if ((uint16_t)s->word != syncs[tracknr])
+            continue;
+        ti->data_bitoff = s->index_offset_bc - 15;
+
+        if (stream_next_bytes(s, raw, 8) == -1)
+            goto fail;
+        mfm_decode_bytes(bc_mfm, 4, raw, &pad);
+        if (pad != 0xffffffff)
+            continue;
+
+        if (stream_next_bytes(s, raw, 8) == -1)
+            goto fail;
+        mfm_decode_bytes(bc_mfm, 4, raw, &pad);
+        if (pad != 0xffffffff)
+            continue;
+
+        for (i = sum1 = sum2 = 0; i < ti->len/4; i++) {
+            if (stream_next_bytes(s, raw, 8) == -1)
+                goto fail;
+            mfm_decode_bytes(bc_mfm_odd_even, 4, raw, &dat[i]);
+
+            if(i < 1645) {
+                sum1 ^= (uint16_t)(be32toh(dat[i]) >> 16);
+                sum1 ^= (uint16_t)(be32toh(dat[i]));
+                sum2 += (uint16_t)(be32toh(dat[i]) >> 16);
+                sum2 += (uint16_t)(be32toh(dat[i]));
+            }
+        }
+        if (sum2 != (uint16_t)(be32toh(dat[ti->len/4-3]) >> 16) &&
+            sum1 != (uint16_t)(be32toh(dat[ti->len/4-3])))
+            continue;
+
+        stream_next_index(s);
+        block = memalloc(ti->len);
+        memcpy(block, dat, ti->len);
+        set_all_sectors_valid(ti);
+        ti->total_bits = s->track_len_bc;
+        return block;
+    }
+
+fail:
+    return NULL;
+}
+
+static void c64_read_raw(
+    struct disk *d, unsigned int tracknr, struct tbuf *tbuf)
+{
+    struct track_info *ti = &d->di->track[tracknr];
+    uint32_t *dat = (uint32_t *)ti->dat;
+    uint16_t sum1, sum2;
+    unsigned int i;
+
+    tbuf_bits(tbuf, SPEED_AVG, bc_raw, 16, syncs[tracknr]);
+    tbuf_bits(tbuf, SPEED_AVG, bc_mfm, 32, 0xffffffff);
+    tbuf_bits(tbuf, SPEED_AVG, bc_mfm, 32, 0xffffffff);
+
+    for (i = sum1 = sum2 = 0; i < ti->len/4; i++) {
+        if(i < 1645) {
+            sum1 ^= (uint16_t)(be32toh(dat[i]) >> 16);
+            sum1 ^= (uint16_t)(be32toh(dat[i]));
+            sum2 += (uint16_t)(be32toh(dat[i]) >> 16);
+            sum2 += (uint16_t)(be32toh(dat[i]));
+        }
+    }
+    dat[ti->len/4-3] = be32toh((sum2 << 16) | sum1);
+
+    for (i = 0; i < ti->len/4; i++) {
+        tbuf_bits(tbuf, SPEED_AVG, bc_mfm_odd_even, 32, be32toh(dat[i]));
+    }
+}
+
+struct track_handler c64_emulator_handler = {
+    .bytes_per_sector = 6592,
+    .nr_sectors = 1,
+    .write_raw = c64_write_raw,
+    .read_raw = c64_read_raw
+};
+
+static const uint16_t syncs[] = {
+    0x0000, //0
+    0x5ADA, //1
+    0x591B, //2
+    0x591B, //3
+    0x5563, //4
+    0x5563, //5
+    0x5563, //6
+    0x1962, //7
+    0x5534, //8
+    0x1962, //9
+    0x4B24, //10
+    0x4D1A, //11
+    0x4A6A, //12
+    0x2D65, //13
+    0x4A6A, //14
+    0x3592, //15
+    0x1235, //16
+    0x2345, //17
+    0x1352, //18
+    0x5356, //19
+    0x5356, //20
+    0x651A, //21
+    0x5935, //22
+    0x2D55, //23
+    0x5935, //24
+    0x3592, //25
+    0x2D2B, //26
+    0x2D2B, //27
+    0x31A3, //28
+    0x651A, //29
+    0x52D6, //30
+    0x695A, //31
+    0x1A32, //32
+    0x1A32, //33
+    0x6962, //34
+    0x5ADA, //35
+    0x591B, //36
+    0x6962, //37
+    0x5ADA, //38
+    0x5ADA, //39
+    0x5ADA, //40
+};
+
+/*
  * Local variables:
  * mode: C
  * c-file-style: "Linux"

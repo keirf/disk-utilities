@@ -222,7 +222,10 @@ probe_amiga
 "Amberstar" = amigados
 
 # Tenstar Pack Game 1, Track 159 maybe empty/unformatted
-"Amegas" = amigados
+# Some versions have a custom highscore track 158
+"Amegas"
+    158 amegas_high_scores amigados
+    * amigados
 
 "Amiga Encounter"     
     * amigados speedlock novagen
@@ -412,6 +415,9 @@ probe_amiga
 
 "Awesome Demo"
     * amigados awesome_demo
+
+"Axe Of Rage"
+    * amigados_unknown_length
 
 "B.A.T." # Disk 1, Tracks 100+, and Disk 2, Tracks 1 & 96, may be empty
     98-99 prolance_longtrack
@@ -902,6 +908,9 @@ probe_amiga
 
 "Chase H.Q. II" = amigados_copylock
 
+"Checkered Flag Rally"
+    * amigados_long_102200
+
 "Chessmaster 2000" = amigados
 
 # Arcade Action Game 2
@@ -1139,8 +1148,7 @@ probe_amiga
 
 "Dangerous Streets" = amigados
 
-"Darius"
-    * amigados
+"Darius" = amigados_copylock
 
 # Seems to use HLS Protection but created IPF seems to pass protection check!
 "Dark Castle" = amigados
@@ -1764,6 +1772,9 @@ probe_amiga
 
 "Formula One Masters" = amigados
 
+"Fortress Underground"
+    * amigados anco_kingsoft_weak_protection
+
 "Foundation's Waste"
     1 amigados protec_longtrack
     * amigados
@@ -2285,15 +2296,19 @@ probe_amiga
 
 "Indianapolis 500" = amigados
 
+# Originally this definition used psygnosis_a, but the actual track
+# length is 0x1400 and not 0x1800.  It worked for the IPF, but the
+# raw dump I have failed on 3 tracks due to the checksum being calculated
+# for a length of 0x1800 instead of 0x1400 
 "Infestation"
     0 amigados
     1 protec_longtrack
     3 ignore
-    2-71 psygnosis_a
+    2-71 infestation
     72 ignore
-    73-74 psygnosis_a
+    73-74 infestation
     75 ignore
-    76-159 psygnosis_a
+    76-159 infestation
     * ignore
 
 "Infidel" = amigados
@@ -2615,7 +2630,7 @@ probe_amiga
     * amigados
 
 "Last Duel"
-    * amigados
+    * amigados elite_a
 
 "Last Ninja 2" = amigados_copylock
 
@@ -2956,6 +2971,9 @@ probe_amiga
 
 "Mindbreaker"
     *amigados
+
+# Starter Kit
+"Miniature Golf" = amigados
 
 "Mindshadow"
     158 interplay_protection
@@ -3526,6 +3544,10 @@ probe_amiga
 "Quartz"
     * amigados quartz_a quartz_b
 
+"Quasar"
+    2-3 quasar_protection
+    * amigados 
+
 "Questron II" = amigados
 
 "Quik: The Thunder Rabbit"
@@ -4081,6 +4103,8 @@ probe_amiga
 
 "Soldier 2000" = amigados
 
+"Sooty & Sweep" = amigados
+
 "Sooty's Fun With Numbers" = amigados
 
 "Sorcerer" = amigados
@@ -4595,7 +4619,12 @@ probe_amiga
 
 "The Black Cauldron" = herndon_longtrack
 
+"The C64 Emulator"
+    * amigados_unknown_length c64_emulator
+
 "The Cardinal Of The Kremlin" = amigados
+
+"The Collection" = amigados
 
 "The Colonel's Bequest" = amigados
 
@@ -5047,11 +5076,16 @@ probe_amiga
 "Valhalla" = amigados
 
 "Vampires Empire"
-    * amigados vampires_empire_a vampires_empire_b vampires_empire_c
+    0-103 amigados vampires_empire_a vampires_empire_b vampires_empire_c
+    105 vampires_empire_b
+    * ignore
 
 # Gold Rush compilation with Clever & Smart of the same disk
 "Vampires Empire (Gold Rush Compilation)"
     * amigados frank_neuhaus_protection
+
+"Vaxine"
+    * amigados
 
 "Venus The Flytrap" = ss_mfm_protected
 
@@ -5091,6 +5125,9 @@ probe_amiga
 
 "Viz"
     * amigados konami
+
+"Volfied"
+    * amigados
 
 "Vortex"
     0 amigados_long_106600
@@ -5281,7 +5318,8 @@ probe_amiga
 "World Cup USA 94" = amigados
 
 "World Games"
-    * amigados_unknown_length infogrames_protected
+    2-3 amigados infogrames_longtrack
+    * amigados_unknown_length 
 
 "World Golf" = amigados
 

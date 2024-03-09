@@ -1753,6 +1753,88 @@ struct track_handler rn_a145_alt_protection_handler = {
 };
 
 /*
+ * TRKTYP_quasar_protection
+ *
+ * AmigaDOS-based long-track protection used by Quasar
+ * 
+ *
+ * Track is ~105500 bits. Track begins with a short sector:
+ *  u32 0xaaaaa144 :: Sync
+ *  u32 0 x 137 :: padding
+ *  Amiga Dos Track
+ *  u16 0xa145 X 461 :: protection signature
+ * 
+ */
+
+static void *quasar_protection_write_raw(
+    struct disk *d, unsigned int tracknr, struct stream *s)
+{
+    struct track_info *ti = &d->di->track[tracknr];
+    char *ablk, *block;
+    unsigned int i;
+
+    init_track_info(ti, TRKTYP_amigados);
+    ablk = handlers[TRKTYP_amigados]->write_raw(d, tracknr, s);
+    if ((ablk == NULL) || (ti->type != TRKTYP_amigados))
+        goto fail;
+
+    for (i = 0; i < 30; i++) {
+        if (stream_next_bits(s, 16) == -1)
+                goto fail;
+        if ((uint16_t)s->word != 0x428b)
+            goto fail;
+    }
+
+    if (!check_length(s, 104500))
+        goto fail;
+
+    stream_reset(s);
+
+    while (stream_next_bit(s) != -1) {
+
+        if ((uint16_t)s->word != 0xa144)
+            continue;
+        ti->data_bitoff = s->index_offset_bc - 15;
+        if (!check_sequence(s, 100, 0))
+            continue;
+
+        init_track_info(ti, TRKTYP_quasar_protection);
+        ti->total_bits = 105500;
+        block = memalloc(ti->len);
+        memcpy(block, ablk, ti->len);
+        memfree(ablk);
+        return block;
+    }
+
+fail:
+    memfree(ablk);
+    return NULL;
+}
+
+static void quasar_protection_read_raw(
+    struct disk *d, unsigned int tracknr, struct tbuf *tbuf)
+{
+    unsigned int i;
+
+    tbuf_bits(tbuf, SPEED_AVG, bc_raw, 32, 0xaaaaa144);
+    for (i = 0; i < 137; i++)
+        tbuf_bits(tbuf, SPEED_AVG, bc_mfm, 8, 0);
+    handlers[TRKTYP_amigados]->read_raw(d, tracknr, tbuf);
+
+    for (i = 0; i < 922/2; i++)
+        tbuf_bits(tbuf, SPEED_AVG, bc_raw, 16, 0xa145);
+
+}
+
+struct track_handler quasar_protection_handler = {
+    .bytes_per_sector = 512,
+    .nr_sectors = 11,
+    .write_raw = quasar_protection_write_raw,
+    .read_raw = quasar_protection_read_raw
+};
+
+
+/*
  * Local variables:
  * mode: C
  * c-file-style: "Linux"
