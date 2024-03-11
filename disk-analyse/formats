@@ -3763,6 +3763,9 @@ probe_amiga
 
 "Roller Coaster Rumbler" = amigados_copylock
 
+"Rome AD92"
+ * amigados rome_ad
+
 "Rotator" = amigados
 
 "Rotor" = amigados
