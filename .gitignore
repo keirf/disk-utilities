@@ -19,6 +19,7 @@ adf/adfread
 adf/adfwrite
 disk-analyse/disk-analyse
 ipfinfo/ipfinfo
+imdinfo/imdinfo
 m68k/disassemble
 m68k/copylock
 m68k/m68k_emulate
