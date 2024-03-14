@@ -7,6 +7,7 @@
 #include <stdio.h>
 #include <unistd.h>
 #include <err.h>
+#include <limits.h>
 
 #define F_C 1
 #define F_T 2
@@ -19,7 +20,7 @@ int main(int argc, char *argv[])
     long total_sz = 0;
     unsigned char opts = 0;
     int cnt_sec = 0, cnt_comp = 0, cnt_delerr = 0;
-    int i, j;
+    int i, j, nsec, base_id;
     FILE *imdfile;
     unsigned char trkinfo[5], map_num[256], map_cyl[256], map_hd[256], map_sz[512];
 
@@ -73,6 +74,7 @@ int main(int argc, char *argv[])
         // Output basic track information
         if (fread(trkinfo, 1, 5, imdfile) != 5)
             break;
+        nsec = trkinfo[3];
         if (opts & F_T) {
             printf("\nCylinder %2d Head %2d\n", trkinfo[1], trkinfo[2] & 0xF);
 
@@ -100,37 +102,43 @@ int main(int argc, char *argv[])
             }
 
             if (trkinfo[4] == 0xFF) {
-                printf("  %d sectors of variable size\n", trkinfo[3]);
+                printf("  %d sectors of variable size\n", nsec);
             } else {
-                printf("  %d sectors of %d bytes/sector\n", trkinfo[3], 128 << trkinfo[4]);
+                printf("  %d sectors of %d bytes/sector\n", nsec, 128 << trkinfo[4]);
             }
         }
 
         // Load numbering/cylinder/head maps
-        if (fread(map_num, 1, trkinfo[3], imdfile) != trkinfo[3])
+        if (fread(map_num, 1, nsec, imdfile) != nsec)
             err(1, NULL);
-        for (i = 0; map_num[i] != 0; i++);
-        for (j = 0; map_num[j] != 1; j++);
-        if (opts & F_T) { printf("  %d:1 interleave\n", (trkinfo[3] + j - i) % trkinfo[3]); }
+        base_id = INT_MAX;
+        for (i = 0; i < nsec; i++)
+            if (map_num[i] < base_id)
+                base_id = map_num[i];
+        for (i = 0; i < nsec && map_num[i] != base_id; i++)
+            continue;
+        for (j = 0; j < nsec && map_num[j] != base_id+1; j++)
+            continue;
+        if (opts & F_T) { printf("  %d:1 interleave\n", (nsec + j - i) % nsec); }
 
         if (trkinfo[2] & 0x80) {
-            if (fread(map_cyl, 1, trkinfo[3], imdfile) != trkinfo[3])
+            if (fread(map_cyl, 1, nsec, imdfile) != nsec)
                 err(1, NULL);
             if (opts & F_T) { printf("  Physical and recorded cylinder numbers may not match\n"); }
         }
         if (trkinfo[2] & 0x40) {
-            if (fread(map_hd, 1, trkinfo[3], imdfile) != trkinfo[3])
+            if (fread(map_hd, 1, nsec, imdfile) != nsec)
                 err(1, NULL);
             if (opts & F_T) { printf("  Physical and recorded head numbers may not match\n"); }
         }
 
         if (trkinfo[4] == 0xFF) {
-            if (fread(map_sz, 2, trkinfo[3], imdfile) != trkinfo[3])
+            if (fread(map_sz, 2, nsec, imdfile) != nsec)
                 err(1, NULL);
         }
 
         // For every sector on this track
-        for (i = 0; i < trkinfo[3]; i++) {
+        for (i = 0; i < nsec; i++) {
             if (opts & F_S) { printf("  Sector %2d\n", i + 1); }
             if (trkinfo[4] == 0xFF) {
                 total_sz += RDSZ(i);
