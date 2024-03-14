@@ -152,6 +152,9 @@ path for many of these tools to run. There are a few ways to ensure this:
 [**ipfinfo/**](ipfinfo/)
     Dump information about an SPS/IPF image file.
 
+[**imdinfo/**](imdinfo/)
+    Dump information about an IMD image file.
+
 [**scp/**](scp/)
     Dump floppy flux data from Supercard Pro to a .SCP image file.
 
