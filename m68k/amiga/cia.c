@@ -16,13 +16,13 @@
 
 static const char *cia_name(struct cia *cia, struct amiga_state *s)
 {
-    return is_ciaa(cia,s) ? "CIAA" : "CIAB";
+    return is_ciaa(cia,s) ? "ciaa" : "ciab";
 }
 
 void cia_write_reg(
     struct amiga_state *s, struct cia *cia, uint8_t off, uint8_t val)
 {
-    log_info("%s write %02x to reg %02x", cia_name(cia,s), val, off);
+    log_info("%s.%s: write %02x", cia_name(cia,s), cia_reg_name[off], val);
 
     switch (off) {
     case CIAPRA:
@@ -68,7 +68,8 @@ void cia_write_reg(
         cia->crb = val;
         break;
     default:
-        log_error("Ignoring write to %s reg %x\n", cia_name(cia,s), off);
+        log_error("Ignoring write to %s.%s\n",
+                  cia_name(cia,s), cia_reg_name[off]);
         break;
     }
 }
@@ -114,12 +115,13 @@ uint8_t cia_read_reg(
         val = cia->crb;
         break;
     default:
-        log_error("Ignoring read from %s reg %x\n", cia_name(cia,s), off);
+        log_error("Ignoring read from %s.%s\n",
+                  cia_name(cia,s), cia_reg_name[off]);
         break;
     }
 
-    if (val || (off != 0xd))
-        log_info("%s read %02x from reg %02x", cia_name(cia,s), val, off);
+    if (val || (off != CIAICR)) /* ignore no-op icr reads */
+        log_info("%s.%s: read %02x", cia_name(cia,s), cia_reg_name[off], val);
 
     return val;
 }
@@ -127,7 +129,7 @@ uint8_t cia_read_reg(
 void cia_set_icr_flag(
     struct amiga_state *s, struct cia *cia, uint8_t bit)
 {
-    log_info("%s ICR bit %u set", cia_name(cia,s), bit);
+    log_info("%s.icr: set bit %u", cia_name(cia,s), bit);
     cia->icrr |= 1u << bit;
 }
 
