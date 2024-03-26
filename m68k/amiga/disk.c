@@ -264,8 +264,12 @@ void disk_init(struct amiga_state *s)
     s->disk.step_delay = event_alloc(&s->event_base, step_cb, s);
     s->disk.step = step_none;
     s->disk.old_ciabb = s->ciab.prb_o;
-    s->disk.tracknr = 0;
     s->disk.data_delay = event_alloc(&s->event_base, data_cb, s);
+
+    /* Choose a track number consistent with initial CIAAPRA/CIABPRB. */
+    s->disk.tracknr = !(s->ciab.prb_o >> CIAB_DSKSIDE);
+    if (s->ciaa.pra_i & CIAB_DSKTRACK0)
+        s->disk.tracknr += 2;
 }
 
 void amiga_insert_df0(const char *filename)
