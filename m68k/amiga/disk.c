@@ -169,6 +169,7 @@ static void step_cb(void *_s)
         s->disk.tracknr += 2;
     else
         s->disk.tracknr -= 2;
+    log_info("Stepped to cylinder %d", s->disk.tracknr >> 1);
     s->disk.step = step_none;
     track_load(s);
     disk_recalc_cia_inputs(s);
@@ -223,8 +224,12 @@ void disk_cia_changed(struct amiga_state *s)
         if (((s->disk.step == step_out) && (s->disk.tracknr <= 1)) ||
             ((s->disk.step == step_in) && (s->disk.tracknr >= 159)))
             s->disk.step = step_none;
-        if (s->disk.step != step_none)
+        if (s->disk.step != step_none) {
+            log_info("Stepping %sward from cylinder %d",
+                     s->disk.step == step_in ? "in" : "out",
+                     s->disk.tracknr >> 1);
             event_set_delta(s->disk.step_delay, STEP_DELAY);
+        }
     }
 
 out:
