@@ -129,22 +129,22 @@ static void track_unload(struct amiga_state *s)
 static void disk_recalc_cia_inputs(struct amiga_state *s)
 {
     s->ciaa.pra_i |= 0x3c;
-    if (s->ciab.prb_o & (1u << CIAB_DSKSEL0))
+    if (s->ciab.prb_o & (1u << CIABPRB_DSKSEL0))
         return;
 
     switch (s->disk.motor) {
     case motor_off:
     case motor_spinning_up:
-        s->ciaa.pra_i |= 1u << CIAB_DSKRDY;
+        s->ciaa.pra_i |= 1u << CIAAPRA_DSKRDY;
         break;
     case motor_on:
     case motor_spinning_down:
-        s->ciaa.pra_i &= ~(1u << CIAB_DSKRDY);
+        s->ciaa.pra_i &= ~(1u << CIAAPRA_DSKRDY);
         break;
     }
 
     if (s->disk.tracknr <= 1)
-        s->ciaa.pra_i &= ~(1u << CIAB_DSKTRACK0);
+        s->ciaa.pra_i &= ~(1u << CIAAPRA_DSKTRACK0);
 }
 
 static void motor_cb(void *_s)
@@ -180,18 +180,18 @@ void disk_cia_changed(struct amiga_state *s)
     uint8_t old_ciabb = s->disk.old_ciabb;
 
     /* Disk side. */
-    if ((old_ciabb ^ new_ciabb) & (1u << CIAB_DSKSIDE)) {
+    if ((old_ciabb ^ new_ciabb) & (1u << CIABPRB_DSKSIDE)) {
         s->disk.tracknr ^= 1;
         track_load(s);
     }
 
     /* Skip most of this if DF0: not selected. */
-    if (new_ciabb & (1u << CIAB_DSKSEL0))
+    if (new_ciabb & (1u << CIABPRB_DSKSEL0))
         goto out;
 
     /* Latch motor state on disk-selection edge. */
-    if (old_ciabb & (1u << CIAB_DSKSEL0)) {
-        if (!(new_ciabb & (1u << CIAB_DSKMOTOR))) {
+    if (old_ciabb & (1u << CIABPRB_DSKSEL0)) {
+        if (!(new_ciabb & (1u << CIABPRB_DSKMOTOR))) {
             if (s->disk.motor == motor_off) {
                 log_info("Disk spinning up");
                 s->disk.motor = motor_spinning_up;
@@ -215,10 +215,10 @@ void disk_cia_changed(struct amiga_state *s)
     }
 
     /* Disk step request? */
-    if (!(old_ciabb & (1u << CIAB_DSKSTEP)) &&
-        (new_ciabb & (1u << CIAB_DSKSTEP)) &&
+    if (!(old_ciabb & (1u << CIABPRB_DSKSTEP)) &&
+        (new_ciabb & (1u << CIABPRB_DSKSTEP)) &&
         (s->disk.step == step_none)) {
-        s->disk.step = (new_ciabb & (1u << CIAB_DSKDIREC))
+        s->disk.step = (new_ciabb & (1u << CIABPRB_DSKDIREC))
             ? step_out : step_in;
         if (((s->disk.step == step_out) && (s->disk.tracknr <= 1)) ||
             ((s->disk.step == step_in) && (s->disk.tracknr >= 159)))
@@ -267,8 +267,8 @@ void disk_init(struct amiga_state *s)
     s->disk.data_delay = event_alloc(&s->event_base, data_cb, s);
 
     /* Choose a track number consistent with initial CIAAPRA/CIABPRB. */
-    s->disk.tracknr = !(s->ciab.prb_o >> CIAB_DSKSIDE);
-    if (s->ciaa.pra_i & CIAB_DSKTRACK0)
+    s->disk.tracknr = !(s->ciab.prb_o >> CIABPRB_DSKSIDE);
+    if (s->ciaa.pra_i & CIAAPRA_DSKTRACK0)
         s->disk.tracknr += 2;
 }
 
