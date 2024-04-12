@@ -9,7 +9,7 @@
  * after the 11th sector:
  *  u32 0xAAA5292A :: Data - Used to verify data
  *  u32 0x4445512A :: Data - Used to verify data
- *  U32 dat[64] :: iData ncludes the decoded longs above
+ *  U32 dat[64] :: Data includes the decoded longs above
  * 
  * TRKTYP_podpierdzielacz data layout:
  *  u8 amigados[11][512]

@@ -326,16 +326,14 @@ struct track_handler cosmic_bouncer_handler = {
 };
 
 /*
- * Custom format as used on The C64 Emulator by Readysoft.
+ * Custom format as used on The C64 Emulator V1 and V2 by Readysoft.
  *
  * Written in 2024 by Keith Krellwitz
  *
  * RAW TRACK LAYOUT:
- *  u16 Sync (multiple see sync array) 
- *  u32 0x55555555
- *  u32 0x55555555
- *  u32 0x55555555
- *  u32 0x55555555
+ *  u16 Sync (multiple see sync arrays) 
+ *  u32 0xffffffff (decoded)
+ *  u32 0xffffffff (decoded)
  *  u32 dat[ti->len/4]
  * 
  * Checksum decoded as part of the data dat[ti->len/4-3]
@@ -344,7 +342,14 @@ struct track_handler cosmic_bouncer_handler = {
  *
  * The last 2 u32's are not part of the checksum
  * 
- * TRKTYP_c64 data layout:
+ * Version 2 of the Emulator uses different syncs for all but track 0.1
+ * 
+ * The data used to calculate the syncs is store on track 1, but requires
+ * the first u16 from the previous track to calculate, so arrays of the
+ * actual syncs were use instead.  Track 20.0 on version 2 has a different
+ * sync than what is stored in the lookup table.
+ * 
+ * TRKTYP_c64_emulator data layout:
  *  u8 sector_data[6592]
  * 
  */
@@ -354,6 +359,7 @@ struct track_handler cosmic_bouncer_handler = {
 
 
 static const uint16_t syncs[];
+static const uint16_t syncs_v2[];
 
 static void *c64_write_raw(
     struct disk *d, unsigned int tracknr, struct stream *s)
@@ -363,11 +369,16 @@ static void *c64_write_raw(
     while (stream_next_bit(s) != -1) {
 
         uint32_t raw[2], dat[ti->len/4], pad;
-        uint16_t sum1, sum2;
+        uint16_t sum1, sum2, sync;
         unsigned int i;
         char *block;
 
-        if ((uint16_t)s->word != syncs[tracknr])
+        if (ti->type == TRKTYP_c64_emulator)
+            sync = syncs[tracknr];
+        else 
+            sync = syncs_v2[tracknr];
+
+        if ((uint16_t)s->word != sync)
             continue;
         ti->data_bitoff = s->index_offset_bc - 15;
 
@@ -376,7 +387,7 @@ static void *c64_write_raw(
         mfm_decode_bytes(bc_mfm, 4, raw, &pad);
         if (pad != 0xffffffff)
             continue;
-
+ 
         if (stream_next_bytes(s, raw, 8) == -1)
             goto fail;
         mfm_decode_bytes(bc_mfm, 4, raw, &pad);
@@ -416,10 +427,15 @@ static void c64_read_raw(
 {
     struct track_info *ti = &d->di->track[tracknr];
     uint32_t *dat = (uint32_t *)ti->dat;
-    uint16_t sum1, sum2;
+    uint16_t sum1, sum2, sync;
     unsigned int i;
 
-    tbuf_bits(tbuf, SPEED_AVG, bc_raw, 16, syncs[tracknr]);
+    if (ti->type == TRKTYP_c64_emulator)
+        sync = syncs[tracknr];
+    else 
+        sync = syncs_v2[tracknr];
+
+    tbuf_bits(tbuf, SPEED_AVG, bc_raw, 16, sync);
     tbuf_bits(tbuf, SPEED_AVG, bc_mfm, 32, 0xffffffff);
     tbuf_bits(tbuf, SPEED_AVG, bc_mfm, 32, 0xffffffff);
 
@@ -439,6 +455,13 @@ static void c64_read_raw(
 }
 
 struct track_handler c64_emulator_handler = {
+    .bytes_per_sector = 6592,
+    .nr_sectors = 1,
+    .write_raw = c64_write_raw,
+    .read_raw = c64_read_raw
+};
+
+struct track_handler c64_emulator_v2_handler = {
     .bytes_per_sector = 6592,
     .nr_sectors = 1,
     .write_raw = c64_write_raw,
@@ -487,6 +510,50 @@ static const uint16_t syncs[] = {
     0x5ADA, //38
     0x5ADA, //39
     0x5ADA, //40
+};
+
+static const uint16_t syncs_v2[] = {
+    0x0000, //0
+    0x5ADA, //1
+    0x6955, //2
+    0x52D5, //3
+    0x52D5, //4
+    0x6A8A, //5
+    0x6A8A, //6
+    0x556A, //7
+    0x556A, //8
+    0x6A8A, //9
+    0x6A8A, //10
+    0x556A, //11
+    0x556A, //12
+    0x556A, //13
+    0x546A, //14
+    0x546A, //15
+    0x556A, //16
+    0x556A, //17
+    0x546A, //18
+    0x546A, //19
+    0x546A, //20
+    0x3455, //21
+    0x3455, //22
+    0x5569, //23
+    0x5569, //24
+    0x5534, //25
+    0x5569, //26
+    0x5534, //27
+    0x1562, //28
+    0x1562, //29
+    0x5563, //30
+    0x1562, //31
+    0x5563, //32
+    0x4A6A, //33
+    0x2D65, //34
+    0x4A6A, //35
+    0x6554, //36
+    0x4D1A, //37
+    0x1352, //38
+    0x1235, //39
+    0x5354, //40
 };
 
 /*
