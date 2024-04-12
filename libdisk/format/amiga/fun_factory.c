@@ -6,6 +6,7 @@
  *   Twin Turbos
  *   Crystal Kingdom Dizzy
  *   Gadgets Lost In Time
+ *   Dizzy Dice
  * 
  * The format is same as Rainbird, but the checksum follows the data block.
  * 

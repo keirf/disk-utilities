@@ -1299,7 +1299,7 @@ probe_amiga
 
 # One version uses a custom format
 "Dizzy Dice"
-    * amigados dizzy_dice
+    * amigados fun_factory 
 
 "Dizzy's Excellent Adventures" = amigados_copylock
 
@@ -1459,13 +1459,9 @@ probe_amiga
 "Eco"
     * rnc_protect_process_a
 
-"Edukacja Zestaw 2"
-    0 podpierdzielacz
-    1-159 amigados
-    * ignore
-
-"Edukacja Zestaw 3"
-    0 rattleheads_disk_protector
+# This should work for all Edukacja Zestaw 2-5 and 27
+"Edukacja Zestaw"
+    0 podpierdzielacz rattleheads_disk_protector rattleheads_disk_protector_alt
     * amigados
 
 # Side 1 is empty apart from 4 AmigaDOS tracks
@@ -1526,6 +1522,10 @@ probe_amiga
     * amigados
 
 "Escape From The Planet Of The Robot Monsters" = amigados_copylock
+
+"Eskadra"
+    160 eskadra
+    * amigados
 
 "Eskimo Games" = amigados
 
@@ -2746,6 +2746,11 @@ probe_amiga
 "Lotus III"
     * amigados ss_mfm
 
+"Lowca Glow"
+    0-159 amigados
+    160 lowca_glow
+    * ignore
+
 # Boot Disk Track 0 only is AmigaDOS, mastered long same as all data tracks.
 "Lure Of The Temptress"
     * amigados_long_105500 rnc_pdos_old
@@ -3068,6 +3073,9 @@ probe_amiga
 "Naughty Ones" = amigados
 
 "Navy Seals" = amigados_copylock
+
+# Test version
+"Necrocon" = amigados
 
 "Neighbours" = amigados_copylock
 
@@ -3587,7 +3595,7 @@ probe_amiga
     * amigados rainbird
 
 "Rajd Przez Polske"
-    160-161 ak_avalon_protection
+    160-161 rajd_przez_polske
     * amigados
 
 "Rallye Master"
@@ -4027,7 +4035,7 @@ probe_amiga
 "Skat Deluxe" = amigados
 
 "Skaut"
-    160 skaut_protection
+    160 skaut2
     * amigados
 
 # Requires a Trojan Phazer Lightgun
@@ -4106,7 +4114,7 @@ probe_amiga
 
 "Soldier 2000" = amigados
 
-"Sooty & Sweep" = amigados
+"Sooty & Sweep" = amigados_copylock
 
 "Sooty's Fun With Numbers" = amigados
 
@@ -4622,8 +4630,8 @@ probe_amiga
 
 "The Black Cauldron" = herndon_longtrack
 
-"The C64 Emulator"
-    * amigados_unknown_length c64_emulator
+"The 64 Emulator"
+    * amigados_unknown_length c64_emulator c64_emulator_v2
 
 "The Cardinal Of The Kremlin" = amigados
 
@@ -4953,6 +4961,14 @@ probe_amiga
     157 tiertex_longtrack
     159 protoscan_longtrack
     * amigados
+
+"Turbo Outrun (Sega)" # US version
+    0-1 amigados
+    2-3 sega_boot
+    4-29 altered_beast_sega 
+    40-157 afterburner_sega
+    159 afterburner_sega
+    * ignore
 
 # Microdeal
 "Turbo Trax"
