@@ -4035,7 +4035,7 @@ probe_amiga
 "Skat Deluxe" = amigados
 
 "Skaut"
-    160 skaut2
+    160 skaut
     * amigados
 
 # Requires a Trojan Phazer Lightgun
