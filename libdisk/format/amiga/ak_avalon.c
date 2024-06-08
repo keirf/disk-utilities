@@ -152,6 +152,28 @@ struct track_handler skaut_handler = {
         .checksum_addition = 4
     }
 };
+
+struct track_handler puzzland_handler = {
+    .bytes_per_sector = 6246*2,
+    .nr_sectors = 1,
+    .write_raw = ak_avalon_protection_2_write_raw,
+    .read_raw = ak_avalon_protection_2_read_raw,
+    .extra_data = & (struct ak_avalon_info) {
+        .checksum = 0x40d9d09b,
+        .checksum_addition = 3
+    }
+};
+
+struct track_handler may_matematyk_handler = {
+    .bytes_per_sector = 6246*2,
+    .nr_sectors = 1,
+    .write_raw = ak_avalon_protection_2_write_raw,
+    .read_raw = ak_avalon_protection_2_read_raw,
+    .extra_data = & (struct ak_avalon_info) {
+        .checksum = 0x1075f814,
+        .checksum_addition = 7
+    }
+};
 /*
  * Local variables:
  * mode: C

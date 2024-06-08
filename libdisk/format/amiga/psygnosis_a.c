@@ -22,9 +22,6 @@
  *  u8 sector_data[12*512]
  *  u16 sync1,sync2
  * 
- *TRKTYP_infestation_handle data layout:
- *  u8 sector_data[5120]
- *  u16 sync1,sync2
  */
 
 #include <libdisk/util.h>
@@ -116,13 +113,6 @@ static void psygnosis_a_read_raw(
 
 struct track_handler psygnosis_a_handler = {
     .bytes_per_sector = 12*512,
-    .nr_sectors = 1,
-    .write_raw = psygnosis_a_write_raw,
-    .read_raw = psygnosis_a_read_raw
-};
-
-struct track_handler infestation_handler = {
-    .bytes_per_sector = 5120,
     .nr_sectors = 1,
     .write_raw = psygnosis_a_write_raw,
     .read_raw = psygnosis_a_read_raw

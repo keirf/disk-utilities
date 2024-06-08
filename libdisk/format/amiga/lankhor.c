@@ -51,7 +51,7 @@ static void *lankhor_write_raw(
             if (stream_next_bits(s, 16) == -1)
                 goto fail;
             if ((uint16_t)s->word != 0x5554)
-            continue;
+                continue;
         }
 
         for (i = sum = 0; i < ARRAY_SIZE(dat); i++) {
