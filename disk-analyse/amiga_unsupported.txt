@@ -6,7 +6,7 @@ Disk 2 ADOS + Thalion key track on 79.0
 
 Afterburner II (The Hit Squad):
 Disk 1 Firebird format + unformatted tracks
-Disk 2 unsupported format
+Disk 2 unsupported formatS
 
 Black Hornet:
 ADOS (track 0.0 may be long) + protection on track 0.1
@@ -22,9 +22,6 @@ AmigaDOS + Protection on track 80.1
 
 EPIC (First release):
 ADOS + rnc_protect_process + unsupported Rob Northen protection on track 0.1 of Disk 1
-
-Flimbos Quest: (Kixx)
-Unsupported format!
 
 Gunship:
 ADOS + unsupported Speedlock(?) on track 0.1

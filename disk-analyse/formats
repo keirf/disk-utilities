@@ -224,6 +224,7 @@ probe_amiga
 # Tenstar Pack Game 1, Track 159 maybe empty/unformatted
 # Some versions have a custom highscore track 158
 "Amegas"
+    1 amigados frank_neuhaus_protection
     158 amegas_high_scores amigados
     * amigados
 
@@ -539,7 +540,7 @@ probe_amiga
 "Battle Master" = amigados_copylock
 
 "Battle Squadron" 
-    * amigados_long_103300 battle_squadron
+    * amigados_unknown_length battle_squadron
 
 "Battle Storm"
     * amigados_unknown_length
@@ -620,6 +621,15 @@ probe_amiga
 "Black Crypt" = amigados
 
 "Black Dawn Rebirth" = amigagdos
+
+# The protection may give track length warnings, but the protection
+# check was verfied as working correctly. Will update in the Future
+# to set the track length for those mastered long. 
+"Black Magic"
+    0-1 amigados
+    54 ubi_protection_raw_a
+    55 ubi_protection_validation_a
+    * amigados_long_103300
 
 "Black Sect"
     * amigados lankhor
@@ -2252,6 +2262,11 @@ probe_amiga
 # Tracks may be mastered long causing harmless warnings!
 "Hyperdome" = amigados
 
+"Iceball"
+    160 ubi_protection_b
+    161 ubi_protection_validation_b
+    * amigados
+
 "IK+"
     * amigados ikplus
 
@@ -2296,19 +2311,15 @@ probe_amiga
 
 "Indianapolis 500" = amigados
 
-# Originally this definition used psygnosis_a, but the actual track
-# length is 0x1400 and not 0x1800.  It worked for the IPF, but the
-# raw dump I have failed on 3 tracks due to the checksum being calculated
-# for a length of 0x1800 instead of 0x1400 
 "Infestation"
     0 amigados
     1 protec_longtrack
     3 ignore
-    2-71 infestation
+    2-71 rainbird
     72 ignore
-    73-74 infestation
+    73-74 rainbird
     75 ignore
-    76-159 infestation
+    76-159 rainbird
     * ignore
 
 "Infidel" = amigados
@@ -2478,6 +2489,9 @@ probe_amiga
 # Budget re-release
 "Journey To The Center Of The Earth" = amigados
 
+"Judge Dredd"
+    * amigados judge_dredd
+
 "JUG"
     * amigados ibm_pc_dd_10sec
     
@@ -2615,8 +2629,9 @@ probe_amiga
     "You must specify --index-align to create a working image"
 "Lara '96" = amigados_copylock
 
+# Suport Crysys UK version and Kingsoft european version
 "Larrie & The Ardies"
-    * amigados sextett_protection atari_st_720kb
+    * amigados ibm_mfm_dd_recovery frank_neuhaus_protection sextett_protection
 
 # Retail release has unsupported ANCO protection!
 # Budget release may use Copylock!
@@ -2863,6 +2878,9 @@ probe_amiga
 "Mayday Squad"
     1 protec_longtrack
     * amigados
+
+"Ma'y Matematyk"
+    * amigados may_matematyk
 
 "McDonald Land"
     * arc_development_b copylock amigados
@@ -3500,6 +3518,9 @@ probe_amiga
 
 "Pro Tennis Tour" = blue_byte
 
+"Projekt Ikarus"
+    * amigados_unknown_length projekt_ikarus
+
 "Project Neptune"
     1 amigados_long_111000
     * amigados
@@ -3539,6 +3560,10 @@ probe_amiga
 "Push-Over" = amigados_copylock
 
 "Putty" = amigados_copylock
+
+"Puzzland"
+    160 puzzland
+    * amigados
 
 "Puzzle Storybook" = amigados
 
@@ -4484,6 +4509,9 @@ probe_amiga
     1 protec_alt_longtrack
     * amigados
 
+"Taekwondo Master"
+    * amigados taekwondo_master ibm_mfm_dd
+
 "Tajemnica Bursztynowej Komnaty"
     1 amigados_4251 amigados
     2 amigados_2149 amigados
@@ -4502,6 +4530,11 @@ probe_amiga
     * amigados_unknown_length
 
 "Tanglewood" = amigados
+
+"Tank Buster"
+    0 amigados 
+    1-121 tank_buster
+    * ignore
 
 # Protection checks for track length X, where 104448 < X <= 105984, and does
 # not care about gap contents. Actual length is almost exactly 105500 bits.
@@ -4544,6 +4577,10 @@ probe_amiga
 # Action Amiga Release
 "Technocop"
     1 amigados_long_105500
+    * amigados
+
+"TelExpress"
+    18 telexpress
     * amigados
 
 # One version has no Copylock + AmigaDOS up to Track 163!
@@ -5464,7 +5501,8 @@ probe_amiga
 
 "Zeewolf 2" = amigados
 
-"Zero Gravity" = amigados
+"Zero Gravity"
+    * amigados rallye_master_protection
 
 "Zombi"
     0-159 amigados
