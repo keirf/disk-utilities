@@ -63,103 +63,147 @@ static void init_sigint_handler(void)
 #endif
 }
 
+static void usage(void)
+{
+    fprintf(stderr, "Usage: copylock <df0_file> --load=... "
+            "[--dump=<name>:<pc>]\n");
+    fprintf(stderr, "Load raw: --load=<name>:<base>:<off>:<len>\n");
+    fprintf(stderr, "Load exe: --load=<name>:<base>\n");
+    exit(1);
+}
+
+static void load_exe(void *input, uint32_t base, struct amiga_state *s)
+{
+    /* Treat file as a loadable executable. Perform LoadSeg on it. */
+    uint32_t *p = input;
+    unsigned int i, j, k, nr_chunks, nr_longs, type, mem_off = base-4;
+    unsigned int bptr = 0;
+    if (be32toh(p[0]) != 0x3f3)
+        errx(1, "Unexpected image signature %08x", be32toh(p[0]));
+    printf("Loadable image: ");
+    for (i = 1; p[i] != 0; i++)
+        continue;
+    nr_chunks = be32toh(p[i+1]);
+    printf("%u chunks\n", nr_chunks);
+    i += 1 + 1 + 2 + nr_chunks;
+    for (j = 0; j < nr_chunks; j++) {
+        type = be32toh(p[i]);
+        nr_longs = be32toh(p[i+1]) & 0x3fffffffu;
+        printf("Chunk %u: %08x, %u longwords\n", j, type, nr_longs);
+        i += 2;
+        bptr = mem_off;
+        mem_off += 4;
+        if ((type == 0x3e9) || (type == 0x3ea)) {
+            /* code/data */
+            for (k = 0; k < nr_longs; k++) {
+                mem_write(mem_off, be32toh(p[i]), 4, s);
+                i++;
+                mem_off += 4;
+            }
+        } else if (type == 0x3eb) {
+            /* bss */
+            for (k = 0; k < nr_longs; k++) {
+                mem_write(mem_off, 0, 4, s);
+                mem_off += 4;
+            }
+        } else {
+            errx(1, "Unexpected chunk type %08x", type);
+        }
+        if (be32toh(p[i]) != 0x3f2)
+            errx(1, "Unexpected chunk end %08x", be32toh(p[i]));
+        i++;
+        mem_write(bptr, mem_off/4, 4, s);
+    }
+    mem_write(bptr, 0, 4, s);
+}
+
+static void load_raw(void *input, uint32_t base, uint32_t len,
+                     struct amiga_state *s)
+{
+    /* Raw file. Load a portion of it into memory. */
+    char *p = input;
+    int i;
+    for (i = 0; i < len; i++)
+        mem_write(base + i, p[i], 1, s);
+}
+
 int main(int argc, char **argv)
 {
     struct amiga_state s;
     struct m68k_regs *regs;
-    char *p, *shadow, *bmap;
+    char *p, *q, *shadow, *bmap, *dump_name = NULL;
     int rc, i, fd, zeroes_run = 0;
-    uint32_t off, len, base;
+    uint32_t off, len, dump_pc = 0, base = 0;
 
-    if (argc != 6)
-        errx(1, "Usage: %s <infile> <off> <len> <base> <df0_file>",
-             argv[0]);
-
-    fd = file_open(argv[1], O_RDONLY);
-    if (fd == -1)
-        err(1, "%s", argv[1]);
-
-    off = strtol(argv[2], NULL, 16);
-    len = strtol(argv[3], NULL, 16);
-    base = strtol(argv[4], NULL, 16);
-
-    if (len == 0) {
-        off_t sz = lseek(fd, 0, SEEK_END);
-        len = sz - off;
-    }
-
-    if ((base+len) > MEM_SIZE)
-        errx(1, "Image cannot be loaded into %ukB RAM\n", MEM_SIZE>>10);
+    if (argc < 3)
+        usage();
 
     shadow = memalloc(MEM_SIZE);
     bmap = memalloc(MEM_SIZE/8);
 
-    for (i = 0; i < argc; i++)
-        printf("%s ", argv[i]);
-    printf("\n");
-
-    init_sigint_handler();
-
-    amiga_insert_df0(argv[5]);
+    amiga_insert_df0(argv[1]);
     amiga_init(&s, MEM_SIZE);
     regs = s.ctxt.regs;
-
-    if (lseek(fd, off, SEEK_SET) != off)
-        err(1, NULL);
-    read_exact(fd, shadow, len);
-    close(fd);
 
     /* Poison low-memory vectors. */
     for (i = 0; i < 0x100; i += 4)
         mem_write(i, 0xdeadbe00u | i, 4, &s);
 
-    if (*argv[2] == '-') {
-        /* Treat file as a loadable executable. Perform LoadSeg on it. */
-        uint32_t *p = (uint32_t *)shadow;
-        unsigned int i, j, k, nr_chunks, nr_longs, type, mem_off = base-4;
-        unsigned int bptr = 0;
-        if (be32toh(p[0]) != 0x3f3)
-            errx(1, "Unexpected image signature %08x", be32toh(p[0]));
-        printf("Loadable image: ");
-        for (i = 1; p[i] != 0; i++)
-            continue;
-        nr_chunks = be32toh(p[i+1]);        
-        printf("%u chunks\n", nr_chunks);
-        i += 1 + 1 + 2 + nr_chunks;
-        for (j = 0; j < nr_chunks; j++) {
-            type = be32toh(p[i]);
-            nr_longs = be32toh(p[i+1]) & 0x3fffffffu;
-            printf("Chunk %u: %08x, %u longwords\n", j, type, nr_longs);
-            i += 2;
-            bptr = mem_off;
-            mem_off += 4;
-            if ((type == 0x3e9) || (type == 0x3ea)) {
-                /* code/data */
-                for (k = 0; k < nr_longs; k++) {
-                    mem_write(mem_off, be32toh(p[i]), 4, &s);
-                    i++;
-                    mem_off += 4;
-                }
-            } else if (type == 0x3eb) {
-                /* bss */
-                for (k = 0; k < nr_longs; k++) {
-                    mem_write(mem_off, 0, 4, &s);
-                    mem_off += 4;
-                }
+    for (i = 2; i < argc; i++) {
+        if (!strncmp(argv[i], "--load=", 7)) {
+            /* --load=name:base:off:len
+             * --load=name:base */
+            if (base) usage();
+            p = argv[i] + 7;
+            q = strchr(p, ':');
+            if (!q) usage();
+            *q = '\0';
+            fd = file_open(p, O_RDONLY);
+            if (fd == -1)
+                err(1, "%s", p);
+            len = lseek(fd, 0, SEEK_END);
+            printf("File '%s', len %x\n", p, len);
+            p = q+1;
+            q = strchr(p, ':');
+            if (!q) {
+                base = strtol(p, NULL, 16);
+                lseek(fd, 0, SEEK_SET);
+                read_exact(fd, shadow, len);
+                printf(" -> Exe @ %08x\n", base);
+                load_exe(shadow, base, &s);
             } else {
-                errx(1, "Unexpected chunk type %08x", type);
+                *q = '\0';
+                base = strtol(p, NULL, 16);
+                p = q+1;
+                q = strchr(p, ':');
+                if (!q) usage();
+                *q = '\0';
+                off = strtol(p, NULL, 16);
+                len = strtol(q+1, NULL, 16) ?: len;
+                lseek(fd, off, SEEK_SET);
+                if (len > MEM_SIZE)
+                    errx(1, "Image cannot be loaded into %ukB RAM",
+                         MEM_SIZE>>10);
+                read_exact(fd, shadow, len);
+                printf(" -> Raw @ %08x, off=%x, len=%x\n",
+                       base, off, len);
+                load_raw(shadow, base, len, &s);
             }
-            if (be32toh(p[i]) != 0x3f2)
-                errx(1, "Unexpected chunk end %08x", be32toh(p[i]));
-            i++;
-            mem_write(bptr, mem_off/4, 4, &s);
+            close(fd);
+        } else if (!strncmp(argv[i], "--dump=", 7)) {
+            p = argv[i] + 7;
+            q = strchr(p, ':');
+            if (!q) usage();
+            *q = '\0';
+            dump_name = p;
+            dump_pc = strtol(q+1, NULL, 16);
+        } else {
+            warnx("Unrecognised option: %s", argv[i]);
+            usage();
         }
-        mem_write(bptr, 0, 4, &s);
-    } else {
-        /* Raw file. Load a portion of it into memory. */
-        for (i = 0; i < len; i++)
-            mem_write(base + i, shadow[i], 1, &s);
     }
+
+    init_sigint_handler();
 
     memset(shadow, 0, MEM_SIZE);
 
@@ -171,6 +215,15 @@ int main(int argc, char **argv)
 
     while (!ctrl_c && (regs->pc != 0xdeadbeee)) {
         uint32_t pc = regs->pc;
+
+        if (pc == dump_pc) {
+            /* Dump out registers and memory state */
+            FILE *fp = fopen(dump_name, "wb");
+            fwrite(regs, 16*4, 1, fp);
+            fwrite(s.memory->dat, s.memory->end-s.memory->start+1, 1, fp);
+            fclose(fp);
+            exit(0);
+        }
 
         rc = amiga_emulate(&s);
         if (rc != M68KEMUL_OKAY)
