@@ -217,7 +217,7 @@ int main(int argc, char **argv)
     if (!compare_bb(bb, kick13_bootable, sizeof(kick13_bootable)))
         printf("Kickstart 1.3 bootblock\n");
     else if (!compare_bb(bb, kick20_bootable, sizeof(kick20_bootable)))
-        printf("Kickstart 1.3 bootblock\n");
+        printf("Kickstart 2.0 bootblock\n");
     else if (!test_lamer(bb))
         printf("** LAMER EXTERMINATOR VIRUS!!!!!! **\n");
     else
