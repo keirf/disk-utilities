@@ -1,10 +1,10 @@
 /*
- * disk/behind_the_iron_gate.c
+ * disk/ego.c
  *
  * Custom format as used by Behind the Iron Gate, ABC Chem II,
- * and Za Zelazna Brama
+ * Inferior, and Za Zelazna Brama
  *
- * Written in 2015/2023 by Keith Krellwitz
+ * Written in 2015/2024 by Keith Krellwitz
  *
  * RAW TRACK LAYOUT:
  *  u32 0x8951 ::  Sync (0x4489 for TRKTYP_abc_chemi_b)
@@ -19,8 +19,9 @@
  * TRKTYP_abc_chemi_a and TRKTYP_abc_chemi_b have specific track bit
  * lengths used for protection (only b checks the protection). The data
  * used for the protection check is on track 67.0. Currenty only supports
- * one version, will need to do some updates to support the loading of
- * track 67.0 in order to support all possible version
+ * two versions, will need to do some updates to support the loading of
+ * track 67.0 in order to support all possible version.  Not a high
+ * prioritys
  * 
  * TRKTYP_behind_the_iron_gate layout:
  *  u8 sector_data[6144]
@@ -34,9 +35,18 @@
  * TRKTYP_abc_chemi_b layout:
  *  u8 sector_data[5632]
  * 
+ * TRKTYP_abc_chemi_timsoft_a layout:
+ *  u8 sector_data[5632]
  * 
+ * TRKTYP_abc_chemi_timsoft_b layout:
+ *  u8 sector_data[5632]
+ * 
+  * TRKTYP_inferior layout:
+ *  u8 sector_data[5632]
+ * 
+
  * TODO: Need to add the ability to read a specific track at the start of
- * the deoding in order to get the protection offsets for the entire disk.
+ * the decoding in order to get the protection offsets for the entire disk.
  */
 
 #include <libdisk/util.h>
@@ -53,8 +63,10 @@ static uint32_t ego_sum(uint32_t w, uint32_t s)
 }
 
 static const uint16_t abc_chem_protection[];
+static const uint16_t abc_chem_timsoft_protection[];
+static const uint16_t inferior_protection[];
 
-static void *behind_the_iron_gate_write_raw(
+static void *ego_write_raw(
     struct disk *d, unsigned int tracknr, struct stream *s)
 {
     struct track_info *ti = &d->di->track[tracknr];
@@ -94,8 +106,17 @@ static void *behind_the_iron_gate_write_raw(
                 disk_get_tag_by_id(d, DSKTAG_za_zelazna_brama_protection);
             if ( protectiontag != NULL)
                 ti->total_bits = 100900+((protectiontag->protection[tracknr]-0x720)+46);
-        } else if (ti->type == TRKTYP_abc_chemi_a || ti->type == TRKTYP_abc_chemi_b) {
+        } else if (ti->type == TRKTYP_abc_chemii_a || ti->type == TRKTYP_abc_chemii_b) {
             ti->total_bits = 100900+((abc_chem_protection[tracknr]-0xa15));
+            ti->data_bitoff=100900;
+        } else if (ti->type == TRKTYP_abc_chemii_timsoft_a || ti->type == TRKTYP_abc_chemii_timsoft_b) {
+            ti->total_bits = 100900+((abc_chem_timsoft_protection[tracknr]-0xa15));
+            // Need to set the data_bitoff to 100900 or the protection checks seem to randomly fail
+            ti->data_bitoff=100900;
+        } else if (ti->type == TRKTYP_inferior) {
+            ti->total_bits = 100900+((inferior_protection[tracknr]-0xa15));
+            // Need to set the data_bitoff to 100900 or the protection checks seem to randomly fail
+            ti->data_bitoff=100900;
         }
 
         block = memalloc(ti->len);
@@ -109,7 +130,7 @@ fail:
 
 }
 
-static void behind_the_iron_gate_read_raw(
+static void ego_read_raw(
     struct disk *d, unsigned int tracknr, struct tbuf *tbuf)
 {
     struct track_info *ti = &d->di->track[tracknr];
@@ -130,8 +151,8 @@ static void behind_the_iron_gate_read_raw(
 struct track_handler behind_the_iron_gate_handler = {
     .bytes_per_sector = 6144,
     .nr_sectors = 1,
-    .write_raw = behind_the_iron_gate_write_raw,
-    .read_raw = behind_the_iron_gate_read_raw,
+    .write_raw = ego_write_raw,
+    .read_raw = ego_read_raw,
     .extra_data = & (struct ego_info) {
         .sync = 0x8951
     }
@@ -140,31 +161,61 @@ struct track_handler behind_the_iron_gate_handler = {
 struct track_handler za_zelazna_brama_handler = {
     .bytes_per_sector = 6144,
     .nr_sectors = 1,
-    .write_raw = behind_the_iron_gate_write_raw,
-    .read_raw = behind_the_iron_gate_read_raw,
+    .write_raw = ego_write_raw,
+    .read_raw = ego_read_raw,
     .extra_data = & (struct ego_info) {
         .sync = 0x8951
     }
 };
 
 
-struct track_handler abc_chemi_a_handler = {
+struct track_handler abc_chemii_a_handler = {
     .bytes_per_sector = 5632,
     .nr_sectors = 1,
-    .write_raw = behind_the_iron_gate_write_raw,
-    .read_raw = behind_the_iron_gate_read_raw,
+    .write_raw = ego_write_raw,
+    .read_raw = ego_read_raw,
     .extra_data = & (struct ego_info) {
         .sync = 0x8951
     }
 };
 
-struct track_handler abc_chemi_b_handler = {
+struct track_handler abc_chemii_b_handler = {
     .bytes_per_sector = 5632,
     .nr_sectors = 1,
-    .write_raw = behind_the_iron_gate_write_raw,
-    .read_raw = behind_the_iron_gate_read_raw,
+    .write_raw = ego_write_raw,
+    .read_raw = ego_read_raw,
     .extra_data = & (struct ego_info) {
         .sync = 0x4489
+    }
+};
+
+struct track_handler abc_chemii_timsoft_a_handler = {
+    .bytes_per_sector = 5632,
+    .nr_sectors = 1,
+    .write_raw = ego_write_raw,
+    .read_raw = ego_read_raw,
+    .extra_data = & (struct ego_info) {
+        .sync = 0x8951
+    }
+};
+
+struct track_handler abc_chemii_timsoft_b_handler = {
+    .bytes_per_sector = 5632,
+    .nr_sectors = 1,
+    .write_raw = ego_write_raw,
+    .read_raw = ego_read_raw,
+    .extra_data = & (struct ego_info) {
+        .sync = 0x4489
+    }
+};
+
+struct track_handler inferior_handler = {
+    .bytes_per_sector = 5632,
+    .nr_sectors = 1,
+    .write_raw = ego_write_raw,
+    .read_raw = ego_read_raw,
+    .extra_data = & (struct ego_info) {
+        .sync = 0x8951
     }
 };
 
@@ -250,6 +301,28 @@ static const uint16_t abc_chem_protection[] = {
     0x0A55, 0x0A56, 0x0A57, 0x0A56, 0x0A57, 0x0A56, 0x0A57, 0x0A56
 };
 
+static const uint16_t abc_chem_timsoft_protection[] = {
+    0x0200, 0xFFFF, 0x0BB3, 0x0B98, 0x0BC8, 0x0B9A, 0x0BBA, 0x0B9B,
+    0x0BC7, 0x0BA8, 0x0BBE, 0x0BA0, 0x0BA8, 0x0BA1, 0x0BB1, 0x0BA6,
+    0x0BC1, 0x0B9D, 0x0BBE, 0x0BB3, 0x0BAF, 0x0BA8, 0x0BA1, 0x0B9D,
+    0x0BAF, 0x0B95, 0x0BAD, 0x0BA8, 0x0BBF, 0x0BB0, 0x0B9F, 0x0BA7,
+    0x0BC0, 0x0B9C, 0x0BB1, 0x0B9A, 0x0BB7, 0x0B98, 0x0BAB, 0x0B9E,
+    0x0BB7, 0x0BA6, 0x0BB8, 0x0B9B, 0x0BB3, 0x0BA4, 0x0BA5, 0x0B95,
+    0x0BB7, 0x0BA5, 0x0BB2, 0x0BA3, 0x0BA8, 0x0BA0, 0x0B9F, 0x0BA8,
+    0x0BAA, 0x0BA8, 0x0BB9, 0x0BA3, 0x0BA6, 0x0B9C, 0x0BA9, 0x0BA7,
+    0x0BA3, 0x0B9A, 0x0BBD, 0x0B9D, 0x0BB0, 0x0B97, 0x0BAE, 0x0BA1,
+    0x0B9E, 0x0BA5, 0x0BA1, 0x0BA2, 0x0B9C, 0x0B9B, 0x0BA8, 0x0BB4,
+    0x0BAF, 0x0B9A, 0x0BA1, 0x0B9A, 0x0BA4, 0x0B9F, 0x0BAF, 0x0BAC,
+    0x0BA3, 0x0BA1, 0x0BA4, 0x0BA2, 0x0BAF, 0x0BA6, 0x0BA0, 0x0BAE,
+    0x0BB7, 0x0BA7, 0x0BA4, 0x0BAA, 0x0BA1, 0x0B9E, 0x0BAD, 0x0BA1,
+    0x0BA7, 0x0BAC, 0x0BB2, 0x0BA7, 0x0BB7, 0x0BA5, 0x0BB3, 0x0BAA,
+    0x0BAA, 0x0BA4, 0x0BA3, 0x0B9D, 0x0BB0, 0x0BA7, 0x0BA6, 0x0BA3,
+    0x0BB6, 0x0BAB, 0x0BAE, 0x0BA9, 0x0BA0, 0x0BAE, 0x0BA8, 0x0BA1,
+    0x0BAD, 0x0BA6, 0x0B87, 0x0B8B, 0x0BA8, 0x0B9B, 0x0BA3, 0x0BAD,
+    0x0BBB, 0x0B9C, 0x0BAB, 0x0BA8, 0x0BBC, 0x0B9C, 0x0BA4, 0x0BAA,
+    0x0BB0, 0x0B9F, 0x0B9C, 0x0BA0, 0x0BB0, 0x0BA7, 0x0BA3, 0x0B9A,
+    0x0BB2, 0x0BAC, 0x0B8D, 0x0BA8, 0x0BB5, 0x0BA2, 0x0BAE, 0x0BA7
+};
 
 /*
 
@@ -278,6 +351,30 @@ static const uint16_t abc_chem_protection[] = {
     0x0A6A, 0x0A6A, 0x0A6F, 0x0A6A, 0x0A6E, 0x0A6A, 0x0A70, 0x0A69
 };
 */
+
+static const uint16_t inferior_protection[] = {
+    0x0A32, 0x0A34, 0x0A30, 0x0A31, 0x0A2E, 0x0A36, 0x0A2D, 0x0A33,
+    0x0A25, 0x0A34, 0x0A2D, 0x0A33, 0x0A2F, 0x0A32, 0x0A32, 0x0A32,
+    0x0A35, 0x0A32, 0x0A31, 0x0A32, 0x0A2F, 0x0A34, 0x0A2D, 0x0A30,
+    0x0A2E, 0x0A33, 0x0A2B, 0x0A31, 0x0A2F, 0x0A33, 0x0A2E, 0x0A33,
+    0x0A2F, 0x0A33, 0x0A2E, 0x0A32, 0x0A2E, 0x0A31, 0x0A2E, 0x0A32,
+    0x0A2D, 0x0A33, 0x0A2E, 0x0A34, 0x0A2D, 0x0A34, 0x0A2D, 0x0A31,
+    0x0A2F, 0x0A31, 0x0A2F, 0x0A30, 0x0A2F, 0x0A32, 0x0A30, 0x0A31,
+    0x0A2D, 0x0A34, 0x0A30, 0x0A31, 0x0A2E, 0x0A32, 0x0A2B, 0x0A30,
+    0x0A2E, 0x0A32, 0x0A2E, 0x0A31, 0x0A30, 0x0A33, 0x0A2D, 0x0A32,
+    0x0A2E, 0x0A32, 0x0A2E, 0x0A32, 0x0A2C, 0x0A33, 0x0A2F, 0x0A31,
+    0x0A2E, 0x0A34, 0x0A2D, 0x0A33, 0x0A2E, 0x0A32, 0x0A2D, 0x0A31,
+    0x0A31, 0x0A31, 0x0A30, 0x0A32, 0x0A2F, 0x0A31, 0x0A31, 0x0A32,
+    0x0A2F, 0x0A32, 0x0A34, 0x0A2E, 0x0A30, 0x0A32, 0x0A2E, 0x0A31,
+    0x0A2F, 0x0A33, 0x0A2F, 0x0A33, 0x0A30, 0x0A33, 0x0A2D, 0x0A34,
+    0x0A2F, 0x0A31, 0x0A2E, 0x0A32, 0x0A31, 0x0A32, 0x0A2F, 0x0A32,
+    0x0A30, 0x0A34, 0x0A2D, 0x0A31, 0x0A2E, 0x0A32, 0x0A2E, 0x0A30,
+    0x0A2F, 0x0A30, 0x0A30, 0x0A31, 0x0A2D, 0x0A30, 0x0A32, 0x0A31,
+    0x0A2D, 0x0A32, 0x0A2E, 0x0A32, 0x0A2B, 0x0A33, 0x0A2C, 0x0A33,
+    0x0A2B, 0x0A34, 0x0A2A, 0x0A34, 0x0A2E, 0x0A31, 0x0A2C, 0x0A31,
+    0x0A28, 0x0A33, 0x0A2A, 0x0A32, 0x0A26, 0x0A35, 0x0A29, 0x0000
+};
+
 
 /*
  * Local variables:

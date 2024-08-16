@@ -33,7 +33,7 @@ static void *promic_protection_write_raw(
         for (i = 0; i < 0x100/2; i++) {
             if (stream_next_bits(s, 16) == -1)
                 goto fail;
-            if (mfm_decode_word((uint16_t)s->word) != 0)
+            if (mfm_decode_word((uint16_t)s->word) != 0 && mfm_decode_word((uint16_t)s->word) != 0xff)
                 goto fail;
         }
 

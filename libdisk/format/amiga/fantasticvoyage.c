@@ -21,7 +21,7 @@
 #include <libdisk/util.h>
 #include <private/disk.h>
 
-static void *fantastic_voyage_write_raw(
+static void *marc_hawlitzeck_write_raw(
     struct disk *d, unsigned int tracknr, struct stream *s)
 {
     struct track_info *ti = &d->di->track[tracknr];
@@ -59,9 +59,10 @@ static void *fantastic_voyage_write_raw(
         if (be32toh(csum) != sum)
             continue;
 
+        stream_next_index(s);
         block = memalloc(ti->len);
         memcpy(block, dat, ti->len);
-        ti->total_bits = 105400;
+        ti->total_bits = (s->track_len_bc < 104000) ? 100500 : 105400;
         set_all_sectors_valid(ti);
         return block;
     }
@@ -90,7 +91,7 @@ static uint32_t track_byte_checksum(
     return (tracknr << 24) + (d2 << 16) + 0x4d48;
 }
 
-static void fantastic_voyage_read_raw(
+static void marc_hawlitzeck_read_raw(
     struct disk *d, unsigned int tracknr, struct tbuf *tbuf)
 {
     struct track_info *ti = &d->di->track[tracknr];
@@ -115,8 +116,22 @@ static void fantastic_voyage_read_raw(
 struct track_handler fantastic_voyage_handler = {
     .bytes_per_sector = 6144,
     .nr_sectors = 1,
-    .write_raw = fantastic_voyage_write_raw,
-    .read_raw = fantastic_voyage_read_raw
+    .write_raw = marc_hawlitzeck_write_raw,
+    .read_raw = marc_hawlitzeck_read_raw
+};
+
+struct track_handler krymini_handler = {
+    .bytes_per_sector = 5888,
+    .nr_sectors = 1,
+    .write_raw = marc_hawlitzeck_write_raw,
+    .read_raw = marc_hawlitzeck_read_raw
+};
+
+struct track_handler krymini_short_handler = {
+    .bytes_per_sector = 512,
+    .nr_sectors = 1,
+    .write_raw = marc_hawlitzeck_write_raw,
+    .read_raw = marc_hawlitzeck_read_raw
 };
 
 /*
