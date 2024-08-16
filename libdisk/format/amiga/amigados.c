@@ -385,6 +385,62 @@ struct track_handler amigados_2149_handler = {
     }
 };
 
+
+struct track_handler amigados_2959_handler = {
+    .bytes_per_sector = STD_SEC,
+    .nr_sectors = 11,
+    .write_raw = ados_write_raw,
+    .read_raw = ados_read_raw,
+    .read_sectors = ados_read_sectors,
+    .extra_data = & (struct ados_info) {
+        .sync = 0x29592959
+    }
+};
+
+struct track_handler amigados_8524_handler = {
+    .bytes_per_sector = STD_SEC,
+    .nr_sectors = 11,
+    .write_raw = ados_write_raw,
+    .read_raw = ados_read_raw,
+    .read_sectors = ados_read_sectors,
+    .extra_data = & (struct ados_info) {
+        .sync = 0x85248524
+    }
+};
+
+struct track_handler amigados_2429_handler = {
+    .bytes_per_sector = STD_SEC,
+    .nr_sectors = 11,
+    .write_raw = ados_write_raw,
+    .read_raw = ados_read_raw,
+    .read_sectors = ados_read_sectors,
+    .extra_data = & (struct ados_info) {
+        .sync = 0x24292429
+    }
+};
+
+struct track_handler amigados_4428_handler = {
+    .bytes_per_sector = STD_SEC,
+    .nr_sectors = 11,
+    .write_raw = ados_write_raw,
+    .read_raw = ados_read_raw,
+    .read_sectors = ados_read_sectors,
+    .extra_data = & (struct ados_info) {
+        .sync = 0x44284428
+    }
+};
+
+struct track_handler amigados_4429_handler = {
+    .bytes_per_sector = STD_SEC,
+    .nr_sectors = 11,
+    .write_raw = ados_write_raw,
+    .read_raw = ados_read_raw,
+    .read_sectors = ados_read_sectors,
+    .extra_data = & (struct ados_info) {
+        .sync = 0x44294429
+    }
+};
+
 /* AmigaDOS Long Tracks:
  * Dummy types and write handler which increase track gap by a defined amount.
  * These are used where the protection routine does not check for any data

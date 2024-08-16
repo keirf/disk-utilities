@@ -20,10 +20,10 @@ static void *okay_protection_write_raw(
 
     /* GCR 4us bit time */
     stream_set_density(s, 4000);
-
+    int counter = 0;
     while (stream_next_bit(s) != -1) {
         unsigned int i, count;
-
+        counter++;
         if ((uint16_t)s->word != 0xbdef)
             continue;
 
@@ -36,9 +36,8 @@ static void *okay_protection_write_raw(
 
         if (count < 1000)
             continue;
-        stream_next_index(s);
 
-        ti->total_bits = s->track_len_bc;
+        ti->total_bits = 50592;
         ti->data_bitoff = 0;
         return memalloc(0);
     }
@@ -52,9 +51,8 @@ static void okay_protection_read_raw(
 {
     struct track_info *ti = &d->di->track[tracknr];
     unsigned int i;
-    
-    for (i = 0; i < ti->total_bits/8/3; i++)
-        tbuf_bits(tbuf, SPEED_AVG, bc_raw, 24, 0xBDEFF7);
+    for (i = 0; i < ti->total_bits/8/4; i++)
+        tbuf_bits(tbuf, SPEED_AVG, bc_raw, 32, 0xBDEFF700);
 }
 
 struct track_handler okay_protection_handler = {

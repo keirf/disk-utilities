@@ -86,8 +86,11 @@ probe_amiga
 
 "Abandoned Places 2" = amigados
 
-"ABC Chem II"
-    * amigados_unknown_length abc_chemi_a abc_chemi_b
+"ABC Chemii"
+    * amigados_unknown_length abc_chemii_a abc_chemii_b
+
+"ABC Chemii (Timsoft)"
+    * amigados_unknown_length abc_chemii_timsoft_a abc_chemii_timsoft_b
 
 "Action Fighter (Sega)" # US version
     0-1 amigados
@@ -132,6 +135,8 @@ probe_amiga
 "Agony"
     * amigados_long_105500 grolet
 
+"Agresor" = amigados
+
 "Air Support"
     * amigados psygnosis_a
 
@@ -148,6 +153,11 @@ probe_amiga
 # Protected, shows as AmigaDOS Extended (Header)
 # Demo is protected the same!
 "Aladdin" = amigados
+
+#One version I had required the addition command line settings -P3
+"Aladdin's Magic Lamp"
+    159 aladdins_magic_lamp
+    * amigados
 
 "Albedo"
     0 amigados
@@ -197,6 +207,9 @@ probe_amiga
 "Aliex" = amigados
 
 "All New World Of Lemmings" = amigados
+
+"All Terrain Racing"
+    * amigados_unknown_length rnc_pdos
 
 "Altered Beast" = amigados_copylock
 
@@ -916,6 +929,9 @@ probe_amiga
 
 "Chariots of Wrath" = amigados
 
+"Charlie"
+    * amigados cobra
+
 "Chase H.Q. II" = amigados_copylock
 
 "Checkered Flag Rally"
@@ -956,6 +972,9 @@ probe_amiga
     * ignore
 
 "Cisco Heat" = amigados_copylock
+
+"Citadel"
+* amigados ibm_mfm_dd
 
 "City Defense"
     * amigados_unknown_length sextett_protection
@@ -1130,6 +1149,9 @@ probe_amiga
     * amigados
 
 "Cybernoid II" = amigados_copylock
+
+"Cyberzerk"
+    * amigados_long_102200 apprentice
 
 "Cytron"
     * amigados psygnosis_a
@@ -1408,7 +1430,7 @@ probe_amiga
 
 "Dreenshar"
     0 amigados
-    1-2 amigados raw_dd
+    1-2 amigados amigados_4429
     3-159 amigados
     * ignore
 
@@ -1531,6 +1553,9 @@ probe_amiga
     1-59 epic amigados
     * amigados
 
+"Erik"
+    * amigados konami
+
 "Escape From The Planet Of The Robot Monsters" = amigados_copylock
 
 "Eskadra"
@@ -1632,6 +1657,10 @@ probe_amiga
 
 # Should cater for all versions of Falcon/Mission Disks
 "Falcon" = amigados_copylock
+
+"Fallen Angel"
+    1 rnc_gap
+    * amigados
 
 "Fantastic Dizzy" = amigados_copylock
 
@@ -1767,6 +1796,11 @@ probe_amiga
     1 amigados_long_111000
     * amigados
 
+"Forest Dumb Forever"
+    1 amigados amigados_2959 
+    2 amigados amigados_8524 
+    * amigados
+
 "Forgotten Worlds"
     0 amigados 
     158 tiertex_longtrack
@@ -1795,9 +1829,18 @@ probe_amiga
     161 ubi_protection_validation_a
     * ignore
 
+"Fright Night"
+    34 microdeal
+    * amigados ibm_mfm_dd
+
 "Frontier: Elite II" = amigados
 
 "Frost Byte" = amigados
+
+"Fugger"
+    160 ubi_protection_b
+    161 ubi_protection_validation_b
+    * amigados_long_102200
 
 "Full Contact"
     * amigados full_contact
@@ -2166,6 +2209,10 @@ probe_amiga
     2-159 amigados
     * ignore
 
+"Hellowoon"
+    158-159 tolteka_protection
+    * amigados_unknown_length
+
 # 1988 version has 2 longtracks, T1.1 mastered with an error so ignore!
 # 1990 version is Copylock
 "Helter Skelter"
@@ -2208,6 +2255,13 @@ probe_amiga
     76-83 amigados
     84-156 ibm_pc_dd_10sec
     157 amigados
+    * ignore
+
+"Hockey League Simulator"
+    0 amigados
+    1-149 wayne_gretzky
+    152 wayne_gretzky
+    159 wayne_gretzky
     * ignore
 
 "Hoi"
@@ -2310,6 +2364,9 @@ probe_amiga
 "Indiana Jones And The Temple Of Doom" = amigados
 
 "Indianapolis 500" = amigados
+
+"Inferior"
+    * amigados inferior
 
 "Infestation"
     0 amigados
@@ -2453,6 +2510,9 @@ probe_amiga
     0 ignore
     * amigados james_pond_3
 
+"Jet Set Willy 2"
+    * amigados_long_103300 manic_miner
+
 "Jewels Of Darkness" = amigados
 
 "Jigsaw Puzzle Mania" = amigados
@@ -2579,6 +2639,10 @@ probe_amiga
     2-159 killing_gameshow_demo_b 
     * ignore
 
+"King Kong"
+    160 okay_protection
+    * amigados
+
 "King Of Chicago"
     * amigados_unknown_length
 
@@ -2614,6 +2678,19 @@ probe_amiga
 "Kosmobit"
     160 okay_protection
     * amigados
+
+"KreuzAs Poker"
+    160 ubi_protection_b
+    161 ubi_protection_validation_b
+     * amigados_long_102200
+
+"Krymini"
+    0-1 amigados
+    2-84 krymini 
+    85-99 amigados
+    100-101 krymini_short
+    102 amigados
+    * ignore
 
 "Krypton Egg" = infogrames_protected
 
@@ -2656,9 +2733,18 @@ probe_amiga
 
 "Leather Goddesses Of Phobos" = amigados
 
-"Leatherneck"
+"Leatherneck Old"
     2 raw_dd
     * amigados ibm_mfm_dd
+
+"Leatherneck"
+    2 microdeal
+    59 ignore
+    87 ignore
+    89 ignore
+    156 ignore
+    158 ignore
+    * amigados ibm_mfm_dd_recovery
 
 "Leatherneck/Major Motion"
     2-3 microdeal 
@@ -2721,6 +2807,13 @@ probe_amiga
     161 ubi_protection_validation_a
     * ignore
 
+#The dump I had required an additional parameter of -P3 to generate a good IPF
+"Lin Wu's Challenge"
+    0 amigados 
+    1-63 lin_wus_challenge
+    78-81 amigados
+    * ignore
+
 "Line Of Fire"
     158 tiertex_longtrack
     159 protoscan_longtrack
@@ -2734,6 +2827,11 @@ probe_amiga
 "Live And Let Die" = amigados
 
 "Living Jigsaws" = amigados
+
+"Logo"
+160 ubi_protection_b
+161 ubi_protection_validation_b
+* amigados_long_102200
 
 # Initial release uses unsupported Rob Northen protection
 # Later releases ADOS and may have tracks mastered long causing harmless warnings
@@ -2777,11 +2875,13 @@ probe_amiga
 
 "Mafdet And The Book Of The Dead" = amigados
 
+"Magic Balls" = amigados
+
 "Magic Boy" = amigados_copylock
 
 "Magic Fly" = amigados
 
-"Magic Johnson's Basketball" =amigados
+"Magic Johnson's Basketball" = amigados
 
 "Magic Marble"
     * amigados magic_marble magic_marble_b magic_marble_prot
@@ -2914,6 +3014,11 @@ probe_amiga
 # the Robocod format, yet both Disk 2 versions are Psygnosis A!
 "Mega Twins"
     * amigados psygnosis_a robocod protoscan_longtrack
+
+#The dump I had required the additional command line settings -p1 -P3 to
+#create a good IPF
+"MegArts Hockey"
+    * amigados megarts_hockey
 
 "MegaTraveller 1" = amigados
 
@@ -3185,6 +3290,11 @@ probe_amiga
 
 "Oh No! More Lemmings Demo"
     * amigados rnc_dualformat_empty psygnosis_b
+
+"Olimpiada 1996"
+    1 amigados amigados_2429 
+    2 amigados amigados_4428 
+    * amigados
 
 "Omega" = amigados
 
@@ -3590,6 +3700,9 @@ probe_amiga
 "Quizam!"
     * amigados_unknown_length
 
+"Quiwi"
+    * amigados_unknown_length anco_kingsoft_weak_protection
+
 "Qwak" = amigados
 
 "R-Type" # Track 159 may be empty
@@ -3695,6 +3808,10 @@ probe_amiga
 
 "Revenge Of Defender"
     * amigados_unknown_length
+
+"Reversi"
+    160 okay_protection
+    * amigados
 
 # Original uses Copylock
 # Arcade Action Game 7 uses RNC Gap!
@@ -4119,6 +4236,14 @@ probe_amiga
 "Sliders"
     * amigados sliders
 
+"Sliding Skill"
+    0 amigados 
+    1-7 sliding_skill
+    8 amigados
+    9-46 sliding_skill 
+    47-51 amigados
+    * ignore
+
 "Slip Stream" = amigados
 
 "Sly Spy" = amigados_copylock
@@ -4303,6 +4428,9 @@ probe_amiga
 "Steel Empire" = amigados
 
 "Steigar" = amigados_copylock
+
+"Steigenberger HotelManager"
+    * amigados steigenberger_hotelmanager
 
 "Steg The Slug" = amigados_copylock
 
@@ -5087,6 +5215,9 @@ probe_amiga
 "Ultimate Golf Simulator"
     * amigados federation_of_free_traders
 
+"Ultimate Pinball Quest"
+    * amigados_unknown_length prime_mover
+
 "UMS" = amigados
 
 "UMS II" = amigados
@@ -5119,6 +5250,12 @@ probe_amiga
     * amigados grolet
 
 "Uridium 2" = amigados_copylock
+
+# If the protection track is not recognized on disk 1
+# add -P9 as an option
+"U.S.S. John Young"
+    160 uss_john_young_protection
+    * amigados
 
 # Some Tracks are not decoding properly on Disk 2, so use raw_dd for those tracks!
 # Same behaviour noted on official IPF #0757 & IPF #0758
