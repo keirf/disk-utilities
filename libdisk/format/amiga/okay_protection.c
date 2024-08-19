@@ -20,10 +20,8 @@ static void *okay_protection_write_raw(
 
     /* GCR 4us bit time */
     stream_set_density(s, 4000);
-    int counter = 0;
     while (stream_next_bit(s) != -1) {
         unsigned int i, count;
-        counter++;
         if ((uint16_t)s->word != 0xbdef)
             continue;
 

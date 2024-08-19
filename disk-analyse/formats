@@ -1168,6 +1168,10 @@ probe_amiga
 "Dalek Attack"
     * amigados
 
+"Dames Simulator"
+    2-3 infogrames_longtrack
+    * amigados
+
 # Mission Disk 1 is a mix of AmigaDOS and Novagen across the disk.
 # It is supported by this format specifier, along with the main game itself.
 "Damocles"
@@ -1795,6 +1799,9 @@ probe_amiga
 "FootMan"
     1 amigados_long_111000
     * amigados
+
+"Ford Q8 prototype"
+    * amigados rhino
 
 "Forest Dumb Forever"
     1 amigados amigados_2959 
@@ -3600,7 +3607,7 @@ probe_amiga
 
 # Hit Squad Release, all tracks maybe mastered long.
 # Tracks 160/161 showed 1 x 128byte FM sector but are never checked when loading!
-"Predator" = amigados
+"Predator" = amigados_copylock
 
 "Predator II"
     * arc_development_a copylock amigados
@@ -3899,6 +3906,10 @@ probe_amiga
 
 # Tracks may be mastered long causing harmless warnings!
 "Rockford" = amigados
+
+"Rockford (Arcadia)"
+    1 protec_longtrack
+    * amigados
 
 "Rodland" = amigados_copylock
 
@@ -5351,6 +5362,10 @@ probe_amiga
 
 "Wall$treet"
     * amigados_unknown_length
+
+"Wall$treet v2.0"
+    1 frank_neuhaus_protection
+    * amigados_long_102200 
 
 "Warhead" = rnc_gap
 
