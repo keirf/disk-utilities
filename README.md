@@ -99,6 +99,13 @@ path for many of these tools to run. There are a few ways to ensure this:
 ```
  You should now be able to run disk-analyse and other tools just fine.
 
+ 3. Build with the -rpath linker option.  This will embed the run-time library
+ path in the executables.  For example:
+```
+  # make clean
+  # make install PREFIX=/opt/disk-utilities 'LDRUNPATH=$(LIBDIR)'
+```
+
 
 ## Brief Descriptions:
 

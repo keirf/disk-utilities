@@ -24,6 +24,7 @@ INSTALLDIR := $(DESTDIR)$(PREFIX)
 BINDIR     := $(INSTALLDIR)/bin
 INCLUDEDIR := $(INSTALLDIR)/include
 LIBDIR     := $(INSTALLDIR)/lib
+LDRUNPATH  :=
 
 $(ARCH) := y
 CFLAGS-$(x86_32) += -m32 -march=i686
@@ -53,6 +54,9 @@ endif
 CFLAGS += -I$(ROOT)/libdisk/include
 CFLAGS += -MMD -MF $(@D)/.$(@F).d
 CFLAGS += $(CFLAGS-y)
+ifneq ($(LDRUNPATH),)
+LDFLAGS += -Wl,-rpath,$(LDRUNPATH)
+endif
 
 # cc-option: Check if compiler supports first option, else fall back to second.
 #
