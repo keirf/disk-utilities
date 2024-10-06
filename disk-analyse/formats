@@ -5035,6 +5035,10 @@ probe_amiga
 
 "Tiny Troops" = amigados
 
+"Titan"
+    158-159 amigados_long_105500
+    * amigados
+
 "Titanic Blinky" = amigados_copylock
 
 "Titus The Fox"
