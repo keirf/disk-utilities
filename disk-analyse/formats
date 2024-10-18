@@ -14,6 +14,13 @@ probe_amiga
       protec_longtrack protoscan_longtrack
 
 ####################
+# Coverdisks - every checked coverdisk is listed here
+
+# Amiga User International - SuperDisk #76
+"AUI Superdisk 76"
+    * diskspare_dd
+
+####################
 # Game List - every checked game is listed here
 
 "1000 Miglia" = amigados
@@ -3294,6 +3301,10 @@ probe_amiga
     "You must specify --index-align to create a working image"
 "Odyssey" = amigados_copylock
 
+"Off Shore Warrior"
+    158-159 amigados_long_105500
+    * amigados
+
 # Track 0.1 identified as an empty RNC Dual Format track, unsure if it is
 # or an unsupported Rob Northen protection!
 "Oh No! More Lemmings"
@@ -4880,6 +4891,9 @@ probe_amiga
 
 "The Immortal" = amigados
 
+"The Incredible Crash Dummies"
+    * amigados_unknown_length rnc_pdos
+
 "The Keys To Maramon" = amigados
 
 "The Killing Cloud"
@@ -5032,6 +5046,11 @@ probe_amiga
 "Tin Toy" amigados
 
 "Tintin On The Moon" = amigados
+
+# Also known as "The Brainies" (unreleased)
+"Tiny Skweeks"
+    158-159 amigados_long_105500
+    * amigados
 
 "Tiny Troops" = amigados
 
