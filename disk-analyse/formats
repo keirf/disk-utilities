@@ -809,7 +809,6 @@ probe_amiga
 "Caesar Deluxe" = amigados
 
 "California Games Disk 1"
-    0 amigados
     1 amigados_long_111000
     * amigados
 
@@ -1277,9 +1276,19 @@ probe_amiga
 "Deliverance"
     * amigados deliverance
 
-# Key Disk Version #Also works for Deluxe Paint II
+# Key Disk Version
+"Deluxe Music Construction Set"
+    1 amigados_long_111000
+    * amigados
+
+# Key Disk Version
 "Deluxe Paint"
-    1 amigados amigados_long_111000
+    1 amigados_long_111000
+    * amigados
+
+# Key Disk Version
+"Deluxe Paint II"
+    1 amigados_long_111000
     * amigados
 
 # The secret is ABUSS
@@ -3000,7 +3009,7 @@ probe_amiga
 
 # Track 1 may have a missing sector! Course Disk Vol II is plain AmigaDOS!
 "Mean 18"
-    1 amigados amigados_long_111000
+    1 amigados_long_111000
     * amigados
 
 "Mean Arenas" = amigados
@@ -5084,7 +5093,6 @@ probe_amiga
 "Tower Of Babel" = rnc_gap
 
 "Tower Toppler"
-    0 amigados
     1 amigados_long_111000
     * amigados
 
