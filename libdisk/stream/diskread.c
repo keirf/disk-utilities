@@ -20,6 +20,7 @@ struct dr_stream {
 
     /* Current track number. */
     unsigned int track;
+    unsigned int avg_lat;
 
     /* Raw track data. */
     unsigned char *dat;
@@ -93,12 +94,15 @@ static void dr_reset(struct stream *s)
         continue;
     drs->dat_idx = i;
     drs->bpos = 0;
+    drs->avg_lat = 0;
 }
 
 static int dr_next_flux(struct stream *s)
 {
     struct dr_stream *drs = container_of(s, struct dr_stream, s);
     int bit, flux = 0;
+    int this_lat = 0;
+    int avg_lat = 0;
 
     do {
         if ((drs->bpos & 7) == 0) {
@@ -106,8 +110,14 @@ static int dr_next_flux(struct stream *s)
                 return -1;
             if ((drs->byte_latency = drs->dat[2*drs->dat_idx]) & 0x80)
                 s->ns_to_index = s->flux + flux;
-            drs->byte_latency &= 0x7f;
-            drs->byte_latency *= CIA_NS_PER_TICK;
+            this_lat = (drs->byte_latency & 0x7f) * CIA_NS_PER_TICK;
+            avg_lat = drs->avg_lat;
+            if (avg_lat == 0)
+                avg_lat = this_lat;
+            avg_lat = avg_lat + ((this_lat - avg_lat) / 4);
+            drs->byte_latency = avg_lat;
+            drs->avg_lat = avg_lat;
+
             drs->b = drs->dat[2*drs->dat_idx+1];
             drs->dat_idx++;
             drs->bpos = 0;
