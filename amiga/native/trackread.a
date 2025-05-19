@@ -5,32 +5,46 @@
 
 ; void grab_track(register __a0 char *dat, register __d0 int count);
 _grab_track:
-   MOVEM.L     D0-D4/A0-A3,-(SP)
+   MOVEM.L     D0-D4/A0-A4,-(SP)
    LEA.L       $DFF01A,A1  ; A1 = DSKBYTR
    LEA.L       $BFD400,A2  ; A2 = CIAA.CIATALO
    LEA.L       $BFDD00,A3  ; A3 = CIAA.CIAICR
+   MOVE.L      D0,D2       ; save the count for later
+   MOVE.L      A0,A4
+   ADDA.L      D0,A4       ; A4 is scratch memory after the main buffer
 
 byte_detect:
    MOVE.W      (A1),D1     ; D1 = DSKBYT
    BPL.B       byte_detect
 
+   MOVE.B      (A2),(A0)+  ; save THIS_CIATALO
+   MOVE.B      D1,(A0)+    ; set DSKBYT
+   MOVE.B      (A3),(A4)+  ; set DSKIDX
+   SUBQ.L      #2,D0
+   BNE.B       byte_detect
+
+
+   MOVE.L      A0,A4       ; Reset A0, D0 and A1 to their starting values
+   MOVE.L      D2,D0
+   SUBA.L      D0,A0
+
+fix_timing_byte:
    MOVE.B      D3,D2       ; D2 = PREV_CIATALO
-   MOVE.B      (A2),D3     ; D3 = THIS_CIATALO
+   MOVE.B      (A0),D3     ; D3 = THIS_CIATALO
    SUB.B       D3,D2       ; D2 = PREV_CIATALO - THIS_CIATALO
 
-   MOVE.B      (A3),D4
+   MOVE.B      (A4)+,D4
    LSL.B       #3,D4
    AND.B       #$80,D4
    OR.B        D4,D2       ; D2 |= DSKIDX << 7
 
-   LSL.W       #8,D2
-   MOVE.B      D1,D2       ; D2 <<= 8; D2 |= (UBYTE)DSKBYT
-   MOVE.W      D2,(A0)+
+   MOVE.B      D2,(A0)+
+   ADDA.L      #1,A0
 
    SUBQ.L      #2,D0
-   BNE.B       byte_detect
+   BNE.B       fix_timing_byte
 
-   MOVEM.L     (SP)+,D0-D4/A0-A3
+   MOVEM.L     (SP)+,D0-D4/A0-A4
    RTS
 
    END
