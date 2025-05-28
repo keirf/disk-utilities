@@ -139,6 +139,7 @@ extern void __asm grab_track(
     register __d0 unsigned int count);
 
 #define BYTES_PER_TRACK (128*1024)
+#define TRACK_BUFFER_SIZE BYTES_PER_TRACK/2*3
 
 int main(int argc, char **argv)
 {
@@ -164,8 +165,8 @@ int main(int argc, char **argv)
         exit(1);
     }
 
-    if ((dat = malloc(BYTES_PER_TRACK)) == NULL) {
-        fprintf(stderr, "Could not alloc %u bytes\n", BYTES_PER_TRACK);
+    if ((dat = malloc(TRACK_BUFFER_SIZE)) == NULL) {
+        fprintf(stderr, "Could not alloc %u bytes\n", TRACK_BUFFER_SIZE);
         fclose(fp);
         release_drive();
         exit(1);
