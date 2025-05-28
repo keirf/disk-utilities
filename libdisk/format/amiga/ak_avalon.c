@@ -80,7 +80,7 @@ static void *ak_avalon_protection_2_write_raw(
             raw[i] = s->word;
             sum = checksum(s->word, sum);
         }
-        
+        printf("%i %08x\n",tracknr,sum);
         if (sum+info->checksum_addition != info->checksum)
             continue;
 
@@ -174,6 +174,74 @@ struct track_handler may_matematyk_handler = {
         .checksum_addition = 7
     }
 };
+
+struct track_handler monster_handler = {
+    .bytes_per_sector = 6246*2,
+    .nr_sectors = 1,
+    .write_raw = ak_avalon_protection_2_write_raw,
+    .read_raw = ak_avalon_protection_2_read_raw,
+    .extra_data = & (struct ak_avalon_info) {
+        .checksum = 0x42f94b7e,
+        .checksum_addition = 1
+    }
+};
+
+struct track_handler skarb_templariuszy_handler = {
+    .bytes_per_sector = 6246*2,
+    .nr_sectors = 1,
+    .write_raw = ak_avalon_protection_2_write_raw,
+    .read_raw = ak_avalon_protection_2_read_raw,
+    .extra_data = & (struct ak_avalon_info) {
+        .checksum = 0xa106beb3,
+        .checksum_addition = 3
+    }
+};
+
+struct track_handler miasto_smierci_handler = {
+    .bytes_per_sector = 6246*2,
+    .nr_sectors = 1,
+    .write_raw = ak_avalon_protection_2_write_raw,
+    .read_raw = ak_avalon_protection_2_read_raw,
+    .extra_data = & (struct ak_avalon_info) {
+        .checksum = 0x27daccdc,
+        .checksum_addition = 9
+    }
+};
+
+struct track_handler astral_handler = {
+    .bytes_per_sector = 6246*2,
+    .nr_sectors = 1,
+    .write_raw = ak_avalon_protection_2_write_raw,
+    .read_raw = ak_avalon_protection_2_read_raw,
+    .extra_data = & (struct ak_avalon_info) {
+        .checksum = 0x18b8540f,
+        .checksum_addition = 0xa
+    }
+};
+
+struct track_handler brydz_handler = {
+    .bytes_per_sector = 6246*2,
+    .nr_sectors = 1,
+    .write_raw = ak_avalon_protection_2_write_raw,
+    .read_raw = ak_avalon_protection_2_read_raw,
+    .extra_data = & (struct ak_avalon_info) {
+        .checksum = 0x2f971f2e,
+        .checksum_addition = 7
+    }
+};
+
+struct track_handler forest_dumb_handler = {
+    .bytes_per_sector = 6246*2,
+    .nr_sectors = 1,
+    .write_raw = ak_avalon_protection_2_write_raw,
+    .read_raw = ak_avalon_protection_2_read_raw,
+    .extra_data = & (struct ak_avalon_info) {
+        .checksum = 0xb296fc97,
+        .checksum_addition = 2
+    }
+};
+
+
 /*
  * Local variables:
  * mode: C

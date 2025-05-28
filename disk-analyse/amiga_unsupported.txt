@@ -8,6 +8,8 @@ Afterburner II (The Hit Squad):
 Disk 1 Firebird format + unformatted tracks
 Disk 2 unsupported formatS
 
+Air Supply
+
 Black Hornet:
 ADOS (track 0.0 may be long) + protection on track 0.1
 
