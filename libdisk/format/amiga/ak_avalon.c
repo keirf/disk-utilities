@@ -80,7 +80,7 @@ static void *ak_avalon_protection_2_write_raw(
             raw[i] = s->word;
             sum = checksum(s->word, sum);
         }
-        printf("%i %08x\n",tracknr,sum);
+
         if (sum+info->checksum_addition != info->checksum)
             continue;
 
