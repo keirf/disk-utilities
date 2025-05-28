@@ -713,7 +713,7 @@ static void *frank_neuhaus_protection_write_raw(
         if (!check_sequence(s, 3000, 0xaa))
             continue;
 
-        if (!check_length(s, 101000))
+        if (!check_length(s, 90600))
             break;
 
         stream_next_index(s);

@@ -388,6 +388,10 @@ probe_amiga
 
 "Asterix Operation Getafix" = amigados
 
+"Astral"
+    160 astral
+    * amigados
+
 # A budget release of the game contains garbage on track 79.0
 # after the sync. The budget release has been modified to
 # ignore the results of the protection check.
@@ -786,6 +790,10 @@ probe_amiga
 
 "Bug Bomber" = amigados
 
+# Demo - https://www.pouet.net/prod.php?which=103453
+"Buggy Balls"
+    * amigados mentasm
+
 # Original Elite release uses RNC weak gap protection on some tracks, hence
 # we refer to that format here exclusively, in place of plain 'amigados'.
 # Other releases may use Elite formats.
@@ -799,6 +807,10 @@ probe_amiga
     * amigados_unknown_length rhino
 
 "Burnout" = amigados
+
+"Brydz"
+    160 brydz
+    * amigados
 
 "Cadaver" = amigados_copylock
 
@@ -928,7 +940,8 @@ probe_amiga
 
 "Chariots of Wrath" = amigados
 
-"Charlie"
+# The dump I had require -P3 to create a good IPF
+"Charly"
     * amigados cobra
 
 "Chase H.Q. II" = amigados_copylock
@@ -1677,6 +1690,9 @@ probe_amiga
 
 "Fantastic Dizzy" = amigados_copylock
 
+"Fantasy Games"
+    * amigados fantasy_games
+
 "Fantasy World Dizzy" = amigados_copylock
 
 "Fantastic Voyage"
@@ -1811,6 +1827,10 @@ probe_amiga
 
 "Ford Q8 prototype"
     * amigados rhino
+
+"Forest Dumb"
+    160 forest_dumb
+    * amigados
 
 "Forest Dumb Forever"
     1 amigados amigados_2959 
@@ -3040,14 +3060,20 @@ probe_amiga
 "MegArts Hockey"
     * amigados megarts_hockey
 
-"MegaTraveller 1" = amigados
-
-"MegaTraveller 2" = amigados
-
 "Mega Phoenix"
     0-127 amigados
     158 creepsoft_protection amigados
     * ignore
+
+"MegaBlast"
+    1 amigados_2849 amigados
+    2 amigados_4292 amigados
+    5 amigados_5429 amigados
+    * amigados
+
+"MegaTraveller 1" = amigados
+
+"MegaTraveller 2" = amigados
 
 "Menace"
     159 protec_longtrack
@@ -3075,6 +3101,10 @@ probe_amiga
     * novagen
     
 "Miami Chase" = amigados_copylock
+
+"Miasto Smierci"
+    160 miasto_smierci
+    * amigados
 
 "Mickey Mouse"
     0 amigados
@@ -3155,6 +3185,10 @@ probe_amiga
 
 # Various versions, ADOS or ADOS + Protec! 
 "Monopoly" = amigados_copylock
+
+"Monster"
+    160 monster
+    * amigados
 
 "Monty Python's Flying Circus" = amigados_copylock
 
@@ -4202,6 +4236,10 @@ probe_amiga
 "Skaermtrolden Hugo"
     * amigados skaermtrolden_hugo
 
+"Skarb Templariuszy"
+    160 skarb_templariuszy
+    * amigados
+
 "Skat Deluxe" = amigados
 
 "Skaut"
@@ -4418,6 +4456,9 @@ probe_amiga
     2-43 apprentice
     * ignore
 
+"Star Trash"
+   * amigados star_trash
+
 "Star Trek 25th Anniversary" = amigados
 
 # Star Wars Trilogy Release
@@ -4457,7 +4498,7 @@ probe_amiga
 
 "Steigar" = amigados_copylock
 
-"Steigenberger HotelManager"
+"Steigenberger Hotelmanager"
     * amigados steigenberger_hotelmanager
 
 "Steg The Slug" = amigados_copylock
@@ -4873,6 +4914,9 @@ probe_amiga
 "The Games '92 Espana" = amigados
 
 "The Grail" = amigados
+
+"The Great Giana Sisters"
+    * amigados street_gang
 
 "The Guild Of Thieves" = amigados
 
@@ -5675,6 +5719,10 @@ probe_amiga
 
 "Zero Gravity"
     * amigados rallye_master_protection
+
+# Zestaw Gier Zręcznościowych
+"ZGZ"
+    * amigados zgz
 
 "Zombi"
     0-159 amigados

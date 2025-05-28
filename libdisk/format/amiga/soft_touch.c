@@ -216,7 +216,7 @@ static void *soft_touch_write_raw(
         }
         else  if (ti->type == TRKTYP_barney_mouse) {
             if(s->crc16_ccitt != barney_mouse_crcs[tracknr])
-                continue;
+                trk_warn(ti, tracknr, "The checksum did not match, but may be a different version!");
         }
         else  if (ti->type == TRKTYP_wizards_castle_a) {
             if(s->crc16_ccitt != wizards_castle_a_crcs[tracknr])
