@@ -5811,6 +5811,10 @@ softlock_dualformat
     0 softlock_dualformat
     * amigados ibm_pc_dd
 
+xtroll_dualformat
+    0 xtroll_dualformat
+    * ibm_pc_dd_10sec amigados
+
 # Herndon HLS longtrack check decrypts the game.
 # HLS track needs to be >= 111000 bitcells, but we analyse "unknown length" as
 # some versions are not protected and this avoids warn on normal length track.
