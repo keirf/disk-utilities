@@ -14,6 +14,8 @@
 
 #ifdef __APPLE__
 #define CAPSLIB_NAME    "/Library/Frameworks/CAPSImage.framework/CAPSImage"
+#elif defined(_WIN32)
+#define CAPSLIB_NAME    "CAPSImg.dll"
 #else
 #define CAPSLIB_NAME    "libcapsimage.so"
 #endif
@@ -87,7 +89,7 @@ static int get_capslib(void)
     if (capslib.ref++)
         return 1;
 
-#ifdef __APPLE__
+#if defined(__APPLE__) || defined(_WIN32)
     if ((capslib.handle = dlopen(CAPSLIB_NAME, RTLD_LAZY)) == NULL) {
         warnx("Unable to open " CAPSLIB_NAME);
         goto fail_no_handle;
