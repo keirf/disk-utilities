@@ -6,8 +6,9 @@
 
 #include <stdio.h>
 #include <unistd.h>
-#include <err.h>
 #include <limits.h>
+
+#include <libdisk/util.h>
 
 #define F_C 1
 #define F_T 2
