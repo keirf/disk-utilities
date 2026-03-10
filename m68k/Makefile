@@ -16,7 +16,7 @@ disassemble: m68k/m68k.a amiga/amiga.a disassemble.o
 	$(CC) $(LDFLAGS) $@.o -lamiga -lm68k -o $@
 
 m68k_emulate: m68k/m68k.a m68k_emulate.o
-	$(CC) $(LDFLAGS) $@.o -lm68k -o $@
+	$(CC) $(LDFLAGS) $@.o -lm68k -ldisk -o $@
 
 m68k/m68k.a:
 	$(MAKE) -C m68k all
