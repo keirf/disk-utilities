@@ -201,7 +201,7 @@ static void imd_close(struct disk *d)
 
     t = time(NULL);
     localtime_r(&t, &tm);
-    strftime(timestr, sizeof(timestr), "%d/%m/%C%y %H:%M:%S", &tm);
+    strftime(timestr, sizeof(timestr), "%d/%m/%Y %H:%M:%S", &tm);
     snprintf(sig, sizeof(sig),
              "IMD 1.16: %s\r\nCreated by "
              "https://github.com/keirf/Disk-Utilities\r\n\x1a",
