@@ -116,29 +116,32 @@ uint64_t le64toh(uint64_t little_endian_64bits);
 
 #if !defined(__PLATFORM_HAS_ERR_H__)
 
-#define err(retval, ...) do { \
-    fprintf(stderr, __VA_ARGS__); \
+#define err(retval, format, ...) do { \
+    const char *fmt = format; \
+    if (fmt) fprintf(stderr, fmt, ##__VA_ARGS__); \
     fprintf(stderr, "Undefined error: %d\n", errno); \
     exit(retval); \
 } while(0)
     
-#define errx(retval, ...) do { \
-    fprintf(stderr, __VA_ARGS__); \
+#define errx(retval, format, ...) do { \
+    const char *fmt = format; \
+    if (fmt) fprintf(stderr, fmt, ##__VA_ARGS__); \
     fprintf(stderr, "\n"); \
     exit(retval); \
 } while(0)
 
-#define warn(...) do { \
-    fprintf(stderr, __VA_ARGS__); \
+#define warn(format, ...) do { \
+    const char *fmt = format; \
+    if (fmt) fprintf(stderr, fmt, ##__VA_ARGS__); \
     fprintf(stderr, "Undefined error: %d\n", errno); \
 } while(0)
 
 
-#define warnx(...) do { \
-    fprintf(stderr, __VA_ARGS__); \
+#define warnx(format, ...) do { \
+    const char *fmt = format; \
+    if (fmt) fprintf(stderr, fmt, ##__VA_ARGS__); \
     fprintf(stderr, "\n"); \
 } while(0)
-
 
 #endif /* !defined(__PLATFORM_HAS_ERR_H__) */
 
