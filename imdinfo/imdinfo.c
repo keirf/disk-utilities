@@ -16,6 +16,18 @@
 #define F_E 8
 #define RDSZ(i) ((map_sz[(i << 1) | 1] << 8) | map_sz[i << 1])
 
+static void usage(int rc)
+{
+    printf("Usage: imdinfo [-c] [-t] [-s] [-e] imdfile\n");
+    printf("Options:\n");
+    printf("  -c  Output the IMD file header / comment\n");
+    printf("  -t  Output per-track information\n");
+    printf("  -s  Output per-sector information\n");
+    printf("  -e  Output a few stats at the end\n");
+
+    exit(rc);
+}
+
 int main(int argc, char *argv[])
 {
     long total_sz = 0;
@@ -25,8 +37,10 @@ int main(int argc, char *argv[])
     FILE *imdfile;
     unsigned char trkinfo[5], map_num[256], map_cyl[256], map_hd[256], map_sz[512];
 
+    const static char sopts[] = "ctse";
+
     // Parse command line options
-    while ((i = getopt(argc, argv, "ctse")) != -1) {
+    while ((i = getopt(argc, argv, sopts)) != -1) {
         switch (i) {
         case 'c':
             opts |= F_C;
@@ -40,21 +54,19 @@ int main(int argc, char *argv[])
         case 'e':
             opts |= F_E;
             break;
-
         default:
-            fprintf(stderr, "Usage: %s [-c] [-t] [-s] [-e] imdfile\n\
-  -c  Output the IMD file header / comment\n\
-  -t  Output per-track information\n\
-  -s  Output per-sector information\n\
-  -e  Output a few stats at the end\n", argv[0]);
-            return 1;
+            usage(1);
+            break;
         }
     }
 
+    if ((optind - 1) == 0 || argc != (optind + 1))
+        usage(1);
+
     // Open IMD file for reading
-    imdfile = fopen(argv[argc - 1], "rb");
+    imdfile = fopen(argv[optind], "rb");
     if (!imdfile) {
-        fprintf(stderr, "Error opening file: %s\n", argv[argc - 1]);
+        fprintf(stderr, "Error opening file: %s\n", argv[optind]);
         return 2;
     }
 
