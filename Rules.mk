@@ -4,6 +4,9 @@ all:
 
 ARCH ?= $(shell uname -m | sed -e s/i.86/x86_32/ \
           -e s/i86pc/x86_32/ -e s/amd64/x86_64/)
+ifeq ($(MSYSTEM),MINGW32)
+ARCH := x86_32
+endif
 
 ifeq ($(shell uname -s),Darwin)
 PLATFORM = osx
