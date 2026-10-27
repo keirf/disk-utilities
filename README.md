@@ -46,34 +46,10 @@ explicitly configure support by specifying caps=y in the build process.
   # sudo caps=y make install
 ```
 
-Your build may now fail with an error similar to
-"caps.c:12:28: fatal error: caps/capsimage.h: No such file or directory".
-This error occurs if you do not have the CAPS library header file in
-/usr/include/caps. In this case you must download and install as follows:
-```
-  # wget -O ipflib42_linux-x86_64.tar.gz http://www.softpres.org/_media/files:ipflib42_linux-x86_64.tar.gz
-  # tar xf ipflib42_linux-x86_64.tar.gz
-  # cd x86_64-linux-gnu-capsimage
-  # sudo cp -a include/caps /usr/include
-```
-
 You must also have v4 or v5 of the CAPS library installed (v5 is
 required for CT Raw image support). Failure to install the library
 will result in an informative error message when you attempt to read a
-CTR or IPF image.  You can download, build and install v5 of the
-support library as follows:
-```
-  # wget http://www.kryoflux.com/download/spsdeclib_5.1_source.zip
-  # unzip spsdeclib_5.1_source.zip
-  # unzip capsimg_source_linux_macosx.zip
-  # cd capsimg_source_linux_macosx/CAPSImg
-  # chmod u+x configure
-  # ./configure
-  # make
-  # sudo make install
-  # cd /usr/local/lib
-  # sudo ln -s libcapsimage.so.5.1 libcapsimage.so.5
-```
+CTR or IPF image.
 
 
 ## Library search path ("error while loading shared libraries: libdisk.so.0"):

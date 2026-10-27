@@ -9,7 +9,8 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <unistd.h>
-#include <caps/capsimage.h>
+#include "caps/CommonTypes.h"
+#include "caps/CapsAPI.h"
 #include <dlfcn.h>
 
 #ifdef __APPLE__
@@ -25,7 +26,7 @@
 
 struct caps_stream {
     struct stream s;
-    CapsLong container;
+    int32_t container;
     bool_t is_ipf;
 
     /* Current track info */
@@ -39,27 +40,27 @@ struct caps_stream {
 static struct {
     unsigned int ref, version;
     void *handle;
-    CapsLong (*Init)(void);
-    CapsLong (*Exit)(void);
-    CapsLong (*AddImage)(void);
-    CapsLong (*RemImage)(CapsLong id);
-    CapsLong (*LockImage)(
-        CapsLong id, const char *name);
-    CapsLong (*LockImageMemory)(
-        CapsLong id, CapsUByte *buffer, CapsULong length, CapsULong flag);
-    CapsLong (*UnlockImage)(
-        CapsLong id);
-    CapsLong (*LoadImage)(
-        CapsLong id, CapsULong flag);
-    CapsLong (*GetImageInfo)(
-        struct CapsImageInfo *pi, CapsLong id);
-    CapsLong (*LockTrack)(
-        struct CapsTrackInfo *pi, CapsLong id, CapsULong cylinder,
-        CapsULong head, CapsULong flag);
-    CapsLong (*UnlockTrack)(
-        CapsLong id, CapsULong cylinder, CapsULong head);
-    CapsLong (*UnlockAllTracks)(
-        CapsLong id);
+    int32_t (*Init)(void);
+    int32_t (*Exit)(void);
+    int32_t (*AddImage)(void);
+    int32_t (*RemImage)(int32_t id);
+    int32_t (*LockImage)(
+        int32_t id, const char *name);
+    int32_t (*LockImageMemory)(
+        int32_t id, const uint8_t *buffer, uint32_t length, uint32_t flag);
+    int32_t (*UnlockImage)(
+        int32_t id);
+    int32_t (*LoadImage)(
+        int32_t id, uint32_t flag);
+    int32_t (*GetImageInfo)(
+        struct CapsImageInfo *pi, int32_t id);
+    int32_t (*LockTrack)(
+        struct CapsTrackInfo *pi, int32_t id, uint32_t cylinder,
+        uint32_t head, uint32_t flag);
+    int32_t (*UnlockTrack)(
+        int32_t id, uint32_t cylinder, uint32_t head);
+    int32_t (*UnlockAllTracks)(
+        int32_t id);
 } capslib;
 
 #define CAPSInit            capslib.Init
